@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load cart_filters %}
+
+{% block title %}Product List{% endblock %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+/* Custom styling for Add to Cart icon */
+.add-to-cart-icon {
+    width: 50px; /* Default size */
+    height: auto;
+    transition: transform 0.3s ease;
+}
+
+.add-to-cart-icon:hover {
+    transform: scale(1.5); /* Add hover effect */
+}
+
+/* Custom button styles */
+.btn-outline-danger,
+.btn-outline-success {
+    width: 25px; 
+    height: 25px;
+    font-size: 20px;
+    padding: 0;
+}
+
+/* Ensure the quantity span is properly centered */
+#total-qty-items-{{ product.id }} {
+    min-width: 40px;
+    text-align: center;
+    font-size: 18px;
+}
+
+.half-circle-left {
+    border-radius: 20px 0 0 20px; /* Rounded left side */
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease-in-out;
+}
+
+.half-circle-right {
+    border-radius: 0 20px 20px 0; /* Rounded right side */
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Hover effect for buttons */
+.half-circle-left:hover,
+.half-circle-right:hover {
+    transform: scale(1.1); /* Slight enlargement on hover */
+}
+
+/* Total quantity item container */
+.total-qty-items {
+    padding-top: 11px;
+    padding-bottom: 11px;
+    border: 1px solid rgb(51, 76, 92);;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+/* Mobile-responsive styling */
+@media (max-width: 768px) {
+    /* Adjust Add to Cart icon size */
+    .add-to-cart-icon {
+        width: 40px; /* Smaller icon */
+        height: auto;
+    }
+
+    .add-to-cart-icon:hover {
+        transform: scale(1.3); /* Adjust hover effect */
+    }
+
+    /* Adjust button sizes on mobile */
+    .btn-outline-danger,
+    .btn-outline-success {
+        width: 30px; /* Smaller button */
+        height: 30px;
+        font-size: 16px; /* Smaller text */
+        padding: 0;
+    }
+
+    /* Adjust quantity text size and spacing */
+    #total-qty-items-{{ product.id }} {
+        min-width: 35px;
+        font-size: 16px; /* Smaller font size */
+        padding: 0 5px; /* Adjust padding */
+    }
+
+    /* Adjust half-circle button size */
+    .half-circle-left,
+    .half-circle-right {
+        width: 40px; /* Smaller buttons */
+        height: 40px;
+        font-size: 18px; /* Smaller font size */
+    }
+
+    /* Adjust padding inside the quantity container */
+    .total-qty-items {
+        padding-top: 8px;
+        padding-bottom: 8px;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+}
+
+/* Extra small screen (mobile-first) */
+@media (max-width: 480px) {
+    /* Further reduce sizes for smaller screens */
+    .add-to-cart-icon {
+        width: 35px;
+    }
+
+    .btn-outline-danger,
+    .btn-outline-success {
+        width: 25px;
+        height: 25px;
+        font-size: 14px;
+    }
+
+    #total-qty-items-{{ product.id }} {
+        font-size: 11px; /* Smaller font size for very small screens */
+    }
+
+    .half-circle-left,
+    .half-circle-right {
+        width: 32px; /* Even smaller buttons */
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .total-qty-items {
+        padding-top: 3px;
+        padding-bottom: 3px;
+        padding-left: 5px;
+        padding-right: 5px;
+        font-size: 15px; /* Smaller font size */
+    }
+}
+
+</style>
+    <!-- Categories Navigation -->
+         <!-- Pending Orders Section -->
+    {% if pending_orders %}
+    <h2 class=" text-warning">Pending Orders</h2>
+    {% for order in pending_orders %}
+    <div class="alert alert-warning shadow-sm rounded-3 ">
+        <div class="row">
+            <div class="col-md-6 col-sm-4 col-6">
+                <h4 class="alert-heading">Order #{{ order.id }}</h4>
+                <p><strong>Total Amount:</strong></p> <p>YR {{ order.total_amount }}</p>
+            </div>
+            <div class="col-md-6 col-sm-4 col-6 d-flex justify-content-end">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#orderDetailsModal{{ order.id }}">
+                    View Details
+                </button>
+            </div>
+        </div>
+   
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal fade" id="orderDetailsModal{{ order.id }}" tabindex="-1" aria-labelledby="orderDetailsModalLabel{{ order.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order Details for #{{ order.id }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {% for item in order.orderitem_set.all %}
+                    <div class="card mb-3">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="{{ item.product.image.url }}" class="img-fluid rounded-start" alt="{{ item.product.name }}">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ item.product.name }}</h5>
+                                    <p class="card-text">{{ item.product.description }}</p>
+                                    <p class="card-text"><small>Quantity: {{ item.quantity }}</small></p>
+                                    <p class="card-text"><strong>Price:</strong> YR {{ item.product.price|floatformat:2 }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <a href="https://wa.me/+967779923330?text=I%20want%20to%20make%20the%20payment%20for%20order%20#{{ order.id }}" class="btn btn-success" target="_blank">
+                        Pay via WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    <div class="row row-cols-4 row-cols-md-3 mt-0 ">
+        <div class="col">
+            <a href="{% url 'product-list' supplier.id %}" class="btn btn-outline-primary w-100 {% if not active_category_id %}active{% endif %}">
+                All
+            </a>
+        </div>
+        {% for category in categories %}
+        <div class="col">
+            <a href="#subcategory-{{ category.id }}" 
+               class="btn btn-outline-secondary w-100" 
+               data-bs-toggle="collapse" 
+               aria-expanded="false">
+                {{ category.name }}
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Subcategories Section -->
+    {% for category in categories %}
+    <div id="subcategory-{{ category.id }}" class="collapse mb-4">
+        <div class="row row-cols-2 row-cols-md-4 g-2">
+            {% for subcategory in category.productcategory_set.all %}
+            <div class="col">
+                <a href="{% url 'product_list_subcategory' subcategory.id category.supplier.id %}" 
+                   class="btn btn-sm btn-light border w-100">
+                    {{ subcategory.name }}
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+
+
+    <!-- Product List Section -->
+    <h1 class="text-3xl font-semibold mb-6">Our Products</h1>
+    <div class="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for product in products %}
+        <div class="col">
+            <div class="card h-70 shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl">
+                <a href="{% url 'product_detail' pk=product.pk %}">
+                    <img src="{{ product.image.url }}" class="card-img-top rounded-t-lg" alt="{{ product.name }}">
+                </a>
+                <div class="card-body h-25 bg-gradient-to-r from-indigo-100 to-blue-200 text-white rounded-b-lg">
+                    <h5 class="card-title text-lg font-semibold">{{ product.name }}</h5>
+                    <p class="card-text text-yellow-400 fw-bold">YR {{ product.price }}</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 d-flex justify-content-between align-items-center py-3">
+                    <!-- Add to Cart Icon -->
+                    <img src="{% static 'addToCart.png' %}" alt="Add to Cart" class="add-to-cart-icon cursor-pointer transition-all duration-300 hover:scale-110 hover:opacity-80" onclick="addToCart('{{ product.id }}','{{product.supplier.id}}')">
+                
+                    <!-- Quantity Adjust Buttons and Counter -->
+                    <div class="d-flex align-items-center">
+                        <button id="db-{{ product.id }}" class="btn btn-outline-danger btn-sm mx-1 half-circle-left hover:bg-red-600 hover:text-white transition-all duration-300" onclick="subToCart('{{ product.id }}','{{product.supplier.id}}')">
+                            <i class="bi bi-dash"></i> <!-- Bootstrap Icons for minus sign -->
+                        </button>
+                        
+                        <span id="total-qty-items-{{ product.id }}" class="fw-bold  total-qty-items " style="color: rgb(51, 76, 92);">
+                            {% load cart_filters %}
+                            {% with cart.cart_items.all|get_cart_item:product as cart_item %}
+                                {% if cart_item %}
+                                    {{ cart_item.quantity }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            {% endwith %}
+                        </span>
+                        
+                        <button id="ib-{{ product.id }}" class="btn btn-outline-success btn-sm mx-1 half-circle-right hover:bg-green-600 hover:text-white transition-all duration-300" onclick="addToCart('{{ product.id }}', '{{product.supplier.id}}')">
+                            <i class="bi bi-plus"></i> <!-- Bootstrap Icons for plus sign -->
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            /* Enhanced Styles */
+            .card {
+                background-color: #fff;
+                border-radius: 15px;
+                overflow: hidden;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease-in-out;
+            }
+        
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 12px 18px rgba(0, 0, 0, 0.1);
+            }
+        
+           
+        
+            /* Hover Effects for Buttons */
+            .half-circle-left:hover, .half-circle-right:hover {
+                background-color: rgba(0, 0, 0, 0.1);
+            }
+        
+            .add-to-cart-icon {
+                width: 30px;
+                height: 30px;
+                transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            }
+        
+            .add-to-cart-icon:hover {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        </style>
+        
+        {% endfor %}
+    </div>
+    
+
+
+<!-- Bootstrap Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function sendMessageAndRedirect(orderId) {
+        const whatsappURL = 'https://wa.me/+967779923330?text=I%20want%20to%20make%20payment%20for%20order%20#' + orderId;
+        window.open(whatsappURL, '_blank');
+    }
+</script>
+{% endblock %}

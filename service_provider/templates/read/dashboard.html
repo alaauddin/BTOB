@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Dashboard</h1>
+
+    <div class="container mt-4">
+        <h1 class="mb-4">Dashboard</h1>
+    
+        <div class="row">
+            <!-- Total Cards -->
+            <div class="col-md-4">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Suppliers</h5>
+                        <p class="card-text display-4">{{ total_suppliers }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Products</h5>
+                        <p class="card-text display-4">{{ total_products }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-danger mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Orders</h5>
+                        <p class="card-text display-4">{{ total_orders }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Chart Section -->
+        <div class="card mt-4">
+            <div class="card-header">Sales Overview</div>
+            <div class="card-body">
+                <canvas id="salesChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Recent Orders -->
+    <div class="card mt-4">
+        <div class="card-header">
+            Recent Orders
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>User</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.user.username }}</td>
+                            <td>${{ order.total_amount }}</td>
+                            <td>{{ order.status }}</td>
+                            <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Get data from Django context
+    const labels = JSON.parse('{{ chart_labels|escapejs }}');
+    const data = JSON.parse('{{ chart_data|escapejs }}');
+
+    // Configure the chart
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    const salesChart = new Chart(ctx, {
+        type: 'bar', // Choose 'line', 'bar', 'pie', etc.
+        data: {
+            labels: labels, // Months
+            datasets: [{
+                label: 'Monthly Sales',
+                data: data, // Sales data
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
+            }],
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                },
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                },
+            },
+        },
+    });
+
+</script>
+{% endblock %}

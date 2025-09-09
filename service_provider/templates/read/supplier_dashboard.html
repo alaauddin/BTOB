@@ -1,0 +1,179 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Supplier Dashboard -->
+<div class="container-fluid my-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center">
+                {% if supplier.profile_picture %}
+                    <img src="{{ supplier.profile_picture.url }}" class="card-img-top rounded-circle" alt="Profile Picture" style="width: 150px; height: 150px; margin: 20px auto;">
+                {% else %}
+                    <img src="{% static 'default_profile_picture.png' %}" class="card-img-top rounded-circle" alt="Default Profile Picture" style="width: 150px; height: 150px; margin: 20px auto;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ supplier.name }}</h5>
+                    <p class="text-muted">{{ supplier.category.name }}</p>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <!-- Stats Row -->
+            <div class="row">
+                
+                <div class="col-md-4">
+                    <div class="card shadow-sm hover-shadow">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Products</h5>
+                            <p class="card-text">{{ supplier.products.count }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm hover-shadow">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Orders for {{ this_monthe }}</h5>
+                            <p class="card-text">{{ orders.count }}</p>
+                            <!-- pending and confirm -->
+                             <div class="card shadow-sm hover-shadow">
+                                <table class="table table-striped text-center">
+                                    <thead>
+                                        <tr>
+                                            <th>Pending</th>
+                                            <th>Confirm</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <tr>
+                                            {% if orders_pending %}
+                                            <td>{{ orders_pending.count }}</td>
+                                            {% else %}
+                                            <td>0</td>
+                                            {% endif %}
+                                            {% if orders_confiremt %}
+                                            <td>{{ orders_confiremt.count}}</td>
+                                            {% else %}
+                                            <td>0</td>
+                                            {% endif %}
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm hover-shadow">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Sales for {{ this_monthe }}</h5>
+                            <p class="card-text">{{supplier.get_total_sales}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Orders List table -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">
+                    <h5>Orders List</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Total Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for order in orders %}
+                                <tr>
+                                    <td>{{ order.id }}</td>
+                                    <td>{{ order.user.username }}</td>
+                                    <td>${{ order.total_amount }}</td>
+                                    <td>{{ order.status }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Product List Table -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">
+                    <h5>Product List</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in supplier.products.all %}
+                                <tr>
+                                    <td>{{ product.name }}</td>
+                                    <td>{{ product.category.name }}</td>
+                                    <td>${{ product.price }}</td>
+                                    <td>
+                                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#productModal{{ product.id }}">View</button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'update_supplier_profile' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="supplierName">Name</label>
+                        <input type="text" class="form-control" id="supplierName" name="name" value="{{ supplier.name }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierLocation">Location</label>
+                        <input type="text" class="form-control" id="supplierLocation" name="city" value="{{ supplier.city }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierCategory">Category</label>
+                        <select class="form-control" id="supplierCategory" name="category">
+                            <option>{{ supplier.category.name }}</option>
+                            <!-- Add other categories -->
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

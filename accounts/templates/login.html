@@ -1,0 +1,32 @@
+{%extends 'base.html'%}
+
+{%block title%} Login {%endblock%}
+
+{% block content %}
+<div class="container text-left" dir="ltr">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 col-md-10 col-sm-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="text-center">
+              <h3 class="card-title">تسجيل الدخول</h3>
+
+            </div>
+            <form method="post" novalidate>
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ next }}">
+              {% include 'includes/form.html' %}
+              <button type="submit" class="btn btn-primary btn-block">تسجيل الدخول</button>
+            </form>
+          </div>
+          <div class="card-footer text-muted text-center row">
+            <p class="mx-3" style="color: azure;">ليس لديك حساب؟ <a href="{% url 'signup' %}" style="color: aqua;">سجل الان</a></p>
+            <p class="mx-3" style="color: azure;">نسيت كلمة المرور؟ <a href="whatsapp://send?phone=+779923330&text=لقد نسيت كلمة المرور الخاصة بي اريد تغييرها" style="color: aqua;">اضغط هنا</a></p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

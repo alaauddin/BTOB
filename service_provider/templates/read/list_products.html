@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Shopping Cart
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Product List</h1>
+
+    <!-- Filter Form -->
+    <form method="GET" class="filter-form">
+        <div class="row g-3 align-items-center">
+            <!-- Search by Name -->
+            <div class="col-md-6">
+                <input type="text" name="name" class="form-control" placeholder="Search by name" value="{{ request.GET.name }}">
+            </div>
+    
+            <!-- Category Filter -->
+            <div class="col-md-4">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+    
+            <!-- Product Subcategory Filter -->
+            <div class="col-md-4">
+                <select name="product_category" class="form-select">
+                    <option value="">All Subcategories</option>
+                    {% for subcategory in product_categories %}
+                        <option value="{{ subcategory.id }}" {% if request.GET.product_category == subcategory.id|stringformat:"s" %}selected{% endif %}>
+                            {{ subcategory.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+    
+            <!-- Submit Button -->
+            <div class="col-md-2 text-end">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </div>
+    </form>
+    
+    <!-- Products Display -->
+    <div class="row mt-4">
+        {% for product in products %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text">{{ product.description }}</p>
+                        <p class="card-text">Price: ${{ product.price }}</p>
+                        <p class="card-text">Average Rating: {{ product.get_average_rating }}</p>
+                        <p class="card-text">Reviews: {{ product.get_total_reviews }}</p>
+                        <a href="#" class="btn btn-outline-primary w-100">View Details</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-center mt-4">No products found matching your criteria.</p>
+        {% endfor %}
+    </div>
+    
+</div>
+
+{% endblock %}

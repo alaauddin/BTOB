@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Supplier List{% endblock %}
+
+
+{% block content %}
+<style>
+    /* Custom Card Styles */
+.card {
+    border: none;
+    border-radius: 20px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+}
+
+.card-img-top {
+    border: 3px solid #007bff;
+    padding: 5px;
+    margin: 20px;
+    border-radius: 50%;
+}
+
+#searchInput {
+    border-radius: 20px;
+    padding: 10px 15px;
+    border: 2px solid #007bff;
+}
+
+</style>
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Supplier List</h1>
+
+    <!-- Search Box -->
+    <div class="mb-4">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search for suppliers...">
+    </div>
+
+    <!-- Suppliers Grid -->
+    <div class="row" id="supplierGrid">
+        {% for supplier in suppliers %}
+        
+           
+        <div class="col-md-4 mb-4 supplier-card" onclick="window.location='{% url 'product-list' supplier.id %}'">
+            <div class="card h-100 shadow-lg rounded-4">
+                <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% else %}{% static 'images/default-logo.png' %}{% endif %}" 
+                    alt="{{ supplier.name }}" class="card-img-top p-3 rounded-circle mx-auto" style="width:250px;height:250px;object-fit:contain;">
+                
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ supplier.name }}</h5>
+                    <p class="card-text text-muted"><strong>Phone:</strong> {{ supplier.phone }}</p>
+                    <p class="card-text"><strong>Address:</strong> {{ supplier.address }}</p>
+                    <p class="card-text"><strong>City:</strong> {{ supplier.city }}</p>
+                    <p class="card-text"><strong>Country:</strong> {{ supplier.country }}</p>
+                    <p class="card-text"><strong>Category:</strong> {{ supplier.category.name }}</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <p class="text-muted">No suppliers found</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.getElementById("searchInput").addEventListener("keyup", function() {
+    let filter = this.value.toUpperCase();
+    let cards = document.querySelectorAll(".supplier-card");
+
+    cards.forEach(card => {
+        let name = card.querySelector(".card-title").innerText.toUpperCase();
+        card.style.display = name.includes(filter) ? "block" : "none";
+    });
+});
+</script>
+{% endblock %}

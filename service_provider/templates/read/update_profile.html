@@ -1,0 +1,125 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Supplier Dashboard -->
+<div class="container-fluid my-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <img src="{{ supplier.profile_picture.url }}" class="card-img-top rounded-circle" alt="Profile Picture" style="width: 150px; height: 150px; margin: 20px auto;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ supplier.name }}</h5>
+                    <p class="card-text">{{ supplier.category.name }}</p>
+                    <p class="text-muted">{{ supplier.city }}, {{ supplier.country }}</p>
+                    <a href="#" class="btn btn-primary btn-sm">Edit Profile</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="row">
+                <!-- Total Products Card -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Products</h5>
+                            <p class="card-text">{{ supplier.products.count }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Orders Card -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Orders</h5>
+                            <p class="card-text">{{ supplier.order_set.count }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Sales Card -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Sales</h5>
+                            <p class="card-text">${{ supplier.order_set.aggregate(total_sales=models.Sum('total_amount'))['total_sales']|default:0 }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product List Table -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Products List</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Category</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Reviews</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in supplier.products.all %}
+                                <tr>
+                                    <td>{{ product.name }}</td>
+                                    <td>{{ product.category.name }}</td>
+                                    <td>${{ product.price }}</td>
+                                    <td>{{ product.get_total_reviews }}</td>
+                                    <td><a href="{% url 'product_detail' product.id %}" class="btn btn-info btn-sm">View</a></td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No products available.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Order List Table -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Orders</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Order ID</th>
+                                <th scope="col">Total Amount</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in supplier.order_set.all %}
+                                <tr>
+                                    <td>{{ order.id }}</td>
+                                    <td>${{ order.total_amount }}</td>
+                                    <td>{{ order.status }}</td>
+                                    <td>{{ order.created_at|date:"Y-m-d" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No orders found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Shopping Cart
+{% endblock %}
+
+{% block content %}
+    <h1 class="text-4xl font-semibold mb-8 text-center">Your Shopping Cart</h1>
+
+    {% if cart.cart_items.all %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border border-gray-300">
+                <thead>
+                    <tr>
+                        <th class="py-3 px-6 border-b text-left">Product</th>
+                        <th class="py-3 px-6 border-b text-left">Quantity</th>
+                        <th class="py-3 px-6 border-b text-left">Price</th>
+                        <th class="py-3 px-6 border-b text-left">Subtotal</th>
+                        <th class="py-3 px-6 border-b text-left"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart.cart_items.all %}
+                        <tr id="row-{{ item.id }}">
+                            <td class="py-3 px-6 border-b">
+                                <div class="flex items-center">
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-12 h-12 object-cover rounded-lg">
+                                    <span class="ml-4">{{ item.product.name }}</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-6 border-b">
+                                <div class="flex items-center">
+                                    <button class="text-gray-500 hover:text-gray-700" onclick="decreaseQuantity('{{ item.id }}', '{{ supplier.id }}')">-</button>
+                                    <span id="quantity-{{ item.id }}" class="mx-2">{{ item.quantity }}</span>
+                                    <button class="text-green-500 hover:text-green-700" onclick="increaseQuantity('{{ item.id }}', '{{ supplier.id }}')">+</button>
+                                </div>
+                            </td>
+                            <td class="py-3 px-6 border-b">YR{{ item.product.price }}</td>
+                            <td id="subtotal-{{ item.id }}" class="py-3 px-6 border-b">YR{{ item.get_subtotal|floatformat:2 }}</td>
+                            <td class="py-3 px-6 border-b">
+                                <button class="text-red-500 hover:text-red-700" onclick="removeItem('{{ item.id }}', '{{ supplier.id }}')">Remove</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Cart Summary -->
+        <div class="flex flex-col sm:flex-row justify-between items-center mt-8">
+            <div class="mb-4 sm:mb-0">
+                <span class="text-xl font-semibold">Total Amount:</span>
+                <span id="total-amount" class="ml-2">YR{{ cart.get_total_amount|floatformat:2 }}</span>
+            </div>
+            <div>
+                <a href="{% url 'checkout_select_address_or_custom_address' supplier.id  %}" class="bg-blue-500 text-white px-8 py-3 rounded-full hover:bg-blue-700">
+                    Proceed to Checkout
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <p class="text-center text-gray-500">Your cart is empty.</p>
+    {% endif %}
+    <script>
+        function increaseQuantity(itemId, supplierId) {
+            var csrftoken = getCookie('csrftoken');
+
+            $.ajax({
+                url: `{% url 'increase_quantity' item_id=0 supplier_id=0 %}`.replace('0', itemId).replace('0', supplierId),
+                type: "POST",
+                headers: { "X-CSRFToken": csrftoken },
+                success: function (data) {
+                    if (data.success) {
+                        const quantityElement = $(`#quantity-${itemId}`);
+                        quantityElement.text(data.new_quantity);
+
+                        const subtotalElement = $(`#subtotal-${itemId}`);
+                        if (subtotalElement.length && typeof data.new_subtotal === 'number' && !isNaN(data.new_subtotal)) {
+                            subtotalElement.text(`YR${data.new_subtotal.toFixed(2)}`);
+                        } else {
+                            console.error(`Subtotal element with ID subtotal-${itemId} not found or new_subtotal is not a valid number.`);
+                        }
+                        
+                        
+                        const totalAmountElement = $('#total-amount');
+                        totalAmountElement.text(`YR${data.cart_total.toFixed(2)}`);
+
+                        const totalItemsCountElement = $('#total-items');
+                        totalItemsCountElement.text(`${data.cart_items_count.toFixed(0)}`);
+                        // If the request is successful, display a success message
+                        // alert(response.message);
+                        // Update the quantity of the item in the cart
+                        $("#quantity-" + productId).html(data.quantity);
+
+                    } else {
+                        console.error("Failed to increase quantity");
+                    }
+                },
+                error: function (error) {
+                    console.error("An error occurred while increasing the quantity.");
+                }
+            });
+        }
+
+        function decreaseQuantity(itemId, supplierId) {
+            var csrftoken = getCookie('csrftoken');
+
+            $.ajax({
+                url: `{% url 'decrease_quantity' item_id=0 supplier_id=0 %}`.replace('0', itemId).replace('0', supplierId),
+                type: "POST",
+                headers: { "X-CSRFToken": csrftoken },
+                success: function (data) {
+                    if (data.success) {
+                        const quantityElement = $(`#quantity-${itemId}`);
+                        quantityElement.text(data.new_quantity);
+
+                        const subtotalElement = $(`#subtotal-${itemId}`);
+                        if (subtotalElement.length && typeof data.new_subtotal === 'number' && !isNaN(data.new_subtotal)) {
+                            subtotalElement.text(`YR${data.new_subtotal.toFixed(2)}`);
+                        }
+
+                        if (data.new_quantity === 0) {
+                            $(`#row-${itemId}`).remove();
+                        }
+
+                        const totalAmountElement = $('#total-amount');
+                        totalAmountElement.text(`YR${data.cart_total.toFixed(2)}`);
+
+                        const totalItemsCountElement = $('#total-items');
+                        totalItemsCountElement.text(`${data.cart_items_count.toFixed(0)}`);
+                        // If the request is successful, display a success message
+                        // alert(response.message);
+                        // Update the quantity of the item in the cart
+                        $("#quantity-" + productId).html(data.quantity);
+
+                    } else {
+                        console.error("Failed to decrease quantity");
+                    }
+                },
+                error: function (error) {
+                    console.error("An error occurred while decreasing the quantity.");
+                }
+            });
+        }
+
+        function removeItem(itemId, supplierId) {
+            var csrftoken = getCookie('csrftoken');
+
+            $.ajax({
+                url: `{% url 'remove_item' item_id=0 supplier_id=0 %}`.replace('0', itemId).replace('0', supplierId),
+                type: "POST",
+                headers: { "X-CSRFToken": csrftoken },
+                success: function (data) {
+                    if (data.success) {
+                        $(`#row-${itemId}`).remove();
+
+                        const totalAmountElement = $('#total-amount');
+                        totalAmountElement.text(`$${data.cart_total.toFixed(2)}`);
+                    } else {
+                        console.error("Failed to remove the item");
+                    }
+                },
+                error: function (error) {
+                    console.error("An error occurred while removing the item.");
+                }
+            });
+        }
+        
+    </script>
+{% endblock %}
