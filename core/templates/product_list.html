@@ -191,11 +191,32 @@
         height: 100%;
         background: white;
         position: relative;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .modern-product-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.02) 0%, rgba(118, 75, 162, 0.02) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1;
+        pointer-events: none;
     }
     
     .modern-product-card:hover {
         transform: translateY(-12px) scale(1.02);
         box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        border-color: rgba(102, 126, 234, 0.2);
+    }
+    
+    .modern-product-card:hover::before {
+        opacity: 1;
     }
     
     .modern-product-image-container {
@@ -230,7 +251,165 @@
         font-size: 0.8rem;
         font-weight: 700;
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        z-index: 2;
+        z-index: 3;
+        animation: pulse-badge 2s infinite;
+    }
+    
+    .modern-product-badge.sale {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        animation: flash-sale 1.5s infinite;
+    }
+    
+    .modern-product-badge.limited {
+        background: linear-gradient(135deg, #ffa726, #ff8f00);
+    }
+    
+    .modern-product-badge.bestseller {
+        background: linear-gradient(135deg, #66bb6a, #4caf50);
+    }
+    
+    @keyframes pulse-badge {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    @keyframes flash-sale {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    /* Wishlist Heart Button */
+    .wishlist-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(10px);
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 3;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .wishlist-btn:hover {
+        transform: scale(1.1);
+        background: rgba(255,255,255,1);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .wishlist-btn i {
+        color: #e2e8f0;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .wishlist-btn.active i {
+        color: #ff6b6b;
+        animation: heart-beat 0.6s ease;
+    }
+    
+    @keyframes heart-beat {
+        0% { transform: scale(1); }
+        25% { transform: scale(1.2); }
+        50% { transform: scale(1); }
+        75% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    /* Quick View Button */
+    .quick-view-btn {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(102, 126, 234, 0.95);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 25px;
+        font-weight: 600;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 3;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .modern-product-card:hover .quick-view-btn {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    
+    .quick-view-btn:hover {
+        transform: translate(-50%, -50%) scale(1.05);
+        background: rgba(102, 126, 234, 1);
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Product Rating */
+    .product-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .stars {
+        display: flex;
+        gap: 2px;
+    }
+    
+    .star {
+        color: #ffd700;
+        font-size: 0.9rem;
+    }
+    
+    .star.empty {
+        color: #e2e8f0;
+    }
+    
+    .rating-count {
+        color: #6b7280;
+        font-size: 0.85rem;
+    }
+    
+    /* Availability Status */
+    .availability-status {
+        position: absolute;
+        bottom: 15px;
+        left: 15px;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        z-index: 3;
+    }
+    
+    .availability-status.in-stock {
+        background: rgba(34, 197, 94, 0.1);
+        color: #16a34a;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+    
+    .availability-status.low-stock {
+        background: rgba(251, 191, 36, 0.1);
+        color: #d97706;
+        border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+    
+    .availability-status.out-of-stock {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
     }
     
     .modern-product-info {
@@ -250,10 +429,10 @@
         line-height: 1.6;
     }
     
-    .modern-product-price {
-        font-weight: 800;
+    ..modern-product-price {
+        font-weight: 600;
         color: #667eea;
-        font-size: 1.4rem;
+        font-size: 1.1rem;
         margin-bottom: 1.2rem;
         display: flex;
         align-items: center;
@@ -264,6 +443,115 @@
         justify-content: space-between;
         align-items: center;
         margin-top: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Social Share Buttons */
+    .social-share {
+        display: flex;
+        gap: 8px;
+        margin-top: 1rem;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .modern-product-card:hover .social-share {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .share-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        font-size: 0.85rem;
+        color: white;
+    }
+    
+    .share-btn:hover {
+        transform: translateY(-2px) scale(1.1);
+    }
+    
+    .share-btn.whatsapp {
+        background: linear-gradient(135deg, #25d366, #128c7e);
+    }
+    
+    .share-btn.facebook {
+        background: linear-gradient(135deg, #1877f2, #166fe5);
+    }
+    
+    .share-btn.twitter {
+        background: linear-gradient(135deg, #1da1f2, #0d8bd9);
+    }
+    
+    .share-btn.copy {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+    }
+    
+    /* Enhanced Product Info */
+    .modern-product-info {
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Advanced Hover Overlay */
+    .product-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, 
+            rgba(102, 126, 234, 0.9) 0%, 
+            rgba(118, 75, 162, 0.9) 100%);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 1rem;
+        z-index: 2;
+    }
+    
+    .modern-product-image-container:hover .product-overlay {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .overlay-actions {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .overlay-btn {
+        width: 50px;
+        height: 50px;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        font-size: 1.2rem;
+    }
+    
+    .overlay-btn:hover {
+        background: rgba(255,255,255,0.3);
+        border-color: rgba(255,255,255,0.5);
+        transform: scale(1.1);
+        color: white;
     }
     
     .modern-cart-btn {
@@ -339,40 +627,552 @@
         font-size: 1.2rem;
     }
     
-    /* Enhanced Pending Orders Alert */
-    .modern-pending-alert {
-        background: var(--warning-gradient);
-        border: none;
-        border-radius: 20px;
+    /* Floating Pending Orders Notification */
+    .pending-orders-floating {
+        position: fixed;
+        top: 120px;
+        right: 20px;
+        z-index: 1000;
+        background: linear-gradient(135deg, #ff6b6b, #ee5a52);
         color: white;
-        box-shadow: 0 15px 35px rgba(250, 112, 154, 0.2);
-        margin-bottom: 2.5rem;
-        overflow: hidden;
-        position: relative;
+        border-radius: 20px;
+        padding: 15px 20px;
+        box-shadow: 0 15px 35px rgba(255, 107, 107, 0.3);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        min-width: 280px;
+        animation: pulse-notification 2s infinite;
     }
     
-    .modern-pending-alert::before {
-        content: '';
-        position: absolute;
+    .pending-orders-floating:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(255, 107, 107, 0.4);
+    }
+    
+    @keyframes pulse-notification {
+        0%, 100% { box-shadow: 0 15px 35px rgba(255, 107, 107, 0.3); }
+        50% { box-shadow: 0 15px 35px rgba(255, 107, 107, 0.5), 0 0 0 4px rgba(255, 107, 107, 0.1); }
+    }
+    
+    .pending-count-badge {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    
+    /* Slide-out Sidebar */
+    .pending-orders-sidebar {
+        position: fixed;
+        top: 0;
+        right: -450px;
+        width: 450px;
+        height: 100vh;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+        backdrop-filter: blur(20px);
+        border-left: 1px solid rgba(255, 255, 255, 0.2);
+        z-index: 1050;
+        transition: right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: -15px 0 35px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+    }
+    
+    .pending-orders-sidebar.active {
+        right: 0;
+    }
+    
+    .sidebar-overlay {
+        position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        opacity: 0.2;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
     }
     
-    .modern-pending-content {
+    .sidebar-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .sidebar-header {
+        padding: 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .sidebar-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%23ffffff' fill-opacity='0.1'/%3E%3C/svg%3E");
+        opacity: 0.3;
+    }
+    
+    .sidebar-content {
         position: relative;
         z-index: 2;
     }
     
+    .sidebar-close {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        z-index: 3;
+    }
+    
+    .sidebar-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+    
+    .pending-order-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .pending-order-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    }
+    
+    .pending-order-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .order-id {
+        font-weight: 700;
+        color: var(--dark-color);
+        font-size: 1.1rem;
+    }
+    
+    .order-amount {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+        font-size: 1.2rem;
+    }
+    
+    .order-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 1rem;
+    }
+    
+    .action-btn {
+        flex: 1;
+        padding: 10px 15px;
+        border-radius: 25px;
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .action-btn.details {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+    
+    .action-btn.details:hover {
+        background: rgba(102, 126, 234, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .action-btn.whatsapp {
+        background: linear-gradient(135deg, #25d366, #128c7e);
+        color: white;
+        box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+    }
+    
+    .action-btn.whatsapp:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(37, 211, 102, 0.4);
+        color: white;
+    }
+    
+    /* Order Statistics Panel */
+    .order-stats-panel {
+        background: rgba(56, 72, 97, 0.83);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .stat-item:last-child {
+        border-bottom: none;
+    }
+    
+    .stat-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+    }
+    
+    .stat-value {
+        color: white;
+        font-weight: bold;
+    }
+    
+    /* Search and Filter */
+    .sidebar-search {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 25px;
+        background: rgba(255, 255, 255, 0.9);
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        background: white;
+    }
+    
+    .filter-tabs {
+        display: flex;
+        gap: 5px;
+        margin: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 25px;
+        padding: 5px;
+    }
+    
+    .filter-tab {
+        flex: 1;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 20px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .filter-tab.active {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .filter-tab:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    /* Enhanced Order Actions */
+    .order-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .order-status {
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .order-status.pending {
+        background: rgba(251, 191, 36, 0.1);
+        color: #d97706;
+        border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+    
+    .order-status.processing {
+        background: rgba(59, 130, 246, 0.1);
+        color: #2563eb;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .order-status.completed {
+        background: rgba(34, 197, 94, 0.1);
+        color: #16a34a;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+    
+    .order-menu {
+        position: relative;
+    }
+    
+    .order-menu-btn {
+        background: rgba(0, 0, 0, 0.05);
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+        transition: all 0.3s ease;
+    }
+    
+    .order-menu-btn:hover {
+        background: rgba(0, 0, 0, 0.1);
+        transform: scale(1.1);
+    }
+    
+    .order-menu-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        padding: 0.5rem;
+        min-width: 150px;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+    }
+    
+    .order-menu-dropdown.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    
+    .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        color: #374151;
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+    }
+    
+    .menu-item:hover {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+    }
+    
+    .menu-item.danger:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+    }
+    
+    /* Payment Method Selection */
+    .payment-methods {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 1rem;
+    }
+    
+    .payment-method {
+        padding: 12px;
+        border: 2px solid rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        background: white;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #374151;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .payment-method:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        color: #667eea;
+        text-decoration: none;
+    }
+    
+    .payment-method i {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .payment-method.whatsapp {
+        background: linear-gradient(135deg, #25d366, #128c7e);
+        color: white;
+        border-color: #25d366;
+    }
+    
+    .payment-method.whatsapp:hover {
+        color: white;
+        transform: translateY(-2px) scale(1.05);
+    }
+    
+    /* Auto-dismiss notification */
+    .pending-orders-floating.dismissible {
+        animation: auto-dismiss 10s ease-in-out;
+    }
+    
+    @keyframes auto-dismiss {
+        0%, 80% { opacity: 1; transform: translateX(0); }
+        100% { opacity: 0.3; transform: translateX(20px); }
+    }
+    
+    .dismiss-btn {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 24px;
+        height: 24px;
+        background: rgba(0, 0, 0, 0.3);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .pending-orders-floating:hover .dismiss-btn {
+        opacity: 1;
+    }
+    
+    .dismiss-btn:hover {
+        background: rgba(0, 0, 0, 0.5);
+        transform: scale(1.1);
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .pending-orders-floating {
+            right: 10px;
+            top: 100px;
+            min-width: 250px;
+            padding: 12px 16px;
+        }
+        
+        .pending-orders-sidebar {
+            width: 100%;
+            right: -100%;
+        }
+        
+        .pending-order-card {
+            margin: 0.5rem;
+            padding: 1rem;
+        }
+        
+        .order-actions {
+            flex-direction: column;
+        }
+        
+        .payment-methods {
+            grid-template-columns: 1fr;
+        }
+        
+        .filter-tabs {
+            flex-direction: column;
+            gap: 3px;
+        }
+    }
+    
     /* Enhanced Modals */
+    .modern-modal {
+        z-index: 1060; /* Higher than sidebar */
+    }
+    
+    .modern-modal .modal-backdrop {
+        z-index: 1055;
+    }
+    
     .modern-modal .modal-content {
         border-radius: 25px;
         overflow: hidden;
         border: none;
         box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        position: relative;
+        z-index: 1061;
     }
     
     .modern-modal .modal-header {
@@ -380,10 +1180,21 @@
         color: white;
         border-bottom: none;
         padding: 1.5rem 2rem;
+        position: relative;
     }
     
     .modern-modal .modal-title {
         font-weight: 700;
+    }
+    
+    .modern-modal .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+    
+    .modern-modal .btn-close:hover {
+        opacity: 1;
+        transform: scale(1.1);
     }
     
     .modern-order-item-card {
@@ -890,7 +1701,7 @@
         }
         
         .modern-product-price {
-            font-size: 1.2rem;
+            font-size: 0.7rem;
         }
         
         .modern-product-actions {
@@ -1071,102 +1882,194 @@
                 <h1 class="hero-title">منتجات {{ supplier.name }}</h1>
                 <p class="hero-subtitle">استكشف جميع المنتجات المتاحة من هذا المتجر</p>
             </div>
-            <div class="col-md-4 text-md-end">
-                <a href="{% url 'cart-detail' supplier.id %}" class="cart-badge-modern text-decoration-none">
-                    <i class="fas fa-shopping-cart fs-4 me-2"></i>
-                    <span class="fs-5 fw-bold">سلة التسوق</span>
-                    <span id="total-items" class="badge bg-white text-primary rounded-pill ms-2 fs-6">{{ cart.get_total_items }}</span>
-                </a>
-            </div>
+            
         </div>
     </div>
 </section>
 {% endif %}
 
-    <!-- Pending Orders Section -->
+<!-- Floating Pending Orders Notification -->
     {% if pending_orders %}
-<div class="container">
-    <div class="alert modern-pending-alert mb-4">
-        <div class="modern-pending-content">
+<div class="pending-orders-floating dismissible" onclick="togglePendingOrdersSidebar()">
+    <button class="dismiss-btn" onclick="dismissNotification(event)" title="إخفاء الإشعار">
+        <i class="fas fa-times"></i>
+    </button>
             <div class="d-flex align-items-center">
-                <i class="fas fa-exclamation-circle fs-3 me-3"></i>
-                <div class="flex-grow-1">
-                    <h4 class="alert-heading mb-1">لديك طلبات قيد الانتظار</h4>
-                    <p class="mb-0">يوجد {{ pending_orders|length }} طلب بانتظار الدفع</p>
+        <div class="pending-count-badge me-3">{{ pending_orders|length }}</div>
+        <div>
+            <div class="fw-bold">طلبات قيد الانتظار</div>
+            <div class="small opacity-75">اضغط لعرض التفاصيل</div>
                 </div>
-                <button class="btn btn-light" data-bs-toggle="collapse" data-bs-target="#pendingOrdersCollapse">
-                    <i class="fas fa-chevron-down"></i>
+        <i class="fas fa-bell ms-3"></i>
+    </div>
+</div>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closePendingOrdersSidebar()"></div>
+
+<!-- Pending Orders Sidebar -->
+<div class="pending-orders-sidebar" id="pendingOrdersSidebar">
+    <div class="sidebar-header">
+        <button class="sidebar-close" onclick="closePendingOrdersSidebar()">
+            <i class="fas fa-times"></i>
                 </button>
+        <div class="sidebar-content">
+            <h3 class="mb-2">الطلبات المعلقة</h3>
+            <p class="opacity-75 mb-0">{{ pending_orders|length }} طلب بانتظار الدفع</p>
+        </div>
             </div>
             
-            <div class="collapse mt-3" id="pendingOrdersCollapse">
+    <!-- Order Statistics -->
+    <div class="order-stats-panel">
+        <div class="stat-item">
+            <span class="stat-label">إجمالي الطلبات</span>
+            <span class="stat-value">{{ pending_orders|length }}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">إجمالي المبلغ</span>
+            <span class="stat-value">
+                {% widthratio pending_orders|length 1 1000 as total_amount %}
+                {{ total_amount|default:"0" }} ريال
+            </span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">متوسط قيمة الطلب</span>
+            <span class="stat-value">
+                {% if pending_orders %}
+                    {% widthratio total_amount pending_orders|length 1 as avg_amount %}
+                    {{ avg_amount|default:"0" }} ريال
+                {% else %}
+                    0 ريال
+                {% endif %}
+            </span>
+        </div>
+    </div>
+    <div class="sidebar-body" id="ordersContainer">
                 {% for order in pending_orders %}
-                <div class="bg-white/20 p-3 rounded-lg mb-2">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <h5 class="mb-1">الطلب #{{ order.id }}</h5>
-                            <p class="mb-0">المجموع: {{ order.total_amount }} ريال</p>
+        <div class="pending-order-card" data-order-id="{{ order.id }}" data-order-status="{{ order.status|lower }}" data-order-date="{{ order.created_at|date:'Y-m-d' }}">
+            <!-- Order Meta Information -->
+            <div class="order-meta">
+                <span class="order-status pending">{{ order.status }}</span>
+                <div class="order-menu">
+                    <button class="order-menu-btn" onclick="toggleOrderMenu({{ order.id }})">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="order-menu-dropdown" id="orderMenu{{ order.id }}">
+                        <button class="menu-item" onclick="duplicateOrder({{ order.id }})">
+                            <i class="fas fa-copy"></i> تكرار الطلب
+                        </button>
+                        <button class="menu-item" onclick="editOrder({{ order.id }})">
+                            <i class="fas fa-edit"></i> تعديل الطلب
+                        </button>
+                        <button class="menu-item" onclick="trackOrder({{ order.id }})">
+                            <i class="fas fa-truck"></i> تتبع الطلب
+                        </button>
+                        <button class="menu-item danger" onclick="cancelOrder({{ order.id }})">
+                            <i class="fas fa-times"></i> إلغاء الطلب
+                        </button>
                         </div>
-                        <div class="col-md-6 text-md-end">
-                            <button class="btn btn-sm btn-light me-2" data-bs-toggle="modal" data-bs-target="#orderDetailsModal{{ order.id }}">
-                                <i class="fas fa-eye me-1"></i> التفاصيل
+                </div>
+            </div>
+            
+            <div class="order-header">
+                <div class="order-id">الطلب #{{ order.id }}</div>
+                <div class="order-amount">{{ order.total_amount }} ريال</div>
+            </div>
+            
+            <div class="text-muted small mb-3">
+                <i class="fas fa-calendar me-2"></i>{{ order.created_at|date:"d/m/Y H:i" }}
+                <span class="ms-3">
+                    <i class="fas fa-box me-2"></i>{{ order.order_details.count }} منتج
+                </span>
+            </div>
+            
+            <div class="order-actions">
+                <button class="action-btn details" data-bs-toggle="modal" data-bs-target="#orderDetailsModal{{ order.id }}">
+                    <i class="fas fa-eye"></i> التفاصيل
                             </button>
-                            <a href="https://wa.me/+967779923330?text=I%20want%20to%20make%20the%20payment%20for%20order%20#{{ order.id }}" 
-                               class="btn btn-sm btn-success" target="_blank">
-                                <i class="fab fa-whatsapp me-1"></i> الدفع عبر واتساب
-                            </a>
+            </div>
+            
+            <!-- Enhanced Payment Methods -->
+            <div class="payment-methods">
+                <a href="https://wa.me/+967779923330?text=أريد دفع ثمن الطلب رقم {{ order.id }} بقيمة {{ order.total_amount }} ريال" 
+                   class="payment-method whatsapp" target="_blank">
+                    <i class="fab fa-whatsapp"></i>
+                    واتساب
+                </a>
+                <button class="payment-method" onclick="showPaymentOptions({{ order.id }})">
+                    <i class="fas fa-credit-card"></i>
+                    طرق أخرى
+                </button>
+                    </div>
+                </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Order Details Modals (Outside Sidebar) -->
+{% for order in pending_orders %}
+<div class="modal fade modern-modal" id="orderDetailsModal{{ order.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تفاصيل الطلب #{{ order.id }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-calendar text-primary me-2"></i>
+                            <span class="fw-bold">تاريخ الطلب:</span>
+                            <span class="ms-2">{{ order.created_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-info-circle text-warning me-2"></i>
+                            <span class="fw-bold">الحالة:</span>
+                            <span class="badge bg-warning text-dark ms-2">{{ order.status }}</span>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Order Details Modal -->
-                <div class="modal fade modern-modal" id="orderDetailsModal{{ order.id }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">تفاصيل الطلب #{{ order.id }}</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                {% for item in order.order_details.all %}
-                                <div class="modern-order-item-card">
-                                    <div class="row g-0">
-                                        <div class="col-md-4">
-                                            <img src="{{ item.product.image.url }}" class="img-fluid rounded-start" alt="{{ item.product.name }}" style="height: 150px; object-fit: cover; width: 100%;">
-                                        </div>
-                                        <div class="col-md-8">
-                                            <div class="card-body">
-                                                <h5 class="card-title">{{ item.product.name }}</h5>
-                                                <p class="card-text text-muted small">{{ item.product.description|truncatewords:15 }}</p>
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <span class="text-primary fw-bold">الكمية: {{ item.quantity }}</span>
-                                                    <span class="text-success fw-bold">السعر: {{ item.product.price|floatformat:2 }} ريال</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                <h6 class="fw-bold mb-3">المنتجات:</h6>
+                {% for item in order.order_items.all %}
+                <div class="modern-order-item-card mb-3">
+                    <div class="row g-0">
+                        <div class="col-md-4">
+                            <img src="{{ item.product.image.url }}" class="img-fluid rounded-start" alt="{{ item.product.name }}" style="height: 120px; object-fit: cover; width: 100%;">
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body p-3">
+                                <h6 class="card-title mb-2">{{ item.product.name }}</h6>
+                                <p class="card-text text-muted small mb-2">{{ item.product.description|truncatewords:10 }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-primary fw-bold">الكمية: {{ item.quantity }}</span>
+                                    <span class="text-success fw-bold">{{ item.product.price|floatformat:2 }} ريال</span>
                                 </div>
-                                {% endfor %}
-                                <div class="d-flex justify-content-between mt-4 pt-3 border-top">
-                                    <h5>المجموع الكلي:</h5>
-                                    <h4 class="text-success">{{ order.total_amount }} ريال</h4>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <a href="https://wa.me/+967779923330?text=I%20want%20to%20make%20the%20payment%20for%20order%20#{{ order.id }}" 
-                                   class="modern-whatsapp-btn" target="_blank">
-                                    <i class="fab fa-whatsapp"></i> الدفع عبر واتساب
-                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
+                
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                    <h5 class="mb-0">المجموع الكلي:</h5>
+                    <h4 class="text-success mb-0">{{ order.total_amount }} ريال</h4>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="https://wa.me/+967779923330?text=أريد دفع ثمن الطلب رقم {{ order.id }} بقيمة {{ order.total_amount }} ريال" 
+                   class="modern-whatsapp-btn" target="_blank">
+                    <i class="fab fa-whatsapp"></i> الدفع عبر واتساب
+                </a>
             </div>
         </div>
     </div>
 </div>
-    {% endif %}
+{% endfor %}
+{% endif %}
 
     <!-- Categories Navigation -->
 <div class="container">
@@ -1214,37 +2117,76 @@
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="productsGrid">
         {% for product in products %}
         <div class="col animate-fade-in-up" style="animation-delay: {{ forloop.counter0|divisibleby:4|yesno:'0,0.1,0.2,0.3' }}s">
-            <div class="modern-product-card">
+            <div class="modern-product-card" data-product-id="{{ product.id }}">
                 <div class="modern-product-image-container">
                     <a href="{% url 'product_detail' pk=product.pk %}">
                         <img src="{{ product.image.url }}" class="modern-product-image" alt="{{ product.name }}">
                     </a>
-                    {% if product.is_new %}
+                    
+                    <!-- Enhanced Badges -->
+                    {% if product.has_discount %}
+                    <span class="modern-product-badge sale">خصم {{ product.get_discount_precentage }}%</span>
+                    {% elif product.is_new %}
                     <span class="modern-product-badge">جديد</span>
                     {% endif %}
                     
-                    {% if product.has_discount %}
-                    <span class="badge bg-danger position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill shadow-sm">
-                        خصم {{ product.get_discount_precentage }}% 
-                    </span>
+                    <!-- Wishlist Button -->
+                    {% if user.is_authenticated %}
+                    <button class="wishlist-btn" onclick="toggleWishlist({{ product.id }})" data-bs-toggle="tooltip" title="إضافة للمفضلة">
+                        <i class="far fa-heart"></i>
+                    </button>
+                    {% else %}
+                    <button class="wishlist-btn" onclick="showLoginPrompt()" data-bs-toggle="tooltip" title="سجل دخولك لإضافة المنتجات للمفضلة">
+                        <i class="far fa-heart"></i>
+                    </button>
                     {% endif %}
+                    
+                    <!-- Availability Status -->
+                    <span class="availability-status in-stock">متوفر</span>
+                    
+                    <!-- Hover Overlay with Actions -->
+                    <div class="product-overlay">
+                        <div class="overlay-actions">
+                            <button class="overlay-btn" onclick="quickView({{ product.id }})" data-bs-toggle="tooltip" title="عرض سريع">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="overlay-btn" onclick="shareProduct({{ product.id }})" data-bs-toggle="tooltip" title="مشاركة">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                            <button class="overlay-btn" onclick="compareProduct({{ product.id }})" data-bs-toggle="tooltip" title="مقارنة">
+                                <i class="fas fa-balance-scale"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="modern-product-info position-relative">
                     <a href="{% url 'product_detail' pk=product.pk %}" class="text-decoration-none">
                         <h5 class="modern-product-name">{{ product.name }}</h5>
                     </a>
+                    
+                    <!-- Product Rating -->
+                    <div class="product-rating">
+                        <div class="stars">
+                            <i class="fas fa-star star {% if product.get_average_rating >= 1 %} {% else %}empty{% endif %}"></i>
+                            <i class="fas fa-star star {% if product.get_average_rating >= 2 %} {% else %}empty{% endif %}"></i>
+                            <i class="fas fa-star star {% if product.get_average_rating >= 3 %} {% else %}empty{% endif %}"></i>
+                            <i class="fas fa-star star {% if product.get_average_rating >= 4 %} {% else %}empty{% endif %}"></i>
+                            <i class="fas fa-star star {% if product.get_average_rating >= 5 %} {% else %}empty{% endif %}"></i>
+                        </div>
+                        <span class="rating-count">({{ product.get_average_rating }}) • {{ product.get_total_reviews }} تقييم</span>
+                    </div>
 
                     <div class="modern-product-price">
                         {% if product.has_discount %}
                             <span class="text-muted text-decoration-line-through me-2">
                                 {{ product.price }} ريال
                             </span>
-                            <span class="text-danger">
+                            <span class="text-danger fw-bold">
                                 {{ product.get_price_with_offer }} ريال
                             </span>
                         {% else %}
-                            {{ product.price }} ريال
+                            <span class="fw-bold">{{ product.price }} ريال</span>
                         {% endif %}
                     </div>
                     
@@ -1273,6 +2215,20 @@
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
+                    </div>
+                    
+                    <!-- Social Share Buttons -->
+                    <div class="social-share">
+                        <button class="share-btn whatsapp" onclick="shareWhatsApp('{{ product.name }}', '{{ product.id }}')" data-bs-toggle="tooltip" title="مشاركة في واتساب">
+                            <i class="fab fa-whatsapp"></i>
+                        </button>
+                        <button class="share-btn facebook" onclick="shareFacebook('{{ product.id }}')" data-bs-toggle="tooltip" title="مشاركة في فيسبوك">
+                            <i class="fab fa-facebook-f"></i>
+                        </button>
+                        
+                        <button class="share-btn copy" onclick="copyProductLink('{{ product.id }}')" data-bs-toggle="tooltip" title="نسخ الرابط">
+                            <i class="fas fa-link"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1305,9 +2261,443 @@
         return new bootstrap.Tooltip(tooltipTriggerEl)
     });
     
+    // Wishlist functionality with AJAX
+    function toggleWishlist(productId) {
+        const wishlistBtn = document.querySelector(`[data-product-id="${productId}"] .wishlist-btn`);
+        const icon = wishlistBtn.querySelector('i');
+        
+        // Disable button during request
+        wishlistBtn.disabled = true;
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                         document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                         getCookie('csrftoken');
+        
+        // Make AJAX request
+        fetch(`/wishlist/toggle/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.in_wishlist) {
+                    wishlistBtn.classList.add('active');
+                    icon.className = 'fas fa-heart';
+                    showToast(data.message || 'تم إضافة المنتج للمفضلة', 'success');
+                } else {
+                    wishlistBtn.classList.remove('active');
+                    icon.className = 'far fa-heart';
+                    showToast(data.message || 'تم إزالة المنتج من المفضلة', 'info');
+                }
+            } else {
+                showToast(data.message || 'حدث خطأ أثناء تحديث المفضلة', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('حدث خطأ في الاتصال', 'error');
+        })
+        .finally(() => {
+            // Re-enable button
+            wishlistBtn.disabled = false;
+        });
+    }
+    
+    // Function to get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Load initial wishlist status for all products
+    function loadWishlistStatus() {
+        const productCards = document.querySelectorAll('.modern-product-card');
+        
+        productCards.forEach(card => {
+            const productId = card.getAttribute('data-product-id');
+            const wishlistBtn = card.querySelector('.wishlist-btn');
+            const icon = wishlistBtn.querySelector('i');
+            
+            fetch(`/wishlist/status/${productId}/`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.in_wishlist) {
+                    wishlistBtn.classList.add('active');
+                    icon.className = 'fas fa-heart';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading wishlist status:', error);
+            });
+        });
+    }
+    
+    // Quick view functionality
+    function quickView(productId) {
+        // Create and show quick view modal
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">عرض سريع للمنتج</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">جاري التحميل...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        // Remove modal from DOM when hidden
+        modal.addEventListener('hidden.bs.modal', function() {
+            document.body.removeChild(modal);
+        });
+        
+        // Here you can add AJAX call to load product details
+        setTimeout(() => {
+            modal.querySelector('.modal-body').innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <img src="/static/placeholder-product.jpg" class="img-fluid rounded" alt="Product">
+                    </div>
+                    <div class="col-md-6">
+                        <h4>اسم المنتج</h4>
+                        <p class="text-muted">وصف المنتج هنا...</p>
+                        <h5 class="text-primary">299 ريال</h5>
+                        <button class="btn btn-primary">إضافة للسلة</button>
+                    </div>
+                </div>
+            `;
+        }, 1000);
+    }
+    
+    // Social sharing functions
+    function shareWhatsApp(productName, productId) {
+        const url = encodeURIComponent(window.location.origin + '/products/details/' + productId + '/');
+        const text = encodeURIComponent(`شاهد هذا المنتج الرائع: ${productName}`);
+        window.open(`https://wa.me/?text=${text} ${url}`, '_blank');
+    }
+    
+    function shareFacebook(productId) {
+        const url = encodeURIComponent(window.location.origin + '/products/details/' + productId + '/');
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    }
+    
+
+    
+    function copyProductLink(productId) {
+        const url = window.location.origin + '/products/details/' + productId + '/';
+        navigator.clipboard.writeText(url).then(() => {
+            showToast('تم نسخ رابط المنتج', 'success');
+        }).catch(() => {
+            showToast('فشل في نسخ الرابط', 'error');
+        });
+    }
+    
+    function shareProduct(productId) {
+        // Toggle social share buttons visibility or open share modal
+        const card = document.querySelector(`[data-product-id="${productId}"]`);
+        const socialShare = card.querySelector('.social-share');
+        socialShare.style.opacity = socialShare.style.opacity === '1' ? '0' : '1';
+        socialShare.style.transform = socialShare.style.opacity === '1' ? 'translateY(0)' : 'translateY(10px)';
+    }
+    
+    function compareProduct(productId) {
+        showToast('تم إضافة المنتج للمقارنة', 'info');
+        // Here you can add compare functionality
+    }
+    
+    // Show login prompt for non-authenticated users
+    function showLoginPrompt() {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">تسجيل الدخول مطلوب</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <i class="fas fa-heart text-danger mb-3" style="font-size: 3rem;"></i>
+                        <h4>سجل دخولك لإضافة المنتجات للمفضلة</h4>
+                        <p class="text-muted">يمكنك حفظ منتجاتك المفضلة والوصول إليها في أي وقت بعد تسجيل الدخول</p>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <a href="{% url 'login' %}" class="btn btn-primary px-4">
+                            <i class="fas fa-sign-in-alt me-2"></i>تسجيل الدخول
+                        </a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', function() {
+            document.body.removeChild(modal);
+        });
+    }
+    
+    // Pending Orders Sidebar Functions
+    function togglePendingOrdersSidebar() {
+        const sidebar = document.getElementById('pendingOrdersSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        if (sidebar.classList.contains('active')) {
+            closePendingOrdersSidebar();
+        } else {
+            openPendingOrdersSidebar();
+        }
+    }
+    
+    function openPendingOrdersSidebar() {
+        const sidebar = document.getElementById('pendingOrdersSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        sidebar.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+    
+    function closePendingOrdersSidebar() {
+        const sidebar = document.getElementById('pendingOrdersSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+    
+    // Close sidebar on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closePendingOrdersSidebar();
+            closeAllOrderMenus();
+        }
+    });
+    
+    // Dismiss notification functionality
+    function dismissNotification(event) {
+        event.stopPropagation();
+        const notification = document.querySelector('.pending-orders-floating');
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => notification.style.display = 'none', 300);
+        localStorage.setItem('pendingOrdersDismissed', Date.now());
+    }
+    
+    // Order menu functionality
+    function toggleOrderMenu(orderId) {
+        const menu = document.getElementById(`orderMenu${orderId}`);
+        const isActive = menu.classList.contains('active');
+        closeAllOrderMenus();
+        if (!isActive) menu.classList.add('active');
+    }
+    
+    function closeAllOrderMenus() {
+        document.querySelectorAll('.order-menu-dropdown').forEach(menu => {
+            menu.classList.remove('active');
+        });
+    }
+    
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.order-menu')) closeAllOrderMenus();
+    });
+    
+    // Order actions
+    function duplicateOrder(orderId) {
+        showToast(`جاري تكرار الطلب #${orderId}...`, 'info');
+        setTimeout(() => showToast(`تم تكرار الطلب #${orderId} بنجاح`, 'success'), 1500);
+        closeAllOrderMenus();
+    }
+    
+    function editOrder(orderId) {
+        showToast(`جاري فتح محرر الطلب #${orderId}...`, 'info');
+        closeAllOrderMenus();
+    }
+    
+    function trackOrder(orderId) {
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">تتبع الطلب #${orderId}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-check-circle text-success mb-2" style="font-size: 2rem;"></i>
+                            <h6>تم إنشاء الطلب</h6>
+                            <small class="text-muted">اليوم 10:30 ص</small>
+                        </div>
+                        <div class="mb-3">
+                            <i class="fas fa-clock text-warning mb-2" style="font-size: 2rem;"></i>
+                            <h6>في انتظار الدفع</h6>
+                            <small class="text-muted">حالي</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        modal.addEventListener('hidden.bs.modal', () => document.body.removeChild(modal));
+        closeAllOrderMenus();
+    }
+    
+    function cancelOrder(orderId) {
+        if (confirm(`هل أنت متأكد من إلغاء الطلب #${orderId}؟`)) {
+            showToast(`جاري إلغاء الطلب #${orderId}...`, 'info');
+            setTimeout(() => {
+                showToast(`تم إلغاء الطلب #${orderId} بنجاح`, 'success');
+                const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
+                if (orderCard) {
+                    orderCard.style.animation = 'fadeOut 0.5s ease';
+                    setTimeout(() => orderCard.remove(), 500);
+                }
+            }, 1500);
+        }
+        closeAllOrderMenus();
+    }
+    
+    function showPaymentOptions(orderId) {
+        showToast('جاري فتح خيارات الدفع...', 'info');
+    }
+    
+    // Search and filter initialization
+    function initializeOrderSearch() {
+        const searchInput = document.getElementById('orderSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const filter = this.value.toUpperCase();
+                filterOrders(filter);
+            });
+        }
+    }
+    
+    function initializeFilterTabs() {
+        const filterTabs = document.querySelectorAll('.filter-tab');
+        filterTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                filterTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const statusFilter = this.getAttribute('data-filter');
+                filterOrders('', statusFilter);
+            });
+        });
+    }
+    
+    function filterOrders(searchFilter, statusFilter = 'all') {
+        const orderCards = document.querySelectorAll('.pending-order-card');
+        let visibleCount = 0;
+        
+        orderCards.forEach(card => {
+            const orderId = card.querySelector('.order-id').textContent.toUpperCase();
+            const orderStatus = card.getAttribute('data-order-status') || 'pending';
+            
+            let shouldShow = true;
+            
+            if (searchFilter && !orderId.includes(searchFilter)) {
+                shouldShow = false;
+            }
+            
+            if (statusFilter !== 'all' && statusFilter !== orderStatus) {
+                shouldShow = false;
+            }
+            
+            card.style.display = shouldShow ? 'block' : 'none';
+            if (shouldShow) visibleCount++;
+        });
+    }
+    
+    // Toast notification function
+    function showToast(message, type = 'info') {
+        const toastContainer = document.getElementById('toast-container') || createToastContainer();
+        
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        toast.addEventListener('hidden.bs.toast', function() {
+            toastContainer.removeChild(toast);
+        });
+    }
+    
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+        return container;
+    }
+    
     // Enhanced animations for product cards
     document.addEventListener('DOMContentLoaded', function() {
         const productCards = document.querySelectorAll('.modern-product-card');
+        
+        // Load wishlist status for authenticated users
+        {% if user.is_authenticated %}
+        loadWishlistStatus();
+        {% endif %}
+        
+        // Initialize pending orders features
+        {% if pending_orders %}
+        initializeOrderSearch();
+        initializeFilterTabs();
+        initializeModalHandling();
+        {% endif %}
         
         // Intersection Observer for scroll animations
         const observerOptions = {

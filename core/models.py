@@ -21,7 +21,7 @@ class Supplier(models.Model):
     city = models.CharField(max_length=100,choices=CITY_CHO)
     country = models.CharField(max_length=100, choices=COUNTRY_CHO)
     profile_picture = models.ImageField(upload_to='images/supplier_images/', blank=True, null=True)
-    category = models.ForeignKey(SupplierCategory, on_delete=models.CASCADE, default=1)
+    category = models.ManyToManyField(SupplierCategory)
     
     
     def __str__(self):
@@ -55,6 +55,7 @@ class Product(models.Model):
     
     def __str__(self):
         return self.name
+    
     
     def get_price_with_offer(self):
         today = timezone.now().date()
@@ -98,12 +99,20 @@ class Product(models.Model):
     def get_average_rating(self):
         reviews = self.review_set.all()
         if reviews:
-            return str(sum([review.rating for review in reviews]) / len(reviews))
+            return int(sum([review.rating for review in reviews]) / len(reviews))
         else:
             return 0
         
     def get_total_reviews(self):
         return self.review_set.count()
+
+
+class WishList(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wishlist')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='wishlist')
+    
+    def __str__(self):
+        return f"{self.user.username} | {self.product.name}"
     
     
 class ProductOffer(models.Model):
@@ -132,9 +141,13 @@ class ProductOffer(models.Model):
 
     
     def save(self, *args, **kwargs):
-        if self.is_active:
-            other_offers = ProductOffer.objects.filter(product=self.product,is_active=True).exists()
-            if not other_offers:
+        # check if it is edit the it is fine and save it
+        if not self.pk:
+            if self.is_active:
+                other_offers = ProductOffer.objects.filter(product=self.product,is_active=True).exists()
+                if not other_offers:
+                    super().save(*args, **kwargs)
+            else:
                 super().save(*args, **kwargs)
         else:
             super().save(*args, **kwargs)

@@ -1,0 +1,575 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}إضافة عرض جديد{% endblock %}
+
+{% block extra_css %}
+<style>
+    .modal-overlay {
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .modal-content {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    }
+    
+    .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.875rem;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.8);
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        background: rgba(255, 255, 255, 1);
+    }
+    
+    .form-input.error {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    
+    .error-message {
+        color: #ef4444;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .error-message i {
+        margin-left: 0.25rem;
+    }
+    
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: rgba(16, 185, 129, 0.05);
+        border-radius: 12px;
+        border: 2px solid rgba(16, 185, 129, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .checkbox-wrapper:hover {
+        background: rgba(16, 185, 129, 0.1);
+    }
+    
+    .submit-btn {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        padding: 0.875rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+    
+    .submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .submit-btn .loading-spinner {
+        display: none;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 0.5rem;
+    }
+    
+    .submit-btn.loading .loading-spinner {
+        display: inline-block;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .success-animation {
+        animation: success-bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    @keyframes success-bounce {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .stats-card {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .discount-preview {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1rem;
+        display: none;
+    }
+
+    .product-preview {
+        background: rgba(249, 250, 251, 0.8);
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1rem;
+        display: none;
+    }
+
+    .price-comparison {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .original-price {
+        text-decoration: line-through;
+        color: #6b7280;
+        font-size: 1rem;
+    }
+
+    .discounted-price {
+        color: #ef4444;
+        font-weight: bold;
+        font-size: 1.25rem;
+    }
+
+    .discount-badge {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center p-4">
+    <div class="modal-content rounded-3xl p-8 w-full max-w-2xl">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-tags text-white text-2xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">إضافة عرض جديد</h1>
+            <p class="text-gray-600">أضف عرض خصم لمنتجاتك لجذب المزيد من العملاء</p>
+        </div>
+
+        <!-- Stats Card -->
+        <div class="stats-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">منتجاتك المتاحة</h3>
+                    <p class="text-gray-600">{{ available_products.count }} من أصل {{ total_products }} منتج متاح للعروض</p>
+                </div>
+                <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-box text-green-500 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        {% if available_products.count == 0 %}
+            <div class="text-center p-8 bg-yellow-50 border border-yellow-200 rounded-2xl">
+                <i class="fas fa-exclamation-triangle text-yellow-500 text-4xl mb-4"></i>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">لا توجد منتجات متاحة</h3>
+                <p class="text-gray-600 mb-4">جميع منتجاتك لديها عروض نشطة بالفعل أو لا توجد منتجات</p>
+                <a href="/add-product/" class="inline-flex items-center px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-all">
+                    <i class="fas fa-plus ml-2"></i>
+                    إضافة منتج جديد
+                </a>
+            </div>
+        {% else %}
+            <form id="addOfferForm" method="post" novalidate>
+                {% csrf_token %}
+                
+                <!-- Product Selection -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-box text-green-500 ml-2"></i>
+                        {{ form.product.label }}
+                    </label>
+                    {{ form.product }}
+                    <div class="error-message" id="product-error" style="display: none;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span></span>
+                    </div>
+                </div>
+
+                <!-- Product Preview -->
+                <div id="productPreview" class="product-preview">
+                    <div class="flex items-center">
+                        <img id="productImage" src="" alt="" class="w-16 h-16 rounded-lg object-cover border-2 border-gray-200">
+                        <div class="mr-4">
+                            <h4 id="productName" class="font-bold text-gray-800"></h4>
+                            <p id="productPrice" class="text-gray-600"></p>
+                            <p id="productCategory" class="text-sm text-gray-500"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Discount Percentage and Date Range -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Discount Percentage -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-percent text-red-500 ml-2"></i>
+                            {{ form.discount_precentage.label }}
+                        </label>
+                        {{ form.discount_precentage }}
+                        <div class="error-message" id="discount_precentage-error" style="display: none;">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span></span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">أدخل القيمة كعدد عشري (مثال: 0.20 للخصم 20%)</p>
+                    </div>
+
+                    <!-- From Date -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-alt text-blue-500 ml-2"></i>
+                            {{ form.from_date.label }}
+                        </label>
+                        {{ form.from_date }}
+                        <div class="error-message" id="from_date-error" style="display: none;">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span></span>
+                        </div>
+                    </div>
+
+                    <!-- To Date -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-check text-purple-500 ml-2"></i>
+                            {{ form.to_date.label }}
+                        </label>
+                        {{ form.to_date }}
+                        <div class="error-message" id="to_date-error" style="display: none;">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Discount Preview -->
+                <div id="discountPreview" class="discount-preview">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-2">معاينة العرض</h4>
+                            <div class="price-comparison">
+                                <span class="original-price" id="originalPrice"></span>
+                                <span class="discounted-price" id="discountedPrice"></span>
+                                <span class="discount-badge" id="discountBadge"></span>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2">
+                                <span id="savingsAmount"></span> توفير للعميل
+                            </p>
+                        </div>
+                        <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-fire text-red-500 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Is Active -->
+                <div class="form-group">
+                    <div class="checkbox-wrapper">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}" class="form-label mb-0 cursor-pointer">
+                            <i class="fas fa-toggle-on text-green-500 ml-2"></i>
+                            {{ form.is_active.label }}
+                        </label>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">إذا كان مفعلاً، سيظهر العرض للعملاء فوراً</p>
+                </div>
+
+                <!-- General Error Message -->
+                <div class="error-message" id="general-error" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span></span>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" onclick="window.history.back()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all">
+                        إلغاء
+                    </button>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-tags ml-2"></i>
+                        إضافة العرض
+                        <div class="loading-spinner"></div>
+                    </button>
+                </div>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('addOfferForm');
+    const productSelect = document.getElementById('id_product');
+    const discountInput = document.getElementById('id_discount_precentage');
+    const productPreview = document.getElementById('productPreview');
+    const discountPreview = document.getElementById('discountPreview');
+    const submitBtn = form?.querySelector('.submit-btn');
+
+    // Product data (populated from backend)
+    const productData = {
+        {% for product in available_products %}
+        {{ product.id }}: {
+            name: "{{ product.name|escapejs }}",
+            price: {{ product.price }},
+            image: "{{ product.image.url|default:'' }}",
+            category: "{{ product.category.name|escapejs }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    };
+
+    if (productSelect) {
+        productSelect.addEventListener('change', updateProductPreview);
+    }
+    
+    if (discountInput) {
+        discountInput.addEventListener('input', updateDiscountPreview);
+    }
+
+    function updateProductPreview() {
+        const selectedProductId = productSelect.value;
+        if (selectedProductId && productData[selectedProductId]) {
+            const product = productData[selectedProductId];
+            
+            document.getElementById('productImage').src = product.image || '/static/images/default-product.png';
+            document.getElementById('productName').textContent = product.name;
+            document.getElementById('productPrice').textContent = product.price + ' ر.س';
+            document.getElementById('productCategory').textContent = product.category;
+            
+            productPreview.style.display = 'block';
+            updateDiscountPreview();
+        } else {
+            productPreview.style.display = 'none';
+            discountPreview.style.display = 'none';
+        }
+    }
+
+    function updateDiscountPreview() {
+        const selectedProductId = productSelect?.value;
+        const discountPercentage = parseFloat(discountInput?.value || 0);
+        
+        if (selectedProductId && productData[selectedProductId] && discountPercentage > 0) {
+            const product = productData[selectedProductId];
+            const originalPrice = product.price;
+            const discountAmount = originalPrice * discountPercentage;
+            const discountedPrice = originalPrice - discountAmount;
+            const discountPercent = Math.round(discountPercentage * 100);
+            
+            document.getElementById('originalPrice').textContent = originalPrice + ' ر.س';
+            document.getElementById('discountedPrice').textContent = discountedPrice.toFixed(2) + ' ر.س';
+            document.getElementById('discountBadge').textContent = discountPercent + '% خصم';
+            document.getElementById('savingsAmount').textContent = discountAmount.toFixed(2) + ' ر.س';
+            
+            discountPreview.style.display = 'block';
+        } else {
+            discountPreview.style.display = 'none';
+        }
+    }
+
+    // Form submission
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Clear previous errors
+            clearErrors();
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            
+            // Create FormData
+            const formData = new FormData(form);
+            
+            // Submit form via AJAX
+            fetch(form.action || window.location.pathname, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    showSuccessMessage(data.message);
+                    
+                    // Add success animation
+                    form.classList.add('success-animation');
+                    
+                    // Redirect after delay
+                    setTimeout(() => {
+                        window.location.href = '/my-merchant/';
+                    }, 1500);
+                    
+                } else {
+                    // Show errors
+                    if (data.errors) {
+                        displayErrors(data.errors);
+                    } else {
+                        showErrorMessage(data.message);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showErrorMessage('حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.');
+            })
+            .finally(() => {
+                // Hide loading state
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+            });
+        });
+    }
+
+    function clearErrors() {
+        const errorElements = document.querySelectorAll('.error-message');
+        errorElements.forEach(el => {
+            el.style.display = 'none';
+            el.querySelector('span').textContent = '';
+        });
+        
+        const inputs = document.querySelectorAll('.form-input');
+        inputs.forEach(input => input.classList.remove('error'));
+    }
+
+    function displayErrors(errors) {
+        for (const [field, message] of Object.entries(errors)) {
+            let errorElement, inputElement;
+            
+            if (field === 'general' || field === '__all__') {
+                errorElement = document.getElementById('general-error');
+            } else {
+                errorElement = document.getElementById(`${field}-error`);
+                inputElement = document.getElementById(`id_${field}`);
+            }
+            
+            if (errorElement) {
+                errorElement.querySelector('span').textContent = message;
+                errorElement.style.display = 'flex';
+                
+                if (inputElement) {
+                    inputElement.classList.add('error');
+                }
+            }
+        }
+    }
+
+    function showSuccessMessage(message) {
+        showNotification(message, 'success');
+    }
+
+    function showErrorMessage(message) {
+        showNotification(message, 'error');
+    }
+
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        const iconClass = {
+            'success': 'fa-check-circle text-green-400',
+            'error': 'fa-exclamation-circle text-red-400',
+            'info': 'fa-info-circle text-blue-400'
+        }[type];
+        
+        const bgClass = {
+            'success': 'bg-green-500/20 border-green-500/30',
+            'error': 'bg-red-500/20 border-red-500/30',
+            'info': 'bg-blue-500/20 border-blue-500/30'
+        }[type];
+
+        notification.className = `fixed top-6 right-6 z-50 backdrop-blur-sm border rounded-2xl shadow-2xl text-white transition-all transform translate-x-full scale-95 ${bgClass}`;
+        notification.innerHTML = `
+            <div class="flex items-center p-6">
+                <div class="w-12 h-12 ${bgClass.split(' ')[0]} rounded-full flex items-center justify-center mr-4">
+                    <i class="fas ${iconClass} text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-semibold text-lg text-gray-800">${message}</p>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-white/10 mr-2">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full', 'scale-95');
+            notification.classList.add('translate-x-0', 'scale-100');
+        }, 10);
+        
+        setTimeout(() => {
+            notification.classList.remove('translate-x-0', 'scale-100');
+            notification.classList.add('translate-x-full', 'scale-95');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    document.body.removeChild(notification);
+                }
+            }, 400);
+        }, 4000);
+    }
+});
+</script>
+{% endblock %}
+

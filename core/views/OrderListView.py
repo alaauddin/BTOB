@@ -1,24 +1,21 @@
-from django.views.generic import ListView
-from core.models import * 
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from core.models import Order, Cart
 
+def order_list_view(request):
+    context = {}
 
-class OrderListView(ListView):
-    model = Order
-    template_name = 'order_list.html'
-    context_object_name = ' m'
+    if request.user.is_authenticated:
+        # try:
+        #     user_cart = Cart.objects.get(user=request.user)
+        # except Cart.DoesNotExist:
+        #     user_cart = None
 
+        orders = Order.objects.filter(user=request.user)
+        # context['cart'] = user_cart
+        context['orders'] = orders
+    else:
+        context['cart'] = None
+        context['orders'] = None
 
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # Add cart information to the context
-        if self.request.user.is_authenticated:
-            user_cart = Cart.objects.get(user=self.request.user)
-            context['cart'] = user_cart
-            orders = Order.objects.filter(user=self.request.user)
-            context['orders'] = orders
-        else:
-            context['cart'] = None
-
-        return context
+    return render(request, 'order_list.html', context)

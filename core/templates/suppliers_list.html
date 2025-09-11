@@ -1,332 +1,869 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}المتاجر - قائمة الموردين{% endblock %}
+{% block title %}🏪 استكشف المتاجر الرقمية - منصة التجارة الإلكترونية الرائدة{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Custom Styles for Supplier Page */
+
+    :root {
+            /* Brand Core */
+            --primary-color: #2563eb;   /* Bright Royal Blue */
+            --primary-dark:rgb(106, 132, 204);    /* Deep Navy Blue */
+            --secondary-color:rgb(135, 219, 255); /* Soft Cool Gray */
+
+            /* Accent & Highlights */
+            --accent-color: #a855f7;    /* Vibrant Purple */
+            --success-color: #22c55e;   /* Fresh Green */
+            --warning-color: #fbbf24;   /* Amber/Gold */
+            --danger-color: #ef4444;    /* Clear Red */
+
+            /* Neutrals */
+            --dark-color: #111827;      /* Almost Black */
+            --light-color: #f9fafb;     /* Clean White-Gray */
+
+            /* Glassmorphism */
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.2);
+
+            /* Shadows */
+            --shadow-light: 0 8px 32px rgba(37, 99, 235, 0.25); 
+            --shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+    /* Enhanced Hero Section */
     .supplier-hero {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 3rem 0;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        padding: 6rem 0 4rem;
         color: white;
-        border-radius: 0 0 30px 30px;
-        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 0;
+    }
+    
+    .supplier-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="a" cx=".5" cy=".5" r=".5"><stop offset="0%" stop-color="%23ffffff" stop-opacity=".1"/><stop offset="100%" stop-color="%23ffffff" stop-opacity="0"/></radialGradient></defs><circle cx="200" cy="200" r="100" fill="url(%23a)"/><circle cx="800" cy="300" r="150" fill="url(%23a)"/><circle cx="400" cy="700" r="120" fill="url(%23a)"/></svg>') no-repeat center center;
+        background-size: cover;
+        opacity: 0.3;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
     }
     
     .search-container {
-        max-width: 600px;
-        margin: 0 auto;
+        max-width: 700px;
+        margin: 0 auto 2rem;
         position: relative;
     }
     
     .search-input {
-        border-radius: 50px;
-        padding: 15px 25px;
-        padding-left: 60px;
+        border-radius: 60px;
+        padding: 20px 30px;
+        padding-left: 70px;
         border: none;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        font-size: 1.1rem;
+        box-shadow: var(--shadow-light);
+        font-size: 1.2rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3), var(--shadow-light);
+        transform: translateY(-2px);
     }
     
     .search-icon {
         position: absolute;
-        left: 25px;
+        left: 30px;
         top: 50%;
         transform: translateY(-50%);
-        color: #6c757d;
+        color: var(--primary-color);
         z-index: 10;
+        font-size: 1.3rem;
+    }
+
+    /* Statistics Section */
+    .stats-section {
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 30px;
+        padding: 3rem 2rem;
+        margin: -2rem 1rem 4rem;
+        position: relative;
+        z-index: 3;
     }
     
-    .supplier-card {
-        transition: all 0.3s ease;
+    .stat-card {
+        text-align: center;
+        padding: 1.5rem;
+        background: rgba(201, 214, 227, 0.66);
         border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        background: rgba(115, 114, 114, 0.63);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--warning-color);
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    /* Features Section */
+    .features-section {
+        padding: 4rem 0;
+        background: rgba(255, 255, 255, 0.05);
+        margin-bottom: 3rem;
+    }
+    
+    .feature-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 25px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: var(--shadow-light);
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        box-shadow: var(--shadow-light);
+    }
+    
+    .feature-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1rem;
+    }
+    
+    .feature-description {
+        color: #6b7280;
+        line-height: 1.6;
+    }
+    
+    /* Enhanced Supplier Cards */
+    .supplier-card {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 25px;
         overflow: hidden;
         border: none;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--shadow-light);
         height: 100%;
     }
     
     .supplier-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        transform: translateY(-15px) scale(1.03);
+        box-shadow: var(--shadow-dark);
+        background: rgba(255, 255, 255, 0.95);
     }
     
     .supplier-image-container {
         position: relative;
         overflow: hidden;
-        height: 200px;
-        background: #f8f9fa;
+        height: 220px;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(168, 85, 247, 0.1));
         display: flex;
         align-items: center;
         justify-content: center;
     }
     
     .supplier-image {
-        width: 150px;
-        height: 150px;
+        width: 160px;
+        height: 160px;
         object-fit: cover;
         border-radius: 50%;
-        border: 5px solid white;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border: 6px solid white;
+        box-shadow: var(--shadow-light);
+        transition: all 0.3s ease;
     }
     
-    .supplier-category {
+    .supplier-card:hover .supplier-image {
+        transform: scale(1.05);
+    }
+    
+    .supplier-categories-container {
         position: absolute;
         bottom: 15px;
         right: 15px;
-        background: linear-gradient(to right, #667eea, #764ba2);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+        align-items: flex-end;
+        flex-direction: row-reverse;
+    }
+
+    .supplier-category {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         color: white;
-        padding: 5px 15px;
+        padding: 6px 12px;
         border-radius: 20px;
         font-size: 0.8rem;
-        font-weight: 500;
+        font-weight: 600;
+        box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
+        white-space: nowrap;
     }
     
     .supplier-info {
-        padding: 1.5rem;
+        padding: 2rem;
     }
     
     .supplier-name {
-        font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 0.5rem;
-        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--dark-color);
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        text-align: center;
     }
     
     .supplier-details {
-        color: #718096;
-        margin-bottom: 0.5rem;
+        color: #6b7280;
+        margin-bottom: 0.8rem;
         display: flex;
         align-items: center;
+        font-size: 0.95rem;
     }
     
     .supplier-details i {
-        margin-left: 8px;
-        color: #667eea;
+        margin-left: 12px;
+        color: var(--primary-color);
         width: 20px;
+        text-align: center;
     }
     
     .supplier-actions {
         display: flex;
         justify-content: space-between;
-        margin-top: 1.5rem;
+        align-items: center;
+        margin-top: 2rem;
     }
     
     .btn-visit-store {
-        background: linear-gradient(to right, #667eea, #764ba2);
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
         color: white;
         border: none;
         border-radius: 50px;
-        padding: 8px 20px;
-        font-weight: 500;
-        transition: all 0.3s ease;
+        padding: 12px 28px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-visit-store::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-visit-store:hover::before {
+        left: 100%;
     }
     
     .btn-visit-store:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
         color: white;
     }
     
-    .no-suppliers {
-        text-align: center;
-        padding: 4rem 2rem;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    .supplier-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
     }
     
-    .no-suppliers i {
-        font-size: 4rem;
-        color: #e2e8f0;
-        margin-bottom: 1.5rem;
-    }
-    
-    .no-suppliers h3 {
-        color: #a0aec0;
-        margin-bottom: 1rem;
-    }
-    
+    /* Enhanced Filter Container */
     .filter-container {
-        background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-        margin-bottom: 2rem;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 25px;
+        padding: 2rem;
+        box-shadow: var(--shadow-light);
+        margin-bottom: 3rem;
     }
     
     .filter-title {
-        font-weight: 600;
-        margin-bottom: 1rem;
-        color: #2d3748;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--dark-color);
         display: flex;
         align-items: center;
+        font-size: 1.3rem;
     }
     
     .filter-title i {
-        margin-left: 10px;
-        color: #667eea;
+        margin-left: 12px;
+        color: var(--primary-color);
+        font-size: 1.4rem;
     }
     
     .category-filter {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 12px;
     }
     
     .category-btn {
-        border: 2px solid #e2e8f0;
+        border: 2px solid var(--glass-border);
         border-radius: 50px;
-        padding: 5px 15px;
-        background: white;
-        color: #718096;
-        transition: all 0.3s ease;
+        padding: 10px 20px;
+        background: rgba(255, 255, 255, 0.8);
+        color: #6b7280;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .category-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        transition: left 0.3s;
+        z-index: -1;
+    }
+    
+    .category-btn:hover::before, .category-btn.active::before {
+        left: 0;
     }
     
     .category-btn:hover, .category-btn.active {
-        background: linear-gradient(to right, #667eea, #764ba2);
         color: white;
         border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
     }
     
+    /* Enhanced No Suppliers */
+    .no-suppliers {
+        text-align: center;
+        padding: 5rem 3rem;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 30px;
+        box-shadow: var(--shadow-light);
+    }
+    
+    .no-suppliers i {
+        font-size: 5rem;
+        color: var(--primary-color);
+        opacity: 0.3;
+        margin-bottom: 2rem;
+    }
+    
+    .no-suppliers h3 {
+        color: var(--dark-color);
+        margin-bottom: 1rem;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    
+    .no-suppliers p {
+        color: #6b7280;
+        font-size: 1.1rem;
+    }
+    
+    /* Responsive Design */
     @media (max-width: 768px) {
+        .supplier-hero {
+            padding: 4rem 0 3rem;
+        }
+        
         .supplier-hero h1 {
-            font-size: 2rem;
+            font-size: 2.5rem !important;
         }
         
         .search-input {
-            padding: 12px 20px;
-            padding-left: 50px;
+            padding: 16px 24px;
+            padding-left: 60px;
+            font-size: 1.1rem;
         }
         
         .search-icon {
-            left: 20px;
+            left: 24px;
+        }
+        
+        .stats-section {
+            margin: -1rem 0.5rem 3rem;
+            padding: 2rem 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+        }
+        
+        .features-section {
+            padding: 3rem 0;
+        }
+        
+        .feature-card {
+            margin-bottom: 2rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .supplier-hero h1 {
+            font-size: 2rem !important;
+        }
+        
+        .supplier-hero p {
+            font-size: 1rem !important;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
+<!-- Enhanced Hero Section -->
 <section class="supplier-hero">
-    <div class="container">
+    <div class="container hero-content">
         <div class="row justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h1 class="display-4 fw-bold mb-4">استكشف المتاجر والموردين</h1>
-                <p class="lead mb-5">اكتشف أفضل المتاجر والمنتجات من موردينا المعتمدين</p>
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 fw-bold mb-4" style="font-size: 3.5rem;">🏪 استكشف عالم المتاجر الرقمية</h1>
+                <p class="lead mb-5" style="font-size: 1.3rem; opacity: 0.95;">اكتشف أفضل المتاجر والمنتجات من موردينا المعتمدين في جميع أنحاء المملكة</p>
                 
                 <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="searchInput" class="form-control search-input" placeholder="ابحث عن متجر أو مورد...">
+                    <form id="supplierSearchForm" action="{% url 'suppliers_list' %}" method="get">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchInput" name="q" value="{{ q|default:'' }}" class="form-control search-input" placeholder="ابحث عن متجر أو مورد أو منتج...">
+                    </form>
+                </div>
+                
+                <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
+                    <span class="badge bg-white text-primary px-3 py-2 rounded-pill fs-6">
+                        <i class="fas fa-shipping-fast me-2"></i>توصيل سريع
+                    </span>
+                    <span class="badge bg-white text-primary px-3 py-2 rounded-pill fs-6">
+                        <i class="fas fa-shield-alt me-2"></i>ضمان الجودة
+                    </span>
+                    <span class="badge bg-white text-primary px-3 py-2 rounded-pill fs-6">
+                        <i class="fas fa-headset me-2"></i>دعم 24/7
+                    </span>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+
+<!-- Statistics Section -->
+<div class="container">
+    <div class="stats-section">
+        <div class="row">
+            <div class="container mb-5">
+                <!-- Filters Section -->
+      
+                <!-- Suppliers Grid -->
+                <div class="row" id="supplierGrid">
+                    {% for supplier in suppliers %}
+                    <div class="col-lg-4 col-md-6 mb-4 supplier-card-container" data-category="{{ supplier.category.id }}">
+                        <div class="supplier-card">
+                            <div class="supplier-image-container">
+                                <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% else %}{% static 'images/default-store.png' %}{% endif %}" 
+                                     alt="{{ supplier.name }}" class="supplier-image">
+        
+                                <div class="supplier-categories-container">
+                                    {% for category in supplier.category.all %}
+                                        <span class="supplier-category">{{ category.name }}</span>
+                                    {% endfor %}
+                                </div>
+                                    
+                            </div>
+                            
+                            <div class="supplier-info">
+                                <h3 class="supplier-name">{{ supplier.name }}</h3>
+                                
+                                <div class="supplier-details">
+                                    <i class="fas fa-phone"></i>
+                                    <span>{{ supplier.phone }}</span>
+                                </div>
+                                
+                                <div class="supplier-details">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>{{ supplier.address }}, {{ supplier.city }}, {{ supplier.country }}</span>
+                                </div>
+                                
+                                <div class="supplier-actions">
+                                    <button class="btn btn-visit-store" onclick="window.location='{% url 'product-list' supplier.id %}'">
+                                        <i class="fas fa-store me-2"></i>
+                                        زيارة المتجر
+                                    </button>
+                                    
+                                    <div class="supplier-rating">
+                                        <i class="fas fa-star text-warning"></i>
+                                        <span class="text-muted">4.8</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <div class="no-suppliers">
+                            <i class="fas fa-store-slash"></i>
+                            <h3>لا توجد متاجر متاحة حالياً</h3>
+                            <p class="text-muted">لم يتم العثور على أي متاجر في قاعدة البيانات الخاصة بنا</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="stats-section">
+        <div class="row">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-card">
+                        <span class="stat-number">{{ suppliers.count|default:"50" }}+</span>
+                        <div class="stat-label">متجر معتمد</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-card">
+                        <span class="stat-number">1000+</span>
+                        <div class="stat-label">منتج متنوع</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-card">
+                        <span class="stat-number">5000+</span>
+                        <div class="stat-label">عميل راضٍ</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-card">
+                        <span class="stat-number">24/7</span>
+                        <div class="stat-label">دعم فني</div>
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-5 fw-bold text-dark mb-4">لماذا تختار منصتنا؟</h2>
+                <p class="lead text-muted">نقدم لك أفضل تجربة تسوق رقمية مع مجموعة متنوعة من المتاجر المعتمدة</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <h3 class="feature-title">متاجر معتمدة</h3>
+                    <p class="feature-description">جميع متاجرنا معتمدة ومراجعة بعناية لضمان أفضل جودة وخدمة للعملاء</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <h3 class="feature-title">توصيل سريع</h3>
+                    <p class="feature-description">خدمة توصيل سريعة وموثوقة لجميع أنحاء المملكة مع إمكانية تتبع الطلب</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">أمان وضمان</h3>
+                    <p class="feature-description">نضمن لك تسوقاً آمناً مع حماية كاملة لبياناتك وضمان استرداد الأموال</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3 class="feature-title">دعم متواصل</h3>
+                    <p class="feature-description">فريق دعم فني متاح على مدار الساعة لمساعدتك في أي استفسار أو مشكلة</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <h3 class="feature-title">أسعار تنافسية</h3>
+                    <p class="feature-description">نقدم أفضل الأسعار مع عروض وخصومات حصرية لعملائنا المميزين</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3 class="feature-title">تجربة متجاوبة</h3>
+                    <p class="feature-description">منصة متجاوبة تعمل بسلاسة على جميع الأجهزة للتسوق في أي وقت ومكان</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<div class="container mb-5">
-    <!-- Filters Section -->
-    <div class="filter-container">
-        <h4 class="filter-title"><i class="fas fa-filter"></i> تصفية حسب التصنيف</h4>
-        <div class="category-filter">
-            <button class="category-btn active" data-category="all">الكل</button>
-            {% for category in categories %}
-            <button class="category-btn" data-category="{{ category.id }}">{{ category.name }}</button>
-            {% endfor %}
-        </div>
-    </div>
 
-    <!-- Suppliers Grid -->
-    <div class="row" id="supplierGrid">
-        {% for supplier in suppliers %}
-        <div class="col-lg-4 col-md-6 mb-4 supplier-card-container" data-category="{{ supplier.category.id }}">
-            <div class="supplier-card">
-                <div class="supplier-image-container">
-                    <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% else %}{% static 'images/default-store.png' %}{% endif %}" 
-                         alt="{{ supplier.name }}" class="supplier-image">
-                    <span class="supplier-category">{{ supplier.category.name }}</span>
-                </div>
-                
-                <div class="supplier-info">
-                    <h3 class="supplier-name">{{ supplier.name }}</h3>
-                    
-                    <div class="supplier-details">
-                        <i class="fas fa-phone"></i>
-                        <span>{{ supplier.phone }}</span>
-                    </div>
-                    
-                    <div class="supplier-details">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>{{ supplier.address }}, {{ supplier.city }}, {{ supplier.country }}</span>
-                    </div>
-                    
-                    <div class="supplier-actions">
-                        <button class="btn btn-visit-store" onclick="window.location='{% url 'product-list' supplier.id %}'">
-                            <i class="fas fa-store me-2"></i>
-                            زيارة المتجر
-                        </button>
-                        
-                        <div class="supplier-rating">
-                            <i class="fas fa-star text-warning"></i>
-                            <span class="text-muted">4.8</span>
-                        </div>
-                    </div>
+
+<!-- Call to Action Section -->
+<section class="cta-section py-5" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%); margin-top: 4rem;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="text-white">
+                    <h2 class="display-6 fw-bold mb-3">🚀 هل تريد أن تصبح شريكاً معنا؟</h2>
+                    <p class="lead mb-0">انضم إلى شبكتنا من المتاجر المعتمدة وابدأ في بيع منتجاتك لآلاف العملاء</p>
                 </div>
             </div>
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="no-suppliers">
-                <i class="fas fa-store-slash"></i>
-                <h3>لا توجد متاجر متاحة حالياً</h3>
-                <p class="text-muted">لم يتم العثور على أي متاجر في قاعدة البيانات الخاصة بنا</p>
+            <div class="col-lg-4 text-lg-end text-center mt-3 mt-lg-0">
+                <a href="#" class="btn btn-light btn-lg px-4 py-3 rounded-pill fw-bold" style="box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
+                    <i class="fas fa-handshake me-2"></i>
+                    ابدأ الآن
+                </a>
             </div>
         </div>
-        {% endfor %}
     </div>
-</div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="newsletter-section py-5" style="background: rgba(255, 255, 255, 0.05);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 text-center">
+                <div class="glass p-4 rounded-3" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2);">
+                    <h3 class="fw-bold mb-3 text-dark">📧 اشترك في نشرتنا الإخبارية</h3>
+                    <p class="text-muted mb-4">احصل على آخر العروض والمنتجات الجديدة مباشرة في بريدك الإلكتروني</p>
+                    <div class="input-group">
+                        <input type="email" class="form-control form-control-lg" placeholder="أدخل بريدك الإلكتروني" style="border-radius: 50px 0 0 50px; border: none; padding: 15px 20px;">
+                        <button class="btn btn-primary btn-lg px-4" type="button" style="border-radius: 0 50px 50px 0; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); border: none;">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('searchInput');
+        const searchForm = document.getElementById('supplierSearchForm');
         const supplierCards = document.querySelectorAll('.supplier-card-container');
         const categoryButtons = document.querySelectorAll('.category-btn');
+        const statNumbers = document.querySelectorAll('.stat-number');
+        const featureCards = document.querySelectorAll('.feature-card');
         
-        // Search functionality
+        // Enhanced Search functionality with debounce
+        let searchTimeout;
         searchInput.addEventListener('keyup', function() {
+            clearTimeout(searchTimeout);
             const filter = this.value.toUpperCase();
             
-            supplierCards.forEach(card => {
-                const name = card.querySelector('.supplier-name').textContent.toUpperCase();
-                card.style.display = name.includes(filter) ? 'block' : 'none';
-            });
-        });
-        
-        // Category filter functionality
-        categoryButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove active class from all buttons
-                categoryButtons.forEach(btn => btn.classList.remove('active'));
-                // Add active class to clicked button
-                this.classList.add('active');
-                
-                const category = this.getAttribute('data-category');
-                
-                supplierCards.forEach(card => {
-                    if (category === 'all') {
+            searchTimeout = setTimeout(() => {
+                let visibleCount = 0;
+                supplierCards.forEach((card, index) => {
+                    const name = card.querySelector('.supplier-name').textContent.toUpperCase();
+                    const category = card.querySelector('.supplier-category').textContent.toUpperCase();
+                    const details = card.querySelector('.supplier-details span').textContent.toUpperCase();
+                    
+                    const isVisible = name.includes(filter) || category.includes(filter) || details.includes(filter);
+                    
+                    if (isVisible) {
                         card.style.display = 'block';
+                        card.style.animationDelay = `${visibleCount * 0.1}s`;
+                        card.classList.add('animate-fade-in');
+                        visibleCount++;
                     } else {
-                        const cardCategory = card.getAttribute('data-category');
-                        card.style.display = cardCategory === category ? 'block' : 'none';
+                        card.style.display = 'none';
+                        card.classList.remove('animate-fade-in');
                     }
                 });
-            });
+                
+                // Show no results message if needed
+                updateNoResultsMessage(visibleCount);
+            }, 300);
         });
         
-        // Add animation on scroll
+        // Enhanced Category filter functionality
+        if (categoryButtons && categoryButtons.length > 0) {
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    categoryButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    const category = this.getAttribute('data-category');
+                    let visibleCount = 0;
+                    supplierCards.forEach((card, index) => {
+                        const cardCategory = card.getAttribute('data-category');
+                        const searchFilter = searchInput.value.toUpperCase();
+                        const name = card.querySelector('.supplier-name').textContent.toUpperCase();
+                        let shouldShow = false;
+                        if (category === 'all') {
+                            shouldShow = searchFilter === '' || name.includes(searchFilter);
+                        } else {
+                            shouldShow = cardCategory === category && (searchFilter === '' || name.includes(searchFilter));
+                        }
+                        if (shouldShow) {
+                            card.style.display = 'block';
+                            card.style.animationDelay = `${visibleCount * 0.1}s`;
+                            card.classList.add('animate-fade-in');
+                            visibleCount++;
+                        } else {
+                            card.style.display = 'none';
+                            card.classList.remove('animate-fade-in');
+                        }
+                    });
+                    updateNoResultsMessage(visibleCount);
+                });
+            });
+        }
+        
+        // Update no results message
+        function updateNoResultsMessage(visibleCount) {
+            let noResultsDiv = document.getElementById('no-results-message');
+            
+            if (visibleCount === 0 && supplierCards.length > 0) {
+                if (!noResultsDiv) {
+                    noResultsDiv = document.createElement('div');
+                    noResultsDiv.id = 'no-results-message';
+                    noResultsDiv.className = 'col-12 text-center py-5';
+                    noResultsDiv.innerHTML = `
+                        <div class="no-suppliers">
+                            <i class="fas fa-search"></i>
+                            <h3>لم يتم العثور على نتائج</h3>
+                            <p class="text-muted">جرب استخدام كلمات مفتاحية أخرى أو تصفية مختلفة</p>
+                            <button class="btn btn-primary mt-3" onclick="clearSearch()">
+                                <i class="fas fa-times me-2"></i>مسح البحث
+                            </button>
+                        </div>
+                    `;
+                    document.getElementById('supplierGrid').appendChild(noResultsDiv);
+                }
+                noResultsDiv.style.display = 'block';
+            } else if (noResultsDiv) {
+                noResultsDiv.style.display = 'none';
+            }
+        }
+        
+        // Clear search function
+        window.clearSearch = function() {
+            searchInput.value = '';
+            supplierCards.forEach(card => {
+                card.style.display = 'block';
+                card.classList.add('animate-fade-in');
+            });
+            if (categoryButtons && categoryButtons.length > 0) {
+                categoryButtons[0].click(); // Click "All" button if exists
+            }
+            updateNoResultsMessage(supplierCards.length);
+            if (searchForm) {
+                searchForm.submit();
+            }
+        };
+        
+        // Animated counter for statistics
+        function animateCounters() {
+            statNumbers.forEach(stat => {
+                const target = parseInt(stat.textContent.replace(/[^0-9]/g, ''));
+                const increment = target / 50;
+                let current = 0;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        stat.textContent = stat.textContent.replace(/[0-9]+/, target);
+                        clearInterval(timer);
+                    } else {
+                        stat.textContent = stat.textContent.replace(/[0-9]+/, Math.floor(current));
+                    }
+                }, 40);
+            });
+        }
+        
+        // Enhanced scroll animations
         const observerOptions = {
             root: null,
             rootMargin: '0px',
@@ -338,6 +875,11 @@
                 if (entry.isIntersecting) {
                     entry.target.style.opacity = 1;
                     entry.target.style.transform = 'translateY(0)';
+                    
+                    // Trigger counter animation for stats
+                    if (entry.target.classList.contains('stats-section')) {
+                        animateCounters();
+                    }
                 }
             });
         }, observerOptions);
@@ -345,12 +887,149 @@
         // Apply initial styles for animation
         supplierCards.forEach((card, index) => {
             card.style.opacity = 0;
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
             card.style.transitionDelay = `${index * 0.1}s`;
-            
             observer.observe(card);
         });
+        
+        // Animate feature cards
+        featureCards.forEach((card, index) => {
+            card.style.opacity = 0;
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            card.style.transitionDelay = `${index * 0.15}s`;
+            observer.observe(card);
+        });
+        
+        // Animate stats section
+        const statsSection = document.querySelector('.stats-section');
+        if (statsSection) {
+            statsSection.style.opacity = 0;
+            statsSection.style.transform = 'translateY(30px)';
+            statsSection.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            observer.observe(statsSection);
+        }
+        
+        // Add floating animation to search input
+        searchInput.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'translateY(-5px) scale(1.02)';
+        });
+        
+        searchInput.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'translateY(0) scale(1)';
+        });
+        
+        // Add hover effects to supplier cards
+        supplierCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.zIndex = '10';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.zIndex = '1';
+            });
+        });
+        
+        // Submit search on Enter for server-side filtering
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (searchForm) {
+                    searchForm.submit();
+                }
+            }
+        });
     });
+    
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes animate-fade-in {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .animate-fade-in {
+            animation: animate-fade-in 0.6s ease forwards;
+        }
+        
+        .search-container {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.33); }
+            80%, 100% { opacity: 0; }
+        }
+        
+         .feature-icon::after {
+             content: '';
+             position: absolute;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             border-radius: 50%;
+             background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+             opacity: 0.3;
+             animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+         }
+         
+         .back-to-top {
+             position: fixed;
+             bottom: 30px;
+             right: 30px;
+             width: 60px;
+             height: 60px;
+             background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+             color: white;
+             border: none;
+             border-radius: 50%;
+             font-size: 1.5rem;
+             box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+             cursor: pointer;
+             opacity: 0;
+             visibility: hidden;
+             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+             z-index: 1000;
+         }
+         
+         .back-to-top.show {
+             opacity: 1;
+             visibility: visible;
+             transform: translateY(0);
+         }
+         
+         .back-to-top:hover {
+             transform: translateY(-5px) scale(1.1);
+             box-shadow: 0 12px 30px rgba(37, 99, 235, 0.4);
+         }
+     `;
+     document.head.appendChild(style);
+     
+     // Add back to top button
+     const backToTopButton = document.createElement('button');
+     backToTopButton.className = 'back-to-top';
+     backToTopButton.innerHTML = '<i class="fas fa-arrow-up"></i>';
+     backToTopButton.setAttribute('aria-label', 'العودة إلى الأعلى');
+     document.body.appendChild(backToTopButton);
+     
+     // Show/hide back to top button
+     window.addEventListener('scroll', function() {
+         if (window.pageYOffset > 300) {
+             backToTopButton.classList.add('show');
+         } else {
+             backToTopButton.classList.remove('show');
+         }
+     });
+     
+     // Smooth scroll to top
+     backToTopButton.addEventListener('click', function() {
+         window.scrollTo({
+             top: 0,
+             behavior: 'smooth'
+         });
+     });
 </script>
 {% endblock %}

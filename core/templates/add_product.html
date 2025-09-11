@@ -1,0 +1,501 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}إضافة منتج جديد{% endblock %}
+
+{% block extra_css %}
+<style>
+    .modal-overlay {
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .modal-content {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    }
+    
+    .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.875rem;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.8);
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        background: rgba(255, 255, 255, 1);
+    }
+    
+    .form-input.error {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    
+    .error-message {
+        color: #ef4444;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .error-message i {
+        margin-left: 0.25rem;
+    }
+    
+    .file-input-wrapper {
+        position: relative;
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: rgba(249, 250, 251, 0.8);
+    }
+    
+    .file-input-wrapper:hover {
+        border-color: #3b82f6;
+        background: rgba(59, 130, 246, 0.05);
+    }
+    
+    .file-input-wrapper.dragover {
+        border-color: #3b82f6;
+        background: rgba(59, 130, 246, 0.1);
+        transform: scale(1.02);
+    }
+    
+    .file-input {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .file-preview {
+        margin-top: 1rem;
+        text-align: center;
+    }
+    
+    .file-preview img {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: rgba(59, 130, 246, 0.05);
+        border-radius: 12px;
+        border: 2px solid rgba(59, 130, 246, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .checkbox-wrapper:hover {
+        background: rgba(59, 130, 246, 0.1);
+    }
+    
+    .submit-btn {
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        color: white;
+        padding: 0.875rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+    
+    .submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .submit-btn .loading-spinner {
+        display: none;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 0.5rem;
+    }
+    
+    .submit-btn.loading .loading-spinner {
+        display: inline-block;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .success-animation {
+        animation: success-bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    @keyframes success-bounce {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center p-4">
+    <div class="modal-content rounded-3xl p-8 w-full max-w-2xl">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-plus text-white text-2xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">إضافة منتج جديد</h1>
+            <p class="text-gray-600">أضف منتج جديد إلى متجرك</p>
+        </div>
+
+        <form id="addProductForm" method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            
+            <!-- Product Name -->
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-tag text-blue-500 ml-2"></i>
+                    {{ form.name.label }}
+                </label>
+                {{ form.name }}
+                <div class="error-message" id="name-error" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span></span>
+                </div>
+            </div>
+
+            <!-- Product Description -->
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-align-left text-blue-500 ml-2"></i>
+                    {{ form.description.label }}
+                </label>
+                {{ form.description }}
+                <div class="error-message" id="description-error" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span></span>
+                </div>
+            </div>
+
+            <!-- Price and Category Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Product Price -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-dollar-sign text-green-500 ml-2"></i>
+                        {{ form.price.label }}
+                    </label>
+                    {{ form.price }}
+                    <div class="error-message" id="price-error" style="display: none;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span></span>
+                    </div>
+                </div>
+
+                <!-- Product Category -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-list text-purple-500 ml-2"></i>
+                        {{ form.category.label }}
+                    </label>
+                    {{ form.category }}
+                    <div class="error-message" id="category-error" style="display: none;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Image -->
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-image text-orange-500 ml-2"></i>
+                    {{ form.image.label }}
+                </label>
+                <div class="file-input-wrapper" id="fileWrapper">
+                    {{ form.image }}
+                    <div class="file-upload-content">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600 mb-2">اسحب الصورة هنا أو انقر للاختيار</p>
+                        <p class="text-sm text-gray-500">PNG, JPG, GIF حتى 10MB</p>
+                    </div>
+                    <div class="file-preview" id="filePreview" style="display: none;">
+                        <img id="previewImage" src="" alt="معاينة الصورة">
+                        <p class="text-sm text-gray-600 mt-2" id="fileName"></p>
+                    </div>
+                </div>
+                <div class="error-message" id="image-error" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span></span>
+                </div>
+            </div>
+
+            <!-- Is New Product -->
+            <div class="form-group">
+                <div class="checkbox-wrapper">
+                    {{ form.is_new }}
+                    <label for="{{ form.is_new.id_for_label }}" class="form-label mb-0 cursor-pointer">
+                        <i class="fas fa-star text-yellow-500 ml-2"></i>
+                        {{ form.is_new.label }}
+                    </label>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-end gap-4 mt-8">
+                <button type="button" onclick="window.history.back()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all">
+                    إلغاء
+                </button>
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-plus ml-2"></i>
+                    إضافة المنتج
+                    <div class="loading-spinner"></div>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('addProductForm');
+    const fileInput = document.getElementById('id_image');
+    const fileWrapper = document.getElementById('fileWrapper');
+    const filePreview = document.getElementById('filePreview');
+    const previewImage = document.getElementById('previewImage');
+    const fileName = document.getElementById('fileName');
+    const submitBtn = form.querySelector('.submit-btn');
+
+    // File upload handling
+    fileInput.addEventListener('change', handleFileSelect);
+    
+    // Drag and drop functionality
+    fileWrapper.addEventListener('dragover', handleDragOver);
+    fileWrapper.addEventListener('dragleave', handleDragLeave);
+    fileWrapper.addEventListener('drop', handleFileDrop);
+
+    function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (file) {
+            displayFilePreview(file);
+        }
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        fileWrapper.classList.add('dragover');
+    }
+
+    function handleDragLeave(e) {
+        e.preventDefault();
+        fileWrapper.classList.remove('dragover');
+    }
+
+    function handleFileDrop(e) {
+        e.preventDefault();
+        fileWrapper.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            displayFilePreview(files[0]);
+        }
+    }
+
+    function displayFilePreview(file) {
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                fileName.textContent = file.name;
+                filePreview.style.display = 'block';
+                fileWrapper.querySelector('.file-upload-content').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Clear previous errors
+        clearErrors();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+        
+        // Create FormData for file upload
+        const formData = new FormData(form);
+        
+        // Submit form via AJAX
+        fetch(form.action || window.location.pathname, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showSuccessMessage(data.message);
+                
+                // Add success animation
+                form.classList.add('success-animation');
+                
+                // Redirect after delay
+                setTimeout(() => {
+                    window.location.href = '/my-merchant/';
+                }, 1500);
+                
+            } else {
+                // Show errors
+                if (data.errors) {
+                    displayErrors(data.errors);
+                } else {
+                    showErrorMessage(data.message);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorMessage('حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.');
+        })
+        .finally(() => {
+            // Hide loading state
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+        });
+    });
+
+    function clearErrors() {
+        const errorElements = document.querySelectorAll('.error-message');
+        errorElements.forEach(el => {
+            el.style.display = 'none';
+            el.querySelector('span').textContent = '';
+        });
+        
+        const inputs = document.querySelectorAll('.form-input');
+        inputs.forEach(input => input.classList.remove('error'));
+    }
+
+    function displayErrors(errors) {
+        for (const [field, message] of Object.entries(errors)) {
+            const errorElement = document.getElementById(`${field}-error`);
+            const inputElement = document.getElementById(`id_${field}`);
+            
+            if (errorElement && inputElement) {
+                errorElement.querySelector('span').textContent = message;
+                errorElement.style.display = 'flex';
+                inputElement.classList.add('error');
+            }
+        }
+    }
+
+    function showSuccessMessage(message) {
+        showNotification(message, 'success');
+    }
+
+    function showErrorMessage(message) {
+        showNotification(message, 'error');
+    }
+
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        const iconClass = {
+            'success': 'fa-check-circle text-green-400',
+            'error': 'fa-exclamation-circle text-red-400',
+            'info': 'fa-info-circle text-blue-400'
+        }[type];
+        
+        const bgClass = {
+            'success': 'bg-green-500/20 border-green-500/30',
+            'error': 'bg-red-500/20 border-red-500/30',
+            'info': 'bg-blue-500/20 border-blue-500/30'
+        }[type];
+
+        notification.className = `fixed top-6 right-6 z-50 backdrop-blur-sm border rounded-2xl shadow-2xl text-white transition-all transform translate-x-full scale-95 ${bgClass}`;
+        notification.innerHTML = `
+            <div class="flex items-center p-6">
+                <div class="w-12 h-12 ${bgClass.split(' ')[0]} rounded-full flex items-center justify-center mr-4">
+                    <i class="fas ${iconClass} text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-semibold text-lg text-gray-800">${message}</p>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-white/10 mr-2">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full', 'scale-95');
+            notification.classList.add('translate-x-0', 'scale-100');
+        }, 10);
+        
+        setTimeout(() => {
+            notification.classList.remove('translate-x-0', 'scale-100');
+            notification.classList.add('translate-x-full', 'scale-95');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    document.body.removeChild(notification);
+                }
+            }, 400);
+        }, 4000);
+    }
+});
+</script>
+{% endblock %}
+
