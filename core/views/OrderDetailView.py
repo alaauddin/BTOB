@@ -1,23 +1,18 @@
-from django.views.generic import DetailView
 from core.models import Order, Cart
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
 
-class OrderDetailView(DetailView):
-    model = Order
-    template_name = 'order_detail.html'
-    context_object_name = 'order'
+@login_required
+def order_detail_view(request, pk):
+    order = get_object_or_404(Order, pk=pk)
+    supplier = order.get_supplier()
+    print(supplier)
+    cart = Cart.objects.get(user=request.user, supplier=supplier)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        supplier = self.object.get_supplier()
-        print(supplier)
-        
-        # Add cart information to the context
-        if self.request.user.is_authenticated:
-            user_cart = Cart.objects.get(user=self.request.user, supplier=supplier)
-            context['cart'] = user_cart
-            
-        else:
-            context['cart'] = None
 
-        return context
+
+    context = {
+        'order': order,
+        'cart': cart,
+    }
+    return render(request, 'order_detail.html', context)

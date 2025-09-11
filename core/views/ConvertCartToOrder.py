@@ -61,7 +61,7 @@ def existing_address(request, supplier_id):
         address_type = user_address.address_type
 
     )
-    cart.cartitem_set.all().delete()
+    cart.cart_items.all().delete()
     return redirect('order_detail', pk=order.id)
 
   

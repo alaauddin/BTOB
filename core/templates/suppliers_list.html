@@ -1,81 +1,356 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Supplier List{% endblock %}
+{% block title %}المتاجر - قائمة الموردين{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Custom Styles for Supplier Page */
+    .supplier-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 3rem 0;
+        color: white;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 3rem;
+    }
+    
+    .search-container {
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+    }
+    
+    .search-input {
+        border-radius: 50px;
+        padding: 15px 25px;
+        padding-left: 60px;
+        border: none;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        font-size: 1.1rem;
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 25px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        z-index: 10;
+    }
+    
+    .supplier-card {
+        transition: all 0.3s ease;
+        border-radius: 20px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        height: 100%;
+    }
+    
+    .supplier-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .supplier-image-container {
+        position: relative;
+        overflow: hidden;
+        height: 200px;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .supplier-image {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 5px solid white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .supplier-category {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        background: linear-gradient(to right, #667eea, #764ba2);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .supplier-info {
+        padding: 1.5rem;
+    }
+    
+    .supplier-name {
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        font-size: 1.4rem;
+    }
+    
+    .supplier-details {
+        color: #718096;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .supplier-details i {
+        margin-left: 8px;
+        color: #667eea;
+        width: 20px;
+    }
+    
+    .supplier-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1.5rem;
+    }
+    
+    .btn-visit-store {
+        background: linear-gradient(to right, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 8px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-visit-store:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .no-suppliers {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+    
+    .no-suppliers i {
+        font-size: 4rem;
+        color: #e2e8f0;
+        margin-bottom: 1.5rem;
+    }
+    
+    .no-suppliers h3 {
+        color: #a0aec0;
+        margin-bottom: 1rem;
+    }
+    
+    .filter-container {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+    
+    .filter-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+    }
+    
+    .filter-title i {
+        margin-left: 10px;
+        color: #667eea;
+    }
+    
+    .category-filter {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .category-btn {
+        border: 2px solid #e2e8f0;
+        border-radius: 50px;
+        padding: 5px 15px;
+        background: white;
+        color: #718096;
+        transition: all 0.3s ease;
+    }
+    
+    .category-btn:hover, .category-btn.active {
+        background: linear-gradient(to right, #667eea, #764ba2);
+        color: white;
+        border-color: transparent;
+    }
+    
+    @media (max-width: 768px) {
+        .supplier-hero h1 {
+            font-size: 2rem;
+        }
+        
+        .search-input {
+            padding: 12px 20px;
+            padding-left: 50px;
+        }
+        
+        .search-icon {
+            left: 20px;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<style>
-    /* Custom Card Styles */
-.card {
-    border: none;
-    border-radius: 20px;
-}
+<!-- Hero Section -->
+<section class="supplier-hero">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h1 class="display-4 fw-bold mb-4">استكشف المتاجر والموردين</h1>
+                <p class="lead mb-5">اكتشف أفضل المتاجر والمنتجات من موردينا المعتمدين</p>
+                
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" class="form-control search-input" placeholder="ابحث عن متجر أو مورد...">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-.card:hover {
-    transform: translateY(-5px);
-    transition: all 0.3s ease;
-}
-
-.card-img-top {
-    border: 3px solid #007bff;
-    padding: 5px;
-    margin: 20px;
-    border-radius: 50%;
-}
-
-#searchInput {
-    border-radius: 20px;
-    padding: 10px 15px;
-    border: 2px solid #007bff;
-}
-
-</style>
-<div class="container mt-5">
-    <h1 class="text-center mb-4">Supplier List</h1>
-
-    <!-- Search Box -->
-    <div class="mb-4">
-        <input type="text" id="searchInput" class="form-control" placeholder="Search for suppliers...">
+<div class="container mb-5">
+    <!-- Filters Section -->
+    <div class="filter-container">
+        <h4 class="filter-title"><i class="fas fa-filter"></i> تصفية حسب التصنيف</h4>
+        <div class="category-filter">
+            <button class="category-btn active" data-category="all">الكل</button>
+            {% for category in categories %}
+            <button class="category-btn" data-category="{{ category.id }}">{{ category.name }}</button>
+            {% endfor %}
+        </div>
     </div>
 
     <!-- Suppliers Grid -->
     <div class="row" id="supplierGrid">
         {% for supplier in suppliers %}
-        
-           
-        <div class="col-md-4 mb-4 supplier-card" onclick="window.location='{% url 'product-list' supplier.id %}'">
-            <div class="card h-100 shadow-lg rounded-4">
-                <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% else %}{% static 'images/default-logo.png' %}{% endif %}" 
-                    alt="{{ supplier.name }}" class="card-img-top p-3 rounded-circle mx-auto" style="width:250px;height:250px;object-fit:contain;">
+        <div class="col-lg-4 col-md-6 mb-4 supplier-card-container" data-category="{{ supplier.category.id }}">
+            <div class="supplier-card">
+                <div class="supplier-image-container">
+                    <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% else %}{% static 'images/default-store.png' %}{% endif %}" 
+                         alt="{{ supplier.name }}" class="supplier-image">
+                    <span class="supplier-category">{{ supplier.category.name }}</span>
+                </div>
                 
-                <div class="card-body text-center">
-                    <h5 class="card-title">{{ supplier.name }}</h5>
-                    <p class="card-text text-muted"><strong>Phone:</strong> {{ supplier.phone }}</p>
-                    <p class="card-text"><strong>Address:</strong> {{ supplier.address }}</p>
-                    <p class="card-text"><strong>City:</strong> {{ supplier.city }}</p>
-                    <p class="card-text"><strong>Country:</strong> {{ supplier.country }}</p>
-                    <p class="card-text"><strong>Category:</strong> {{ supplier.category.name }}</p>
+                <div class="supplier-info">
+                    <h3 class="supplier-name">{{ supplier.name }}</h3>
+                    
+                    <div class="supplier-details">
+                        <i class="fas fa-phone"></i>
+                        <span>{{ supplier.phone }}</span>
+                    </div>
+                    
+                    <div class="supplier-details">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ supplier.address }}, {{ supplier.city }}, {{ supplier.country }}</span>
+                    </div>
+                    
+                    <div class="supplier-actions">
+                        <button class="btn btn-visit-store" onclick="window.location='{% url 'product-list' supplier.id %}'">
+                            <i class="fas fa-store me-2"></i>
+                            زيارة المتجر
+                        </button>
+                        
+                        <div class="supplier-rating">
+                            <i class="fas fa-star text-warning"></i>
+                            <span class="text-muted">4.8</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         {% empty %}
-        <div class="col-12 text-center">
-            <p class="text-muted">No suppliers found</p>
+        <div class="col-12">
+            <div class="no-suppliers">
+                <i class="fas fa-store-slash"></i>
+                <h3>لا توجد متاجر متاحة حالياً</h3>
+                <p class="text-muted">لم يتم العثور على أي متاجر في قاعدة البيانات الخاصة بنا</p>
+            </div>
         </div>
         {% endfor %}
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-document.getElementById("searchInput").addEventListener("keyup", function() {
-    let filter = this.value.toUpperCase();
-    let cards = document.querySelectorAll(".supplier-card");
-
-    cards.forEach(card => {
-        let name = card.querySelector(".card-title").innerText.toUpperCase();
-        card.style.display = name.includes(filter) ? "block" : "none";
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const supplierCards = document.querySelectorAll('.supplier-card-container');
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        
+        // Search functionality
+        searchInput.addEventListener('keyup', function() {
+            const filter = this.value.toUpperCase();
+            
+            supplierCards.forEach(card => {
+                const name = card.querySelector('.supplier-name').textContent.toUpperCase();
+                card.style.display = name.includes(filter) ? 'block' : 'none';
+            });
+        });
+        
+        // Category filter functionality
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                categoryButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const category = this.getAttribute('data-category');
+                
+                supplierCards.forEach(card => {
+                    if (category === 'all') {
+                        card.style.display = 'block';
+                    } else {
+                        const cardCategory = card.getAttribute('data-category');
+                        card.style.display = cardCategory === category ? 'block' : 'none';
+                    }
+                });
+            });
+        });
+        
+        // Add animation on scroll
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        
+        // Apply initial styles for animation
+        supplierCards.forEach((card, index) => {
+            card.style.opacity = 0;
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.transitionDelay = `${index * 0.1}s`;
+            
+            observer.observe(card);
+        });
     });
-});
 </script>
 {% endblock %}

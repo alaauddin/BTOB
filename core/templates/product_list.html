@@ -2,333 +2,1366 @@
 {% load static %}
 {% load cart_filters %}
 
-{% block title %}Product List{% endblock %}
+{% block title %}منتجات {{ supplier.name }}{% endblock %}
 
-{% block content %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+{% block extra_css %}
 <style>
-/* Custom styling for Add to Cart icon */
-.add-to-cart-icon {
-    width: 50px; /* Default size */
-    height: auto;
-    transition: transform 0.3s ease;
-}
-
-.add-to-cart-icon:hover {
-    transform: scale(1.5); /* Add hover effect */
-}
-
-/* Custom button styles */
-.btn-outline-danger,
-.btn-outline-success {
-    width: 25px; 
-    height: 25px;
-    font-size: 20px;
-    padding: 0;
-}
-
-/* Ensure the quantity span is properly centered */
-#total-qty-items-{{ product.id }} {
-    min-width: 40px;
-    text-align: center;
-    font-size: 18px;
-}
-
-.half-circle-left {
-    border-radius: 20px 0 0 20px; /* Rounded left side */
-    width: 50px;
-    height: 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: transform 0.3s ease-in-out;
-}
-
-.half-circle-right {
-    border-radius: 0 20px 20px 0; /* Rounded right side */
-    width: 50px;
-    height: 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: transform 0.3s ease-in-out;
-}
-
-/* Hover effect for buttons */
-.half-circle-left:hover,
-.half-circle-right:hover {
-    transform: scale(1.1); /* Slight enlargement on hover */
-}
-
-/* Total quantity item container */
-.total-qty-items {
-    padding-top: 11px;
-    padding-bottom: 11px;
-    border: 1px solid rgb(51, 76, 92);;
-    padding-left: 8px;
-    padding-right: 8px;
-}
-
-/* Mobile-responsive styling */
-@media (max-width: 768px) {
-    /* Adjust Add to Cart icon size */
-    .add-to-cart-icon {
-        width: 40px; /* Smaller icon */
-        height: auto;
+    /* Modern Color Scheme */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --dark-color: #2d3748;
+        --light-color: #f8fafc;
+        --accent-color: #ff6b6b;
     }
 
-    .add-to-cart-icon:hover {
-        transform: scale(1.3); /* Adjust hover effect */
+    /* Global Enhancements */
+    body {
+        background-color: #f9fafc;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* Adjust button sizes on mobile */
-    .btn-outline-danger,
-    .btn-outline-success {
-        width: 30px; /* Smaller button */
-        height: 30px;
-        font-size: 16px; /* Smaller text */
-        padding: 0;
+    /* Enhanced Hero Section */
+    .modern-hero {
+        background: var(--primary-gradient);
+        padding: 3rem 0;
+        color: white;
+        border-radius: 0 0 40px 40px;
+        margin-bottom: 3rem;
+        margin-top: 0;
+        position: relative;
+        overflow: hidden;
     }
-
-    /* Adjust quantity text size and spacing */
-    #total-qty-items-{{ product.id }} {
-        min-width: 35px;
-        font-size: 16px; /* Smaller font size */
-        padding: 0 5px; /* Adjust padding */
+    
+    .modern-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.3;
     }
-
-    /* Adjust half-circle button size */
-    .half-circle-left,
-    .half-circle-right {
-        width: 40px; /* Smaller buttons */
-        height: 40px;
-        font-size: 18px; /* Smaller font size */
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
     }
-
-    /* Adjust padding inside the quantity container */
-    .total-qty-items {
-        padding-top: 8px;
-        padding-bottom: 8px;
-        padding-left: 5px;
-        padding-right: 5px;
+    
+    .hero-title {
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
     }
-}
-
-/* Extra small screen (mobile-first) */
-@media (max-width: 480px) {
-    /* Further reduce sizes for smaller screens */
-    .add-to-cart-icon {
-        width: 35px;
+    
+    .hero-subtitle {
+        font-size: 1.3rem;
+        font-weight: 300;
+        margin-bottom: 2rem;
+        opacity: 0.9;
     }
-
-    .btn-outline-danger,
-    .btn-outline-success {
+    
+    .cart-badge-modern {
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 50px;
+        padding: 0.8rem 1.5rem;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .cart-badge-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    
+    /* Enhanced Categories Navigation */
+    .modern-category-nav {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .modern-category-nav::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 5px;
+        background: var(--primary-gradient);
+    }
+    
+    .modern-category-title {
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .modern-category-title i {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-left: 10px;
+    }
+    
+    .modern-category-btn {
+        border: 2px solid #e2e8f0;
+        border-radius: 50px;
+        padding: 10px 25px;
+        background: white;
+        color: #4a5568;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        margin: 0.5rem;
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .modern-category-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: -1;
+    }
+    
+    .modern-category-btn:hover, .modern-category-btn.active {
+        color: white;
+        border-color: transparent;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .modern-category-btn:hover::before, .modern-category-btn.active::before {
+        opacity: 1;
+    }
+    
+    .modern-subcategory-panel {
+        background: #f8fafc;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        border-left: 4px solid #667eea;
+    }
+    
+    .modern-subcategory-btn {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 8px 18px;
+        background: white;
+        color: #4a5568;
+        transition: all 0.3s ease;
+        margin: 0.5rem;
+        font-weight: 500;
+    }
+    
+    .modern-subcategory-btn:hover {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+    }
+    
+    /* Enhanced Product Cards */
+    .modern-product-card {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-radius: 20px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+        height: 100%;
+        background: white;
+        position: relative;
+    }
+    
+    .modern-product-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+    
+    .modern-product-image-container {
+        position: relative;
+        overflow: hidden;
+        height: 220px;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modern-product-image {
+        max-height: 200px;
+        width: auto;
+        object-fit: contain;
+        transition: all 0.5s ease;
+    }
+    
+    .modern-product-card:hover .modern-product-image {
+        transform: scale(1.1);
+    }
+    
+    .modern-product-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: var(--secondary-gradient);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        z-index: 2;
+    }
+    
+    .modern-product-info {
+        padding: 1.8rem;
+    }
+    
+    .modern-product-name {
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0.8rem;
+        font-size: 1.2rem;
+        height: 3.2rem;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-height: 1.6;
+    }
+    
+    .modern-product-price {
+        font-weight: 800;
+        color: #667eea;
+        font-size: 1.4rem;
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .modern-product-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
+    }
+    
+    .modern-cart-btn {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 10px 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .modern-cart-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .modern-cart-btn i {
+        margin-left: 8px;
+    }
+    
+    .modern-quantity-controls {
+        display: flex;
+        align-items: center;
+        background: #f7fafc;
+        border-radius: 50px;
+        padding: 5px;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .modern-qty-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        font-weight: bold;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .modern-qty-btn-minus {
+        background: #fed7d7;
+        color: #c53030;
+    }
+    
+    .modern-qty-btn-minus:hover {
+        background: #feb2b2;
+        transform: scale(1.1);
+    }
+    
+    .modern-qty-btn-plus {
+        background: #c6f6d5;
+        color: #2f855a;
+    }
+    
+    .modern-qty-btn-plus:hover {
+        background: #9ae6b4;
+        transform: scale(1.1);
+    }
+    
+    .modern-qty-display {
+        min-width: 45px;
+        text-align: center;
+        font-weight: 700;
+        color: var(--dark-color);
+        font-size: 1.2rem;
+    }
+    
+    /* Enhanced Pending Orders Alert */
+    .modern-pending-alert {
+        background: var(--warning-gradient);
+        border: none;
+        border-radius: 20px;
+        color: white;
+        box-shadow: 0 15px 35px rgba(250, 112, 154, 0.2);
+        margin-bottom: 2.5rem;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .modern-pending-alert::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.2;
+    }
+    
+    .modern-pending-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Enhanced Modals */
+    .modern-modal .modal-content {
+        border-radius: 25px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+    
+    .modern-modal .modal-header {
+        background: var(--primary-gradient);
+        color: white;
+        border-bottom: none;
+        padding: 1.5rem 2rem;
+    }
+    
+    .modern-modal .modal-title {
+        font-weight: 700;
+    }
+    
+    .modern-order-item-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        margin-bottom: 1.2rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .modern-order-item-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    }
+    
+    .modern-whatsapp-btn {
+        background: linear-gradient(to right, #25d366, #128c7e);
+        border: none;
+        border-radius: 50px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+        width: 100%;
+    }
+    
+    .modern-whatsapp-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(37, 211, 102, 0.4);
+        color: white;
+    }
+    
+    .modern-whatsapp-btn i {
+        margin-left: 10px;
+        font-size: 1.3rem;
+    }
+    
+    /* Enhanced No Products Section */
+    .modern-no-products {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+        margin: 2rem 0;
+    }
+    
+    .modern-no-products i {
+        font-size: 5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1.5rem;
+    }
+    
+    .modern-no-products h3 {
+        color: #a0aec0;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    
+    /* Premium Ads Carousel */
+    .modern-ads-carousel {
+        margin-bottom: 4rem;
+        border-radius: 30px;
+        overflow: hidden;
+        box-shadow: 
+            0 25px 60px rgba(0,0,0,0.12),
+            0 5px 20px rgba(0,0,0,0.08);
+        position: relative;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .modern-ads-carousel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, 
+            rgba(102, 126, 234, 0.1) 0%, 
+            rgba(118, 75, 162, 0.1) 100%);
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .modern-ads-carousel .carousel-item {
+        position: relative;
+        height: 300px;
+        overflow: hidden;
+    }
+    
+    .modern-ads-carousel .carousel-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 30% 70%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 70% 30%, rgba(118, 75, 162, 0.3) 0%, transparent 50%),
+            linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 100%);
+        z-index: 2;
+        pointer-events: none;
+    }
+    
+    .modern-ads-carousel .carousel-item img {
+        object-fit: cover;
+        height: 100%;
+        width: 100%;
+        transition: transform 8s ease-in-out;
+        filter: brightness(0.85) contrast(1.1);
+    }
+    
+    .modern-ads-carousel .carousel-item.active img {
+        animation: kenBurns 8s ease-in-out infinite alternate;
+    }
+    
+    @keyframes kenBurns {
+        0% {
+            transform: scale(1) translate(0, 0);
+        }
+        100% {
+            transform: scale(1.08) translate(-2%, -1%);
+        }
+    }
+    
+    .modern-ads-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            135deg,
+            rgba(0,0,0,0.7) 0%,
+            rgba(0,0,0,0.4) 40%,
+            rgba(0,0,0,0.2) 70%,
+            transparent 100%
+        );
+        display: flex;
+        align-items: center;
+        z-index: 3;
+        backdrop-filter: blur(1px);
+    }
+    
+    .modern-ads-content {
+        color: white;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+        max-width: 650px;
+        position: relative;
+        z-index: 4;
+        animation: slideInFromLeft 1s ease-out;
+    }
+    
+    @keyframes slideInFromLeft {
+        0% {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .modern-ads-title {
+        font-size: 2.2rem;
+        font-weight: 900;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: none;
+        filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        letter-spacing: -0.02em;
+    }
+    
+    .modern-ads-description {
+        font-size: 1.4rem;
+        font-weight: 400;
+        margin-bottom: 2.5rem;
+        opacity: 0.95;
+        line-height: 1.6;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    }
+    
+    .modern-ads-cta {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+        backdrop-filter: blur(15px);
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50px;
+        padding: 15px 35px;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .modern-ads-cta::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.6s ease;
+    }
+    
+    .modern-ads-cta:hover::before {
+        left: 100%;
+    }
+    
+    .modern-ads-cta:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+        border-color: rgba(255,255,255,0.5);
+        color: white;
+        background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.2) 100%);
+    }
+    
+    .modern-ads-cta i {
+        margin-left: 12px;
+        transition: transform 0.3s ease;
+    }
+    
+    .modern-ads-cta:hover i {
+        transform: translateX(5px);
+    }
+    
+    /* Premium Carousel Controls */
+    .modern-carousel-indicators {
+        bottom: 30px;
+        z-index: 5;
+    }
+    
+    .modern-carousel-indicators button {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        margin: 0 10px;
+        background: rgba(255,255,255,0.4);
+        border: 2px solid rgba(255,255,255,0.6);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .modern-carousel-indicators button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: white;
+        border-radius: 50%;
+        transition: all 0.4s ease;
+        transform: translate(-50%, -50%);
+    }
+    
+    .modern-carousel-indicators .active::before,
+    .modern-carousel-indicators button:hover::before {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .modern-carousel-indicators .active {
+        background: white;
+        transform: scale(1.4);
+        box-shadow: 0 5px 15px rgba(255,255,255,0.3);
+    }
+    
+    .modern-carousel-control-prev,
+    .modern-carousel-control-next {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(255,255,255,0.2);
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 5;
+    }
+    
+    .modern-ads-carousel:hover .modern-carousel-control-prev,
+    .modern-ads-carousel:hover .modern-carousel-control-next {
+        opacity: 0.9;
+    }
+    
+    .modern-carousel-control-prev {
+        left: 30px;
+    }
+    
+    .modern-carousel-control-next {
+        right: 30px;
+    }
+    
+    .modern-carousel-control-prev:hover,
+    .modern-carousel-control-next:hover {
+        opacity: 1;
+        background: rgba(255,255,255,0.25);
+        border-color: rgba(255,255,255,0.4);
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    
+    .modern-carousel-control-prev-icon,
+    .modern-carousel-control-next-icon {
+        filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
+    }
+    
+    /* Decorative Elements */
+    .modern-ads-carousel::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 150px;
+        background: linear-gradient(to top, rgba(0,0,0,0.1) 0%, transparent 100%);
+        z-index: 2;
+        pointer-events: none;
+    }
+    
+    .ads-decorative-element {
+        position: absolute;
+        z-index: 1;
+        opacity: 0.1;
+        pointer-events: none;
+    }
+    
+    .ads-decorative-element.element-1 {
+        top: 20%;
+        right: 10%;
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .ads-decorative-element.element-2 {
+        bottom: 30%;
+        right: 5%;
+        width: 60px;
+        height: 60px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: float 8s ease-in-out infinite reverse;
+    }
+    
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+        }
+        50% {
+            transform: translateY(-20px) rotate(180deg);
+        }
+    }
+    
+    /* Section Titles */
+    .section-title {
+        position: relative;
+        font-weight: 800;
+        margin-bottom: 2rem;
+        padding-bottom: 0.5rem;
+        color: var(--dark-color);
+        display: inline-block;
+    }
+    
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 50%;
+        height: 4px;
+        background: var(--primary-gradient);
+        border-radius: 10px;
+    }
+    
+    /* Floating Cart Button for Mobile */
+    .floating-cart-btn {
+        position: fixed;
+        bottom: 30px;
+        left: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        z-index: 1000;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .floating-cart-btn:hover {
+        transform: translateY(-5px) scale(1.1);
+        color: white;
+    }
+    
+    .floating-cart-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--accent-color);
+        color: white;
+        border-radius: 50%;
         width: 25px;
         height: 25px;
-        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.8rem;
+        box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
     }
-
-    #total-qty-items-{{ product.id }} {
-        font-size: 11px; /* Smaller font size for very small screens */
+    
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-
-    .half-circle-left,
-    .half-circle-right {
-        width: 32px; /* Even smaller buttons */
-        height: 32px;
-        font-size: 14px;
+    
+    .animate-fade-in-up {
+        animation: fadeInUp 0.6s ease forwards;
     }
-
-    .total-qty-items {
-        padding-top: 3px;
-        padding-bottom: 3px;
-        padding-left: 5px;
-        padding-right: 5px;
-        font-size: 15px; /* Smaller font size */
+    
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .hero-title {
+            font-size: 2.2rem;
+        }
+        
+        .modern-ads-title {
+            font-size: 2rem;
+        }
+        
+        .modern-product-image-container {
+            height: 180px;
+        }
     }
-}
-
+    
+    @media (max-width: 768px) {
+        .modern-hero {
+            padding: 2rem 0;
+            border-radius: 0 0 30px 30px;
+        }
+        
+        .hero-title {
+            font-size: 1.8rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+        
+        .modern-category-nav {
+            padding: 1.5rem;
+        }
+        
+        .modern-category-btn {
+            padding: 8px 20px;
+            margin: 0.3rem;
+            font-size: 0.9rem;
+        }
+        
+        .modern-product-info {
+            padding: 1.2rem;
+        }
+        
+        .modern-product-name {
+            font-size: 1.1rem;
+        }
+        
+        .modern-product-price {
+            font-size: 1.2rem;
+        }
+        
+        .modern-product-actions {
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .modern-quantity-controls {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .modern-cart-btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .modern-ads-carousel .carousel-item {
+            height: 350px;
+        }
+        
+        .modern-ads-title {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .modern-ads-description {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .modern-ads-cta {
+            padding: 12px 28px;
+            font-size: 1rem;
+        }
+        
+        .modern-carousel-control-prev,
+        .modern-carousel-control-next {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .modern-carousel-control-prev {
+            left: 20px;
+        }
+        
+        .modern-carousel-control-next {
+            right: 20px;
+        }
+        
+        .floating-cart-btn {
+            bottom: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .modern-ads-carousel {
+            border-radius: 20px;
+            margin-bottom: 3rem;
+        }
+        
+        .modern-ads-carousel .carousel-item {
+            height: 200px;
+        }
+        
+        .modern-ads-title {
+            font-size: 1.8rem;
+            line-height: 1.3;
+        }
+        
+        .modern-ads-description {
+            font-size: 1rem;
+            margin-bottom: 1.8rem;
+        }
+        
+        .modern-ads-cta {
+            padding: 10px 24px;
+            font-size: 0.95rem;
+        }
+        
+        .modern-carousel-control-prev,
+        .modern-carousel-control-next {
+            width: 45px;
+            height: 45px;
+        }
+        
+        .modern-carousel-control-prev {
+            left: 15px;
+        }
+        
+        .modern-carousel-control-next {
+            right: 15px;
+        }
+        
+        .modern-carousel-indicators {
+            bottom: 20px;
+        }
+        
+        .modern-carousel-indicators button {
+            width: 12px;
+            height: 12px;
+            margin: 0 8px;
+        }
+        
+        .ads-decorative-element {
+            display: none;
+        }
+    }
 </style>
-    <!-- Categories Navigation -->
-         <!-- Pending Orders Section -->
-    {% if pending_orders %}
-    <h2 class=" text-warning">Pending Orders</h2>
-    {% for order in pending_orders %}
-    <div class="alert alert-warning shadow-sm rounded-3 ">
-        <div class="row">
-            <div class="col-md-6 col-sm-4 col-6">
-                <h4 class="alert-heading">Order #{{ order.id }}</h4>
-                <p><strong>Total Amount:</strong></p> <p>YR {{ order.total_amount }}</p>
-            </div>
-            <div class="col-md-6 col-sm-4 col-6 d-flex justify-content-end">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#orderDetailsModal{{ order.id }}">
-                    View Details
-                </button>
-            </div>
-        </div>
-   
-    </div>
+{% endblock %}
 
-    <!-- Order Details Modal -->
-    <div class="modal fade" id="orderDetailsModal{{ order.id }}" tabindex="-1" aria-labelledby="orderDetailsModalLabel{{ order.id }}" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Order Details for #{{ order.id }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    {% for item in order.orderitem_set.all %}
-                    <div class="card mb-3">
-                        <div class="row g-0">
-                            <div class="col-md-4">
-                                <img src="{{ item.product.image.url }}" class="img-fluid rounded-start" alt="{{ item.product.name }}">
-                            </div>
-                            <div class="col-md-8">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ item.product.name }}</h5>
-                                    <p class="card-text">{{ item.product.description }}</p>
-                                    <p class="card-text"><small>Quantity: {{ item.quantity }}</small></p>
-                                    <p class="card-text"><strong>Price:</strong> YR {{ item.product.price|floatformat:2 }}</p>
-                                </div>
-                            </div>
-                        </div>
+{% block content %}
+<!-- Hero Section -->
+{% if supplier_ads %}
+<!-- Premium Ads Carousel Section -->
+<div class="container mb-5" style="margin-top: 2rem;">
+    <section class="modern-ads-carousel">
+        <!-- Decorative Elements -->
+        <div class="ads-decorative-element element-1"></div>
+        <div class="ads-decorative-element element-2"></div>
+        
+        <div id="supplierAdsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="6000">
+        <!-- Indicators -->
+        <div class="carousel-indicators modern-carousel-indicators">
+            {% for ad in supplier_ads %}
+            <button type="button" data-bs-target="#supplierAdsCarousel" data-bs-slide-to="{{ forloop.counter0 }}" 
+                    {% if forloop.first %}class="active" aria-current="true"{% endif %} 
+                    aria-label="Slide {{ forloop.counter }}"></button>
+            {% endfor %}
+        </div>
+        
+        <!-- Carousel items -->
+        <div class="carousel-inner">
+            {% for ad in supplier_ads %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="6000">
+                <img src="{{ ad.image.url }}" class="d-block w-100" alt="{{ ad.title }}" loading="lazy">
+                <div class="modern-ads-overlay">
+                    <div class="container modern-ads-content">
+                        {% if ad.title %}
+                        <h1 class="modern-ads-title">{{ ad.title }}</h1>
+                        {% endif %}
+                        
+                        {% if ad.description %}
+                        <p class="modern-ads-description">{{ ad.description }}</p>
+                        {% endif %}
+                        
+                        <!-- Enhanced Call-to-Action -->
+                        <a href="{% url 'product-list' supplier.id %}" class="modern-ads-cta">
+                            استكشف المنتجات
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
                     </div>
-                    {% endfor %}
                 </div>
-                <div class="modal-footer">
-                    <a href="https://wa.me/+967779923330?text=I%20want%20to%20make%20the%20payment%20for%20order%20#{{ order.id }}" class="btn btn-success" target="_blank">
-                        Pay via WhatsApp
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-    {% endif %}
-    <div class="row row-cols-4 row-cols-md-3 mt-0 ">
-        <div class="col">
-            <a href="{% url 'product-list' supplier.id %}" class="btn btn-outline-primary w-100 {% if not active_category_id %}active{% endif %}">
-                All
-            </a>
-        </div>
-        {% for category in categories %}
-        <div class="col">
-            <a href="#subcategory-{{ category.id }}" 
-               class="btn btn-outline-secondary w-100" 
-               data-bs-toggle="collapse" 
-               aria-expanded="false">
-                {{ category.name }}
-            </a>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Subcategories Section -->
-    {% for category in categories %}
-    <div id="subcategory-{{ category.id }}" class="collapse mb-4">
-        <div class="row row-cols-2 row-cols-md-4 g-2">
-            {% for subcategory in category.productcategory_set.all %}
-            <div class="col">
-                <a href="{% url 'product_list_subcategory' subcategory.id category.supplier.id %}" 
-                   class="btn btn-sm btn-light border w-100">
-                    {{ subcategory.name }}
-                </a>
             </div>
             {% endfor %}
         </div>
+        
+        <!-- Premium Controls -->
+        <button class="carousel-control-prev modern-carousel-control-prev" type="button" data-bs-target="#supplierAdsCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next modern-carousel-control-next" type="button" data-bs-target="#supplierAdsCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
     </div>
-    {% endfor %}
-
-
-
-    <!-- Product List Section -->
-    <h1 class="text-3xl font-semibold mb-6">Our Products</h1>
-    <div class="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-        {% for product in products %}
-        <div class="col">
-            <div class="card h-70 shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl">
-                <a href="{% url 'product_detail' pk=product.pk %}">
-                    <img src="{{ product.image.url }}" class="card-img-top rounded-t-lg" alt="{{ product.name }}">
+</section>
+{% else %}
+<!-- Modern Hero Section (if no ads available) -->
+<section class="modern-hero">
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="hero-title">منتجات {{ supplier.name }}</h1>
+                <p class="hero-subtitle">استكشف جميع المنتجات المتاحة من هذا المتجر</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'cart-detail' supplier.id %}" class="cart-badge-modern text-decoration-none">
+                    <i class="fas fa-shopping-cart fs-4 me-2"></i>
+                    <span class="fs-5 fw-bold">سلة التسوق</span>
+                    <span id="total-items" class="badge bg-white text-primary rounded-pill ms-2 fs-6">{{ cart.get_total_items }}</span>
                 </a>
-                <div class="card-body h-25 bg-gradient-to-r from-indigo-100 to-blue-200 text-white rounded-b-lg">
-                    <h5 class="card-title text-lg font-semibold">{{ product.name }}</h5>
-                    <p class="card-text text-yellow-400 fw-bold">YR {{ product.price }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+    <!-- Pending Orders Section -->
+    {% if pending_orders %}
+<div class="container">
+    <div class="alert modern-pending-alert mb-4">
+        <div class="modern-pending-content">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-circle fs-3 me-3"></i>
+                <div class="flex-grow-1">
+                    <h4 class="alert-heading mb-1">لديك طلبات قيد الانتظار</h4>
+                    <p class="mb-0">يوجد {{ pending_orders|length }} طلب بانتظار الدفع</p>
                 </div>
-                <div class="card-footer bg-transparent border-0 d-flex justify-content-between align-items-center py-3">
-                    <!-- Add to Cart Icon -->
-                    <img src="{% static 'addToCart.png' %}" alt="Add to Cart" class="add-to-cart-icon cursor-pointer transition-all duration-300 hover:scale-110 hover:opacity-80" onclick="addToCart('{{ product.id }}','{{product.supplier.id}}')">
+                <button class="btn btn-light" data-bs-toggle="collapse" data-bs-target="#pendingOrdersCollapse">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+            
+            <div class="collapse mt-3" id="pendingOrdersCollapse">
+                {% for order in pending_orders %}
+                <div class="bg-white/20 p-3 rounded-lg mb-2">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-1">الطلب #{{ order.id }}</h5>
+                            <p class="mb-0">المجموع: {{ order.total_amount }} ريال</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <button class="btn btn-sm btn-light me-2" data-bs-toggle="modal" data-bs-target="#orderDetailsModal{{ order.id }}">
+                                <i class="fas fa-eye me-1"></i> التفاصيل
+                            </button>
+                            <a href="https://wa.me/+967779923330?text=I%20want%20to%20make%20the%20payment%20for%20order%20#{{ order.id }}" 
+                               class="btn btn-sm btn-success" target="_blank">
+                                <i class="fab fa-whatsapp me-1"></i> الدفع عبر واتساب
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 
-                    <!-- Quantity Adjust Buttons and Counter -->
-                    <div class="d-flex align-items-center">
-                        <button id="db-{{ product.id }}" class="btn btn-outline-danger btn-sm mx-1 half-circle-left hover:bg-red-600 hover:text-white transition-all duration-300" onclick="subToCart('{{ product.id }}','{{product.supplier.id}}')">
-                            <i class="bi bi-dash"></i> <!-- Bootstrap Icons for minus sign -->
+                <!-- Order Details Modal -->
+                <div class="modal fade modern-modal" id="orderDetailsModal{{ order.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">تفاصيل الطلب #{{ order.id }}</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                {% for item in order.order_details.all %}
+                                <div class="modern-order-item-card">
+                                    <div class="row g-0">
+                                        <div class="col-md-4">
+                                            <img src="{{ item.product.image.url }}" class="img-fluid rounded-start" alt="{{ item.product.name }}" style="height: 150px; object-fit: cover; width: 100%;">
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{ item.product.name }}</h5>
+                                                <p class="card-text text-muted small">{{ item.product.description|truncatewords:15 }}</p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="text-primary fw-bold">الكمية: {{ item.quantity }}</span>
+                                                    <span class="text-success fw-bold">السعر: {{ item.product.price|floatformat:2 }} ريال</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                                    <h5>المجموع الكلي:</h5>
+                                    <h4 class="text-success">{{ order.total_amount }} ريال</h4>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="https://wa.me/+967779923330?text=I%20want%20to%20make%20the%20payment%20for%20order%20#{{ order.id }}" 
+                                   class="modern-whatsapp-btn" target="_blank">
+                                    <i class="fab fa-whatsapp"></i> الدفع عبر واتساب
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+    {% endif %}
+
+    <!-- Categories Navigation -->
+<div class="container">
+    <div class="modern-category-nav">
+        <h4 class="modern-category-title"><i class="fas fa-filter"></i> التصنيفات</h4>
+        <div class="d-flex flex-wrap">
+            <a href="{% url 'product-list' supplier.id %}" class="modern-category-btn {% if not active_category_id %}active{% endif %}">
+                الكل
+            </a>
+            
+            {% for category in categories %}
+            <a href="#subcategory-{{ category.id }}" 
+               class="modern-category-btn" 
+               data-bs-toggle="collapse" 
+               aria-expanded="false">
+                {{ category.name }} <i class="fas fa-chevron-down me-2"></i>
+            </a>
+            
+            {% endfor %}
+        </div>
+        
+        <!-- Subcategories Section -->
+        {% for category in categories %}
+        <div id="subcategory-{{ category.id }}" class="collapse modern-subcategory-panel">
+            <h5 class="mb-2">تصنيفات فرعية في {{ category.name }}</h5>
+            <div class="d-flex flex-wrap">
+                
+                {% for subcategory in category.productcategory_set.all %}
+                <a href="{% url 'product_list_subcategory' subcategory.id category.supplier.id %}" 
+                   class="modern-subcategory-btn">
+                    {{ subcategory.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+    <!-- Products Grid -->
+<div class="container">
+    <h2 class="section-title">المنتجات المتاحة</h2>
+    
+    {% if products %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="productsGrid">
+        {% for product in products %}
+        <div class="col animate-fade-in-up" style="animation-delay: {{ forloop.counter0|divisibleby:4|yesno:'0,0.1,0.2,0.3' }}s">
+            <div class="modern-product-card">
+                <div class="modern-product-image-container">
+                    <a href="{% url 'product_detail' pk=product.pk %}">
+                        <img src="{{ product.image.url }}" class="modern-product-image" alt="{{ product.name }}">
+                    </a>
+                    {% if product.is_new %}
+                    <span class="modern-product-badge">جديد</span>
+                    {% endif %}
+                    
+                    {% if product.has_discount %}
+                    <span class="badge bg-danger position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill shadow-sm">
+                        خصم {{ product.get_discount_precentage }}% 
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="modern-product-info position-relative">
+                    <a href="{% url 'product_detail' pk=product.pk %}" class="text-decoration-none">
+                        <h5 class="modern-product-name">{{ product.name }}</h5>
+                    </a>
+
+                    <div class="modern-product-price">
+                        {% if product.has_discount %}
+                            <span class="text-muted text-decoration-line-through me-2">
+                                {{ product.price }} ريال
+                            </span>
+                            <span class="text-danger">
+                                {{ product.get_price_with_offer }} ريال
+                            </span>
+                        {% else %}
+                            {{ product.price }} ريال
+                        {% endif %}
+                    </div>
+                    
+                    <div class="modern-product-actions">
+                        <button class="modern-cart-btn" onclick="addToCart('{{ product.id }}','{{product.supplier.id}}')">
+                            <i class="fas fa-cart-plus"></i>
+                            إضافة
                         </button>
                         
-                        <span id="total-qty-items-{{ product.id }}" class="fw-bold  total-qty-items " style="color: rgb(51, 76, 92);">
-                            {% load cart_filters %}
-                            {% with cart.cart_items.all|get_cart_item:product as cart_item %}
-                                {% if cart_item %}
-                                    {{ cart_item.quantity }}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            {% endwith %}
-                        </span>
-                        
-                        <button id="ib-{{ product.id }}" class="btn btn-outline-success btn-sm mx-1 half-circle-right hover:bg-green-600 hover:text-white transition-all duration-300" onclick="addToCart('{{ product.id }}', '{{product.supplier.id}}')">
-                            <i class="bi bi-plus"></i> <!-- Bootstrap Icons for plus sign -->
-                        </button>
+                        <div class="modern-quantity-controls">
+                            <button class="modern-qty-btn modern-qty-btn-minus" onclick="subToCart('{{ product.id }}','{{product.supplier.id}}')">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            
+                            <span id="total-qty-items-{{ product.id }}" class="modern-qty-display">
+                                {% with cart.cart_items.all|get_cart_item:product as cart_item %}
+                                    {% if cart_item %}
+                                        {{ cart_item.quantity }}
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                {% endwith %}
+                            </span>
+                            
+                            <button class="modern-qty-btn modern-qty-btn-plus" onclick="addToCart('{{ product.id }}','{{product.supplier.id}}')">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <style>
-            /* Enhanced Styles */
-            .card {
-                background-color: #fff;
-                border-radius: 15px;
-                overflow: hidden;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                transition: all 0.3s ease-in-out;
-            }
-        
-            .card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 12px 18px rgba(0, 0, 0, 0.1);
-            }
-        
-           
-        
-            /* Hover Effects for Buttons */
-            .half-circle-left:hover, .half-circle-right:hover {
-                background-color: rgba(0, 0, 0, 0.1);
-            }
-        
-            .add-to-cart-icon {
-                width: 30px;
-                height: 30px;
-                transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-            }
-        
-            .add-to-cart-icon:hover {
-                transform: scale(1.1);
-                opacity: 0.8;
-            }
-        </style>
-        
         {% endfor %}
     </div>
-    
+    {% else %}
+    <div class="modern-no-products">
+        <i class="fas fa-box-open"></i>
+        <h3>لا توجد منتجات متاحة</h3>
+        <p class="text-muted">لم يتم العثور على أي منتجات في هذا المتجر</p>
+    </div>
+    {% endif %}
+</div>
+</div>
 
+<!-- Floating Cart Button for Mobile -->
+<a href="{% url 'cart-detail' supplier.id %}" class="floating-cart-btn d-lg-none">
+    <i class="fas fa-shopping-cart fs-5"></i>
+    <span class="floating-cart-badge">{{ cart.get_total_items }}</span>
+</a>
 
-<!-- Bootstrap Bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-    function sendMessageAndRedirect(orderId) {
-        const whatsappURL = 'https://wa.me/+967779923330?text=I%20want%20to%20make%20payment%20for%20order%20#' + orderId;
-        window.open(whatsappURL, '_blank');
-    }
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+    
+    // Enhanced animations for product cards
+    document.addEventListener('DOMContentLoaded', function() {
+        const productCards = document.querySelectorAll('.modern-product-card');
+        
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        
+        productCards.forEach((card) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+        
+        // Handle category collapse behavior
+        const categoryButtons = document.querySelectorAll('[data-bs-toggle="collapse"]');
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Close other open category panels
+                const target = this.getAttribute('href');
+                categoryButtons.forEach(btn => {
+                    if (btn !== this && btn.getAttribute('href') !== '#pendingOrdersCollapse') {
+                        const otherTarget = btn.getAttribute('href');
+                        if (otherTarget && otherTarget.startsWith('#subcategory-')) {
+                            const collapse = bootstrap.Collapse.getInstance(document.querySelector(otherTarget));
+                            if (collapse) {
+                                collapse.hide();
+                            }
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Parallax effect for hero section
+        if (document.querySelector('.modern-hero')) {
+            window.addEventListener('scroll', function() {
+                const scrolled = window.pageYOffset;
+                const hero = document.querySelector('.modern-hero');
+                if (hero) {
+                    hero.style.backgroundPositionY = -(scrolled * 0.2) + 'px';
+                }
+            });
+        }
+    });
 </script>
 {% endblock %}

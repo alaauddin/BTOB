@@ -51,9 +51,48 @@ class Product(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to='images/product_images/')
+    is_new = models.BooleanField(default=False)
     
     def __str__(self):
         return self.name
+    
+    def get_price_with_offer(self):
+        today = timezone.now().date()
+
+        offers = ProductOffer.objects.filter(
+            product=self,
+            is_active=True,
+            from_date__lte=today,
+            to_date__gte=today
+        )       
+        if offers.exists():
+            return offers.first().get_price_with_discount()
+        else:
+            return self.price
+        
+    def has_discount(self):
+        today = timezone.now().date()
+        offers = ProductOffer.objects.filter(
+            product=self,
+            is_active=True,
+            from_date__lte=today,
+            to_date__gte=today
+        )       
+        return offers.exists()
+    
+    def get_discount_precentage(self):
+        today = timezone.now().date()
+        offers = ProductOffer.objects.filter(
+            product=self,
+            is_active=True,
+            from_date__lte=today,
+            to_date__gte=today
+        ).first()    
+        return round(offers.get_discount_percentage_offer())
+        
+            
+        
+        
     
 
     def get_average_rating(self):
@@ -66,6 +105,42 @@ class Product(models.Model):
     def get_total_reviews(self):
         return self.review_set.count()
     
+    
+class ProductOffer(models.Model):
+    product = models.ForeignKey(Product,on_delete=models.CASCADE, related_name='products_offer')
+    is_active = models.BooleanField(default=True)
+    discount_precentage = models.DecimalField(max_digits=10, decimal_places=2)
+    from_date = models.DateField()
+    to_date = models.DateField()
+    create_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User,on_delete=models.CASCADE,related_name='products_offer')
+    
+    
+    def __str__(self):
+        price_after_discount = self.product.price - (self.product.price * self.discount_precentage)
+        return str(self.product) + " | "+str(self.product.price)+" |after discount: " +str(price_after_discount)
+    
+    
+    def get_price_with_discount(self):
+        price_after_discount = self.product.price - (self.product.price * self.discount_precentage)
+        return price_after_discount
+    
+    
+    def get_discount_percentage_offer(self):
+        return self.discount_precentage * 100
+    
+
+    
+    def save(self, *args, **kwargs):
+        if self.is_active:
+            other_offers = ProductOffer.objects.filter(product=self.product,is_active=True).exists()
+            if not other_offers:
+                super().save(*args, **kwargs)
+        else:
+            super().save(*args, **kwargs)
+            
+        
+
 
     
     
@@ -207,6 +282,20 @@ class Discount(models.Model):
     
     def __str__(self):
         return f"{self.code} - {self.discount_amount}% off"
+    
+    
+class SuppierAds(models.Model):
+    supplier = models.ForeignKey(Supplier,on_delete=models.CASCADE,related_name='supplier_ads')
+    title = models.CharField(max_length=200,null=True,blank=True)
+    description = models.TextField(max_length=1000,null=True,blank=True)
+    image = models.ImageField(upload_to="ads_image")
+    created_by = models.ForeignKey(User,on_delete=models.CASCADE,related_name='supplier_ads')
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    
+    
+    def __str__(self):
+        return str(self.supplier) + " | " + str(self.title)
     
 
 

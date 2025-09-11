@@ -1,170 +1,627 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}
-    Shopping Cart
+{% block title %}سلة التسوق{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Cart Page Styles */
+    .cart-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2.5rem 0;
+        color: white;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 2rem;
+    }
+    
+    .cart-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .cart-header {
+        background: #f8fafc;
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .cart-item {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+    }
+    
+    .cart-item:hover {
+        background: #fafafa;
+    }
+    
+    .cart-item-removed {
+        animation: removeItem 0.5s ease forwards;
+    }
+    
+    @keyframes removeItem {
+        0% { opacity: 1; transform: translateX(0); }
+        100% { opacity: 0; transform: translateX(100%); height: 0; padding: 0; margin: 0; }
+    }
+    
+    .cart-item-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    .cart-item-name {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .cart-item-price {
+        color: #667eea;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        background: #f7fafc;
+        border-radius: 50px;
+        padding: 5px;
+    }
+    
+    .qty-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        font-weight: bold;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .qty-btn-minus {
+        background: #fed7d7;
+        color: #c53030;
+    }
+    
+    .qty-btn-minus:hover {
+        background: #feb2b2;
+        transform: scale(1.1);
+    }
+    
+    .qty-btn-plus {
+        background: #c6f6d5;
+        color: #2f855a;
+    }
+    
+    .qty-btn-plus:hover {
+        background: #9ae6b4;
+        transform: scale(1.1);
+    }
+    
+    .qty-display {
+        min-width: 40px;
+        text-align: center;
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 1.1rem;
+    }
+    
+    .cart-item-subtotal {
+        font-weight: 700;
+        color: #2d3748;
+        font-size: 1.2rem;
+    }
+    
+    .remove-btn {
+        background: #fed7d7;
+        color: #c53030;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 15px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+    
+    .remove-btn:hover {
+        background: #feb2b2;
+        transform: translateY(-2px);
+    }
+    
+    .remove-btn i {
+        margin-left: 5px;
+    }
+    
+    .cart-summary {
+        background: #f8fafc;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+    
+    .summary-title {
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    
+    .summary-label {
+        color: #718096;
+    }
+    
+    .summary-value {
+        font-weight: 600;
+        color: #2d3748;
+    }
+    
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 2px solid #e2e8f0;
+        font-size: 1.2rem;
+    }
+    
+    .total-label {
+        font-weight: 700;
+        color: #2d3748;
+    }
+    
+    .total-amount {
+        font-weight: 800;
+        color: #667eea;
+        font-size: 1.4rem;
+    }
+    
+    .checkout-btn {
+        background: linear-gradient(to right, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 15px 30px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .checkout-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .checkout-btn i {
+        margin-left: 10px;
+    }
+    
+    .empty-cart {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+    
+    .empty-cart i {
+        font-size: 5rem;
+        color: #e2e8f0;
+        margin-bottom: 1.5rem;
+    }
+    
+    .empty-cart h3 {
+        color: #a0aec0;
+        margin-bottom: 1rem;
+    }
+    
+    .continue-shopping {
+        background: linear-gradient(to right, #48bb78, #38a169);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-top: 1.5rem;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .continue-shopping:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
+        color: white;
+    }
+    
+    .continue-shopping i {
+        margin-left: 8px;
+    }
+    
+    .toast-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #48bb78;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+    }
+    
+    .toast-notification.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .toast-notification i {
+        margin-left: 10px;
+        font-size: 1.2rem;
+    }
+    
+    @media (max-width: 768px) {
+        .cart-header {
+            padding: 1rem;
+        }
+        
+        .cart-item {
+            padding: 1rem;
+            flex-direction: column;
+        }
+        
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+        }
+        
+        .cart-item-details {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .cart-item-actions {
+            justify-content: center;
+        }
+        
+        .cart-summary {
+            padding: 1.5rem;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-    <h1 class="text-4xl font-semibold mb-8 text-center">Your Shopping Cart</h1>
-
-    {% if cart.cart_items.all %}
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border border-gray-300">
-                <thead>
-                    <tr>
-                        <th class="py-3 px-6 border-b text-left">Product</th>
-                        <th class="py-3 px-6 border-b text-left">Quantity</th>
-                        <th class="py-3 px-6 border-b text-left">Price</th>
-                        <th class="py-3 px-6 border-b text-left">Subtotal</th>
-                        <th class="py-3 px-6 border-b text-left"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in cart.cart_items.all %}
-                        <tr id="row-{{ item.id }}">
-                            <td class="py-3 px-6 border-b">
-                                <div class="flex items-center">
-                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-12 h-12 object-cover rounded-lg">
-                                    <span class="ml-4">{{ item.product.name }}</span>
-                                </div>
-                            </td>
-                            <td class="py-3 px-6 border-b">
-                                <div class="flex items-center">
-                                    <button class="text-gray-500 hover:text-gray-700" onclick="decreaseQuantity('{{ item.id }}', '{{ supplier.id }}')">-</button>
-                                    <span id="quantity-{{ item.id }}" class="mx-2">{{ item.quantity }}</span>
-                                    <button class="text-green-500 hover:text-green-700" onclick="increaseQuantity('{{ item.id }}', '{{ supplier.id }}')">+</button>
-                                </div>
-                            </td>
-                            <td class="py-3 px-6 border-b">YR{{ item.product.price }}</td>
-                            <td id="subtotal-{{ item.id }}" class="py-3 px-6 border-b">YR{{ item.get_subtotal|floatformat:2 }}</td>
-                            <td class="py-3 px-6 border-b">
-                                <button class="text-red-500 hover:text-red-700" onclick="removeItem('{{ item.id }}', '{{ supplier.id }}')">Remove</button>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Cart Summary -->
-        <div class="flex flex-col sm:flex-row justify-between items-center mt-8">
-            <div class="mb-4 sm:mb-0">
-                <span class="text-xl font-semibold">Total Amount:</span>
-                <span id="total-amount" class="ml-2">YR{{ cart.get_total_amount|floatformat:2 }}</span>
+<!-- Hero Section -->
+<section class="cart-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">سلة التسوق</h1>
+                <p class="lead mb-0">استعرض المنتجات في سلة التسوق الخاصة بك</p>
             </div>
-            <div>
-                <a href="{% url 'checkout_select_address_or_custom_address' supplier.id  %}" class="bg-blue-500 text-white px-8 py-3 rounded-full hover:bg-blue-700">
-                    Proceed to Checkout
+            <div class="col-md-4 text-md-end">
+                <div class="bg-white/20 rounded-lg p-2 d-inline-block">
+                    <span class="d-flex align-items-center">
+                        <i class="fas fa-shopping-cart fs-4 me-2"></i>
+                        <span class="fs-5 fw-bold">{{ cart.get_total_items }} منتج</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container mb-5">
+    {% if cart.cart_items.all %}
+    <div class="row">
+        <!-- Cart Items -->
+        <div class="col-lg-8">
+            <div class="cart-container">
+                <div class="cart-header">
+                    <h3 class="mb-0">منتجاتك</h3>
+                </div>
+                
+                {% for item in cart.cart_items.all %}
+                <div class="cart-item d-flex align-items-center justify-content-between" id="row-{{ item.id }}">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image">
+                        <div class="ms-4 cart-item-details">
+                            <h4 class="cart-item-name">{{ item.product.name }}</h4>
+                            <div class="cart-item-price">YR{{ item.product.price }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center">
+                        <!-- Quantity Controls -->
+                        <div class="quantity-controls me-4">
+                            <button class="qty-btn qty-btn-minus" onclick="decreaseQuantity('{{ item.id }}', '{{ supplier.id }}')">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            
+                            <span id="quantity-{{ item.id }}" class="qty-display">{{ item.quantity }}</span>
+                            
+                            <button class="qty-btn qty-btn-plus" onclick="increaseQuantity('{{ item.id }}', '{{ supplier.id }}')">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Subtotal -->
+                        <div class="cart-item-subtotal me-4" id="subtotal-{{ item.id }}">
+                            YR{{ item.get_subtotal|floatformat:2 }}
+                        </div>
+                        
+                        <!-- Remove Button -->
+                        <button class="remove-btn" onclick="removeItem('{{ item.id }}', '{{ supplier.id }}')">
+                            <i class="fas fa-trash"></i>
+                            حذف
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Cart Summary -->
+        <div class="col-lg-4">
+            <div class="cart-summary">
+                <h3 class="summary-title">ملخص الطلب</h3>
+                
+                <div class="summary-item">
+                    <span class="summary-label">عدد المنتجات</span>
+                    <span class="summary-value">{{ cart.get_total_items }}</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">مجموع المنتجات</span>
+                    <span class="summary-value">YR{{ cart.get_total_amount|floatformat:2 }}</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">التوصيل</span>
+                    <span class="summary-value">YR0.00</span>
+                </div>
+                
+                <div class="summary-total">
+                    <span class="total-label">المجموع الكلي</span>
+                    <span id="total-amount" class="total-amount">YR{{ cart.get_total_amount|floatformat:2 }}</span>
+                </div>
+                
+                <a href="{% url 'checkout_select_address_or_custom_address' supplier.id %}" class="checkout-btn">
+                    <i class="fas fa-credit-card"></i>
+                    اتمام الشراء
+                </a>
+                
+                <a href="{% url 'product-list' supplier.id %}" class="continue-shopping">
+                    <i class="fas fa-arrow-right"></i>
+                    مواصلة التسوق
                 </a>
             </div>
         </div>
+    </div>
     {% else %}
-        <p class="text-center text-gray-500">Your cart is empty.</p>
+    <!-- Empty Cart -->
+    <div class="empty-cart">
+        <i class="fas fa-shopping-cart"></i>
+        <h3>سلة التسوق فارغة</h3>
+        <p class="text-muted">لم تقم بإضافة أي منتجات إلى سلة التسوق بعد</p>
+        <a href="{% url 'product-list' supplier.id %}" class="continue-shopping">
+            <i class="fas fa-arrow-right"></i>
+            ابدأ التسوق الآن
+        </a>
+    </div>
     {% endif %}
-    <script>
-        function increaseQuantity(itemId, supplierId) {
-            var csrftoken = getCookie('csrftoken');
+</div>
 
-            $.ajax({
-                url: `{% url 'increase_quantity' item_id=0 supplier_id=0 %}`.replace('0', itemId).replace('0', supplierId),
-                type: "POST",
-                headers: { "X-CSRFToken": csrftoken },
-                success: function (data) {
-                    if (data.success) {
-                        const quantityElement = $(`#quantity-${itemId}`);
-                        quantityElement.text(data.new_quantity);
+<!-- Toast Notification -->
+<div class="toast-notification" id="toastNotification">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage">تم تحديث السلة بنجاح</span>
+</div>
+{% endblock %}
 
-                        const subtotalElement = $(`#subtotal-${itemId}`);
-                        if (subtotalElement.length && typeof data.new_subtotal === 'number' && !isNaN(data.new_subtotal)) {
-                            subtotalElement.text(`YR${data.new_subtotal.toFixed(2)}`);
-                        } else {
-                            console.error(`Subtotal element with ID subtotal-${itemId} not found or new_subtotal is not a valid number.`);
-                        }
-                        
-                        
-                        const totalAmountElement = $('#total-amount');
-                        totalAmountElement.text(`YR${data.cart_total.toFixed(2)}`);
-
-                        const totalItemsCountElement = $('#total-items');
-                        totalItemsCountElement.text(`${data.cart_items_count.toFixed(0)}`);
-                        // If the request is successful, display a success message
-                        // alert(response.message);
-                        // Update the quantity of the item in the cart
-                        $("#quantity-" + productId).html(data.quantity);
-
-                    } else {
-                        console.error("Failed to increase quantity");
-                    }
-                },
-                error: function (error) {
-                    console.error("An error occurred while increasing the quantity.");
-                }
-            });
-        }
-
-        function decreaseQuantity(itemId, supplierId) {
-            var csrftoken = getCookie('csrftoken');
-
-            $.ajax({
-                url: `{% url 'decrease_quantity' item_id=0 supplier_id=0 %}`.replace('0', itemId).replace('0', supplierId),
-                type: "POST",
-                headers: { "X-CSRFToken": csrftoken },
-                success: function (data) {
-                    if (data.success) {
-                        const quantityElement = $(`#quantity-${itemId}`);
-                        quantityElement.text(data.new_quantity);
-
-                        const subtotalElement = $(`#subtotal-${itemId}`);
-                        if (subtotalElement.length && typeof data.new_subtotal === 'number' && !isNaN(data.new_subtotal)) {
-                            subtotalElement.text(`YR${data.new_subtotal.toFixed(2)}`);
-                        }
-
-                        if (data.new_quantity === 0) {
-                            $(`#row-${itemId}`).remove();
-                        }
-
-                        const totalAmountElement = $('#total-amount');
-                        totalAmountElement.text(`YR${data.cart_total.toFixed(2)}`);
-
-                        const totalItemsCountElement = $('#total-items');
-                        totalItemsCountElement.text(`${data.cart_items_count.toFixed(0)}`);
-                        // If the request is successful, display a success message
-                        // alert(response.message);
-                        // Update the quantity of the item in the cart
-                        $("#quantity-" + productId).html(data.quantity);
-
-                    } else {
-                        console.error("Failed to decrease quantity");
-                    }
-                },
-                error: function (error) {
-                    console.error("An error occurred while decreasing the quantity.");
-                }
-            });
-        }
-
-        function removeItem(itemId, supplierId) {
-            var csrftoken = getCookie('csrftoken');
-
-            $.ajax({
-                url: `{% url 'remove_item' item_id=0 supplier_id=0 %}`.replace('0', itemId).replace('0', supplierId),
-                type: "POST",
-                headers: { "X-CSRFToken": csrftoken },
-                success: function (data) {
-                    if (data.success) {
-                        $(`#row-${itemId}`).remove();
-
-                        const totalAmountElement = $('#total-amount');
-                        totalAmountElement.text(`$${data.cart_total.toFixed(2)}`);
-                    } else {
-                        console.error("Failed to remove the item");
-                    }
-                },
-                error: function (error) {
-                    console.error("An error occurred while removing the item.");
-                }
-            });
+{% block extra_js %}
+<script>
+    // Show toast notification
+    function showToast(message) {
+        const toast = document.getElementById('toastNotification');
+        const toastMessage = document.getElementById('toastMessage');
+        
+        toastMessage.textContent = message;
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+    
+    // Update cart badge
+    function updateCartBadge(count) {
+        const badge = document.getElementById('total-items');
+        if (badge) {
+            badge.textContent = count;
         }
         
-    </script>
+        // Also update the badge in the navbar if it exists
+        const navBadge = document.querySelector('nav #total-items');
+        if (navBadge) {
+            navBadge.textContent = count;
+        }
+    }
+    
+    function increaseQuantity(itemId, supplierId) {
+        var csrftoken = getCookie('csrftoken');
+
+        $.ajax({
+            url: `{% url 'increase_quantity' item_id=0 supplier_id=0 %}`.replace('0', itemId).replace('0', supplierId),
+            type: "POST",
+            headers: { "X-CSRFToken": csrftoken },
+            success: function (data) {
+                if (data.success) {
+                    const quantityElement = $(`#quantity-${itemId}`);
+                    quantityElement.text(data.new_quantity);
+
+                    const subtotalElement = $(`#subtotal-${itemId}`);
+                    if (subtotalElement.length && typeof data.new_subtotal === 'number' && !isNaN(data.new_subtotal)) {
+                        subtotalElement.text(`YR${data.new_subtotal.toFixed(2)}`);
+                    }
+                    
+                    const totalAmountElement = $('#total-amount');
+                    totalAmountElement.text(`YR${data.cart_total.toFixed(2)}`);
+
+                    updateCartBadge(data.cart_items_count);
+                    
+                    // Show success notification
+                    showToast('تم زيادة الكمية بنجاح');
+                } else {
+                    console.error("Failed to increase quantity");
+                    showToast('حدث خطأ أثناء زيادة الكمية');
+                }
+            },
+            error: function (error) {
+                console.error("An error occurred while increasing the quantity.");
+                showToast('حدث خطأ أثناء زيادة الكمية');
+            }
+        });
+    }
+
+    function decreaseQuantity(itemId, supplierId) {
+        var csrftoken = getCookie('csrftoken');
+
+        $.ajax({
+            url: `{% url 'decrease_quantity' item_id=0 supplier_id=0 %}`.replace('0', itemId).replace('0', supplierId),
+            type: "POST",
+            headers: { "X-CSRFToken": csrftoken },
+            success: function (data) {
+                if (data.success) {
+                    const quantityElement = $(`#quantity-${itemId}`);
+                    quantityElement.text(data.new_quantity);
+
+                    const subtotalElement = $(`#subtotal-${itemId}`);
+                    if (subtotalElement.length && typeof data.new_subtotal === 'number' && !isNaN(data.new_subtotal)) {
+                        subtotalElement.text(`YR${data.new_subtotal.toFixed(2)}`);
+                    }
+
+                    if (data.new_quantity === 0) {
+                        const rowElement = $(`#row-${itemId}`);
+                        rowElement.addClass('cart-item-removed');
+                        setTimeout(() => {
+                            rowElement.remove();
+                            
+                            // Check if cart is empty after removal
+                            if ($('.cart-item').length === 0) {
+                                location.reload();
+                            }
+                        }, 500);
+                    }
+
+                    const totalAmountElement = $('#total-amount');
+                    totalAmountElement.text(`YR${data.cart_total.toFixed(2)}`);
+
+                    updateCartBadge(data.cart_items_count);
+                    
+                    // Show success notification
+                    showToast('تم تقليل الكمية بنجاح');
+                } else {
+                    console.error("Failed to decrease quantity");
+                    showToast('حدث خطأ أثناء تقليل الكمية');
+                }
+            },
+            error: function (error) {
+                console.error("An error occurred while decreasing the quantity.");
+                showToast('حدث خطأ أثناء تقليل الكمية');
+            }
+        });
+    }
+
+    function removeItem(itemId, supplierId) {
+        if (!confirm('هل أنت متأكد من حذف هذا المنتج من السلة؟')) {
+            return;
+        }
+        
+        var csrftoken = getCookie('csrftoken');
+
+        $.ajax({
+            url: `{% url 'remove_item' item_id=0 supplier_id=0 %}`.replace('0', itemId).replace('0', supplierId),
+            type: "POST",
+            headers: { "X-CSRFToken": csrftoken },
+            success: function (data) {
+                if (data.success) {
+                    const rowElement = $(`#row-${itemId}`);
+                    rowElement.addClass('cart-item-removed');
+                    setTimeout(() => {
+                        rowElement.remove();
+                        
+                        // Check if cart is empty after removal
+                        if ($('.cart-item').length === 0) {
+                            location.reload();
+                        }
+                    }, 500);
+
+                    const totalAmountElement = $('#total-amount');
+                    totalAmountElement.text(`YR${data.cart_total.toFixed(2)}`);
+                    
+                    updateCartBadge(data.cart_items_count);
+                    
+                    // Show success notification
+                    showToast('تم حذف المنتج من السلة');
+                } else {
+                    console.error("Failed to remove the item");
+                    showToast('حدث خطأ أثناء حذف المنتج');
+                }
+            },
+            error: function (error) {
+                console.error("An error occurred while removing the item.");
+                showToast('حدث خطأ أثناء حذف المنتج');
+            }
+        });
+    }
+    
+    // Add animation to cart items
+    document.addEventListener('DOMContentLoaded', function() {
+        const cartItems = document.querySelectorAll('.cart-item');
+        
+        cartItems.forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(20px)';
+            item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            
+            setTimeout(() => {
+                item.style.opacity = '1';
+                item.style.transform = 'translateX(0)';
+            }, index * 100);
+        });
+    });
+</script>
 {% endblock %}
