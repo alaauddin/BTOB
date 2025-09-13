@@ -622,6 +622,42 @@
                 item.style.transform = 'translateX(0)';
             }, index * 100);
         });
+        
+        // Debug checkout button
+        const checkoutBtn = document.getElementById('checkout-btn');
+        if (checkoutBtn) {
+            console.log('Checkout button found:', checkoutBtn);
+            console.log('Checkout button href:', checkoutBtn.href);
+            
+            checkoutBtn.addEventListener('click', function(e) {
+                console.log('Checkout button clicked!');
+                console.log('Event:', e);
+                console.log('Target href:', this.href);
+                
+                // Check if the URL is valid
+                if (!this.href || this.href.includes('None')) {
+                    e.preventDefault();
+                    console.error('Invalid checkout URL detected!');
+                    showToast('خطأ في رابط اتمام الشراء');
+                    return false;
+                }
+            });
+        } else {
+            console.error('Checkout button not found!');
+        }
+        
+        // Debug supplier variable
+        console.log('Supplier ID from template:', '{{ supplier.id }}');
+        console.log('Supplier object:', '{{ supplier }}');
+        console.log('Cart items count:', {{ cart.get_total_items }});
+        
+        // Test URL generation
+        try {
+            const testUrl = "{% url 'checkout_select_address_or_custom_address' supplier.id %}";
+            console.log('Generated checkout URL:', testUrl);
+        } catch (error) {
+            console.error('Error generating checkout URL:', error);
+        }
     });
 </script>
 {% endblock %}

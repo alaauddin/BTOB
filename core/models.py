@@ -9,6 +9,7 @@ COUNTRY_CHO=[('Yemen','Yemen')]
 
 
 class SupplierCategory(models.Model):
+    image = models.ImageField(upload_to='images/supplier_category_images/', blank=True, null=True)
     name = models.CharField(max_length=100)
     def __str__(self):
         return self.name

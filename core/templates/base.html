@@ -442,7 +442,7 @@
     <!-- Main Content -->
     <main class="main-content flex-grow relative">
         <!-- Background Pattern -->
-        <div class="absolute inset-0 opacity-5">
+        <div class="absolute inset-0 opacity-5 pointer-events-none">
             <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
@@ -716,69 +716,84 @@
 
     {% if user.is_authenticated %}
     <script>
-        function addToCart(productId, supplierId) {
-            const csrftoken = getCookie('csrftoken');
-            
-            $.ajax({
-                url: "{% url 'add_to_cart' product_id=0 supplier_id=0 %}".replace('0', productId).replace('0', supplierId),
-                type: "POST",
-                headers: { "X-CSRFToken": csrftoken },
-                success: function (response) {
-                    if (response.cart_item_count > 0) {
-                        $('#ib-' + productId).show();
-                    }
-                    
-                    // Update cart counts with animation
-                    $('#total-items').text(response.cart_items_count);
-                    $('#total-items-mobile').text(response.cart_items_count);
-                    $('#total-qty-items-' + productId).text(response.cart_item_count);
-                    $("#quantity-" + productId).html(response.quantity);
-                    
-                    // Animate the cart elements
-                    animateCartElement('total-items');
-                    animateCartElement('total-items-mobile');
-                    
-                    // Show success notification
-                    showNotification('تمت إضافة المنتج إلى السلة بنجاح', 'success');
-                },
-                error: function (error) {
-                    showNotification('حدث خطأ أثناء إضافة المنتج إلى السلة', 'error');
-                }
-            });
+        // Wait for jQuery to be available
+        function waitForJQuery(callback) {
+            if (typeof $ !== 'undefined') {
+                callback();
+            } else {
+                setTimeout(function() {
+                    waitForJQuery(callback);
+                }, 100);
+            }
         }
         
-        function subToCart(productId, supplierId) {
-            const csrftoken = getCookie('csrftoken');
-            
-            $.ajax({
-                url: "{% url 'sub_to_cart' product_id=0 supplier_id=0 %}".replace('0', productId).replace('0', supplierId),
-                type: "POST",
-                headers: { "X-CSRFToken": csrftoken },
-                success: function (response) {
-                    if (response.cart_item_count > 0) {
-                        $('#ib-' + productId).show();
-                    } else {
-                        $('#ib-' + productId).hide();
+        waitForJQuery(function() {
+            window.addToCart = function(productId, supplierId) {
+                const csrftoken = getCookie('csrftoken');
+                
+                $.ajax({
+                    url: "{% url 'add_to_cart' product_id=0 supplier_id=0 %}".replace('0', productId).replace('0', supplierId),
+                    type: "POST",
+                    headers: { "X-CSRFToken": csrftoken },
+                    success: function (response) {
+                        if (response.cart_item_count > 0) {
+                            $('#ib-' + productId).show();
+                        }
+                        
+                        // Update cart counts with animation
+                        $('#total-items').text(response.cart_items_count);
+                        $('#total-items-mobile').text(response.cart_items_count);
+                        $('#total-qty-items-' + productId).text(response.cart_item_count);
+                        $("#quantity-" + productId).html(response.quantity);
+                        
+                        // Animate the cart elements
+                        animateCartElement('total-items');
+                        animateCartElement('total-items-mobile');
+                        
+                        // Show success notification
+                        showNotification('تمت إضافة المنتج إلى السلة بنجاح', 'success');
+                    },
+                    error: function (error) {
+                        showNotification('حدث خطأ أثناء إضافة المنتج إلى السلة', 'error');
                     }
-                    
-                    // Update cart counts with animation
-                    $('#total-items').text(response.cart_items_count);
-                    $('#total-items-mobile').text(response.cart_items_count);
-                    $('#total-qty-items-' + productId).text(response.cart_item_count);
-                    $("#quantity-" + productId).html(response.quantity);
-                    
-                    // Animate the cart elements
-                    animateCartElement('total-items');
-                    animateCartElement('total-items-mobile');
-                    
-                    // Show success notification
-                    showNotification('تم تحديث الكمية في السلة', 'success');
-                },
-                error: function (response) {
-                    showNotification(response.message || 'حدث خطأ أثناء تحديث السلة', 'error');
-                }
-            });
-        }
+                });
+            }
+        });
+        
+        waitForJQuery(function() {
+            window.subToCart = function(productId, supplierId) {
+                const csrftoken = getCookie('csrftoken');
+                
+                $.ajax({
+                    url: "{% url 'sub_to_cart' product_id=0 supplier_id=0 %}".replace('0', productId).replace('0', supplierId),
+                    type: "POST",
+                    headers: { "X-CSRFToken": csrftoken },
+                    success: function (response) {
+                        if (response.cart_item_count > 0) {
+                            $('#ib-' + productId).show();
+                        } else {
+                            $('#ib-' + productId).hide();
+                        }
+                        
+                        // Update cart counts with animation
+                        $('#total-items').text(response.cart_items_count);
+                        $('#total-items-mobile').text(response.cart_items_count);
+                        $('#total-qty-items-' + productId).text(response.cart_item_count);
+                        $("#quantity-" + productId).html(response.quantity);
+                        
+                        // Animate the cart elements
+                        animateCartElement('total-items');
+                        animateCartElement('total-items-mobile');
+                        
+                        // Show success notification
+                        showNotification('تم تحديث الكمية في السلة', 'success');
+                    },
+                    error: function (response) {
+                        showNotification(response.message || 'حدث خطأ أثناء تحديث السلة', 'error');
+                    }
+                });
+            }
+        });
         
         function showNotification(message, type) {
             // Create enhanced notification element
