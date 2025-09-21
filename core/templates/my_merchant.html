@@ -300,32 +300,32 @@
             <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i class="fas fa-box text-blue-500 text-2xl"></i>
             </div>
-            <div class="text-3xl font-bold text-blue-600 mb-2">{{ products.count }}</div>
+            <div class="text-3xl font-bold text-blue-600 mb-2">{{ total_products }}</div>
             <div class="text-gray-600 font-semibold">إجمالي المنتجات</div>
         </div>
         
         <div class="stats-card p-6 text-center">
             <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-tags text-green-500 text-2xl"></i>
+                <i class="fas fa-shopping-cart text-green-500 text-2xl"></i>
             </div>
-            <div class="text-3xl font-bold text-green-600 mb-2">{{ active_offers_count }}</div>
-            <div class="text-gray-600 font-semibold">العروض النشطة</div>
-        </div>
-        
-        <div class="stats-card p-6 text-center">
-            <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-star text-purple-500 text-2xl"></i>
-            </div>
-            <div class="text-3xl font-bold text-purple-600 mb-2">4.8</div>
-            <div class="text-gray-600 font-semibold">تقييم المتجر</div>
+            <div class="text-3xl font-bold text-green-600 mb-2">{{ total_orders }}</div>
+            <div class="text-gray-600 font-semibold">إجمالي الطلبات</div>
         </div>
         
         <div class="stats-card p-6 text-center">
             <div class="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-shopping-cart text-orange-500 text-2xl"></i>
+                <i class="fas fa-clock text-orange-500 text-2xl"></i>
             </div>
-            <div class="text-3xl font-bold text-orange-600 mb-2">156</div>
-            <div class="text-gray-600 font-semibold">الطلبات هذا الشهر</div>
+            <div class="text-3xl font-bold text-orange-600 mb-2">{{ pending_orders }}</div>
+            <div class="text-gray-600 font-semibold">طلبات معلقة</div>
+        </div>
+        
+        <div class="stats-card p-6 text-center">
+            <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-dollar-sign text-purple-500 text-2xl"></i>
+            </div>
+            <div class="text-3xl font-bold text-purple-600 mb-2">${{ total_revenue|floatformat:0 }}</div>
+            <div class="text-gray-600 font-semibold">إجمالي الإيرادات</div>
         </div>
     </div>
 
@@ -335,6 +335,13 @@
             <button class="tab-btn active" onclick="showTab('products')">
                 <i class="fas fa-box ml-2"></i>
                 المنتجات
+            </button>
+            <button class="tab-btn" onclick="showTab('orders')">
+                <i class="fas fa-shopping-cart ml-2"></i>
+                الطلبات
+                {% if pending_orders > 0 %}
+                <span class="notification-badge">{{ pending_orders }}</span>
+                {% endif %}
             </button>
             <button class="tab-btn" onclick="showTab('offers')">
                 <i class="fas fa-tags ml-2"></i>
@@ -491,6 +498,102 @@
                 </button>
             </div>
         {% endif %}
+    </div>
+
+    <!-- Orders Tab -->
+    <div id="orders-tab" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-gradient">إدارة الطلبات</h2>
+            <div class="flex gap-4">
+                <a href="{% url 'merchant_orders' %}" class="action-btn">
+                    <i class="fas fa-list ml-2"></i>
+                    عرض جميع الطلبات
+                </a>
+                <button class="action-btn bg-gradient-to-r from-purple-500 to-pink-500">
+                    <i class="fas fa-download ml-2"></i>
+                    تصدير الطلبات
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Order Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="stats-card p-6 text-center">
+                <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+                </div>
+                <div class="text-3xl font-bold text-green-600 mb-2">{{ confirmed_orders }}</div>
+                <div class="text-gray-600 font-semibold">طلبات مؤكدة</div>
+            </div>
+            
+            <div class="stats-card p-6 text-center">
+                <div class="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-clock text-orange-500 text-2xl"></i>
+                </div>
+                <div class="text-3xl font-bold text-orange-600 mb-2">{{ pending_orders }}</div>
+                <div class="text-gray-600 font-semibold">طلبات معلقة</div>
+            </div>
+            
+            <div class="stats-card p-6 text-center">
+                <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-calendar text-blue-500 text-2xl"></i>
+                </div>
+                <div class="text-3xl font-bold text-blue-600 mb-2">{{ recent_orders }}</div>
+                <div class="text-gray-600 font-semibold">طلبات هذا الأسبوع</div>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="merchant-card p-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">الطلبات الأخيرة</h3>
+            
+            {% if recent_orders_list %}
+                <div class="space-y-4">
+                    {% for order in recent_orders_list %}
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center space-x-4 space-x-reverse">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                                #{{ order.id }}
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">{{ order.user.get_full_name|default:order.user.username }}</h4>
+                                <p class="text-sm text-gray-600">{{ order.created_at|date:"Y/m/d H:i" }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4 space-x-reverse">
+                            <div class="text-right">
+                                <div class="font-bold text-gray-800">${{ order.total_amount|floatformat:2 }}</div>
+                                <div class="text-sm text-gray-600">{{ order.order_items.count }} منتج</div>
+                            </div>
+                            
+                            <span class="px-3 py-1 rounded-full text-sm font-semibold {% if order.status == 'Pending' %}bg-orange-100 text-orange-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                {% if order.status == 'Pending' %}معلق{% else %}مؤكد{% endif %}
+                            </span>
+                            
+                            <a href="{% url 'merchant_order_detail' order.id %}" class="action-btn text-sm">
+                                <i class="fas fa-eye ml-1"></i>
+                                عرض التفاصيل
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="text-center mt-6">
+                    <a href="{% url 'merchant_orders' %}" class="action-btn">
+                        <i class="fas fa-arrow-left ml-2"></i>
+                        عرض جميع الطلبات
+                    </a>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h3 class="text-2xl font-bold text-gray-600 mb-4">لا توجد طلبات بعد</h3>
+                    <p class="text-gray-500 mb-6">ستظهر طلباتك هنا عندما يبدأ العملاء في الشراء</p>
+                </div>
+            {% endif %}
+        </div>
     </div>
 
     <!-- Promotions Tab -->

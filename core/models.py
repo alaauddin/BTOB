@@ -174,7 +174,22 @@ class Cart(models.Model):
 
     def get_total_amount(self):
         return sum([item.get_subtotal() for item in self.cart_items.all()])
-
+    
+    def get_total_ammout_with_discout(self):
+        total_with_discount = sum([item.get_subtotal_with_discount() for item in self.cart_items.all()])
+        return self.get_total_amount() - total_with_discount
+    
+    def get_total_after_discount(self):
+        return sum([item.get_subtotal_with_discount() for item in self.cart_items.all()])
+    
+    def has_discount(self):
+        cart_items = self.cart_items.all()
+        for cart_item in cart_items:
+            if cart_item.has_discount():
+                return True
+        return False
+        
+        
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='cart_items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='cart_items')
@@ -186,6 +201,14 @@ class CartItem(models.Model):
     def get_subtotal(self):
         return self.product.price * self.quantity
     
+    def get_subtotal_with_discount(self):
+        return self.product.get_price_with_offer() * self.quantity
+    
+    def has_discount(self):
+       return self.product.has_discount()
+    
+    
+    
 
     
     
@@ -196,7 +219,11 @@ class Order(models.Model):
     items = models.ManyToManyField(Product, through='OrderItem')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=50,choices=[('Pending','Pending'),('Confirmed','Confirmed')], default='Pending')
+    status = models.CharField(max_length=50,choices=[
+        ('Pending','Pending'),
+        ('Confirmed','Confirmed'),
+        ('out_for_delivey','Out for Delivery'),
+        ], default='Pending')
     
     def __str__(self):
         return f"Order {self.id} by {self.user.username}"
@@ -208,8 +235,13 @@ class Order(models.Model):
     def get_total_amount(self):
         return sum([item.get_subtotal() for item in self.order_items.all()])
     
+    def get_total_ammout_with_discout(self):
+        return sum([item.get_subtotal_with_discount() for item in self.order_items.all()])
+    
     def get_supplier(self):
         return self.order_items.first().product.supplier
+    
+    
     
 
     
@@ -243,6 +275,9 @@ class OrderItem(models.Model):
 
     def get_subtotal(self):
         return self.product.price * self.quantity
+    
+    def get_subtotal_with_discount(self):
+        return self.product.get_price_with_offer() * self.quantity
     
 
 

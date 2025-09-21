@@ -31,7 +31,7 @@ class CartView(DetailView):
         context['supplier'] = supplier
         context['cart'] = cart
         
-        print(cart.cart_items.all())
+        print(supplier.id)
         return context
     
 
@@ -108,12 +108,13 @@ class IncreaseQuantityView(View):
         cart_item.quantity += 1
         cart_item.save()
 
-        cart_total = int(cart.get_total_amount())
+        cart_total = int(cart.get_total_after_discount())
         cart_items_count = cart.get_total_items()
-        new_subtotal = int(cart_item.get_subtotal())
+        new_subtotal = int(cart_item.get_subtotal_with_discount())
         new_quantity = cart_item.quantity
+        new_total_discout = round(cart.get_total_ammout_with_discout(),2)
 
-        return JsonResponse({'success': True, 'new_subtotal': new_subtotal, 'new_quantity': new_quantity, 'cart_total': cart_total, 'cart_items_count': cart_items_count})
+        return JsonResponse({'success': True, 'new_subtotal': new_subtotal, 'new_quantity': new_quantity, 'cart_total': cart_total, 'cart_items_count': cart_items_count,'new_total_discout':new_total_discout})
 
 @method_decorator(login_required, name='dispatch')
 class DecreaseQuantityView(View):
@@ -135,8 +136,10 @@ class DecreaseQuantityView(View):
         cart_items_count = cart.get_total_items()
         new_subtotal = int(cart_item.get_subtotal())
         new_quantity = cart_item.quantity
+        new_total_discout = round(cart.get_total_ammout_with_discout(),2)
+        
 
-        return JsonResponse({'success': True, 'new_subtotal': new_subtotal, 'new_quantity': new_quantity, 'cart_total': cart_total, 'cart_items_count': cart_items_count, 'cart_item_count': cart_item.quantity})
+        return JsonResponse({'success': True, 'new_subtotal': new_subtotal, 'new_quantity': new_quantity, 'cart_total': cart_total, 'cart_items_count': cart_items_count, 'cart_item_count': cart_item.quantity,'new_total_discout':new_total_discout})
 
 @method_decorator(login_required, name='dispatch')
 class RemoveItemView(View):

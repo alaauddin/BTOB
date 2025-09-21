@@ -1,22 +1,31 @@
-from django.views.generic import DetailView
+from django.shortcuts import render, get_object_or_404
 from core.models import Product, Cart, Supplier
+from django.contrib.auth.decorators import login_required
 
-class ProductDetailView(DetailView):
-    model = Product
-    template_name = 'product_detail.html'
-    context_object_name = 'product'
+@login_required
+def product_detail(request, pk):
+    """Function-based view for product detail.
 
-    
- 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        supplier_id = self.kwargs.get('pk')
-        supplier = Supplier.objects.get(products__id=supplier_id)
-        # Add cart information to the context
-        if self.request.user.is_authenticated:
-            user_cart = Cart.objects.get(user=self.request.user, supplier=supplier) 
-            context['cart'] = user_cart
-        else:
-            context['cart'] = None
+    Provides context similar to the previous DetailView:
+    - product: Product instance (pk)
+    - supplier: Supplier related to the product (if any)
+    - cart: user's Cart for that supplier (or None)
+    """
+    product = get_object_or_404(Product, pk=pk)
 
-        return context
+    # Try to get supplier directly from product if it has a FK, otherwise fall back
+    supplier = Supplier.objects.filter(id=product.supplier_id).first()
+    if not supplier:
+        supplier = Supplier.objects.filter(products__id=product.id).first()
+
+    user_cart = Cart.objects.filter(user=request.user, supplier=supplier).first() 
+    if not user_cart:
+        user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
+
+    context = {
+        'product': product,
+        'supplier': supplier,
+        'cart': user_cart,
+    }
+
+    return render(request, 'product_detail.html', context)

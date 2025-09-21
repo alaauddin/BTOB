@@ -357,7 +357,18 @@
                     <div class="col-md-4">
                         <div class="order-item-meta">
                             <span class="order-item-quantity">الكمية: {{ item.quantity }}</span>
-                            <span class="order-item-price">YR{{ item.product.price|floatformat:2 }}</span>
+                            {% if item.product.has_discount %}
+                            <span class="text-muted text-decoration-line-through me-2">
+                                {{ item.product.price }} ريال
+                            </span>
+                            <span class="text-danger fw-bold">
+                                {{ item.product.get_price_with_offer }} ريال
+                            </span>
+                            {% else %}
+                            <span class="order-item-price">{{ item.product.price|floatformat:2 }} ريال</span>
+                            {% endif %}
+
+
                         </div>
                     </div>
                 </div>
@@ -375,17 +386,23 @@
                 
                 <div class="summary-item">
                     <span class="summary-label">المجموع الجزئي</span>
-                    <span class="summary-value">YR{{ order.get_total_amount|floatformat:2 }}</span>
+                    <span class="summary-value">{{ order.get_total_amount|floatformat:2 }} ريال</span>
                 </div>
+                {% if order.has_discount %}
+                <div class="summary-item">
+                    <span class="text-success fw-bold"> الخصم </span>
+                    <span class="text-success fw-bold">{{ order.get_total_ammout_with_discout|floatformat:2 }} ريال</span>
+                </div>
+                {%endif%}
                 
                 <div class="summary-item">
                     <span class="summary-label">التوصيل</span>
-                    <span class="summary-value">YR0.00</span>
+                    <span class="summary-value">0.00 ريال</span>
                 </div>
                 
                 <div class="summary-total">
                     <span class="total-label">المجموع الكلي</span>
-                    <span class="total-amount">YR{{ order.get_total_amount|floatformat:2 }}</span>
+                    <span class="total-amount">{{ order.get_total_after_discount|floatformat:2 }} ريال</span>
                 </div>
             </div>
         </div>

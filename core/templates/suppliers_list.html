@@ -610,7 +610,7 @@
 <div class="container">
     <div class="stats-section">
         <div class="row">
-            <div class="container mb-5">
+            <div class="container ">
                 <!-- Category Filters Section -->
                 {% if categories %}
                 <div class="filter-container">
@@ -703,7 +703,7 @@
         </div>
     </div>
 </div>
-<div class="container">
+{% comment %} <div class="container">
     <div class="stats-section">
         <div class="row">
                 <div class="col-lg-3 col-md-6 mb-4">
@@ -732,7 +732,7 @@
                 </div>
         </div>
     </div>
-</div>
+</div> {% endcomment %}
 
 <!-- Features Section -->
 <section class="features-section">
@@ -830,386 +830,84 @@
     </div>
 </section>
 
-<!-- Newsletter Section -->
-<section class="newsletter-section py-5" style="background: rgba(255, 255, 255, 0.05);">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-6 text-center">
-                <div class="glass p-4 rounded-3" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2);">
-                    <h3 class="fw-bold mb-3 text-dark">📧 اشترك في نشرتنا الإخبارية</h3>
-                    <p class="text-muted mb-4">احصل على آخر العروض والمنتجات الجديدة مباشرة في بريدك الإلكتروني</p>
-                    <div class="input-group">
-                        <input type="email" class="form-control form-control-lg" placeholder="أدخل بريدك الإلكتروني" style="border-radius: 50px 0 0 50px; border: none; padding: 15px 20px;">
-                        <button class="btn btn-primary btn-lg px-4" type="button" style="border-radius: 0 50px 50px 0; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); border: none;">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        try {
-            const searchInput = document.getElementById('searchInput');
-            const searchForm = document.getElementById('supplierSearchForm');
-            const supplierCards = document.querySelectorAll('.supplier-card-container');
-            const categoryButtons = document.querySelectorAll('.category-btn');
-            const statNumbers = document.querySelectorAll('.stat-number');
-            const featureCards = document.querySelectorAll('.feature-card');
-            
-            // Check if required elements exist
-            if (!searchInput) {
-                console.error('Search input not found!');
-                return;
-            }
-            
-            if (supplierCards.length === 0) {
-                console.error('No supplier cards found!');
-                return;
-            }
-        
-        // Enhanced Search functionality with debounce
-        let searchTimeout;
-        searchInput.addEventListener('keyup', function() {
-            clearTimeout(searchTimeout);
-            
-            searchTimeout = setTimeout(() => {
-                // Get currently active category
-                const activeCategory = document.querySelector('.category-btn.active');
-                const categoryId = activeCategory ? activeCategory.getAttribute('data-category') : 'all';
-                
-                // Filter suppliers based on current category and search
-                filterSuppliersByCategory(categoryId);
-            }, 300); // Reduced timeout for better responsiveness
-        });
-        
-        // Enhanced Category filter functionality
-        if (categoryButtons && categoryButtons.length > 0) {
-            categoryButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    categoryButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                    const category = this.getAttribute('data-category');
-                    
-                    // Filter suppliers based on category
-                    filterSuppliersByCategory(category);
-                });
-            });
-        }
-        
-        // Function to filter suppliers by category and search - make it globally accessible
-        window.filterSuppliersByCategory = function(categoryId) {
-            let visibleCount = 0;
-            const searchFilter = searchInput.value.toUpperCase();
-            
-            supplierCards.forEach((card, index) => {
-                const cardCategories = card.getAttribute('data-categories');
-                const name = card.querySelector('.supplier-name').textContent.toUpperCase();
-                const details = card.querySelectorAll('.supplier-details span');
-                const detailsText = Array.from(details).map(span => span.textContent.toUpperCase()).join(' ');
-                
-                let shouldShow = false;
-                
-                if (categoryId === 'all') {
-                    // Show all if no search filter
-                    if (searchFilter === '') {
-                        shouldShow = true;
-                    } else {
-                        // Show if matches search
-                        shouldShow = name.includes(searchFilter) || detailsText.includes(searchFilter);
-                    }
-                } else {
-                    // Check if supplier belongs to selected category
-                    if (cardCategories && cardCategories.includes(categoryId + ',')) {
-                        if (searchFilter === '') {
-                            shouldShow = true;
-                        } else {
-                            // Show if matches both category and search
-                            shouldShow = name.includes(searchFilter) || detailsText.includes(searchFilter);
-                        }
-                    }
-                }
-                
-                if (shouldShow) {
-                    card.style.display = 'block';
-                    card.style.animationDelay = `${visibleCount * 0.1}s`;
-                    card.classList.add('animate-fade-in');
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                    card.classList.remove('animate-fade-in');
-                }
-            });
-            
-            // Show no results message if needed
-            updateNoResultsMessage(visibleCount);
-        }
-        
-        // Update no results message
-        function updateNoResultsMessage(visibleCount) {
-            let noResultsDiv = document.getElementById('no-results-message');
-            
-            if (visibleCount === 0 && supplierCards.length > 0) {
-                if (!noResultsDiv) {
-                    noResultsDiv = document.createElement('div');
-                    noResultsDiv.id = 'no-results-message';
-                    noResultsDiv.className = 'col-12 text-center py-5';
-                    noResultsDiv.innerHTML = `
-                        <div class="no-suppliers">
-                            <i class="fas fa-search"></i>
-                            <h3>لم يتم العثور على نتائج</h3>
-                            <p class="text-muted">جرب استخدام كلمات مفتاحية أخرى أو تصفية مختلفة</p>
-                            <button class="btn btn-primary mt-3" onclick="clearSearch()">
-                                <i class="fas fa-times me-2"></i>مسح البحث
-                            </button>
-                        </div>
-                    `;
-                    document.getElementById('supplierGrid').appendChild(noResultsDiv);
-                }
-                noResultsDiv.style.display = 'block';
-            } else if (noResultsDiv) {
-                noResultsDiv.style.display = 'none';
-            }
-        }
-        
-        // Clear search function - make it globally accessible
-        window.clearSearch = function() {
-            searchInput.value = '';
-            
-            // Get currently active category
-            const activeCategory = document.querySelector('.category-btn.active');
-            const categoryId = activeCategory ? activeCategory.getAttribute('data-category') : 'all';
-            
-            // Filter suppliers based on current category
-            filterSuppliersByCategory(categoryId);
-        };
-        
-        // Filter by category function - make it globally accessible
-        window.filterByCategory = function(categoryId) {
-            // Update active button
-            categoryButtons.forEach(btn => btn.classList.remove('active'));
-            const activeButton = document.querySelector(`[data-category="${categoryId}"]`);
-            if (activeButton) {
-                activeButton.classList.add('active');
-            }
-            
-            // Filter suppliers based on category
-            filterSuppliersByCategory(categoryId);
-        };
-        
-        // Animated counter for statistics
-        function animateCounters() {
-            statNumbers.forEach(stat => {
-                const target = parseInt(stat.textContent.replace(/[^0-9]/g, ''));
-                const increment = target / 50;
-                let current = 0;
-                
-                const timer = setInterval(() => {
-                    current += increment;
-                    if (current >= target) {
-                        stat.textContent = stat.textContent.replace(/[0-9]+/, target);
-                        clearInterval(timer);
-                    } else {
-                        stat.textContent = stat.textContent.replace(/[0-9]+/, Math.floor(current));
-                    }
-                }, 40);
-            });
-        }
-        
-        // Enhanced scroll animations
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.1
-        };
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = 1;
-                    entry.target.style.transform = 'translateY(0)';
-                    
-                    // Trigger counter animation for stats
-                    if (entry.target.classList.contains('stats-section')) {
-                        animateCounters();
-                    }
-                }
-            });
-        }, observerOptions);
-        
-        // Apply initial styles for animation
-        supplierCards.forEach((card, index) => {
-            card.style.opacity = 0;
-            card.style.transform = 'translateY(30px)';
-            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            card.style.transitionDelay = `${index * 0.1}s`;
-            observer.observe(card);
-        });
-        
-        // Initialize filtering - hide all suppliers initially
-        supplierCards.forEach(card => {
-            card.style.display = 'none';
-        });
-        
-        // Show "All" category by default if no category is selected
-        const defaultCategory = document.querySelector('.category-btn[data-category="all"]');
-        if (defaultCategory && !document.querySelector('.category-btn.active')) {
-            defaultCategory.click();
-        }
-        
-        // Animate feature cards
-        featureCards.forEach((card, index) => {
-            card.style.opacity = 0;
-            card.style.transform = 'translateY(30px)';
-            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            card.style.transitionDelay = `${index * 0.15}s`;
-            observer.observe(card);
-        });
-        
-        // Animate stats section
-        const statsSection = document.querySelector('.stats-section');
-        if (statsSection) {
-            statsSection.style.opacity = 0;
-            statsSection.style.transform = 'translateY(30px)';
-            statsSection.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-            observer.observe(statsSection);
-        }
-        
-        // Add floating animation to search input
-        searchInput.addEventListener('focus', function() {
-            this.parentElement.style.transform = 'translateY(-5px) scale(1.02)';
-        });
-        
-        searchInput.addEventListener('blur', function() {
-            this.parentElement.style.transform = 'translateY(0) scale(1)';
-        });
-        
-        // Add hover effects to supplier cards
-        supplierCards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.zIndex = '10';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.zIndex = '1';
-            });
-        });
-        
-        // Submit search on Enter for client-side filtering
-        searchInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                
-                // Get currently active category
-                const activeCategory = document.querySelector('.category-btn.active');
-                const categoryId = activeCategory ? activeCategory.getAttribute('data-category') : 'all';
-                
-                // Filter suppliers based on current category and search
-                filterSuppliersByCategory(categoryId);
-            }
-        });
-        
-        } catch (error) {
-            console.error('Error initializing suppliers list:', error);
-        }
+(() => {
+  // Minimal helpers
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const debounce = (fn, ms=200) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; };
+
+  // Cached nodes
+  const searchInput = $('#searchInput');
+  const supplierGrid = $('#supplierGrid');
+  const supplierCards = supplierGrid ? $$('.supplier-card-container') : [];
+  const categoryButtons = $$('.category-btn');
+
+  if (!searchInput || !supplierGrid) return;
+
+  // Cache categories on cards
+  supplierCards.forEach(c => c._cats = (c.getAttribute('data-categories')||'').split(',').filter(Boolean));
+
+  // Core filter function (exposed)
+  window.filterSuppliersByCategory = (categoryId='all') => {
+    const q = (searchInput.value||'').trim().toUpperCase();
+    let visible = 0;
+
+    supplierCards.forEach(card => {
+      const inCat = categoryId==='all' || !categoryId || card._cats.includes(String(categoryId));
+      const name = (card.querySelector('.supplier-name')||{textContent:''}).textContent.toUpperCase();
+      const details = Array.from(card.querySelectorAll('.supplier-details span')).map(s=>s.textContent.toUpperCase()).join(' ');
+      const matches = (!q) ? true : (name.includes(q) || details.includes(q));
+      const show = inCat && matches;
+
+      card.classList.toggle('d-none', !show);
+      // small visual reveal using .show if available
+      if (show) requestAnimationFrame(()=>card.classList.add('show'));
+      else card.classList.remove('show');
+
+      if (show) visible++;
     });
-    
-    // Add CSS animations
-    if (!document.getElementById('suppliers-list-styles')) {
-        const style = document.createElement('style');
-        style.id = 'suppliers-list-styles';
-        style.textContent = `
-        @keyframes animate-fade-in {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        
-        .animate-fade-in {
-            animation: animate-fade-in 0.6s ease forwards;
-        }
-        
-        .search-container {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        @keyframes pulse-ring {
-            0% { transform: scale(0.33); }
-            80%, 100% { opacity: 0; }
-        }
-        
-         .feature-icon::after {
-             content: '';
-             position: absolute;
-             top: 0;
-             left: 0;
-             width: 100%;
-             height: 100%;
-             border-radius: 50%;
-             background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-             opacity: 0.3;
-             animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
-         }
-         
-         .back-to-top {
-             position: fixed;
-             bottom: 30px;
-             right: 30px;
-             width: 60px;
-             height: 60px;
-             background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-             color: white;
-             border: none;
-             border-radius: 50%;
-             font-size: 1.5rem;
-             box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
-             cursor: pointer;
-             opacity: 0;
-             visibility: hidden;
-             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-             z-index: 1000;
-         }
-         
-         .back-to-top.show {
-             opacity: 1;
-             visibility: visible;
-             transform: translateY(0);
-         }
-         
-         .back-to-top:hover {
-             transform: translateY(-5px) scale(1.1);
-             box-shadow: 0 12px 30px rgba(37, 99, 235, 0.4);
-         }
-     `;
-     document.head.appendChild(style);
-     
-     // Add back to top button
-     const backToTopButton = document.createElement('button');
-     backToTopButton.className = 'back-to-top';
-     backToTopButton.innerHTML = '<i class="fas fa-arrow-up"></i>';
-     backToTopButton.setAttribute('aria-label', 'العودة إلى الأعلى');
-     document.body.appendChild(backToTopButton);
-     
-     // Show/hide back to top button
-     window.addEventListener('scroll', function() {
-         if (window.pageYOffset > 300) {
-             backToTopButton.classList.add('show');
-         } else {
-             backToTopButton.classList.remove('show');
-         }
-     });
-     
-     // Smooth scroll to top
-     backToTopButton.addEventListener('click', function() {
-         window.scrollTo({
-             top: 0,
-             behavior: 'smooth'
-         });
-     });
-     } // End of if statement for style
+
+    // no-results message
+    let noMsg = $('#no-results-message');
+    if (visible===0 && supplierCards.length>0) {
+      if (!noMsg) {
+        noMsg = document.createElement('div');
+        noMsg.id = 'no-results-message';
+        noMsg.className = 'col-12 text-center py-5';
+        noMsg.innerHTML = `<div class="no-suppliers"><i class="fas fa-search"></i><h3>لم يتم العثور على نتائج</h3><p class="text-muted">جرب كلمات مفتاحية أخرى أو تصفية مختلفة</p><button class="btn btn-primary mt-3" id="clear-search-btn">مسح البحث</button></div>`;
+        supplierGrid.appendChild(noMsg);
+        $('#clear-search-btn').addEventListener('click', window.clearSearch);
+      }
+      noMsg.style.display = '';
+    } else if (noMsg) noMsg.style.display = 'none';
+  };
+
+  // Public helpers used by template
+  window.filterByCategory = (cat) => {
+    categoryButtons.forEach(b=>b.classList.toggle('active', b.getAttribute('data-category')===String(cat)));
+    window.filterSuppliersByCategory(cat);
+  };
+
+  window.clearSearch = () => { searchInput.value=''; const active = document.querySelector('.category-btn.active'); const cat = active?active.getAttribute('data-category'):'all'; window.filterSuppliersByCategory(cat); searchInput.focus(); };
+
+  // Events
+  searchInput.addEventListener('input', debounce(()=>{
+    const active = document.querySelector('.category-btn.active');
+    const cat = active?active.getAttribute('data-category'):'all';
+    window.filterSuppliersByCategory(cat);
+  }, 180));
+
+  categoryButtons.forEach(b=> b.addEventListener('click', e=>{ e.preventDefault(); categoryButtons.forEach(x=>x.classList.remove('active')); b.classList.add('active'); window.filterSuppliersByCategory(b.getAttribute('data-category')); }));
+
+  // Init default
+  const defaultBtn = document.querySelector('.category-btn[data-category="all"]');
+  if (defaultBtn && !document.querySelector('.category-btn.active')) defaultBtn.classList.add('active');
+  setTimeout(()=> window.filterSuppliersByCategory((document.querySelector('.category-btn.active')||defaultBtn).getAttribute('data-category') ), 30);
+})();
 </script>
 {% endblock %}

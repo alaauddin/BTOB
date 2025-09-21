@@ -2014,11 +2014,7 @@
                 </span>
             </div>
             
-            <div class="order-actions">
-                <button class="action-btn details" data-bs-toggle="modal" data-bs-target="#orderDetailsModal{{ order.id }}">
-                    <i class="fas fa-eye"></i> التفاصيل
-                            </button>
-            </div>
+
             
             <!-- Enhanced Payment Methods -->
             <div class="payment-methods">
@@ -2027,9 +2023,9 @@
                     <i class="fab fa-whatsapp"></i>
                     واتساب
                 </a>
-                <button class="payment-method" onclick="showPaymentOptions({{ order.id }})">
-                    <i class="fas fa-credit-card"></i>
-                    طرق أخرى
+                <button class="payment-method" data-bs-toggle="modal" data-bs-target="#orderDetailsModal{{ order.id }}">
+                    <i class="fas fa-eye"></i>
+                    التفاصيل
                 </button>
                     </div>
                 </div>
@@ -2178,9 +2174,9 @@
                     <!-- Hover Overlay with Actions -->
                     <div class="product-overlay">
                         <div class="overlay-actions">
-                            <button class="overlay-btn" onclick="quickView({{ product.id }})" data-bs-toggle="tooltip" title="عرض سريع">
+                            <a href="{% url 'product_detail' pk=product.pk %}" class="overlay-btn" data-bs-toggle="tooltip" title="عرض سريع">
                                 <i class="fas fa-eye"></i>
-                            </button>
+                            </a>
                             <button class="overlay-btn" onclick="shareProduct({{ product.id }})" data-bs-toggle="tooltip" title="مشاركة">
                                 <i class="fas fa-share-alt"></i>
                             </button>
@@ -2287,10 +2283,25 @@
 {% block extra_js %}
 <script>
     // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
+    try {
+        if (typeof bootstrap !== 'undefined') {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        } else {
+            // If bootstrap not yet available, initialize on DOMContentLoaded
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof bootstrap === 'undefined') return;
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            });
+        }
+    } catch (err) {
+        console.warn('Tooltip initialization skipped:', err);
+    }
     
     // Wishlist functionality with AJAX
     function toggleWishlist(productId) {
@@ -2360,24 +2371,47 @@
     // Load initial wishlist status for all products
     function loadWishlistStatus() {
         const productCards = document.querySelectorAll('.modern-product-card');
-        
+
         productCards.forEach(card => {
             const productId = card.getAttribute('data-product-id');
             const wishlistBtn = card.querySelector('.wishlist-btn');
-            const icon = wishlistBtn.querySelector('i');
-            
+            if (!productId || !wishlistBtn) return; // guard
+
+            // ensure icon exists
+            let icon = wishlistBtn.querySelector('i');
+            if (!icon) {
+                icon = document.createElement('i');
+                icon.className = 'far fa-heart';
+                wishlistBtn.appendChild(icon);
+            }
+
             fetch(`/wishlist/status/${productId}/`, {
                 method: 'GET',
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
                 },
                 credentials: 'same-origin'
             })
-            .then(response => response.json())
+            .then(response => {
+                if (response.status === 401) {
+                    // not authenticated (or backend returned 401) — stop here
+                    return { success: false, login_required: true };
+                }
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    // unexpected response (HTML redirect to login) — don't throw
+                    return { success: false };
+                }
+                return response.json();
+            })
             .then(data => {
-                if (data.success && data.in_wishlist) {
+                if (data && data.success && data.in_wishlist) {
                     wishlistBtn.classList.add('active');
                     icon.className = 'fas fa-heart';
+                } else {
+                    wishlistBtn.classList.remove('active');
+                    icon.className = 'far fa-heart';
                 }
             })
             .catch(error => {

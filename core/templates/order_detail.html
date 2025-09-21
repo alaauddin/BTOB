@@ -378,7 +378,7 @@
                     <div class="col-md-4">
                         <div class="order-item-meta">
                             <span class="order-item-quantity">الكمية: {{ item.quantity }}</span>
-                            <span class="order-item-price">${{ item.product.price|floatformat:2 }}</span>
+                            <span class="order-item-price">{{ item.product.price|floatformat:2 }} ريال</span>
                         </div>
                     </div>
                 </div>
@@ -396,17 +396,17 @@
                 
                 <div class="summary-item">
                     <span class="summary-label">المجموع الجزئي</span>
-                    <span class="summary-value">${{ order.get_total_amount|floatformat:2 }}</span>
+                    <span class="summary-value">{{ order.get_total_amount|floatformat:2 }} ريال</span>
                 </div>
                 
                 <div class="summary-item">
                     <span class="summary-label">التوصيل</span>
-                    <span class="summary-value">$0.00</span>
+                    <span class="summary-value">0.00 ريال</span>
                 </div>
                 
                 <div class="summary-total">
                     <span class="total-label">المجموع الكلي</span>
-                    <span class="total-amount">${{ order.get_total_amount|floatformat:2 }}</span>
+                    <span class="total-amount">{{ order.get_total_amount|floatformat:2 }} ريال</span>
                 </div>
             </div>
             

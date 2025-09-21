@@ -11,12 +11,17 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.17.0/font/bootstrap-icons.css" rel="stylesheet">
-    
-    <!-- Modern Arabic Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
-    
+
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <!-- Custom CSS -->
     <style>
         :root {
@@ -45,7 +50,8 @@
         }
 
         body {
-            font-family: 'Cairo', 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Use safe system font stack to prevent external font fetches in restricted environments */
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans Arabic', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg,rgba(149, 183, 255, 0.42) 0%,rgba(209, 209, 209, 0.32) 100%);
             background-attachment: fixed;
             min-height: 100vh;
@@ -577,141 +583,21 @@
     </footer>
 
     <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Load non-blocking: defer external libs so parsing isn't blocked. Keep execution order (jQuery before code that expects it). -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer></script>
     
     <!-- Custom JavaScript -->
     <script>
-        // Enhanced mobile menu toggle with animation
-        document.getElementById('hamburger-menu').addEventListener('click', function() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            const hamburgerLines = this.querySelectorAll('.hamburger-line');
-            
-            mobileMenu.classList.toggle('hidden');
-            
-            // Animate hamburger to X
-            if (!mobileMenu.classList.contains('hidden')) {
-                hamburgerLines[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
-                hamburgerLines[1].style.opacity = '0';
-                hamburgerLines[2].style.transform = 'rotate(-45deg) translate(7px, -6px)';
-            } else {
-                hamburgerLines[0].style.transform = 'none';
-                hamburgerLines[1].style.opacity = '1';
-                hamburgerLines[2].style.transform = 'none';
+    
+        (function(){
+            // Unregister service workers (best-effort)
+            if ('serviceWorker' in navigator) {
+                try {
+                    navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => { try { r.unregister(); } catch(e){} }));
+                } catch(e){}
             }
-        });
-
-        // Close mobile menu when clicking outside with animation reset
-        document.addEventListener('click', function(event) {
-            const mobileMenu = document.getElementById('mobile-menu');
-            const hamburgerMenu = document.getElementById('hamburger-menu');
-            const hamburgerLines = hamburgerMenu.querySelectorAll('.hamburger-line');
-            
-            if (!mobileMenu.contains(event.target) && !hamburgerMenu.contains(event.target)) {
-                mobileMenu.classList.add('hidden');
-                // Reset hamburger animation
-                hamburgerLines[0].style.transform = 'none';
-                hamburgerLines[1].style.opacity = '1';
-                hamburgerLines[2].style.transform = 'none';
-            }
-        });
-        
-        // Add scroll effect to navbar
-        let lastScrollTop = 0;
-        window.addEventListener('scroll', function() {
-            const navbar = document.querySelector('nav');
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                // Scrolling down
-                navbar.style.transform = 'translateY(-100%)';
-            } else {
-                // Scrolling up
-                navbar.style.transform = 'translateY(0)';
-            }
-            
-            // Add blur effect when scrolling
-            if (scrollTop > 50) {
-                navbar.style.backdropFilter = 'blur(20px)';
-                navbar.style.webkitBackdropFilter = 'blur(20px)';
-            } else {
-                navbar.style.backdropFilter = 'blur(10px)';
-                navbar.style.webkitBackdropFilter = 'blur(10px)';
-            }
-            
-            lastScrollTop = scrollTop;
-        });
-        
-        // Add loading animation
-        window.addEventListener('load', function() {
-            document.body.style.opacity = '0';
-            document.body.style.transition = 'opacity 0.5s ease';
-            setTimeout(() => {
-                document.body.style.opacity = '1';
-            }, 100);
-        });
-        
-        // Add parallax effect to background elements
-        window.addEventListener('scroll', function() {
-            const scrolled = window.pageYOffset;
-            const parallaxElements = document.querySelectorAll('.float-animation');
-            
-            parallaxElements.forEach((element, index) => {
-                const speed = 0.5 + (index * 0.1);
-                element.style.transform = `translateY(${scrolled * speed}px)`;
-            });
-        });
-
-        // CSRF token function
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
-        // Enhanced cart animation function
-        function animateCartElement(elementId) {
-            const element = document.getElementById(elementId);
-            if (element) {
-                element.classList.add('cart-update');
-                
-                // Add ripple effect
-                const ripple = document.createElement('div');
-                ripple.className = 'absolute inset-0 rounded-full bg-white/30 animate-ping';
-                element.style.position = 'relative';
-                element.appendChild(ripple);
-                
-                setTimeout(() => {
-                    element.classList.remove('cart-update');
-                    if (ripple.parentNode) {
-                        ripple.parentNode.removeChild(ripple);
-                    }
-                }, 600);
-            }
-        }
-        
-        // Add smooth scroll behavior
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
+        })();
     </script>
 
     {% if user.is_authenticated %}

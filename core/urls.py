@@ -11,7 +11,7 @@ from core.views.CartView import  CartView, add_to_cart,sub_to_cart
 from core.views.OrderDetailView import order_detail_view
 from core.views.OrderListView import order_list_view
 from core.views.PaymentDetailView import PaymentDetailView
-from core.views.ProductDetailView import ProductDetailView
+from core.views.ProductDetailView import  product_detail
 from core.views.ProductListView import product_list
 from core.views.ConvertCartToOrder import checkout_select_address_or_custom_address
 from core.views.SuppliersListView import SuppliersListView
@@ -23,13 +23,14 @@ from core.views.add_product_offer import add_product_offer
 from core.views.edit_product_offer import edit_product_offer
 from core.views.add_ads import add_ads
 from core.views.edit_ads import edit_ads
+from core.views.MerchantOrderManagement import merchant_orders, merchant_order_detail, update_order_status
 
 urlpatterns = [
     # path('products/', ProductListView.as_view(), name='product-list'),
     path('products/<int:supplier_id>/', product_list, name='product-list'),
     path('products/category/<int:category_id>/<int:supplier_id>/', product_list, name='product_list_category'),
     path('products/category/product_list_subcategory/<int:subcategory_id>/<int:supplier_id>/', product_list, name='product_list_subcategory'),
-    path('products/details/<int:pk>/', ProductDetailView.as_view(), name='product_detail'),
+    path('products/details/<int:pk>/', product_detail, name='product_detail'),
     path('', SuppliersListView, name='suppliers_list'),
 
 
@@ -66,6 +67,11 @@ urlpatterns = [
     path('edit-offer/<int:offer_id>/', edit_product_offer, name='edit_product_offer'),
     path('add-ads/', add_ads, name='add_ads'),
     path('edit-ads/<int:ad_id>/', edit_ads, name='edit_ads'),
+    
+    # Merchant Order Management
+    path('merchant-orders/', merchant_orders, name='merchant_orders'),
+    path('merchant-order/<int:order_id>/', merchant_order_detail, name='merchant_order_detail'),
+    path('update-order-status/<int:order_id>/', update_order_status, name='update_order_status'),
 
 ]
 
