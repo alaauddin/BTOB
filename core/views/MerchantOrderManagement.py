@@ -114,7 +114,7 @@ def merchant_order_detail(request, order_id):
         shipping_address = None
     
     # Calculate order statistics for this supplier
-    supplier_order_total = sum([item.get_subtotal() for item in order_items])
+    supplier_order_total = order.total_amount
     
     context = {
         'supplier': supplier,

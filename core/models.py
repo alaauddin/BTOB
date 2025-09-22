@@ -23,6 +23,8 @@ class Supplier(models.Model):
     country = models.CharField(max_length=100, choices=COUNTRY_CHO)
     profile_picture = models.ImageField(upload_to='images/supplier_images/', blank=True, null=True)
     category = models.ManyToManyField(SupplierCategory)
+    primary_color = models.CharField(max_length=7, default='#000000')  # Hex color code
+    secondary_color = models.CharField(max_length=7, default='#FFFFFF')  # Hex color code
     
     
     def __str__(self):
@@ -238,8 +240,18 @@ class Order(models.Model):
     def get_total_ammout_with_discout(self):
         return sum([item.get_subtotal_with_discount() for item in self.order_items.all()])
     
+    def get_discount_amount(self):
+        return self.get_total_amount() - self.get_total_ammout_with_discout()
+    
     def get_supplier(self):
         return self.order_items.first().product.supplier
+    
+    def has_discount(self):
+        order_items = self.order_items.all()
+        for order_item in order_items:
+            if order_item.has_discount():
+                return True
+        return False
     
     
     
@@ -277,7 +289,11 @@ class OrderItem(models.Model):
         return self.product.price * self.quantity
     
     def get_subtotal_with_discount(self):
+        print(self.product.get_price_with_offer())
         return self.product.get_price_with_offer() * self.quantity
+    
+    def has_discount(self):
+       return self.product.has_discount()
     
 
 

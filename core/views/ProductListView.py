@@ -38,14 +38,14 @@ def product_list(request, supplier_id, category_id=None, subcategory_id=None):
     }
 
     # Cart and pending orders
-    if request.user.is_authenticated:
-        user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
-        one_day_ago = timezone.now() - timedelta(days=1)
-        context['pending_orders'] = Order.objects.filter(
-            user=request.user, created_at__gte=one_day_ago, status='Pending'
-        )
-        context['cart'] = user_cart
-    else:
-        context['cart'] = None
+
+    user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
+    print(user_cart)
+    one_day_ago = timezone.now() - timedelta(days=1)
+    context['pending_orders'] = Order.objects.filter(
+        user=request.user, created_at__gte=one_day_ago, status='Pending'
+    )
+    context['cart'] = user_cart
+
 
     return render(request, 'product_list.html', context)

@@ -9,12 +9,12 @@
     /* Use same color scheme as base template */
     :root {
         /* Brand Core */
-        --primary-color: #2563eb;   /* Bright Royal Blue */
+        --primary-color: {{ supplier.primary_color|default:'#2563eb' }};   /* Bright Royal Blue (overridden by supplier) */
         --primary-dark: #1e3a8a;    /* Deep Navy Blue */
-        --secondary-color:rgb(135, 219, 255); /* Soft Cool Gray */
+        --secondary-color: {{ supplier.secondary_color|default:'rgb(135, 219, 255)' }}; /* Soft Cool Gray (overridden by supplier) */
 
         /* Accent & Highlights */
-        --accent-color: #a855f7;    /* Vibrant Purple */
+        --accent-color: {{ supplier.secondary_color|default:'rgb(135, 219, 255)' }};    /* Vibrant Purple */
         --success-color: #22c55e;   /* Fresh Green */
         --warning-color: #fbbf24;   /* Amber/Gold */
         --danger-color: #ef4444;    /* Clear Red */
@@ -24,7 +24,7 @@
         --light-color: #f9fafb;     /* Clean White-Gray */
 
         /* Glassmorphism */
-        --glass-bg: rgba(255, 255, 255, 0.08);
+        --glass-bg: linear-gradient({{ supplier.primary_color|default:'rgb(135, 219, 255)' }}, rgba(255, 255, 255, 0.08));
         --glass-border: rgba(255, 255, 255, 0.2);
 
         /* Shadows */
@@ -32,6 +32,7 @@
         --shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.4);
         
         /* Gradients using base colors */
+        
         --primary-gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
         --secondary-gradient: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
         --success-gradient: linear-gradient(135deg, var(--success-color) 0%, var(--warning-color) 100%);
@@ -539,9 +540,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(135deg, 
-            rgba(102, 126, 234, 0.9) 0%, 
-            rgba(118, 75, 162, 0.9) 100%);
+        background: var( --glass-bg);
         opacity: 0;
         visibility: hidden;
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -1365,13 +1364,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(
-            135deg,
-            rgba(0,0,0,0.7) 0%,
-            rgba(0,0,0,0.4) 40%,
-            rgba(0,0,0,0.2) 70%,
-            transparent 100%
-        );
+        background: var(--primary-gradient);
         display: flex;
         align-items: center;
         z-index: 3;
@@ -2004,7 +1997,14 @@
             
             <div class="order-header">
                 <div class="order-id">الطلب #{{ order.id }}</div>
-                <div class="order-amount">{{ order.total_amount }} ريال</div>
+                {% if order.has_discount %}
+                <div class="text-muted text-decoration-line-through">{{ order.total_amount|floatformat:0 }} ريال</div>
+                <div class="text-danger fw-bold">{{ order.get_total_ammout_with_discout|floatformat:0 }} ريال</div>
+
+                {% else %}
+                <div class="text-success fw-bold">{{ order.total_amount }} ريال</div>
+                {% endif %}
+                
             </div>
             
             <div class="text-muted small mb-3">
@@ -2073,7 +2073,13 @@
                                 <p class="card-text text-muted small mb-2">{{ item.product.description|truncatewords:10 }}</p>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="text-primary fw-bold">الكمية: {{ item.quantity }}</span>
-                                    <span class="text-success fw-bold">{{ item.product.price|floatformat:2 }} ريال</span>
+                                    {% if item.has_discount %}
+                                    <span class="text-muted text-decoration-line-through">{{ item.product.price|floatformat:0 }} ريال</span>
+                                    <span class="text-danger fw-bold">{{ item.product.get_price_with_offer|floatformat:0 }} ريال</span>
+                                    {% else %}
+                                    <span class="text-success fw-bold">{{ item.product.price|floatformat:0 }} ريال</span>
+
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -2180,9 +2186,7 @@
                             <button class="overlay-btn" onclick="shareProduct({{ product.id }})" data-bs-toggle="tooltip" title="مشاركة">
                                 <i class="fas fa-share-alt"></i>
                             </button>
-                            <button class="overlay-btn" onclick="compareProduct({{ product.id }})" data-bs-toggle="tooltip" title="مقارنة">
-                                <i class="fas fa-balance-scale"></i>
-                            </button>
+                          
                         </div>
                     </div>
                 </div>
@@ -2220,7 +2224,6 @@
                     <div class="modern-product-actions">
                         <button class="modern-cart-btn" onclick="addToCart('{{ product.id }}','{{product.supplier.id}}')">
                             <i class="fas fa-cart-plus"></i>
-                            إضافة
                         </button>
                         
                         <div class="modern-quantity-controls">

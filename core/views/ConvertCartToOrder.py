@@ -43,7 +43,7 @@ def checkout_select_address_or_custom_address(request,supplier_id):
   
 def existing_address(request, supplier_id):
     cart = Cart.objects.get(user=request.user, supplier_id=supplier_id) 
-    order = Order.objects.create(user=request.user, total_amount=cart.get_total_amount())
+    order = Order.objects.create(user=request.user, total_amount=cart.get_total_after_discount())
     for cart_item in cart.cart_items.all():
         OrderItem.objects.create(order=order, product=cart_item.product, quantity=cart_item.quantity)
 
