@@ -7,7 +7,7 @@
 from django.urls import path
 from core.views import ConvertCartToOrder
 from core.views.CartView import DecreaseQuantityView, IncreaseQuantityView, RemoveItemView
-from core.views.CartView import  CartView, add_to_cart,sub_to_cart
+from core.views.CartView import  CartView, add_to_cart,sub_to_cart, get_cart_status
 from core.views.OrderDetailView import order_detail_view
 from core.views.OrderListView import order_list_view
 from core.views.PaymentDetailView import PaymentDetailView
@@ -41,6 +41,7 @@ urlpatterns = [
     path('cart/<int:supplier_id>/', CartView.as_view(), name='cart-detail'),
     path('add_to_cart/<int:product_id>/<int:supplier_id>/', add_to_cart , name='add_to_cart'),
     path('sub_to_cart/<int:product_id>/<int:supplier_id>/', sub_to_cart , name='sub_to_cart'),
+    path('cart/status/<int:supplier_id>/', get_cart_status, name='get_cart_status'),
     
     path('increase_quantity/<int:item_id>/<int:supplier_id>/', IncreaseQuantityView.as_view(), name='increase_quantity'),
     path('decrease_quantity/<int:item_id>/<int:supplier_id>/', DecreaseQuantityView.as_view(), name='decrease_quantity'),

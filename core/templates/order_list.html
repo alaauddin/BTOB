@@ -7,7 +7,7 @@
 <style>
     /* Orders Page Styles */
     .orders-hero {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: {{ supplier.navbar_color|default:'#667eea' }};
         padding: 2.5rem 0;
         color: white;
         border-radius: 0 0 30px 30px;
@@ -57,11 +57,11 @@
     }
     
     .status-btn:hover, .status-btn.active {
-        background: linear-gradient(to right, #667eea, #764ba2);
+        background: {{ supplier.primary_color|default:'#667eea' }};
         color: white;
         border-color: transparent;
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
     
     .order-card {
@@ -212,7 +212,7 @@
     }
     
     .view-details-btn {
-        background: linear-gradient(to right, #667eea, #764ba2);
+        background: {{ supplier.primary_color|default:'#667eea' }};
         color: white;
         border: none;
         border-radius: 50px;
@@ -226,7 +226,7 @@
     
     .view-details-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         color: white;
     }
     
@@ -276,7 +276,7 @@
     }
     
     .start-shopping-btn {
-        background: linear-gradient(to right, #667eea, #764ba2);
+        background: {{ supplier.primary_color|default:'#667eea' }};
         color: white;
         border: none;
         border-radius: 50px;
@@ -291,7 +291,7 @@
     
     .start-shopping-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         color: white;
     }
     
@@ -420,7 +420,7 @@
                 </div>
                 
                 <div class="order-footer">
-                    <div class="order-total">المجموع: {{ order.total_price }} ريال</div>
+                    <div class="order-total">المجموع: {{ order.total_price }} {{ supplier.currency }}</div>
                     
                     <div class="order-actions">
                         <a href="{% url 'order_detail' pk=order.pk %}" class="view-details-btn">

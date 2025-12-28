@@ -359,7 +359,7 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">المجموع</div>
-                    <div class="info-value">  ريال {{ order.total_amount|floatformat:2 }}</div>
+                    <div class="info-value">  {{ supplier.currency }} {{ order.total_amount|floatformat:2 }}</div>
                 </div>
             </div>
             
@@ -379,10 +379,10 @@
                         <div class="order-item-meta">
                             <span class="order-item-quantity">الكمية: {{ item.quantity }}</span>
                             {% if item.has_discount %}
-                            <span class="order-item-price">{{ item.get_subtotal_with_discount|floatformat:0 }}   ريال </span>
-                            <span class="text-muted" style="text-decoration: line-through;">{{ item.product.price|floatformat:0 }}   ريال </span>
+                            <span class="order-item-price">{{ item.get_subtotal_with_discount|floatformat:0 }}   {{ supplier.currency }} </span>
+                            <span class="text-muted" style="text-decoration: line-through;">{{ item.product.price|floatformat:0 }}   {{ supplier.currency }} </span>
                             {% else %}
-                            <span class="order-item-price">{{ item.product.price|floatformat:0 }}   ريال </span>
+                            <span class="order-item-price">{{ item.product.price|floatformat:0 }}   {{ supplier.currency }} </span>
                             {% endif %}
                         </div>
                     </div>
@@ -401,23 +401,23 @@
                 
                 <div class="summary-item">
                     <span class="summary-label">المجموع </span>
-                    <span class="summary-value">{{ order.get_total_amount|floatformat:2 }}   ريال </span>
+                    <span class="summary-value">{{ order.get_total_amount|floatformat:2 }}   {{ supplier.currency }} </span>
                 </div>
                 {% if order.has_discount %}
                 <div class="summary-item">
                     <span class="summary-label"></span>
-                    <span class="summary-value text-success">{{ order.get_discount_amount|floatformat:0 }}   ريال -</span>
+                    <span class="summary-value text-success">{{ order.get_discount_amount|floatformat:0 }}   {{ supplier.currency }} -</span>
                 </div>
 
                 {% endif %}
                 <div class="summary-item">
                     <span class="summary-label">التوصيل</span>
-                    <span class="summary-value">0.00   ريال </span>
+                    <span class="summary-value">0.00   {{ supplier.currency }} </span>
                 </div>
                 
                 <div class="summary-total">
                     <span class="total-label">المجموع الكلي</span>
-                    <span class="total-amount">{{ order.total_amount|floatformat:0 }}   ريال </span>
+                    <span class="total-amount">{{ order.total_amount|floatformat:0 }}   {{ supplier.currency }} </span>
                 </div>
             </div>
             

@@ -491,14 +491,14 @@
                         {% if item.product.has_discount %}
                         <div>
                             <span class="text-muted text-decoration-line-through me-2 small">
-                                {{ item.product.price }} ريال
+                                {{ item.product.price }} {{ supplier.currency }}
                             </span>
                             <span class="text-danger fw-bold">
-                                {{ item.product.get_price_with_offer }} ريال
+                                {{ item.product.get_price_with_offer }} {{ supplier.currency }}
                             </span>
                         </div>
                         {% else %}
-                        <span class="order-item-price">{{ item.product.price|floatformat:2 }} ريال</span>
+                        <span class="order-item-price">{{ item.product.price|floatformat:2 }} {{ supplier.currency }}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -516,24 +516,24 @@
                 
                 <div class="summary-item">
                     <span class="summary-label">المجموع الجزئي</span>
-                    <span class="summary-value">{{ order.get_total_amount|floatformat:2 }} ريال</span>
+                    <span class="summary-value">{{ order.get_total_amount|floatformat:2 }} {{ supplier.currency }}</span>
                 </div>
                 
                 {% if order.has_discount %}
                 <div class="summary-item">
                     <span class="text-success fw-bold">الخصم</span>
-                    <span class="text-success fw-bold">{{ order.get_total_ammout_with_discout|floatformat:2 }} ريال</span>
+                    <span class="text-success fw-bold">{{ order.get_total_ammout_with_discout|floatformat:2 }} {{ supplier.currency }}</span>
                 </div>
                 {% endif %}
                 
                 <div class="summary-item">
                     <span class="summary-label">التوصيل</span>
-                    <span class="summary-value">0.00 ريال</span>
+                    <span class="summary-value">0.00 {{ supplier.currency }}</span>
                 </div>
                 
                 <div class="summary-total">
                     <span class="total-label">المجموع الكلي</span>
-                    <span class="total-amount">{{ order.get_total_after_discount|floatformat:2 }} ريال</span>
+                    <span class="total-amount">{{ order.get_total_after_discount|floatformat:2 }} {{ supplier.currency }}</span>
                 </div>
             </div>
 

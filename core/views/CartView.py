@@ -154,3 +154,24 @@ class RemoveItemView(View):
         cart_total = int(cart.get_total_amount())
 
         return JsonResponse({'success': True, 'cart_total': cart_total, 'cart_items_count': cart_items_count})
+
+@login_required
+def get_cart_status(request, supplier_id):
+    supplier = get_object_or_404(Supplier, pk=supplier_id)
+    try:
+        cart = Cart.objects.get(user=request.user, supplier=supplier)
+        items = [
+            {'product_id': item.product.id, 'quantity': item.quantity}
+            for item in cart.cart_items.all()
+        ]
+        return JsonResponse({
+            'success': True,
+            'items': items,
+            'cart_items_count': cart.get_total_items()
+        })
+    except Cart.DoesNotExist:
+        return JsonResponse({
+            'success': True,
+            'items': [],
+            'cart_items_count': 0
+        })

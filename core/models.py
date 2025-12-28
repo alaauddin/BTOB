@@ -21,12 +21,16 @@ class Supplier(models.Model):
     address = models.CharField(max_length=255)
     city = models.CharField(max_length=100,choices=CITY_CHO)
     country = models.CharField(max_length=100, choices=COUNTRY_CHO)
-    profile_picture = models.ImageField(upload_to='images/supplier_images/', blank=True, null=True)
     category = models.ManyToManyField(SupplierCategory)
-    primary_color = models.CharField(max_length=7, default='#000000')  # Hex color code
-    secondary_color = models.CharField(max_length=7, default='#FFFFFF')  # Hex color code
-    
-    
+    primary_color = models.CharField(max_length=7, default='#2563eb')
+    secondary_color = models.CharField(max_length=7, default='#ffffff')
+    navbar_color = models.CharField(max_length=7, default='#2563eb')
+    footer_color = models.CharField(max_length=7, default='#1e293b')
+    text_color = models.CharField(max_length=7, default='#1e293b')
+    accent_color = models.CharField(max_length=7, default='#2563eb')
+    currency = models.CharField(max_length=10, default='ر.س')
+    profile_picture = models.ImageField(upload_to='images/supplier_images/', blank=True, null=True)
+    panal_picture = models.ImageField(upload_to='images/supplier_images/', blank=True, null=True)
     def __str__(self):
         return self.name
     
@@ -357,6 +361,7 @@ class SuppierAds(models.Model):
     created_by = models.ForeignKey(User,on_delete=models.CASCADE,related_name='supplier_ads')
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    product = models.ForeignKey(Product,on_delete=models.CASCADE,related_name='supplier_ads',null=True,blank=True)
     
     
     def __str__(self):

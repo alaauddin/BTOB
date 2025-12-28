@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             document.getElementById('productImage').src = product.image || '/static/images/default-product.png';
             document.getElementById('productName').textContent = product.name;
-            document.getElementById('productPrice').textContent = product.price + ' ر.س';
+            document.getElementById('productPrice').textContent = product.price + ' {{ supplier.currency }}';
             document.getElementById('productCategory').textContent = product.category;
             
             productPreview.style.display = 'block';
@@ -412,10 +412,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const discountedPrice = originalPrice - discountAmount;
             const discountPercent = Math.round(discountPercentage * 100);
             
-            document.getElementById('originalPrice').textContent = originalPrice + ' ر.س';
-            document.getElementById('discountedPrice').textContent = discountedPrice.toFixed(2) + ' ر.س';
+            document.getElementById('originalPrice').textContent = originalPrice + ' {{ supplier.currency }}';
+            document.getElementById('discountedPrice').textContent = discountedPrice.toFixed(2) + ' {{ supplier.currency }}';
             document.getElementById('discountBadge').textContent = discountPercent + '% خصم';
-            document.getElementById('savingsAmount').textContent = discountAmount.toFixed(2) + ' ر.س';
+            document.getElementById('savingsAmount').textContent = discountAmount.toFixed(2) + ' {{ supplier.currency }}';
             
             discountPreview.style.display = 'block';
         } else {
