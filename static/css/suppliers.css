@@ -68,67 +68,76 @@
     margin-left: 8px;
 }
 
-/* Filter Container */
-.filter-container {
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-    margin-top: -3rem;
-    position: relative;
-    z-index: 10;
+/* Modern Category Navigation */
+.category-nav-wrapper {
+    position: sticky;
+    top: 72px;
+    /* Adjusted for navbar height */
+    z-index: 40;
+    margin-top: -2rem;
+    padding: 1rem 0;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.filter-title {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: #111827;
-    margin-bottom: 1.5rem;
-}
-
-.category-filter {
+.category-scroll-container {
     display: flex;
     gap: 12px;
     overflow-x: auto;
-    padding-bottom: 10px;
+    padding: 4px;
     scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-.category-filter::-webkit-scrollbar {
+.category-scroll-container::-webkit-scrollbar {
     display: none;
 }
 
-.category-btn {
+.category-pill {
     flex: 0 0 auto;
-    background: #f8fafc;
-    border: 1px solid #f1f5f9;
-    padding: 12px 24px;
-    border-radius: 14px;
-    color: #64748b;
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 10px 20px;
+    border-radius: 50px;
+    color: #475569;
     font-weight: 600;
     font-size: 0.9rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-.category-btn i,
-.category-btn img {
-    margin-left: 10px;
+.category-pill i,
+.category-pill img {
+    margin-left: 8px;
+    font-size: 1rem;
 }
 
-.category-btn:hover {
-    background: #f1f5f9;
-    color: #1e293b;
-    transform: translateY(-2px);
+.category-pill:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.category-btn.active {
+.category-pill.active {
     background: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
-    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.3);
+}
+
+.filter-label {
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    margin-bottom: 0.75rem;
+    display: block;
 }
 
 /* Supplier Grid & Cards */

@@ -1,7 +1,7 @@
 
 
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from core.models import Cart, Supplier, SupplierCategory
 from core.models import Order
 from django.utils import timezone
@@ -12,6 +12,11 @@ from django.db.models import Q
 
 def SuppliersListView(request):
     suppliers = Supplier.objects.all()
+    
+    # Check if there is only one supplier
+    if suppliers.count() == 1:
+        supplier = suppliers.first()
+        return redirect('product-list', supplier_id=supplier.id)
     
     # Get search query for display purposes only (client-side filtering)
     q = request.GET.get('q', '').strip()

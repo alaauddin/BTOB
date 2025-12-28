@@ -5,9 +5,34 @@ from .models import *
 
 
 class ShippingAddressForm(forms.ModelForm):
+    latitude = forms.DecimalField(required=False, widget=forms.HiddenInput())
+    longitude = forms.DecimalField(required=False, widget=forms.HiddenInput())
+
     class Meta:
         model = ShippingAddress
-        fields = ['phone','address_line1', 'address_line2','city','country','address_type']
+        fields = ['address_line1', 'phone', 'address_line2', 'latitude', 'longitude']
+        widgets = {
+             'address_line1': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'الموقع (العنوان)',
+            }),
+            'phone': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'رقم الهاتف'
+            }),
+            'address_line2': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'ملاحظات إضافية (اختياري)',
+                'rows': 3
+            }),
+            'latitude': forms.HiddenInput(),
+            'longitude': forms.HiddenInput(),
+        }
+        labels = {
+            'address_line1': 'الموقع',
+            'phone': 'رقم الهاتف',
+            'address_line2': 'ملاحظات',
+        }
 
 
 

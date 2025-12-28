@@ -6,11 +6,30 @@ from django.core.validators import RegexValidator
 
 
 
-class SignUpForm (UserCreationForm):
+class SignUpForm(forms.ModelForm):
+    password = forms.CharField(
+        widget=forms.PasswordInput(),
+        label='Password / كلمة المرور',
+        required=True
+    )
+
     class Meta:
-        model=User
-        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
-        labels = {'username': 'اسم المستخدم', 'first_name': 'الاسم الاول', 'last_name': 'الاسم الاخير', 'email': 'البريد الالكتروني', 'password1': 'كلمة المرور', 'password2': 'تاكيد كلمة المرور'}
+        model = User
+        fields = ('username', 'first_name', 'password')
+        labels = {
+            'username': 'Phone Number / رقم الهاتف',
+            'first_name': 'Full Name / الاسم بالكامل',
+        }
+        help_texts = {
+            'username': 'Enter your phone number.',
+        }
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password"])
+        if commit:
+            user.save()
+        return user
     
         
         

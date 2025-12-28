@@ -2,6 +2,7 @@ from core.models import *
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from core.forms import ShippingAddressForm
+from django.contrib import messages
 
 
 
@@ -62,7 +63,8 @@ def existing_address(request, supplier_id):
 
     )
     cart.cart_items.all().delete()
-    return redirect('order_detail', pk=order.id)
+    messages.success(request, 'تم اتمام الطلب بنجاح سيتواصل معك فريق العمليات لأتمام عملية الدفع')
+    return redirect('product-list', supplier_id=supplier_id)
 
   
   

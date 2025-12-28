@@ -31,6 +31,8 @@ class Supplier(models.Model):
     currency = models.CharField(max_length=10, default='ر.س')
     profile_picture = models.ImageField(upload_to='images/supplier_images/', blank=True, null=True)
     panal_picture = models.ImageField(upload_to='images/supplier_images/', blank=True, null=True)
+    
+    
     def __str__(self):
         return self.name
     
@@ -272,6 +274,8 @@ class ShippingAddress(models.Model):
     country = models.CharField(max_length=100, choices=COUNTRY_CHO)
     postal_code = models.CharField(max_length=20,blank=True, null=True)
     address_type = models.CharField(max_length=50)  # Shipping or Billing
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
 
     def __str__(self):
@@ -320,6 +324,8 @@ class Address(models.Model):
     country = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20,blank=True, null=True)
     address_type = models.CharField(max_length=50)  # Shipping or Billing
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     
     def __str__(self):
         return f"{self.address_type} address of {self.user.username}"

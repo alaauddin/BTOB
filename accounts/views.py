@@ -20,11 +20,13 @@ def signup (request):
         
         form = SignUpForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            # created = PersonPostion.objects.create(user=user,position=form.cleaned_data['position'],phone=form.cleaned_data['phone'])
+            user = form.save(commit=False)
+            # Auto-generate email from phone number
+            user.email = f"{user.username}@aratatt.com"
+            user.save()
             
-            auth_login(request,user)
-            return redirect('meetings_index')
+            auth_login(request, user)
+            return redirect('suppliers_list')
            
            
 

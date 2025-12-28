@@ -1,144 +1,221 @@
 {% extends 'base.html' %}
-
 {% load widget_tweaks %}
 
-{% block title %}Sign Up{% endblock %}
+{% block title %}إنشاء حساب جديد | Sign Up{% endblock %}
 
-{% block breadcrumb %}
-<div class="text-center">
-    <h2>Discussion Boards of NED UET</h2>
-</div>
+{% block extra_css %}
+<style>
+    .auth-page {
+        background: #f8fafc;
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .auth-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.05);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .auth-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+        padding: 2.5rem 2rem;
+        color: white;
+        text-align: center;
+        position: relative;
+    }
+
+    .auth-header::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        right: 0;
+        height: 20px;
+        background: white;
+        border-radius: 50% 50% 0 0;
+    }
+
+    .auth-body {
+        padding: 2.5rem 2rem;
+    }
+
+    .form-floating > label {
+        right: 0;
+        left: auto;
+        padding-right: 1rem;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+        border: 1.5px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .btn-auth {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.8rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+        width: 100%;
+        margin-top: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        color: white;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+    .auth-footer a {
+        color: var(--primary-color);
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .field-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        pointer-events: none;
+    }
+
+    .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .invalid-feedback {
+        font-size: 0.85rem;
+        margin-top: 0.4rem;
+        color: #ef4444;
+    }
+
+    .bilingual-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #475569;
+        font-size: 0.9rem;
+    }
+
+    .english-label {
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container text-right" dir="rtl">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10 col-sm-12">
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="card-title text-center">انشاء حساب</h3>
-                    <form method="post" novalidate>
-                        {% csrf_token %}
-                        
-                        <!-- Display non-field errors -->
-                        {% if form.non_field_errors %}
-                        <div class="alert alert-danger" role="alert">
-                            {% for error in form.non_field_errors %}
-                            <p class="mb-0">{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                        
-                        <!-- Render first name field with errors -->
-                        <div class="form-group">
-                            {{ form.first_name.label_tag }}
-                            {% render_field form.first_name class="form-control" %}
-                            {% if form.first_name.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.first_name.errors %}
-                                <p class="mb-0">{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Render last name field with errors -->
-                        <div class="form-group">
-                            {{ form.last_name.label_tag }}
-                            {% render_field form.last_name class="form-control" %}
-                            {% if form.last_name.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.last_name.errors %}
-                                <p class="mb-0">{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Render username field with errors -->
-                        <div class="form-group">
-                            {{ form.username.label_tag }}
-                            {% render_field form.username class="form-control" %}
-                            {% if form.username.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.username.errors %}
-                                <p class="mb-0">{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Render email field with errors -->
-                        <div class="form-group">
-                            {{ form.email.label_tag }}
-                            {% render_field form.email class="form-control" %}
-                            {% if form.email.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.email.errors %}
-                                <p class="mb-0">{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Render password1 field with errors -->
-                        <div class="form-group">
-                            قم بادخال كلمة المرور:
-                            {% render_field form.password1 class="form-control" %}
-                            {% if form.password1.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.password1.errors %}
-                                <p class="mb-0">{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Render password2 field with errors -->
-                        <div class="form-group">
-                            قم بتأكيد كلمة المرور:
-                            {% render_field form.password2 class="form-control" %}
-                            {% if form.password2.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.password2.errors %}
-                                <p class="mb-0">{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
+<div class="auth-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-8">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <i class="fas fa-user-plus fa-3x mb-3"></i>
+                        <h2 class="fw-bold mb-1">إنشاء حساب</h2>
+                        <p class="opacity-75">Create a new account</p>
+                    </div>
+                    
+                    <div class="auth-body">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
 
-                        <!-- phone number -->
-                        <div class="form-group">
-                            ادخل رقم الهاتف مع الرمز الدولي مثل 00967777777777:
-                            {% render_field form.phone class="form-control" %}
-                            {% if form.phone.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.phone.errors %}
-                                <p class="mb-0">{{ error }}</p>
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger rounded-3 mb-4">
+                                {% for error in form.non_field_errors %}
+                                <p class="mb-0 small"><i class="fas fa-exclamation-circle me-2"></i>{{ error }}</p>
                                 {% endfor %}
                             </div>
                             {% endif %}
+
+                            <!-- Full Name -->
+                            <div class="form-group">
+                                <div class="bilingual-label">
+                                    <span>الاسم بالكامل</span>
+                                    <span class="english-label">Full Name</span>
+                                </div>
+                                {% render_field form.first_name class="form-control" placeholder="أدخل اسمك بالكامل" %}
+                                {% if form.first_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.first_name.errors %}
+                                    <p class="mb-0">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Phone Number -->
+                            <div class="form-group">
+                                <div class="bilingual-label">
+                                    <span>رقم الهاتف</span>
+                                    <span class="english-label">Phone Number</span>
+                                </div>
+                                {% render_field form.username class="form-control" placeholder="أدخل رقم هاتفك" %}
+                                <small class="text-muted mt-1 d-block"><i class="fas fa-info-circle me-1"></i> سيتم استخدام هذا الرقم كاسم مستخدم.</small>
+                                {% if form.username.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.username.errors %}
+                                    <p class="mb-0">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Password -->
+                            <div class="form-group">
+                                <div class="bilingual-label">
+                                    <span>كلمة المرور</span>
+                                    <span class="english-label">Password</span>
+                                </div>
+                                {% render_field form.password class="form-control" placeholder="اختر كلمة مرور قوية" %}
+                                {% if form.password.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.password.errors %}
+                                    <p class="mb-0">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <button type="submit" class="btn-auth">
+                                <span class="me-2">إنشاء الحساب</span>
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                        </form>
+
+                        <div class="auth-footer">
+                            هل لديك حساب بالفعل؟ 
+                            <a href="{% url 'login' %}">سجل دخولك هنا</a>
                         </div>
-
-                        <!-- position -->
-                        <div class="form-group">
-                            قم بادخال المنصب الذي تشغله في الشركة:
-                            {% render_field form.position class="form-control" %}
-                            {% if form.position.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.position.errors %}
-                                <p class="mb-0">{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>                        
-                        
-
-                        <button type="submit" class="btn btn-primary btn-block">انشاء حسابي</button>
-                    </form>
-                </div>
-                <div class="card-footer text-muted text-center" style="background-color: rgb(128, 209, 250);">
-                    هل لديك حساب بالفعل <a href="{% url 'login' %}">سجل دخول</a>
+                    </div>
                 </div>
             </div>
         </div>

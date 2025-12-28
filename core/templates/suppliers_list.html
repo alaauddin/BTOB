@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}🏪 استكشف المتاجر الرقمية - منصة التجارة الإلكترونية الرائدة{% endblock %}
+{% block title %}عرطات دوتكم{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/suppliers.css' %}">
@@ -9,45 +9,30 @@
 
 {% block content %}
 <!-- Modern Hero Section -->
-<section class="supplier-hero">
-    <div class="container hero-content text-center">
-        <h1 class="fw-bold mb-4">🏪 استكشف المتاجر</h1>
-        <p class="lead mb-5">تسوق من أفضل الموردين المعتمدين في المملكة بكل سهولة وأمان</p>
-        
-        <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <span class="hero-badge"><i class="fas fa-shipping-fast"></i>توصيل سريع</span>
-            <span class="hero-badge"><i class="fas fa-shield-alt"></i>جودة مضمونة</span>
-            <span class="hero-badge"><i class="fas fa-headset"></i>دعم فني 24/7</span>
-        </div>
-    </div>
-</section>
 
-<div class="container pb-12">
+<div class="container pt-12">
     <!-- Filter & Categories -->
-    <div class="filter-container">
-        <div class="row align-items-center">
-            <div class="col-lg-3">
-                <h3 class="filter-title mb-lg-0">تصنيفات المتاجر</h3>
-            </div>
-            <div class="col-lg-9">
-                <div class="category-filter">
-                    <button class="category-btn active" data-category="all" onclick="filterByCategory('all')">
-                        <i class="fas fa-th-large"></i>الكل
-                    </button>
-                    {% for category in categories %}
-                    <button class="category-btn" data-category="{{ category.id }}" onclick="filterByCategory('{{ category.id }}')">
-                        {% if category.image %}
-                            <img src="{{ category.image.url }}" alt="{{ category.name }}" style="width: 20px; height: 20px; border-radius: 4px;">
-                        {% else %}
-                            <i class="fas fa-tag"></i>
-                        {% endif %}
-                        {{ category.name }}
-                    </button>
-                    {% endfor %}
-                </div>
-            </div>
+<div class="category-nav-wrapper">
+    <div class="container">
+        <span class="filter-label">استكشف عبر التصنيفات</span>
+        <div class="category-scroll-container">
+            <button class="category-pill active" data-category="all" onclick="filterByCategory('all')">
+                <i class="fas fa-border-all"></i>
+                <span>الكل</span>
+            </button>
+            {% for category in categories %}
+            <button class="category-pill" data-category="{{ category.id }}" onclick="filterByCategory('{{ category.id }}')">
+                {% if category.image %}
+                    <img src="{{ category.image.url }}" alt="{{ category.name }}" style="width: 18px; height: 18px; border-radius: 4px;">
+                {% else %}
+                    <i class="fas fa-tag"></i>
+                {% endif %}
+                <span>{{ category.name }}</span>
+            </button>
+            {% endfor %}
         </div>
     </div>
+</div>
 
     <!-- Suppliers Grid -->
     <div class="supplier-grid">
@@ -133,7 +118,7 @@
 <script>
 function filterByCategory(categoryId) {
     const cards = document.querySelectorAll('.supplier-card-container');
-    const buttons = document.querySelectorAll('.category-btn');
+    const buttons = document.querySelectorAll('.category-pill');
     
     buttons.forEach(btn => {
         if (btn.getAttribute('data-category') === categoryId) {

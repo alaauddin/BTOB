@@ -24,6 +24,47 @@
         --success-gradient: var(--success-color);
         --warning-gradient: var(--warning-color);
     }
+    
+    /* Carousel Height Adjustment */
+    #supplierAdsCarousel .carousel-item {
+        height: 300px;
+    }
+    #supplierAdsCarousel .carousel-item img {
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    @media (max-width: 768px) {
+        #supplierAdsCarousel .carousel-item {
+            height: 140px;
+        }
+        .modern-ads-title {
+            font-size: 1.1rem !important;
+            margin-bottom: 0.25rem !important;
+        }
+        .modern-ads-description {
+            font-size: 0.75rem !important;
+            margin-bottom: 0.5rem !important;
+            line-height: 1.2 !important;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .modern-ads-cta {
+            padding: 4px 12px !important;
+            font-size: 0.7rem !important;
+            border-radius: 20px !important;
+            margin-top: 0 !important;
+        }
+        .modern-ads-overlay {
+            padding: 0 1rem !important;
+        }
+        /* Ensure image is not too dark */
+        .modern-ads-carousel .carousel-item img {
+             filter: brightness(0.8);
+        }
+    }
 </style>
 {% endblock %}
 
@@ -295,14 +336,14 @@
 <div class="container">
     <div class="modern-category-nav">
         <h4 class="modern-category-title"><i class="fas fa-filter"></i> التصنيفات</h4>
-        <div class="d-flex flex-wrap">
-            <a href="{% url 'product-list' supplier.id %}" class="modern-category-btn {% if not active_category_id %}active{% endif %}">
+        <div class="d-flex flex-nowrap overflow-auto pb-2 gap-2 modern-scroll categories-scroll-container">
+            <a href="{% url 'product-list' supplier.id %}" class="modern-category-btn {% if not active_category_id %}active{% endif %} flex-shrink-0">
                 الكل
             </a>
             
             {% for category in categories %}
             <a href="#subcategory-{{ category.id }}" 
-               class="modern-category-btn" 
+               class="modern-category-btn flex-shrink-0" 
                data-bs-toggle="collapse" 
                aria-expanded="false">
                 {{ category.name }} <i class="fas fa-chevron-down me-2"></i>
@@ -331,10 +372,10 @@
 
     <!-- Products Grid -->
 <div class="container">
-    <h2 class="section-title">المنتجات المتاحة</h2>
+    <h2 class="section-title" style="margin-bottom: 1rem;">المنتجات المتاحة</h2>
     
     {% if products %}
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="productsGrid">
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 g-md-4" id="productsGrid">
         {% for product in products %}
         <div class="col animate-fade-in-up" style="animation-delay: {{ forloop.counter0|divisibleby:4|yesno:'0,0.1,0.2,0.3' }}s">
             <div class="modern-product-card" data-product-id="{{ product.id }}">
@@ -394,14 +435,14 @@
                         <span class="rating-text">({{ product.get_total_reviews }})</span>
                     </div>
                     
-                    <div class="pricing-wrapper">
-                        {% if product.has_discount %}
-                            <span class="modern-product-price">{{ product.get_price_with_offer }} {{ supplier.currency }}</span>
-                            <span class="old-price">{{ product.price }} {{ supplier.currency }}</span>
-                        {% else %}
-                            <span class="modern-product-price">{{ product.price }} {{ supplier.currency }}</span>
-                        {% endif %}
-                    </div>
+                        <div class="pricing-wrapper">
+                            {% if product.has_discount %}
+                                <span class="modern-product-price">{{ product.get_price_with_offer|floatformat:0 }} {{ supplier.currency }}</span>
+                                <span class="old-price">{{ product.price|floatformat:0 }} {{ supplier.currency }}</span>
+                            {% else %}
+                                <span class="modern-product-price">{{ product.price|floatformat:0 }} {{ supplier.currency }}</span>
+                            {% endif %}
+                        </div>
                     
                     <div class="modern-product-actions">
                         {% with cart_item_qty=product.quantity_in_cart|default:0 %}
@@ -451,10 +492,22 @@
 </div>
 
 <!-- Floating Cart Button for Mobile -->
-<a href="{% url 'cart-detail' supplier.id %}" class="floating-cart-btn d-lg-none">
-    <i class="fas fa-shopping-cart fs-5"></i>
-    <span class="floating-cart-badge">{{ cart.get_total_items }}</span>
-</a>
+<!-- Mobile Bottom Cart Bar -->
+<div class="mobile-cart-bar d-lg-none {% if cart.get_total_items == 0 %}d-none{% endif %}" id="mobileCartBar">
+    <div class="cart-info">
+        <div class="cart-count">
+            <i class="fas fa-shopping-basket"></i>
+            <span id="mobile-cart-count">{{ cart.get_total_items }}</span> منتجات
+        </div>
+        <div class="cart-total">
+            <span class="text-muted small">المجموع:</span>
+            <span class="total-price" id="mobile-cart-total">{{ cart.get_total_after_discount|floatformat:0 }}</span> {{ supplier.currency }}
+        </div>
+    </div>
+    <a href="{% url 'cart-detail' supplier.id %}" class="cart-action-btn">
+        مشاهدة السلة <i class="fas fa-arrow-left me-2"></i>
+    </a>
+</div>
 
 {% endblock %}
 
