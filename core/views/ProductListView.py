@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from datetime import timedelta
 
-@login_required
+# @login_required <-- Removed for public access
 def product_list(request, supplier_id, category_id=None, subcategory_id=None):
     # Base queryset
     queryset = Product.objects.filter(supplier_id=supplier_id)
@@ -38,14 +38,17 @@ def product_list(request, supplier_id, category_id=None, subcategory_id=None):
     }
 
     # Cart and pending orders
-
-    user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
-    print(user_cart)
-    one_day_ago = timezone.now() - timedelta(days=1)
-    context['pending_orders'] = Order.objects.filter(
-        user=request.user, created_at__gte=one_day_ago, status='Pending'
-    )
-    context['cart'] = user_cart
+    if request.user.is_authenticated:
+        user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
+        print(user_cart)
+        one_day_ago = timezone.now() - timedelta(days=1)
+        context['pending_orders'] = Order.objects.filter(
+            user=request.user, created_at__gte=one_day_ago, status='Pending'
+        )
+        context['cart'] = user_cart
+    else:
+        context['cart'] = None
+        context['pending_orders'] = None
 
 
     return render(request, 'product_list.html', context)

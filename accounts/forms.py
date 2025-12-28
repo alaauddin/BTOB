@@ -34,3 +34,11 @@ class SignUpForm(forms.ModelForm):
         
         
         
+
+from django.contrib.auth.forms import AuthenticationForm
+
+class UserLoginForm(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super(UserLoginForm, self).__init__(*args, **kwargs)
+        self.fields['username'].label = 'Phone Number / رقم الهاتف'
+        self.fields['password'].label = 'Password / كلمة المرور'

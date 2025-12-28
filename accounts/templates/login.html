@@ -3,30 +3,141 @@
 {%block title%} Login {%endblock%}
 
 {% block content %}
-<div class="container text-left" dir="ltr">
-    <div class="row justify-content-center">
-      <div class="col-lg-8 col-md-10 col-sm-12">
-        <div class="card">
-          <div class="card-body">
-            <div class="text-center">
-              <h3 class="card-title">تسجيل الدخول</h3>
-
-            </div>
-            <form method="post" novalidate>
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ next }}">
-              {% include 'includes/form.html' %}
-              <button type="submit" class="btn btn-primary btn-block">تسجيل الدخول</button>
-            </form>
-          </div>
-          <div class="card-footer text-muted text-center row">
-            <p class="mx-3" style="color: azure;">ليس لديك حساب؟ <a href="{% url 'signup' %}" style="color: aqua;">سجل الان</a></p>
-            <p class="mx-3" style="color: azure;">نسيت كلمة المرور؟ <a href="whatsapp://send?phone=+779923330&text=لقد نسيت كلمة المرور الخاصة بي اريد تغييرها" style="color: aqua;">اضغط هنا</a></p>
-
-          </div>
-        </div>
-      </div>
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-gray-50">
+    <!-- Animated Background Elements -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div class="absolute top-[-10%] right-[-10%] w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
     </div>
-  </div>
+
+    <div class="max-w-md w-full space-y-8 relative z-10">
+        <!-- Logo/Header Section -->
+        <div class="text-center mb-8">
+            {% if supplier.profile_picture %}
+                <img class="mx-auto h-24 w-auto drop-shadow-lg mb-4 hover:scale-105 transition-transform duration-300" src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}">
+            {% else %}
+               <div class="mx-auto h-20 w-20 bg-gradient-to-tr from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg mb-4 transform rotate-3 hover:rotate-0 transition-all duration-300">
+                    <i class="fas fa-user-lock text-3xl text-white"></i>
+               </div>
+            {% endif %}
+            <h2 class="mt-2 text-3xl font-black text-gray-900 tracking-tight">
+                مرحباً بك مجدداً
+            </h2>
+            <p class="mt-2 text-sm text-gray-600">
+                تسجيل الدخول إلى حسابك للمتابعة
+            </p>
+        </div>
+
+        <!-- Glass Card -->
+        <div class="backdrop-blur-xl bg-white/70 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/20 p-8 transform transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+            <form class="space-y-6" method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
+
+                <!-- Form Fields Container -->
+                <div class="space-y-4">
+                    {% include 'includes/form.html' %}
+                </div>
+
+                <!-- Submit Button -->
+                <div>
+                    <button type="submit" 
+                            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 transform hover:-translate-y-0.5">
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <i class="fas fa-sign-in-alt group-hover:text-blue-100 transition-colors"></i>
+                        </span>
+                        تسجيل الدخول
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-8">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-200"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Links -->
+            <div class="mt-6 flex flex-col space-y-4 text-center text-sm">
+                <p class="text-gray-600">
+                    ليس لديك حساب؟ 
+                    <a href="{% url 'signup' %}" class="font-bold text-blue-600 hover:text-blue-500 transition-colors hover:underline decoration-2 underline-offset-4">
+                        سجل الان
+                    </a>
+                </p>
+                <p class="text-gray-600">
+                    نسيت كلمة المرور؟ 
+                    <a href="whatsapp://send?phone=+779923330&text=لقد نسيت كلمة المرور الخاصة بي اريد تغييرها" class="font-bold text-blue-600 hover:text-blue-500 transition-colors hover:underline decoration-2 underline-offset-4">
+                        استعادة كلمة المرور
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="text-center">
+            <p class="text-xs text-gray-400 flex items-center justify-center gap-2">
+                <i class="fas fa-shield-alt"></i>
+                بياناتك محمية ومشفرة بأمان
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom Animations */
+    @keyframes blob {
+        0% { transform: translate(0px, 0px) scale(1); }
+        33% { transform: translate(30px, -50px) scale(1.1); }
+        66% { transform: translate(-20px, 20px) scale(0.9); }
+        100% { transform: translate(0px, 0px) scale(1); }
+    }
+    .animate-blob {
+        animation: blob 7s infinite;
+    }
+    .animation-delay-2000 {
+        animation-delay: 2s;
+    }
+    .animation-delay-4000 {
+        animation-delay: 4s;
+    }
+    
+    /* Enhance form inputs within the include */
+    .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        appearance: none;
+        background-color: #f9fafb;
+        border-color: #e5e7eb;
+        border-width: 1px;
+        border-radius: 0.75rem;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        width: 100%;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        transition-property: all;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 300ms;
+    }
+    
+    .form-control:focus {
+        background-color: #ffffff;
+        border-color: #3b82f6;
+        outline: 0;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+</style>
 
 {% endblock %}

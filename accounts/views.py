@@ -1,6 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login as auth_login
+from django.contrib.auth import authenticate
+from django.http import JsonResponse
+import json
+from django.views.decorators.csrf import csrf_exempt
 
 from .forms import  SignUpForm
 from django.views.generic import UpdateView
@@ -62,3 +66,33 @@ class UserUpdateView(UpdateView):
 def logout(request):
     request.session.flush()
     return redirect('suppliers_list')
+
+def ajax_login_view(request):
+    """
+    Handle AJAX login requests.
+    Expects JSON data: {'username': '...', 'password': '...'}
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            username = data.get('username')
+            password = data.get('password')
+            
+            user = authenticate(request, username=username, password=password)
+            
+            if user is not None:
+                auth_login(request, user)
+                return JsonResponse({
+                    'success': True, 
+                    'message': 'Login successful',
+                    'username': user.username
+                })
+            else:
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'Invalid credentials'
+                })
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+            
+    return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
