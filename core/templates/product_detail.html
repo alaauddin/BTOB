@@ -4,6 +4,18 @@
 
 {% block title %}{{ product.name }} - {{ supplier.name }}{% endblock %}
 
+{% block extra_meta %}
+<meta property="og:title" content="{{ product.name }}" />
+<meta property="og:description" content="{{ product.description|striptags|truncatechars:160 }}" />
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}" />
+<meta property="og:url" content="{{ request.build_absolute_uri }}" />
+<meta property="og:type" content="product" />
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ product.name }}">
+<meta name="twitter:description" content="{{ product.description|striptags|truncatechars:160 }}">
+<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}">
+{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/products.css' %}">
 {% endblock %}
