@@ -33,7 +33,7 @@ admin.site.register(WorkflowStep)
 from django.forms import widgets
 
 from django.urls import reverse
-from django.utils.html import format_html
+from django.utils.html import format_html, mark_safe
 
 class SupplierAdmin(admin.ModelAdmin):
     list_display = ('name', 'city', 'country', 'primary_color')
@@ -75,7 +75,7 @@ class SupplierAdmin(admin.ModelAdmin):
         html += f'<a href="{add_url}" class="addlink" style="font-weight: 600; color: #4f46e5;">إضافة خطوة جديدة لهذا النظام</a>'
         html += '</div></div>'
         
-        return format_html(html)
+        return mark_safe(html)
     
     workflow_steps_list.short_description = 'إعدادات خطوات سير العمل'
 
