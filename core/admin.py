@@ -41,14 +41,19 @@ class SupplierAdmin(admin.ModelAdmin):
     
     def workflow_steps_list(self, obj):
         if not obj.workflow:
-            return format_html('<span style="color: #94a3b8;">لا يوجد نظام سير عمل مرتبط لهذا المورد.</span>')
+            return format_html('<span style="color: #94a3b8;">{}</span>', 'لا يوجد نظام سير عمل مرتبط لهذا المورد.')
         
         steps = obj.workflow.steps.all().select_related('status')
         if not steps.exists():
             add_url = reverse('admin:core_workflowstep_add') + f'?workflow={obj.workflow.id}'
-            return format_html('<div style="background:#fefce8; padding:15px; border-radius:12px; border:1px solid #fef08a;">'
-                               '<p style="color:#854d0e; margin-bottom:10px;">لا توجد خطوات حالياً لهذا النظام.</p>'
-                               f'<a href="{add_url}" class="addlink">إضافة أول خطوة</a></div>')
+            return format_html(
+                '<div style="background:#fefce8; padding:15px; border-radius:12px; border:1px solid #fef08a;">'
+                '<p style="color:#854d0e; margin-bottom:10px;">{}</p>'
+                '<a href="{}" class="addlink">{}</a></div>',
+                'لا توجد خطوات حالياً لهذا النظام.',
+                add_url,
+                'إضافة أول خطوة'
+            )
 
         html = '<div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">'
         html += '<table style="width:100%; border-collapse: collapse; text-align: right;">'
