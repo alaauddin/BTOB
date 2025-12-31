@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from core.models import Product, Cart, Supplier
 from django.contrib.auth.decorators import login_required
 
-@login_required
+# @login_required
 def product_detail(request, pk):
     """Function-based view for product detail.
 
@@ -18,9 +18,11 @@ def product_detail(request, pk):
     if not supplier:
         supplier = Supplier.objects.filter(products__id=product.id).first()
 
-    user_cart = Cart.objects.filter(user=request.user, supplier=supplier).first() 
-    if not user_cart:
-        user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
+    user_cart = None
+    if request.user.is_authenticated:
+        user_cart = Cart.objects.filter(user=request.user, supplier=supplier).first() 
+        if not user_cart:
+            user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
 
     context = {
         'product': product,

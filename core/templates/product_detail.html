@@ -405,7 +405,7 @@
         // Use the server endpoint that expects product and supplier in the URL
         const url = `/add_to_cart/${productId}/${supplierId}/`;
 
-        fetch(url, {
+        return fetch(url, {
             method: 'POST',
             credentials: 'same-origin',
             headers: {
@@ -505,7 +505,13 @@
         // attach addToCart handler to button(s) and pass supplier id explicitly
         document.querySelectorAll('[data-product-id][data-supplier-id]').forEach(btn => {
             btn.addEventListener('click', function(e) {
-                addToCart(this.dataset.productId, this.dataset.supplierId, e);
+                if (typeof isAuthenticated !== 'undefined' && !isAuthenticated) {
+                    openLoginModal(() => {
+                        return addToCart(this.dataset.productId, this.dataset.supplierId, e);
+                    });
+                } else {
+                    addToCart(this.dataset.productId, this.dataset.supplierId, e);
+                }
             });
         });
     });
