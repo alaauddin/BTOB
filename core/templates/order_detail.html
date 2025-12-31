@@ -335,8 +335,8 @@
             <h3 class="mb-0">الطلب #{{ order.id }}</h3>
             <div class="order-status">
                 <div class="order-status-badge">
-                    <i class="fas fa-clock"></i>
-                    <span>قيد المعالجة</span>
+                    <i class="fas {% if order.pipeline_status.slug == 'pending' %}fa-clock{% elif order.pipeline_status.slug == 'completed' %}fa-check-circle{% elif order.pipeline_status.slug == 'canceled' %}fa-times-circle{% else %}fa-cog{% endif %}"></i>
+                    <span>{{ order.pipeline_status.name }}</span>
                 </div>
                 <span class="order-date">{{ order.created_at|date:"d M Y" }}</span>
             </div>
@@ -355,11 +355,11 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">الحالة</div>
-                    <div class="info-value">قيد المعالجة</div>
+                    <div class="info-value">{{ order.pipeline_status.name }}</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">المجموع</div>
-                    <div class="info-value">  {{ supplier.currency }} {{ order.total_amount|floatformat:2 }}</div>
+                    <div class="info-label">المجموع الكلي</div>
+                    <div class="info-value"> {{ order.total_amount|floatformat:2 }} {{ supplier.currency }}</div>
                 </div>
             </div>
             
@@ -412,7 +412,13 @@
                 {% endif %}
                 <div class="summary-item">
                     <span class="summary-label">التوصيل</span>
-                    <span class="summary-value">0.00   {{ supplier.currency }} </span>
+                    <span class="summary-value">
+                        {% if supplier.enable_delivery_fees %}
+                            {{ order.get_expected_delivery_fee|floatformat:2 }} {{ supplier.currency }}
+                        {% else %}
+                            0.00 {{ supplier.currency }}
+                        {% endif %}
+                    </span>
                 </div>
                 
                 <div class="summary-total">
@@ -440,7 +446,7 @@
                     <i class="fas fa-arrow-right"></i>
                     العودة إلى الطلبات
                 </a>
-                <a href="{% url 'product-list' order.items.first.supplier.id %}" class="action-btn">
+                <a href="{% url 'product-list' order.order_items.first.product.supplier.store_id %}" class="action-btn">
                     <i class="fas fa-shopping-cart"></i>
                     مواصلة التسوق
                 </a>

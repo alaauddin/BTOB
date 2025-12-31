@@ -118,19 +118,19 @@
         color: #856404;
     }
     
-    .status-completed {
+    .status-processing, .status-confirmed, .status-shipped, .status-out_for_delivery {
+        background: #cce5ff;
+        color: #004085;
+    }
+    
+    .status-delivered, .status-completed {
         background: #d4edda;
         color: #155724;
     }
     
-    .status-canceled {
-        background: #f8d7da;
-        color: #721c24;
-    }
-    
-    .status-processing {
-        background: #cce5ff;
-        color: #004085;
+    .status-returned, .status-refunded {
+        background: #e2e8f0;
+        color: #4a5568;
     }
     
     .order-info {
@@ -368,24 +368,24 @@
     <div class="orders-container">
         {% if orders %}
             {% for order in orders %}
-            <div class="order-card" data-status="{{ order.status }}">
+            <div class="order-card" data-status="{{ order.pipeline_status.slug }}">
                 <div class="order-header">
                     <div class="order-id">الطلب #{{ order.id }}</div>
                     <div class="order-date">{{ order.created_at|date:"d M Y" }}</div>
                 </div>
                 
                 <div class="order-body">
-                    <div class="order-status status-{{ order.status }}">
-                        {% if order.status == "pending" %}
+                    <div class="order-status status-{{ order.pipeline_status.slug }}">
+                        {% if order.pipeline_status.slug == "pending" %}
                             <i class="fas fa-clock me-2"></i> قيد الانتظار
-                        {% elif order.status == "completed" %}
+                        {% elif order.pipeline_status.slug == "completed" %}
                             <i class="fas fa-check-circle me-2"></i> مكتمل
-                        {% elif order.status == "canceled" %}
+                        {% elif order.pipeline_status.slug == "canceled" %}
                             <i class="fas fa-times-circle me-2"></i> ملغي
-                        {% elif order.status == "processing" %}
+                        {% elif order.pipeline_status.slug == "processing" %}
                             <i class="fas fa-cog me-2"></i> قيد التجهيز
                         {% else %}
-                            {{ order.status }}
+                            {{ order.pipeline_status.name }}
                         {% endif %}
                     </div>
                     
@@ -420,14 +420,14 @@
                 </div>
                 
                 <div class="order-footer">
-                    <div class="order-total">المجموع: {{ order.total_price }} {{ supplier.currency }}</div>
+                    <div class="order-total">المجموع: {{ order.total_price }} {{ order.get_supplier.currency }}</div>
                     
                     <div class="order-actions">
                         <a href="{% url 'order_detail' pk=order.pk %}" class="view-details-btn">
                             <i class="fas fa-eye"></i> التفاصيل
                         </a>
                         
-                        {% if order.status == "processing" or order.status == "completed" %}
+                        {% if order.pipeline_status.slug in "processing,shipped,out_for_delivery,delivered,completed" %}
                         <a href="#" class="track-order-btn">
                             <i class="fas fa-truck"></i> تتبع الشحن
                         </a>

@@ -12,6 +12,7 @@ from core.views.OrderDetailView import order_detail_view
 from core.views.OrderListView import order_list_view
 from core.views.PaymentDetailView import PaymentDetailView
 from core.views.ProductDetailView import  product_detail
+from core.views.AddReview import AddReviewView
 from core.views.ProductListView import product_list
 from core.views.ConvertCartToOrder import checkout_select_address_or_custom_address
 from core.views.SuppliersListView import SuppliersListView
@@ -23,14 +24,14 @@ from core.views.add_product_offer import add_product_offer
 from core.views.edit_product_offer import edit_product_offer
 from core.views.add_ads import add_ads
 from core.views.edit_ads import edit_ads
-from core.views.MerchantOrderManagement import merchant_orders, merchant_order_detail, update_order_status
+from core.views.MerchantOrderManagement import merchant_orders, merchant_order_detail, update_order_status, add_order_note, add_payment_reference
 
 urlpatterns = [
     # path('products/', ProductListView.as_view(), name='product-list'),
-    path('products/<int:supplier_id>/', product_list, name='product-list'),
-    path('products/category/<int:category_id>/<int:supplier_id>/', product_list, name='product_list_category'),
-    path('products/category/product_list_subcategory/<int:subcategory_id>/<int:supplier_id>/', product_list, name='product_list_subcategory'),
-    path('products/details/<int:pk>/', product_detail, name='product_detail'),
+    path('products/<str:store_id>/', product_list, name='product-list'),
+    path('products/category/<int:category_id>/<str:store_id>/', product_list, name='product_list_category'),
+    path('products/category/product_list_subcategory/<int:subcategory_id>/<str:store_id>/', product_list, name='product_list_subcategory'),
+    path('<str:store_id>/details/<int:pk>/', product_detail, name='product_detail'),
     path('', SuppliersListView, name='suppliers_list'),
 
 
@@ -38,23 +39,23 @@ urlpatterns = [
 
 
 
-    path('cart/<int:supplier_id>/', CartView.as_view(), name='cart-detail'),
-    path('add_to_cart/<int:product_id>/<int:supplier_id>/', add_to_cart , name='add_to_cart'),
-    path('sub_to_cart/<int:product_id>/<int:supplier_id>/', sub_to_cart , name='sub_to_cart'),
-    path('cart/status/<int:supplier_id>/', get_cart_status, name='get_cart_status'),
+    path('cart/<str:store_id>/', CartView.as_view(), name='cart-detail'),
+    path('add_to_cart/<int:product_id>/<str:store_id>/', add_to_cart , name='add_to_cart'),
+    path('add_review/<int:product_id>/<str:store_id>/', AddReviewView.as_view(), name='add_review'),
+    path('sub_to_cart/<int:product_id>/<str:store_id>/', sub_to_cart , name='sub_to_cart'),
+    path('cart/status/<str:store_id>/', get_cart_status, name='get_cart_status'),
     
-    path('increase_quantity/<int:item_id>/<int:supplier_id>/', IncreaseQuantityView.as_view(), name='increase_quantity'),
-    path('decrease_quantity/<int:item_id>/<int:supplier_id>/', DecreaseQuantityView.as_view(), name='decrease_quantity'),
-    path('remove_item/<int:item_id>/<int:supplier_id>/', RemoveItemView.as_view(), name='remove_item'),
+    path('increase_quantity/<int:item_id>/<str:store_id>/', IncreaseQuantityView.as_view(), name='increase_quantity'),
+    path('decrease_quantity/<int:item_id>/<str:store_id>/', DecreaseQuantityView.as_view(), name='decrease_quantity'),
+    path('remove_item/<int:item_id>/<str:store_id>/', RemoveItemView.as_view(), name='remove_item'),
 
     path('my-orders/', order_list_view, name='my_orders'),
     path('order/<int:pk>/', order_detail_view, name='order_detail'),
 
 
     path('payments/<int:pk>/', PaymentDetailView.as_view(), name='payment-detail'),
-
-    path('checkout_select_address_or_custom_address/<int:supplier_id>/', ConvertCartToOrder.checkout_select_address_or_custom_address, name='checkout_select_address_or_custom_address'),
-    path('existing_address/<int:supplier_id>/', ConvertCartToOrder.existing_address, name='existing_address'),
+    path('checkout_select_address_or_custom_address/<str:store_id>/', ConvertCartToOrder.checkout_select_address_or_custom_address, name='checkout_select_address_or_custom_address'),
+    path('existing_address/<str:store_id>/', ConvertCartToOrder.existing_address, name='existing_address'),
 
     # Wishlist URLs
     path('wishlist/toggle/<int:product_id>/', toggle_wishlist, name='toggle_wishlist'),
@@ -73,6 +74,8 @@ urlpatterns = [
     path('merchant-orders/', merchant_orders, name='merchant_orders'),
     path('merchant-order/<int:order_id>/', merchant_order_detail, name='merchant_order_detail'),
     path('update-order-status/<int:order_id>/', update_order_status, name='update_order_status'),
+    path('add-order-note/<int:order_id>/', add_order_note, name='add_order_note'),
+    path('add-payment-reference/<int:order_id>/', add_payment_reference, name='add_payment_reference'),
 
 ]
 

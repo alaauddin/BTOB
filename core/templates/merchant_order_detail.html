@@ -5,490 +5,778 @@
 
 {% block extra_css %}
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
     :root {
-        --primary-color: #2563eb;
-        --accent-color: #a855f7;
-        --pending-bg: #fef3c7;
-        --pending-color: #d97706;
-        --confirmed-bg: #d1fae5;
-        --confirmed-color: #059669;
-        --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        --hover-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+        --primary: #4f46e5;
+        --secondary: #7c3aed;
+        --accent: #ec4899;
+        --bg-glass: rgba(255, 255, 255, 0.85);
+        --border-glass: rgba(255, 255, 255, 0.3);
+        --shadow-premium: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+        --text-main: #1e293b;
+        --text-muted: #64748b;
     }
-    
-    .order-detail-container {
-        background: rgba(255, 255, 255, 0.95);
+
+    /* Leaflet Overrides */
+    #deliveryMap {
+        height: 250px;
+        border-radius: 18px;
+        margin-top: 1.5rem;
+        z-index: 10;
+        border: 1px solid var(--border-glass);
+    }
+
+    body {
+        font-family: 'Outfit', 'Inter', sans-serif;
+        background: #f8fafc;
+        color: var(--text-main);
+    }
+
+    .premium-container {
+        padding: 2rem;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    /* Glassmorphism Cards */
+    .glass-card {
+        background: var(--bg-glass);
         backdrop-filter: blur(20px);
-        border-radius: 16px;
+        border: 1px solid var(--border-glass);
+        border-radius: 24px;
         padding: 1.5rem;
-        margin: 1.5rem 0;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow-premium);
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    
-    .order-header {
+
+    .glass-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Header Overhaul */
+    .premium-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #e1e5e9;
-        flex-wrap: wrap;
+        margin-bottom: 2.5rem;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        padding: 2rem 3rem;
+        border-radius: 32px;
+        color: white;
+        box-shadow: 0 20px 30px -10px rgba(79, 70, 229, 0.3);
+    }
+
+    .header-content h1 {
+        font-size: 2.25rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+    }
+
+    .header-actions {
+        display: flex;
         gap: 1rem;
     }
-    
-    .order-content {
-        display: grid;
-        grid-template-columns: 1fr 1.5fr;
-        gap: 1.5rem;
-    }
-    
-    .order-sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: 1.25rem;
-    }
-    
-    .order-main {
-        display: flex;
-        flex-direction: column;
-        gap: 1.25rem;
-    }
-    
-    .info-card, .order-items, .address-section, .status-actions, .order-summary {
-        background: white;
-        border-radius: 12px;
-        padding: 1.25rem;
-        box-shadow: var(--card-shadow);
-    }
-    
-    .info-card h4, .order-items h4, .address-section h4, .status-actions h4, .order-summary h4 {
-        color: var(--primary-color);
-        margin-bottom: 1rem;
-        font-size: 1.1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .info-row {
+
+    /* Pipeline / Stepper */
+    .pipeline-stepper {
         display: flex;
         justify-content: space-between;
+        margin-bottom: 3rem;
+        position: relative;
+        padding: 0 1rem;
+    }
+
+    .pipeline-stepper::before {
+        content: '';
+        position: absolute;
+        top: 24px;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: #e2e8f0;
+        z-index: 1;
+        border-radius: 2px;
+    }
+
+    .step-item {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        padding: 0.6rem 0;
-        border-bottom: 1px solid #f1f3f4;
+        gap: 0.75rem;
+        flex: 1;
     }
-    
-    .info-row:last-child {
-        border-bottom: none;
-    }
-    
-    .info-label {
-        font-weight: 600;
-        color: #666;
-        font-size: 0.9rem;
-    }
-    
-    .info-value {
-        color: #333;
-        font-size: 0.9rem;
-    }
-    
-    .status-badge {
-        padding: 0.4rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-align: center;
-        display: inline-block;
-        min-width: 70px;
-    }
-    
-    .status-pending {
-        background: var(--pending-bg);
-        color: var(--pending-color);
-    }
-    
-    .status-confirmed {
-        background: var(--confirmed-bg);
-        color: var(--confirmed-color);
-    }
-    
-    .order-items-grid {
-        display: grid;
-        gap: 0.8rem;
-    }
-    
-    .item-card {
-        display: grid;
-        grid-template-columns: auto 1fr auto auto;
+
+    .step-icon {
+        width: 48px;
+        height: 48px;
+        background: white;
+        border: 4px solid #e2e8f0;
+        border-radius: 50%;
+        display: flex;
         align-items: center;
-        padding: 0.8rem;
-        border: 1px solid #e1e5e9;
-        border-radius: 8px;
+        justify-content: center;
+        font-size: 1rem;
+        color: #94a3b8;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .step-item.active .step-icon {
+        background: var(--primary);
+        border-color: #c7d2fe;
+        color: white;
+        transform: scale(1.2);
+        box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+    }
+
+    .step-item.completed .step-icon {
+        background: #10b981;
+        border-color: #d1fae5;
+        color: white;
+    }
+
+    .step-label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .step-item.active .step-label {
+        color: var(--primary);
+    }
+
+    /* Main Grid */
+    .order-grid {
+        display: grid;
+        grid-template-columns: 350px 1fr 400px;
+        gap: 2rem;
+    }
+
+    /* Section Typography */
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--text-main);
+    }
+
+    .section-title i {
+        color: var(--primary);
+        background: rgba(79, 70, 229, 0.1);
+        padding: 10px;
+        border-radius: 12px;
+    }
+
+    /* Item Cards */
+    .premium-item {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.25rem;
+        border-radius: 18px;
+        background: rgba(248, 250, 252, 0.5);
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
         transition: all 0.2s ease;
-        gap: 0.8rem;
     }
-    
-    .item-card:hover {
-        box-shadow: var(--hover-shadow);
+
+    .premium-item:hover {
+        background: white;
+        border-color: #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     }
-    
-    .item-image {
-        width: 60px;
-        height: 60px;
+
+    .item-thumb {
+        width: 80px;
+        height: 80px;
+        border-radius: 14px;
         object-fit: cover;
-        border-radius: 6px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-    
-    .item-details {
-        min-width: 150px;
+
+    .item-info {
+        flex: 1;
     }
-    
+
     .item-name {
         font-weight: 600;
-        color: #333;
-        margin-bottom: 0.3rem;
-        font-size: 0.95rem;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
     }
-    
-    .item-price {
-        color: var(--primary-color);
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-    
-    .item-quantity {
-        background: #f8f9fa;
-        padding: 0.4rem 0.8rem;
-        border-radius: 16px;
-        font-weight: 600;
-        color: #666;
+
+    .item-sub {
         font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .item-pricing {
+        text-align: right;
+    }
+
+    /* Customer Stats */
+    .stat-pill {
+        background: #f1f5f9;
+        padding: 1rem;
+        border-radius: 16px;
         text-align: center;
     }
-    
-    .order-summary {
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(168, 85, 247, 0.1));
+
+    .stat-value {
+        display: block;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary);
     }
-    
-    .summary-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.6rem 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        font-size: 0.9rem;
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
-    
-    .summary-row:last-child {
-        border-bottom: none;
-        font-weight: 600;
-        font-size: 1rem;
-        color: var(--primary-color);
-    }
-    
-    .status-form {
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-        flex-wrap: wrap;
-    }
-    
-    .status-select {
-        padding: 0.6rem;
-        border: 2px solid #e1e5e9;
-        border-radius: 8px;
-        font-size: 0.9rem;
-        min-width: 120px;
-    }
-    
-    .btn-update {
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+
+    /* Primary Action Button */
+    .btn-premium-action {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
         color: white;
-        border: none;
-        padding: 0.6rem 1.2rem;
-        border-radius: 8px;
+        padding: 1rem 2rem;
+        border-radius: 16px;
         font-weight: 600;
+        border: none;
+        box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.3);
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 1.1rem;
+    }
+
+    .btn-premium-action:hover {
+        transform: scale(1.02);
+        box-shadow: 0 15px 30px -5px rgba(79, 70, 229, 0.4);
+    }
+
+    /* RTL Support */
+    [dir="rtl"] .order-grid {
+        grid-template-columns: 400px 1fr 350px;
+    }
+
+    @media (max-width: 1400px) {
+        .order-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        .order-sidebar-right {
+            grid-column: span 2;
+        }
+    }
+
+    /* Fixed FAB */
+    .fab-container {
+        position: fixed;
+        bottom: 40px;
+        right: 40px;
+        z-index: 1000;
+    }
+
+    .fab-button {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 1.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 15px 35px -5px rgba(16, 185, 129, 0.4);
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .fab-button:hover {
+        transform: scale(1.1) rotate(15deg);
+        box-shadow: 0 20px 45px -5px rgba(16, 185, 129, 0.5);
+    }
+
+    .fab-badge {
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        background: #ef4444;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
         font-size: 0.9rem;
+        font-weight: 700;
         display: flex;
         align-items: center;
-        gap: 0.4rem;
+        justify-content: center;
+        border: 3px solid white;
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
     }
-    
-    .btn-update:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 5px 15px rgba(37, 99, 235, 0.25);
+
+    /* Modal Styling */
+    .premium-modal .modal-content {
+        border-radius: 32px;
+        border: 1px solid var(--border-glass);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(30px);
     }
-    
-    .btn-back {
-        background: #6c757d;
-        color: white;
-        border: none;
-        padding: 0.6rem 1.2rem;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
+
+    .order-item-link {
         transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-size: 0.9rem;
+        border-radius: 16px;
     }
-    
-    .btn-back:hover {
-        background: #5a6268;
-        color: white;
-        text-decoration: none;
-        transform: translateY(-1px);
+
+    .order-item-link:hover {
+        background: #f1f5f9;
+        transform: translateX(-5px);
     }
-    
-    .address-content {
-        color: #666;
-        line-height: 1.5;
-        font-size: 0.9rem;
-    }
-    
-    .no-address {
-        color: #999;
-        font-style: italic;
-    }
-    
-    /* Responsive adjustments */
+
     @media (max-width: 992px) {
-        .order-content {
+        .order-grid {
             grid-template-columns: 1fr;
-            gap: 1.25rem;
         }
-        
-        .order-sidebar, .order-main {
-            gap: 1rem;
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .order-detail-container {
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-        
-        .order-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        
-        .info-card, .order-items, .address-section, .status-actions {
-            padding: 1rem;
-        }
-        
-        .item-card {
-            grid-template-columns: auto 1fr;
-            grid-template-rows: auto auto;
-        }
-        
-        .item-quantity, .item-price:last-child {
-            grid-column: 1 / -1;
-            justify-self: start;
-            margin-top: 0.5rem;
-        }
-        
-        .status-form {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .status-select, .btn-update {
-            width: 100%;
-        }
-    }
-    
-    @media (max-width: 576px) {
-        .info-row {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.2rem;
-        }
-        
-        .item-details {
-            min-width: 100%;
-        }
-        
-        .item-card {
-            grid-template-columns: 1fr;
-            justify-items: center;
-            text-align: center;
-        }
-        
-        .item-quantity, .item-price:last-child {
-            justify-self: center;
+        .order-sidebar-right {
+            grid-column: span 1;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="order-detail-container">
-                <!-- Header -->
-                <div class="order-header">
-                    <div>
-                        <h2><i class="fas fa-shopping-cart"></i> تفاصيل الطلب #{{ order.id }}</h2>
-                        <p class="text-muted">تاريخ الطلب: {{ order.created_at|date:"Y/m/d H:i" }}</p>
+<div class="premium-container" dir="rtl">
+    <!-- Premium Sticky Header -->
+    <header class="premium-header">
+        <div class="header-content">
+            <h1>طلب #{{ order.id }}</h1>
+            <p><i class="fas fa-calendar-alt me-2"></i> {{ order.created_at|date:"Y/m/d H:i" }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'merchant_orders' %}" class="btn glass" style="color: white; border: 1px solid rgba(255,255,255,0.3);">
+                <i class="fas fa-arrow-right me-2"></i> العودة للقائمة
+            </a>
+            <button class="btn btn-light rounded-pill px-4 font-weight-bold">
+                <i class="fas fa-print me-2"></i> طباعة الفاتورة
+            </button>
+        </div>
+    </header>
+
+    <!-- Visual Pipeline -->
+    <div class="pipeline-stepper">
+        {% for step in workflow_steps %}
+            <div class="step-item 
+                {% if order.pipeline_status.slug == step.status.slug %}active{% endif %}
+                {% if step.priority < order.get_current_workflow_step.priority %}completed{% endif %}">
+                <div class="step-icon">
+                    {% if step.status.slug == 'pending' %}<i class="fas fa-clock"></i>
+                    {% elif step.status.slug == 'confirmed' %}<i class="fas fa-check"></i>
+                    {% elif step.status.slug == 'processing' %}<i class="fas fa-cog fa-spin"></i>
+                    {% elif step.status.slug == 'shipped' %}<i class="fas fa-truck"></i>
+                    {% elif step.status.slug == 'delivered' %}<i class="fas fa-box-open"></i>
+                    {% else %}<i class="fas fa-flag-checkered"></i>{% endif %}
+                </div>
+                <span class="step-label">{{ step.status.name }}</span>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="order-grid">
+        <!-- Col 1: Customer Profile -->
+        <aside class="order-sidebar-left">
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fas fa-user"></i> العميل</h3>
+                <div class="d-flex align-items-center mb-4">
+                    <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                        {{ order.user.username|make_list|first|upper }}
                     </div>
                     <div>
-                        <span class="status-badge status-{{ order.status|lower }}">
-                            {% if order.status == 'Pending' %}معلق{% else %}مؤكد{% endif %}
-                        </span>
+                        <h4 class="mb-0 fw-bold">{{ order.user.get_full_name|default:order.user.username }}</h4>
+                        <span class="text-muted">{{ order.user.email }}</span>
                     </div>
                 </div>
 
-                <!-- Main Content - Side by Side Layout -->
-                <div class="order-content">
-                    <!-- Left Sidebar - Customer Info and Order Summary -->
-                    <div class="order-sidebar">
-                        <!-- Customer Information -->
-                        <div class="info-card">
-                            <h4><i class="fas fa-user"></i> معلومات العميل</h4>
-                            <div class="info-row">
-                                <span class="info-label">الاسم:</span>
-                                <span class="info-value">{{ order.user.get_full_name|default:order.user.username }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">اسم المستخدم:</span>
-                                <span class="info-value">{{ order.user.username }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">البريد الإلكتروني:</span>
-                                <span class="info-value">{{ order.user.email }}</span>
-                            </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="stat-pill">
+                            <span class="stat-value">{{ customer_stats.order_count }}</span>
+                            <span class="stat-label">إجمالي الطلبات</span>
                         </div>
-
-                        <!-- Order Summary -->
-                        <div class="info-card">
-                            <h4><i class="fas fa-chart-line"></i> ملخص الطلب</h4>
-                            <div class="info-row">
-                                <span class="info-label">رقم الطلب:</span>
-                                <span class="info-value">#{{ order.id }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">تاريخ الطلب:</span>
-                                <span class="info-value">{{ order.created_at|date:"Y/m/d H:i" }}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">حالة الطلب:</span>
-                                <span class="info-value">
-                                    <span class="status-badge status-{{ order.status|lower }}">
-                                        {% if order.status == 'Pending' %}معلق{% else %}مؤكد{% endif %}
-                                    </span>
-                                </span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">إجمالي الطلب:</span>
-                                <span class="info-value">${{ order.total_amount|floatformat:2 }}</span>
-                            </div>
-                        </div>
-
-                        <!-- Shipping Address -->
-                        {% if shipping_address %}
-                        <div class="address-section">
-                            <h4><i class="fas fa-map-marker-alt"></i> عنوان الشحن</h4>
-                            <div class="address-content">
-                                <p><strong>الهاتف:</strong> {{ shipping_address.phone }}</p>
-                                <p><strong>العنوان:</strong> {{ shipping_address.address_line1 }}</p>
-                                {% if shipping_address.address_line2 %}
-                                <p>{{ shipping_address.address_line2 }}</p>
-                                {% endif %}
-                                <p><strong>المدينة:</strong> {{ shipping_address.get_city_display }}</p>
-                                <p><strong>البلد:</strong> {{ shipping_address.get_country_display }}</p>
-                                {% if shipping_address.postal_code %}
-                                <p><strong>الرمز البريدي:</strong> {{ shipping_address.postal_code }}</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% else %}
-                        <div class="address-section">
-                            <h4><i class="fas fa-map-marker-alt"></i> عنوان الشحن</h4>
-                            <div class="address-content">
-                                <p class="no-address">لم يتم إضافة عنوان شحن لهذا الطلب</p>
-                            </div>
-                        </div>
-                        {% endif %}
                     </div>
+                    <div class="col-6">
+                        <div class="stat-pill">
+                            <span class="stat-value">${{ customer_stats.total_spent|floatformat:0 }}</span>
+                            <span class="stat-label">القيمة الكلية</span>
+                        </div>
+                    </div>
+                </div>
 
-                    <!-- Right Main Content - Order Items and Actions -->
-                    <div class="order-main">
-                        <!-- Order Items -->
-                        <div class="order-items">
-                            <h4><i class="fas fa-box"></i> منتجات الطلب</h4>
-                            <div class="order-items-grid">
-                                {% for item in order_items %}
-                                <div class="item-card">
-                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="item-image">
-                                    <div class="item-details">
-                                        <div class="item-name">{{ item.product.name }}</div>
-                                        {% if item.has_discount %}
-                                        <div class="item-price">
-                                            <span style="text-decoration: line-through; color: #999;">${{ item.product.price|floatformat:2 }}</span>
-                                            <span style="color: #28a745; font-weight: 700; margin-left: 0.5rem;">
-                                                ${{ item.get_subtotal_with_discount|floatformat:2 }}
-                                            </span>
-                                        </div>
-                                        {% else %}
-                                        <div class="item-price">${{ item.product.price|floatformat:2 }}</div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="item-quantity">
-                                        الكمية: {{ item.quantity }}
-                                    </div>
-                                    <div class="item-price">
-                                        ${{ item.get_subtotal_with_discount|floatformat:2 }}
-                                    </div>
+                <h5 class="fw-bold mb-3 small text-muted text-uppercase">تاريخ الطلبات الأخيرة</h5>
+                {% for past_order in customer_stats.recent_history %}
+                    <a href="{% url 'merchant_order_detail' past_order.id %}" class="d-flex justify-content-between align-items-center p-3 mb-2 rounded-3 text-decoration-none hover-bg-light border">
+                        <div class="text-dark">#{{ past_order.id }}</div>
+                        <div class="small text-muted">{{ past_order.created_at|date:"d M Y" }}</div>
+                        <div class="fw-bold text-primary">${{ past_order.total_amount|floatformat:0 }}</div>
+                    </a>
+                {% empty %}
+                    <p class="text-muted small">لا يوجد تاريخ طلبات سابقة</p>
+                {% endfor %}
+            </div>
+
+            {% if shipping_address %}
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fas fa-map-marker-alt"></i> الشحن</h3>
+                <div class="address-details">
+                    <p class="mb-2"><strong><i class="fas fa-phone me-2 text-primary"></i></strong> {{ shipping_address.phone }}</p>
+                    <p class="mb-2"><strong><i class="fas fa-home me-2 text-primary"></i></strong> {{ shipping_address.address_line1 }}</p>
+                    <p class="mb-3 text-muted small">{{ shipping_address.city }}, {{ shipping_address.country }}</p>
+                    
+                    {% if supplier.enable_delivery_fees and distance_km %}
+                    <div class="mt-3 p-3 rounded-3" style="background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.2);">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small text-muted">المسافة المقدرة:</span>
+                            <span class="small fw-bold">{{ distance_km|floatformat:2 }} كم</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small text-muted">رسوم التوصيل المتوقعة:</span>
+                            <span class="small fw-bold text-success">{{ expected_delivery_fee|floatformat:2 }} {{ supplier.currency }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if shipping_address.latitude and shipping_address.longitude %}
+                    <div id="deliveryMap" class="mt-3 rounded-3 shadow-sm" style="height: 200px; border: 1px solid var(--border-glass);"></div>
+                    {% else %}
+                    <div class="alert alert-soft-info mt-3 small">
+                        <i class="fas fa-info-circle me-1"></i> إحداثيات الموقع غير متوفرة لهذا العنوان.
+                    </div>
+                    {% endif %}
+                    
+                    <hr>
+                    <button class="btn btn-outline-primary btn-sm w-100">تحرير العنوان</button>
+                </div>
+            </div>
+            {% endif %}
+        </aside>
+
+        <!-- Col 2: Items -->
+        <main class="order-main-content">
+            <div class="glass-card" style="min-height: 600px;">
+                <h3 class="section-title"><i class="fas fa-boxes"></i> محتويات الطلب</h3>
+                
+                <div class="items-list">
+                    {% for item in order_items %}
+                    <div class="premium-item">
+                        <img src="{{ item.product.image.url }}" class="item-thumb" alt="">
+                        <div class="item-info">
+                            <div class="item-name">{{ item.product.name }}</div>
+                            <div class="item-sub">SKU: PROD-{{ item.product.id }}</div>
+                        </div>
+                        <div class="item-quantity">
+                            x {{ item.quantity }}
+                        </div>
+                        <div class="item-pricing">
+                            <div class="fw-bold">${{ item.get_subtotal_with_discount|floatformat:2 }}</div>
+                            <div class="text-muted small">${{ item.product.price|floatformat:2 }} / للقطعة</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="order-finance mt-auto pt-4 border-top">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">المجموع الفرعي (المنتجات):</span>
+                        <span>{{ items_total|floatformat:2 }} {{ supplier.currency }}</span>
+                    </div>
+                    {% if supplier.enable_delivery_fees %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">رسوم التوصيل:</span>
+                        <span class="text-success">+{{ expected_delivery_fee|floatformat:2 }} {{ supplier.currency }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">الضرائب:</span>
+                        <span>0.00 {{ supplier.currency }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between pt-3 border-top mt-3">
+                        <h4 class="fw-bold">الإجمالي الكلي:</h4>
+                        <h4 class="fw-bold text-primary">{{ supplier_order_total|floatformat:2 }} {{ supplier.currency }}</h4>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Col 3: Actions -->
+        <aside class="order-sidebar-right">
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fas fa-bolt"></i> إجراءات سريعة</h3>
+                
+                {% if order.get_next_status %}
+                <form method="post" action="{% url 'update_order_status' order.id %}" class="mb-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="next">
+                    <button type="submit" class="btn-premium-action">
+                        تحويل إلى: {{ order.get_next_status.name }}
+                    </button>
+                    <p class="text-center mt-3 small text-muted">سيتم إرسال إشعار تلقائي للعميل بتحديث الحالة</p>
+                </form>
+                {% endif %}
+
+                <div class="manual-override mt-4">
+                    <label class="form-label fw-bold small text-uppercase">تغيير الحالة يدوياً</label>
+                    <form method="post" action="{% url 'update_order_status' order.id %}">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <select name="status" class="form-select border-0 bg-light">
+                                <option value="pending" {% if order.pipeline_status.slug == 'pending' %}selected{% endif %}>معلق</option>
+                                <option value="confirmed" {% if order.pipeline_status.slug == 'confirmed' %}selected{% endif %}>مؤكد</option>
+                                <option value="processing" {% if order.pipeline_status.slug == 'processing' %}selected{% endif %}>قيد التجهيز</option>
+                                <option value="shipped" {% if order.pipeline_status.slug == 'shipped' %}selected{% endif %}>تم الشحن</option>
+                                <option value="out_for_delivery" {% if order.pipeline_status.slug == 'out_for_delivery' %}selected{% endif %}>خارج بالتوصيل</option>
+                                <option value="delivered" {% if order.pipeline_status.slug == 'delivered' %}selected{% endif %}>تم التسليم</option>
+                                <option value="completed" {% if order.pipeline_status.slug == 'completed' %}selected{% endif %}>مكتمل</option>
+                                <option value="canceled" {% if order.pipeline_status.slug == 'canceled' %}selected{% endif %}>ملغي</option>
+                            </select>
+                            <button class="btn btn-dark" type="submit">حفظ</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fas fa-sticky-note"></i> ملاحظات داخلية</h3>
+                
+                <div class="notes-table-container mb-4" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-sm table-hover border-light">
+                        <thead class="bg-light sticky-top">
+                            <tr>
+                                <th class="small text-muted py-2">المسؤول</th>
+                                <th class="small text-muted py-2">الملاحظة</th>
+                                <th class="small text-muted py-2 text-end">التاريخ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for note in order_notes %}
+                            <tr>
+                                <td class="small fw-bold py-3">{{ note.user.username }}</td>
+                                <td class="small py-3">{{ note.note }}</td>
+                                <td class="small text-muted py-3 text-end" style="font-size: 0.75rem;">{{ note.created_at|date:"d/m H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-muted small">لا توجد ملاحظات داخلية بعد</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <form method="post" action="{% url 'add_order_note' order.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase">إضافة ملاحظة جديدة</label>
+                        <textarea name="note" class="form-control border-0 bg-light" rows="3" placeholder="اكتب ملاحظاتك هنا..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill">
+                        <i class="fas fa-plus me-2"></i> حفظ الملاحظة
+                    </button>
+                </form>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab-container">
+        <button class="fab-button" data-bs-toggle="modal" data-bs-target="#pendingOrdersModal">
+            {% if pending_count > 0 %}
+                <span class="fab-badge">{{ pending_count }}</span>
+            {% endif %}
+            <i class="fas fa-bell"></i>
+        </button>
+    </div>
+
+    <!-- Pending Orders Modal -->
+    <div class="modal fade premium-modal" id="pendingOrdersModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content shadow-2xl">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <div>
+                        <h4 class="modal-title fw-bold text-primary">طلبات جديدة معلقة</h4>
+                        <p class="text-muted small mb-0">لديك {{ pending_count }} طلب بانتظار التأكيد</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="list-group list-group-flush">
+                        {% for p_order in pending_orders %}
+                        <a href="{% url 'merchant_order_detail' p_order.id %}" class="list-group-item list-group-item-action order-item-link border-0 mb-2 p-3 d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-soft-primary rounded-circle p-3 me-3" style="background: rgba(79, 70, 229, 0.1); color: var(--primary);">
+                                    <i class="fas fa-shopping-cart"></i>
                                 </div>
-                                {% endfor %}
+                                <div>
+                                    <h6 class="mb-1 fw-bold">طلب #{{ p_order.id }}</h6>
+                                    <p class="mb-0 text-muted small">{{ p_order.user.get_full_name|default:p_order.user.username }} • {{ p_order.created_at|timesince }}</p>
+                                </div>
                             </div>
-                        </div>
-
-                        <!-- Order Summary for Supplier -->
-                        <div class="order-summary">
-                            <h4><i class="fas fa-calculator"></i> ملخص الطلب (منتجاتك فقط)</h4>
-                            <div class="summary-row">
-                                <span>عدد المنتجات:</span>
-                                <span>{{ order_items.count }}</span>
+                            <div class="text-end">
+                                <div class="fw-bold text-primary mb-1">${{ p_order.total_amount|floatformat:2 }}</div>
+                                <span class="status-badge status-pending small" style="background: #fef3c7; color: #92400e; padding: 2px 10px; border-radius: 12px;">معلق</span>
                             </div>
-                            <div class="summary-row">
-                                <span>إجمالي المبلغ:</span>
-                                <span>${{ supplier_order_total|floatformat:2 }}</span>
-                            </div>
+                        </a>
+                        {% empty %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle fa-4x text-success mb-3 opacity-20"></i>
+                            <h5 class="text-muted">لا يوجد طلبات معلقة حالياً</h5>
                         </div>
-
-                        <!-- Status Management -->
-                        <div class="status-actions">
-                            <h4><i class="fas fa-cog"></i> إدارة حالة الطلب</h4>
-                            <form method="post" class="status-form" action="{% url 'update_order_status' order.id %}">
-                                {% csrf_token %}
-                                <select name="status" class="status-select">
-                                    <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>معلق</option>
-                                    <option value="Confirmed" {% if order.status == 'Confirmed' %}selected{% endif %}>مؤكد</option>
-                                </select>
-                                <button type="submit" class="btn-update">
-                                    <i class="fas fa-save"></i> تحديث الحالة
-                                </button>
-                            </form>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
-
-                <!-- Back Button -->
-                <div class="text-center mt-3">
-                    <a href="{% url 'merchant_orders' %}" class="btn-back">
-                        <i class="fas fa-arrow-right"></i> العودة لقائمة الطلبات
+                <div class="modal-footer border-0 p-4">
+                    <a href="{% url 'merchant_orders' %}" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-lg">
+                        مشاهدة جميع الطلبات <i class="fas fa-arrow-left ms-2"></i>
                     </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<div class="glass-card mt-4">
+    <h3 class="section-title"><i class="fas fa-receipt"></i> مراجع الدفع (Payment References)</h3>
+    <div class="table-responsive mb-4">
+        <table class="table table-hover border-light">
+            <thead class="bg-light">
+                <tr>
+                    <th class="small text-muted">المبلغ</th>
+                    <th class="small text-muted">رقم المرجع (Ref)</th>
+                    <th class="small text-muted">المسؤول</th>
+                    <th class="small text-muted text-end">التاريخ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ref in payment_references %}
+                <tr>
+                    <td class="fw-bold text-primary">{{ ref.amount|floatformat:2 }} {{ order.get_supplier.currency|default:"ر.س" }}</td>
+                    <td><code class="px-2 py-1 bg-light rounded">{{ ref.reference_number }}</code></td>
+                    <td class="small">{{ ref.recorded_by.username }}</td>
+                    <td class="small text-muted text-end">{{ ref.created_at|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-muted small">لا توجد مراجع دفع مسجلة لهذا الطلب.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <form method="post" action="{% url 'add_payment_reference' order.id %}" class="bg-light p-4 rounded-3 border">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label small fw-bold">المبلغ المسدد</label>
+                <div class="input-group">
+                    <input type="number" step="0.01" name="amount" class="form-control" value="{{ order.total_amount }}" required>
+                    <span class="input-group-text small">{{ order.get_supplier.currency|default:"ر.س" }}</span>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label small fw-bold">رقم المرجع (Reference)</label>
+                <input type="text" name="reference_number" class="form-control" placeholder="أدخل رقم العملية..." required>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-save me-1"></i> حفظ
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Leaflet.js -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if supplier.latitude and supplier.longitude and shipping_address.latitude and shipping_address.longitude %}
+        const sLat = {{ supplier.latitude }};
+        const sLng = {{ supplier.longitude }};
+        const dLat = {{ shipping_address.latitude }};
+        const dLng = {{ shipping_address.longitude }};
+        
+        const map = L.map('deliveryMap', {
+            center: [dLat, dLng],
+            zoom: 13,
+            zoomControl: false
+        });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        const supplierIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: `<div style="background-color: var(--secondary); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2);"><i class="fas fa-store" style="color: white; font-size: 10px;"></i></div>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+
+        const deliveryIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: `<div style="background-color: var(--primary); width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3);"><i class="fas fa-shopping-bag" style="transform: rotate(45deg); color: white; font-size: 12px;"></i></div>`,
+            iconSize: [30, 42],
+            iconAnchor: [15, 42]
+        });
+
+        L.Routing.control({
+            waypoints: [
+                L.latLng(sLat, sLng),
+                L.latLng(dLat, dLng)
+            ],
+            routeWhileDragging: false,
+            draggableWaypoints: false,
+            addWaypoints: false,
+            show: false, // Hide the instructions panel
+            createMarker: function(i, waypoint, n) {
+                if (i === 0) {
+                    return L.marker(waypoint.latLng, {icon: supplierIcon}).bindPopup('موقع المورد (المتجر)');
+                } else {
+                    return L.marker(waypoint.latLng, {icon: deliveryIcon}).bindPopup('موقع توصيل الطلب');
+                }
+            },
+            lineOptions: {
+                styles: [{color: 'var(--primary)', opacity: 0.6, weight: 6}]
+            }
+        }).addTo(map);
+            
+        L.control.zoom({ position: 'topleft' }).addTo(map);
+        
+        {% elif shipping_address.latitude and shipping_address.longitude %}
+        const lat = {{ shipping_address.latitude }};
+        const lng = {{ shipping_address.longitude }};
+        const map = L.map('deliveryMap', { center: [lat, lng], zoom: 15, zoomControl: false });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
+        const deliveryIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: `<div style="background-color: var(--primary); width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3);"><i class="fas fa-shopping-bag" style="transform: rotate(45deg); color: white; font-size: 12px;"></i></div>`,
+            iconSize: [30, 42],
+            iconAnchor: [15, 42]
+        });
+        L.marker([lat, lng], {icon: deliveryIcon}).addTo(map).bindPopup('موقع توصيل الطلب').openPopup();
+        L.control.zoom({ position: 'topleft' }).addTo(map);
+        {% endif %}
+    });
+</script>
 {% endblock %}

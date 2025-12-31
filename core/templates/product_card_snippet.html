@@ -1,0 +1,99 @@
+<div class="col animate-fade-in-up" style="animation-delay: {{ forloop.counter0|divisibleby:4|yesno:'0,0.1,0.2,0.3' }}s">
+    <div class="modern-product-card" data-product-id="{{ product.id }}">
+        <div class="modern-product-image-container">
+            <a href="{% url 'product_detail' store_id=supplier.store_id pk=product.pk %}">
+                <img src="{{ product.image.url }}" class="modern-product-image" alt="{{ product.name }}">
+            </a>
+            
+            <!-- World-Class Badges -->
+            {% if product.has_discount %}
+                {% with discount=product.get_discount_precentage %}
+                    {% if discount >= 20 %}
+                    <span class="modern-product-badge hot"><i class="fas fa-fire me-1"></i> {{ discount }}%</span>
+                    {% else %}
+                    <span class="modern-product-badge sale">-%{{ discount }}</span>
+                    {% endif %}
+                {% endwith %}
+            {% elif product.is_new %}
+            <span class="modern-product-badge">جديد</span>
+            {% endif %}
+            
+            <!-- Floating Wishlist -->
+            {% if user.is_authenticated %}
+            <button class="wishlist-btn" onclick="toggleWishlist({{ product.id }})" data-bs-toggle="tooltip" title="إضافة للمفضلة">
+                <i class="far fa-heart"></i>
+            </button>
+            {% else %}
+            <button class="wishlist-btn" onclick="showLoginPrompt()" data-bs-toggle="tooltip" title="سجل دخولك لإضافة المنتجات للمفضلة">
+                <i class="far fa-heart"></i>
+            </button>
+            {% endif %}
+            
+            <!-- Interactions -->
+            <div class="product-overlay">
+                <div class="overlay-actions">
+                    <button class="overlay-btn" onclick="shareProduct({{ product.id }})" data-bs-toggle="tooltip" title="مشاركة">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modern-product-info">
+            <div class="product-category-tag">{{ product.category.name }}</div>
+            
+            <h3 class="modern-product-name">
+                <a href="{% url 'product_detail' store_id=supplier.store_id pk=product.pk %}" class="text-decoration-none">{{ product.name }}</a>
+            </h3>
+            
+            <div class="product-rating">
+                <div class="stars">
+                    <i class="fas fa-star"></i>
+                    <span class="rating-value">{{ product.get_average_rating|default:"5.0" }}</span>
+                </div>
+                <span class="rating-count">({{ product.get_total_reviews|default:"0" }})</span>
+            </div>
+            
+                <div class="pricing-wrapper">
+                    {% if product.has_discount %}
+                        <span class="modern-product-price">{{ product.get_price_with_offer|floatformat:0 }} {{ supplier.currency }}</span>
+                        <span class="old-price">{{ product.price|floatformat:0 }} {{ supplier.currency }}</span>
+                    {% else %}
+                        <span class="modern-product-price">{{ product.price|floatformat:0 }} {{ supplier.currency }}</span>
+                    {% endif %}
+                </div>
+            
+            <div class="modern-product-actions">
+                {% with cart_item_qty=product.quantity_in_cart|default:0 %}
+                    <div class="modern-quantity-controls {% if cart_item_qty == 0 %}d-none{% endif %}" id="qty-ctrl-{{ product.id }}" data-product-id="{{ product.id }}">
+                        <button class="modern-qty-btn" onclick="subToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span class="modern-qty-display" id="total-qty-items-{{ product.id }}">{{ cart_item_qty }}</span>
+                        <button class="modern-qty-btn" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    
+                    <button class="modern-cart-btn-long {% if cart_item_qty > 0 %}d-none{% endif %}" id="add-btn-{{ product.id }}" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>إضافة للسلة</span>
+                    </button>
+                {% endwith %}
+            </div>
+        </div>
+            
+            <!-- Social Share Menu (Hidden by default) -->
+            <div class="social-share-menu" id="share-menu-{{ product.id }}">
+                <button class="share-item whatsapp" onclick="shareWhatsApp('{{ product.name }}', '{{ product.id }}')">
+                    <i class="fab fa-whatsapp"></i>
+                </button>
+                <button class="share-item facebook" onclick="shareFacebook('{{ product.id }}')">
+                    <i class="fab fa-facebook-f"></i>
+                </button>
+                <button class="share-item copy" onclick="copyProductLink('{{ product.id }}')">
+                    <i class="fas fa-link"></i>
+                </button>
+            </div>
+    </div>
+</div>

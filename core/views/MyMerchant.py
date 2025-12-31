@@ -34,11 +34,11 @@ def my_merchant(request):
     # Order statistics
     orders = Order.objects.filter(order_items__product__supplier=supplier).distinct()
     total_orders = orders.count()
-    pending_orders = orders.filter(status='Pending').count()
-    confirmed_orders = orders.filter(status='Confirmed').count()
+    pending_orders = orders.filter(pipeline_status__slug='pending').count()
+    confirmed_orders = orders.filter(pipeline_status__slug='confirmed').count()
     
     # Calculate total revenue
-    total_revenue = orders.filter(status='Confirmed').aggregate(
+    total_revenue = orders.filter(pipeline_status__slug='confirmed').aggregate(
         total=Sum('total_amount')
     )['total'] or 0
     

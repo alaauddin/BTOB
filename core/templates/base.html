@@ -90,7 +90,7 @@
 
                     {% if user.is_authenticated %}
                         {% if cart and supplier %}
-                            <a href="{% url 'cart-detail' supplier.id %}" class="action-btn relative group">
+                            <a href="{% url 'cart-detail' supplier.store_id %}" class="action-btn relative group">
                                 <i class="fas fa-shopping-basket text-lg"></i>
                                 <span id="total-items" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white">{{ cart.get_total_items }}</span>
                             </a>
@@ -417,7 +417,7 @@
                                         <i class="fas fa-phone-alt"></i>
                                     </div>
                                     <input type="text" name="username" id="modal_username" required 
-                                        placeholder="05xxxxxxxx"
+                                        placeholder="77xxxxxxx"
                                         class="block w-full pr-11 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400">
                                 </div>
                             </div>
@@ -551,7 +551,7 @@
                 const csrftoken = getCookie('csrftoken');
                 
                 return $.ajax({
-                    url: "{% url 'add_to_cart' product_id=0 supplier_id=0 %}".replace('0', productId).replace('0', supplierId),
+                    url: "{% url 'add_to_cart' product_id=0 store_id=0 %}".replace('0', productId).replace('0', supplierId),
                     type: "POST",
                     headers: { "X-CSRFToken": csrftoken },
                     success: function (response) {
@@ -570,7 +570,8 @@
                         // Update Mobile Cart Bar
                         $('#mobile-cart-count').text(response.cart_items_count);
                         if (response.cart_total !== undefined) {
-                            $('#mobile-cart-total').text(response.cart_total);
+                            const estimatedFee = parseFloat('{{ estimated_fee|default:0 }}');
+                            $('#mobile-cart-total').text(Math.floor(response.cart_total + estimatedFee));
                         }
                         
                         // Show Mobile Bar if hidden
@@ -608,7 +609,7 @@
                 const csrftoken = getCookie('csrftoken');
                 
                 $.ajax({
-                    url: "{% url 'sub_to_cart' product_id=0 supplier_id=0 %}".replace('0', productId).replace('0', supplierId),
+                    url: "{% url 'sub_to_cart' product_id=0 store_id=0 %}".replace('0', productId).replace('0', supplierId),
                     type: "POST",
                     headers: { "X-CSRFToken": csrftoken },
                     success: function (response) {
@@ -631,7 +632,8 @@
                         // Update Mobile Cart Bar
                         $('#mobile-cart-count').text(response.cart_items_count);
                         if (response.cart_total !== undefined) {
-                            $('#mobile-cart-total').text(response.cart_total);
+                            const estimatedFee = parseFloat('{{ estimated_fee|default:0 }}');
+                            $('#mobile-cart-total').text(Math.floor(response.cart_total + estimatedFee));
                         }
 
                         // Hide Mobile Bar if empty

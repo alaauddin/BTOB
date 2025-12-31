@@ -1,10 +1,28 @@
+import math
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Sum, Count
 from django.utils import timezone
-from core.models import Supplier, Order, OrderItem, ShippingAddress
+from core.models import Supplier, Order, OrderItem, ShippingAddress, OrderStatus, OrderNote, OrderPaymentReference
 from django.core.paginator import Paginator
+
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    """Calculate the great circle distance between two points in km"""
+    if not all([lat1, lon1, lat2, lon2]):
+        return None
+    
+    R = 6371  # Earth radius in km
+    
+    phi1, phi2 = math.radians(float(lat1)), math.radians(float(lat2))
+    dphi = math.radians(float(lat2) - float(lat1))
+    dlambda = math.radians(float(lon2) - float(lon1))
+    
+    a = math.sin(dphi / 2)**2 + \
+        math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2)**2
+    
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
 @login_required
@@ -32,7 +50,7 @@ def merchant_orders(request):
     
     # Apply filters
     if status_filter:
-        orders = orders.filter(status=status_filter)
+        orders = orders.filter(pipeline_status__slug=status_filter)
     
     if search_query:
         orders = orders.filter(
@@ -55,11 +73,11 @@ def merchant_orders(request):
     
     # Calculate statistics
     total_orders = orders.count()
-    pending_orders = orders.filter(status='Pending').count()
-    confirmed_orders = orders.filter(status='Confirmed').count()
+    pending_orders = orders.filter(pipeline_status__slug='pending').count()
+    confirmed_orders = orders.filter(pipeline_status__slug='confirmed').count()
     
     # Calculate total revenue
-    total_revenue = orders.filter(status='Confirmed').aggregate(
+    total_revenue = orders.filter(pipeline_status__slug='confirmed').aggregate(
         total=Sum('total_amount')
     )['total'] or 0
     
@@ -88,7 +106,7 @@ def merchant_orders(request):
 
 @login_required
 def merchant_order_detail(request, order_id):
-    """Display detailed view of a specific order for the merchant"""
+    """Display detailed view of a specific order for the merchant with premium insights"""
     template_name = 'merchant_order_detail.html'
     
     # Get the supplier for the current user
@@ -113,8 +131,51 @@ def merchant_order_detail(request, order_id):
     except ShippingAddress.DoesNotExist:
         shipping_address = None
     
+    # Customer Insights
+    customer = order.user
+    customer_orders = Order.objects.filter(
+        user=customer,
+        order_items__product__supplier=supplier
+    ).distinct().order_by('-created_at')
+    
+    customer_stats = {
+        'total_spent': sum(o.total_amount for o in customer_orders),
+        'order_count': customer_orders.count(),
+        'recent_history': customer_orders.exclude(id=order.id)[:5]
+    }
+    
+    # Workflow steps for visualization
+    workflow_steps = []
+    if supplier.workflow:
+        workflow_steps = supplier.workflow.steps.all().select_related('status')
+    
+    # Calculate Distance and Delivery Fee
+    distance_km = None
+    expected_delivery_fee = 0
+    
+    if supplier.enable_delivery_fees and supplier.latitude and supplier.longitude and shipping_address and shipping_address.latitude and shipping_address.longitude:
+        distance_km = order.calculate_distance(
+            supplier.latitude, supplier.longitude,
+            shipping_address.latitude, shipping_address.longitude
+        )
+        if distance_km:
+            expected_delivery_fee = order.get_expected_delivery_fee()
+
+    # Internal Notes
+    order_notes = order.notes.all().select_related('user').order_by('-created_at')
+    
+    # Payment References
+    payment_references = order.payment_references.all().select_related('recorded_by').order_by('-created_at')
+    
+    # Pending Orders for FAB Quick View
+    pending_orders = Order.objects.filter(
+        order_items__product__supplier=supplier,
+        pipeline_status__slug='pending'
+    ).distinct().order_by('-created_at')
+    
     # Calculate order statistics for this supplier
     supplier_order_total = order.total_amount
+    items_total = sum(item.get_subtotal_with_discount() for item in order_items)
     
     context = {
         'supplier': supplier,
@@ -122,9 +183,60 @@ def merchant_order_detail(request, order_id):
         'order_items': order_items,
         'shipping_address': shipping_address,
         'supplier_order_total': supplier_order_total,
+        'items_total': items_total,
+        'customer_stats': customer_stats,
+        'workflow_steps': workflow_steps,
+        'order_notes': order_notes,
+        'payment_references': payment_references,
+        'pending_orders': pending_orders,
+        'pending_count': pending_orders.count(),
+        'distance_km': distance_km,
+        'expected_delivery_fee': expected_delivery_fee,
     }
     
     return render(request, template_name, context)
+
+
+@login_required
+def add_payment_reference(request, order_id):
+    """Handle adding a payment reference to an order"""
+    if request.method == 'POST':
+        order = get_object_or_404(Order, id=order_id)
+        amount = request.POST.get('amount')
+        reference_number = request.POST.get('reference_number')
+        
+        if amount and reference_number:
+            OrderPaymentReference.objects.create(
+                order=order,
+                amount=amount,
+                reference_number=reference_number,
+                recorded_by=request.user
+            )
+            messages.success(request, 'Payment reference recorded successfully.')
+        else:
+            messages.error(request, 'Please provide both amount and reference number.')
+            
+    return redirect('merchant_order_detail', order_id=order_id)
+
+
+@login_required
+def add_order_note(request, order_id):
+    """Handle adding internal notes to an order"""
+    if request.method == 'POST':
+        order = get_object_or_404(Order, id=order_id)
+        note_text = request.POST.get('note')
+        
+        if note_text:
+            OrderNote.objects.create(
+                order=order,
+                user=request.user,
+                note=note_text
+            )
+            messages.success(request, 'Internal note added successfully.')
+        else:
+            messages.error(request, 'Note content cannot be empty.')
+            
+    return redirect('merchant_order_detail', order_id=order_id)
 
 
 @login_required
@@ -150,11 +262,19 @@ def update_order_status(request, order_id):
             return redirect('merchant_orders')
         
         # Update the order status
-        if new_status in ['Pending', 'Confirmed']:
-            order.status = new_status
-            order.save()
-            messages.success(request, f'Order status updated to {new_status}')
+        if new_status == 'next':
+            success, message = order.move_to_next_status()
+            if success:
+                messages.success(request, message)
+            else:
+                messages.error(request, message)
         else:
-            messages.error(request, 'Invalid status selected.')
+            status_obj = OrderStatus.objects.filter(slug=new_status).first()
+            if status_obj:
+                order.pipeline_status = status_obj
+                order.save()
+                messages.success(request, f'تم تحديث حالة الطلب إلى {status_obj.name}')
+            else:
+                messages.error(request, 'الحالة المختارة غير صالحة.')
     
     return redirect('merchant_order_detail', order_id=order_id)

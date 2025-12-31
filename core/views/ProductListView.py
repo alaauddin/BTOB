@@ -1,9 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+import math
+from decimal import Decimal
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView
-from core.models import Product, Category, ProductCategory, Cart, Order, SuppierAds, Supplier
+from core.models import Product, Category, ProductCategory, Cart, Order, SuppierAds, Supplier, Address, ProductOffer
 from datetime import datetime, timedelta
 from django.utils import timezone
+from django.db.models import Exists, OuterRef, Subquery
 
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -11,10 +14,25 @@ from django.utils import timezone
 from datetime import timedelta
 
 # @login_required <-- Removed for public access
-def product_list(request, supplier_id, category_id=None, subcategory_id=None):
+def product_list(request, store_id, category_id=None, subcategory_id=None):
     # Base queryset
-    queryset = Product.objects.filter(supplier_id=supplier_id)
-    supplier = get_object_or_404(Supplier, id=supplier_id)
+    supplier = get_object_or_404(Supplier, store_id=store_id)
+    today = timezone.now().date()
+    
+    # Subquery for active offers
+    active_offers = ProductOffer.objects.filter(
+        product=OuterRef('pk'),
+        is_active=True,
+        from_date__lte=today,
+        to_date__gte=today
+    )
+    
+    queryset = Product.objects.filter(supplier=supplier).annotate(
+        has_active_offer=Exists(active_offers),
+        max_discount=Subquery(
+            active_offers.order_by('-discount_precentage').values('discount_precentage')[:1]
+        )
+    )
 
     # Filter by category or subcategory
     if subcategory_id:
@@ -22,14 +40,33 @@ def product_list(request, supplier_id, category_id=None, subcategory_id=None):
     elif category_id:
         queryset = queryset.filter(category__id=category_id)
     
+    # Sort and Partition logic
+    queryset = queryset.order_by('-has_active_offer', '-max_discount', '-is_new', '-id')
+    
+    # Partition lists
+    offer_products = []
+    new_products = []
+    other_products = []
+    
+    for product in queryset:
+        if product.has_active_offer:
+            offer_products.append(product)
+        elif product.is_new:
+            new_products.append(product)
+        else:
+            other_products.append(product)
+
     supplier_ads = SuppierAds.objects.filter(supplier=supplier,is_active = True)
 
     # Context dictionary
     context = {
-        'products': queryset,
+        'products': queryset, # Keep for backward compat if needed, or remove
+        'offer_products': offer_products,
+        'new_products': new_products,
+        'other_products': other_products,
         'active_category_id': int(category_id) if category_id else None,
         'active_subcategory_id': int(subcategory_id) if subcategory_id else None,
-        'active_supplier_id': int(supplier_id),
+        'active_store_id': store_id,
         'supplier': supplier,
         'categories': Category.objects.filter(supplier=supplier),
         'product_categories': ProductCategory.objects.filter(category_id=category_id) if category_id else None,
@@ -43,12 +80,27 @@ def product_list(request, supplier_id, category_id=None, subcategory_id=None):
         print(user_cart)
         one_day_ago = timezone.now() - timedelta(days=1)
         context['pending_orders'] = Order.objects.filter(
-            user=request.user, created_at__gte=one_day_ago, status='Pending'
+            user=request.user, created_at__gte=one_day_ago, pipeline_status__slug='pending'
         )
         context['cart'] = user_cart
+        
+        # Calculate estimated delivery fee for mobile cart bar
+        address = Address.objects.filter(user=request.user).first()
+        estimated_fee = Decimal('0')
+        if supplier.enable_delivery_fees and address and address.latitude and address.longitude and supplier.latitude and supplier.longitude:
+            R = 6371
+            phi1, phi2 = math.radians(float(supplier.latitude)), math.radians(float(address.latitude))
+            dphi = math.radians(float(address.latitude) - float(supplier.latitude))
+            dlambda = math.radians(float(address.longitude) - float(supplier.longitude))
+            a = math.sin(dphi / 2)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2)**2
+            estimated_distance = R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+            fee = float(estimated_distance) * float(supplier.delivery_fee_ratio or 0)
+            estimated_fee = Decimal(str(fee)).quantize(Decimal('0.01'))
+        context['estimated_fee'] = estimated_fee
     else:
         context['cart'] = None
         context['pending_orders'] = None
+        context['estimated_fee'] = 0
 
 
     return render(request, 'product_list.html', context)

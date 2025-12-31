@@ -14,5 +14,6 @@ def order_detail_view(request, pk):
     context = {
         'order': order,
         'cart': cart,
+        'supplier': supplier,
     }
     return render(request, 'order_detail.html', context)

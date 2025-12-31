@@ -1,282 +1,242 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load cart_filters %}
 
-{% block title %}
-    {{ product.name }} - Product Detail
-{% endblock %}
+{% block title %}{{ product.name }} - {{ supplier.name }}{% endblock %}
 
-{% block extra_meta %}
-    <meta property="og:title" content="{{ product.name }}">
-    <meta property="og:description" content="{{ product.description|truncatewords:20 }}">
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}">
-    <meta property="og:url" content="{{ request.build_absolute_uri }}">
-    <meta property="og:type" content="website">
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/products.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 py-8" dir="rtl">
-    <div class="container mx-auto px-4 max-w-6xl text-right">
-        <!-- Breadcrumb -->
-        <nav class="mb-8 text-sm text-gray-600">
-            <ol class="flex flex-row-reverse space-x-2 space-x-reverse">
-                <li><a href="/" class="hover:text-blue-500 transition-colors">الرئيسية</a></li>
-                <li><span class="mx-2">/</span></li>
-                <li><a href="#" class="hover:text-blue-500 transition-colors">المنتجات</a></li>
-                <li><span class="mx-2">/</span></li>
-                <li class="text-gray-400 truncate">{{ product.name }}</li>
-            </ol>
-        </nav>
-
-        <div class="flex flex-col lg:flex-row bg-white rounded-2xl shadow-xl overflow-hidden transform hover:shadow-2xl transition-all duration-300">
-            <!-- Product Image -->
-            <div class="lg:w-1/2 relative">
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" 
-                     class="w-full h-96 lg:h-full object-cover transition-transform duration-500 hover:scale-105">
+<div class="container container-products">
+    <!-- Modern Detail Card -->
+    <div class="modern-detail-container">
+        <div class="modern-detail-wrapper">
+            <!-- Image Section -->
+            <div class="modern-detail-image-sec">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="modern-detail-main-img" id="mainImage">
                 
-                <!-- Favorite Button -->
-                <button class="wishlist-btn absolute top-4 left-4 bg-white p-2 rounded-full shadow-md transition-colors" 
-                        title="إضافة للمفضلة" data-product-id="{{ product.id }}" aria-pressed="false">
-                    <i class="far fa-heart text-gray-400"></i>
+                <!-- Floating Wishlist -->
+                <button class="wishlist-btn detail-mode" onclick="toggleWishlist({{ product.id }}, this)" data-product-id="{{ product.id }}">
+                    <i class="far fa-heart"></i>
                 </button>
+                
+                {% if product.has_discount %}
+                <span class="modern-product-badge hot" style="top: 30px; left: 30px; font-size: 0.9rem; padding: 8px 16px;">
+                    <i class="fas fa-fire me-1"></i> خصم {{ product.get_discount_precentage }}%
+                </span>
+                {% elif product.is_new %}
+                <span class="modern-product-badge" style="top: 30px; left: 30px; font-size: 0.9rem; padding: 8px 16px;">
+                    جديد
+                </span>
+                {% endif %}
             </div>
 
-            <!-- Product Details -->
-            <div class="lg:w-1/2 p-8 flex flex-col justify-between">
-                <div>
-                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{{ product.name }}</h1>
-                    
-                    <div class="flex items-center mb-6 justify-start">
-                        <div class="flex ml-2">
-                            {% for i in '12345'|make_list %}
-                                {% if forloop.counter <= product.get_average_rating %}
-                                    <svg class="w-6 h-6 fill-current text-yellow-500" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
-                                    </svg>
-                                {% else %}
-                                    <svg class="w-6 h-6 fill-current text-gray-300" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
-                                    </svg>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                        <span class="text-gray-600 text-lg">{{ product.get_average_rating|floatformat:1 }} ({{ product.get_total_reviews }} تقييم)</span>
-                    </div>
+            <!-- Info Section -->
+            <div class="modern-detail-info-sec">
+                <nav class="detail-breadcrumbs">
+                    <a href="{% url 'product-list' supplier.store_id %}">الرئيسية</a>
+                    <i class="fas fa-chevron-left text-xs"></i>
+                    <a href="#">{{ product.category.name }}</a>
+                    <i class="fas fa-chevron-left text-xs"></i>
+                    <span>{{ product.name }}</span>
+                </nav>
 
-                    <p class="text-gray-700 text-lg leading-relaxed mb-8">{{ product.description }}</p>
+                <h1 class="detail-product-title">{{ product.name }}</h1>
+                
+                <!-- Rating -->
+                <div class="product-rating mb-4">
+                    <div class="stars" style="font-size: 1.1rem;">
+                        {% for i in '12345'|make_list %}
+                            {% if forloop.counter <= product.get_average_rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star text-gray-300"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <span class="rating-value ms-2">{{ product.get_average_rating|default:"0.0" }}</span>
+                    <span class="rating-count ms-1">({{ product.get_total_reviews }} تقييم)</span>
                 </div>
 
-                <div>
-                    <div class="flex items-center mb-6">
-                        <span class="price-supplier font-bold text-4xl">{{ product.price }} {{ supplier.currency }}</span>
-                        {% if product.old_price %}
-                            <span class="mr-4 text-gray-500 text-xl line-through">{{ product.old_price }} {{ supplier.currency }}</span>
-                            <span class="mr-4 bg-red-100 text-red-600 px-2 py-1 rounded-md text-sm font-semibold">
-                                خصم {{ product.get_discount_percentage }}%
-                            </span>
-                        {% endif %}
-                    </div>
+                <div class="detail-description-preview">
+                    {{ product.description|truncatewords:25 }}
+                </div>
 
-                    {% with cart.cart_items.all|get_cart_item:product as cart_item %}
-                    <div class="flex space-x-4 space-x-reverse mb-8">
-                        <div class="flex items-center border rounded-lg px-4 py-2">
-                            <button class="text-gray-500 hover:text-gray-700 decrement-btn">-</button>
-                            <input type="number" value="{% if cart_item %}{{ cart_item.quantity }}{% else %}1{% endif %}" min="1" class="w-16 text-center mx-2 border-none focus:ring-0 quantity-input">
-                            <button class="text-gray-500 hover:text-gray-700 increment-btn">+</button>
-                        </div>
-                        
-                        <button 
-                            type="button"
-                            class="flex-1 btn-supplier-primary text-white px-8 py-3 rounded-lg font-semibold transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl flex items-center justify-center"
-                            data-product-id="{{ product.id }}"
-                            data-supplier-id="{{ product.supplier.id|default:supplier.id }}"
-                            aria-label="أضف إلى السلة">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                             </svg>
-                            أضف إلى السلة
-                         </button>
+                <!-- Price -->
+                <div class="detail-price-box">
+                    {% if product.has_discount %}
+                        <span class="detail-current-price">{{ product.get_price_with_offer|floatformat:0 }} {{ supplier.currency }}</span>
+                        <span class="detail-old-price">{{ product.price|floatformat:0 }} {{ supplier.currency }}</span>
+                    {% else %}
+                        <span class="detail-current-price">{{ product.price|floatformat:0 }} {{ supplier.currency }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="detail-actions">
+                    {% with cart_item_qty=product.quantity_in_cart|default:0 %}
+                    
+                    <!-- Qty Controls (Shown if item in cart) -->
+                    <div class="detail-qty-control {% if cart_item_qty == 0 %}d-none{% endif %}" id="qty-ctrl-{{ product.id }}">
+                        <button class="modern-qty-btn" onclick="subToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span class="modern-qty-display" id="quantity-{{ product.id }}">{{ cart_item_qty }}</span>
+                        <!-- Hidden Helper for base.html expectations -->
+                        <span id="total-qty-items-{{ product.id }}" class="d-none">{{ cart_item_qty }}</span>
+
+                        <button class="modern-qty-btn" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                            <i class="fas fa-plus"></i>
+                        </button>
                     </div>
+                    
+                    <!-- Add Button (Shown if item NOT in cart) -->
+                    <button class="detail-add-btn {% if cart_item_qty > 0 %}d-none{% endif %}" id="add-btn-{{ product.id }}" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>إضافة للسلة</span>
+                    </button>
                     {% endwith %}
+                </div>
 
-                    <div class="border-t pt-6">
-                        <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                            <div class="flex items-center justify-end">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                متوفر
-                            </div>
-                            <div class="flex items-center justify-end">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                شحن مجاني
-                            </div>
-                            <div class="flex items-center justify-end">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                إرجاع خلال 30 يوم
-                            </div>
-                            <div class="flex items-center justify-end">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                دفع آمن
-                            </div>
-                        </div>
+                <!-- Features Grid -->
+                <div class="grid grid-cols-2 gap-4 mt-auto">
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <i class="fas fa-truck text-blue-500"></i>
+                        <span>شحن سريع</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <i class="fas fa-shield-alt text-green-500"></i>
+                        <span>ضمان الجودة</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <i class="fas fa-undo text-orange-500"></i>
+                        <span>استرجاع سهل</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <i class="fas fa-headset text-purple-500"></i>
+                        <span>دعم فني</span>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Additional Information Tabs -->
-        <div class="mt-12 bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div class="border-b">
-                <nav class="flex -mb-px">
-                    <button class="py-4 px-6 text-center border-b-2 font-medium tab-button active" data-tab="description">
-                        الوصف
-                    </button>
-                    <button class="py-4 px-6 text-center border-b-2 font-medium text-gray-500 hover:text-gray-700 tab-button" data-tab="reviews">
-                        التقييمات ({{ product.get_total_reviews }})
-                    </button>
-                    <button class="py-4 px-6 text-center border-b-2 font-medium text-gray-500 hover:text-gray-700 tab-button" data-tab="shipping">
-                        الشحن والإرجاع
-                    </button>
-                </nav>
+    <!-- Tabs Section -->
+    <div class="modern-detail-container" style="padding: 2rem; min-height: 400px;">
+        <div class="modern-tabs-nav">
+            <button class="modern-tab-link active" onclick="switchTab('desc')">الوصف</button>
+            <button class="modern-tab-link" onclick="switchTab('reviews')">التقييمات ({{ product.get_total_reviews }})</button>
+        </div>
+
+        <div id="tab-desc" class="modern-tab-content active">
+            <div class="prose max-w-none text-gray-600 leading-loose">
+                {{ product.description|linebreaks }}
             </div>
-            
-            <div class="p-6 tab-content" id="description-content">
-                <p class="text-gray-700 leading-relaxed">{{ product.description }}</p>
-                <!-- Additional description content would go here -->
-            </div>
-            
-            <div class="p-6 tab-content hidden" id="reviews-content">
-                <h3 class="text-xl font-semibold mb-4">آراء العملاء</h3>
-                <!-- Reviews would be dynamically inserted here -->
-                 {% for review in product.review_set.all %}
-                 <div class="border-b border-gray-200 py-4">
-                     <h4 class="font-semibold">{{ review.user.username }}</h4>
-                     <p class="text-gray-600">{{ review.comment }}</p>
-                     <div class="flex items-center gap-2 mt-2 justify-start">
-                        <div class="flex items-center gap-1" aria-hidden="true">
-                            {% for i in '12345'|make_list %}
-                                {% if forloop.counter <= review.rating %}
-                                    <svg class="w-5 h-5 fill-current text-yellow-500" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
-                                    </svg>
-                                {% else %}
-                                    <svg class="w-5 h-5 fill-current text-gray-300" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
-                                    </svg>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                        <span class="text-gray-600 text-sm">التقييم: <span class="font-semibold">{{ review.rating }}</span></span>
+        </div>
+
+        <div id="tab-reviews" class="modern-tab-content">
+            <!-- Review Stats Summary -->
+            <div class="bg-gray-50 rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="text-center md:text-right">
+                    <div class="text-5xl font-bold text-gray-900 mb-1" id="summary-avg">{{ product.get_average_rating|default:"0.0" }}</div>
+                    <div class="flex text-yellow-400 text-lg justify-center md:justify-start mb-2" id="summary-stars">
+                        {% for i in '12345'|make_list %}
+                            {% if forloop.counter <= product.get_average_rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star text-gray-300"></i>
+                            {% endif %}
+                        {% endfor %}
                     </div>
-                 </div>
-                 {% empty %}
-                 
-                     <p class="text-gray-600 italic">لا توجد تقييمات بعد. كن أول من يقيّم هذا المنتج!</p>
-                    {% endfor %}
+                    <p class="text-gray-500 text-sm" id="summary-count">بناءً على {{ product.get_total_reviews }} تقييم</p>
+                </div>
+                
+                {% if user.is_authenticated %}
+                <button onclick="document.getElementById('addReviewForm').classList.toggle('hidden')" class="px-6 py-3 bg-white border border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+                    <i class="fas fa-pen me-2"></i> أكتب تقييمك
+                </button>
+                {% else %}
+                <button onclick="showLoginPrompt()" class="px-6 py-3 bg-gray-100 border border-transparent rounded-xl font-bold text-gray-500 hover:bg-gray-200 transition-all">
+                    سجل دخول للتقييم
+                </button>
+                {% endif %}
             </div>
-            
-            <div class="p-6 tab-content hidden" id="shipping-content">
-                <h3 class="text-xl font-semibold mb-4">معلومات الشحن</h3>
-                <p class="text-gray-700 mb-4">نوفر شحنًا قياسيًا مجانيًا على جميع الطلبات. يستغرق التسليم عادةً 3-5 أيام عمل.</p>
-                <h3 class="text-xl font-semibold mb-4">سياسة الإرجاع</h3>
-                <p class="text-gray-700">غير راضٍ عن مشترياتك؟ يمكنك إرجاعها خلال 30 يومًا لاسترداد كامل المبلغ. يجب أن تكون العناصر في حالتها الأصلية.</p>
+
+            <!-- Add Review Form -->
+            <div id="addReviewForm" class="hidden mb-10 animate-fade-in-up">
+                <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                    <h3 class="font-bold text-lg mb-4">أضف تقييمك للمنتج</h3>
+                    <form id="reviewForm" onsubmit="submitReview(event, '{{ product.id }}', '{{ supplier.store_id }}')">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">تقييمك</label>
+                            <div class="star-rating-input flex flex-row-reverse justify-end gap-1">
+                                <input type="radio" name="rating" id="star5" value="5" class="hidden"><label for="star5" class="cursor-pointer text-gray-300 hover:text-yellow-400 text-2xl transition-colors"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" id="star4" value="4" class="hidden"><label for="star4" class="cursor-pointer text-gray-300 hover:text-yellow-400 text-2xl transition-colors"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" id="star3" value="3" class="hidden"><label for="star3" class="cursor-pointer text-gray-300 hover:text-yellow-400 text-2xl transition-colors"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" id="star2" value="2" class="hidden"><label for="star2" class="cursor-pointer text-gray-300 hover:text-yellow-400 text-2xl transition-colors"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" id="star1" value="1" class="hidden"><label for="star1" class="cursor-pointer text-gray-300 hover:text-yellow-400 text-2xl transition-colors"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">تعليقك</label>
+                            <textarea name="comment" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="شاركنا تجربتك مع المنتج..." required></textarea>
+                        </div>
+                        <button type="submit" class="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30">
+                            نشر التقييم
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Reviews List -->
+            <div class="space-y-6" id="reviews-list">
+                {% for review in product.review_set.all %}
+                <div class="flex gap-4 p-4 bg-gray-50 rounded-2xl">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                        {{ review.user.username|slice:":1" }}
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h4 class="font-bold text-gray-800">{{ review.user.username }}</h4>
+                            <div class="flex text-yellow-400 text-xs">
+                                {% for i in '12345'|make_list %}
+                                    <i class="fas fa-star"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm">{{ review.comment }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-8 text-gray-400">
+                    <i class="far fa-comment-dots text-4xl mb-3"></i>
+                    <p>لا توجد تقييمات بعد</p>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    .quantity-input::-webkit-outer-spin-button,
-    .quantity-input::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-    
-    .quantity-input {
-        -moz-appearance: textfield;
-    }
-</style>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-    // Quantity increment/decrement (robust)
-    document.querySelectorAll('.increment-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            const input = button.parentNode.querySelector('.quantity-input');
-            let val = parseInt(input.value, 10);
-            if (isNaN(val) || val < 1) val = 0;
-            input.value = val + 1;
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-
-            // find the add-to-cart button in the same block to get ids
-            const block = button.closest('.flex.space-x-4') || button.parentNode.parentNode;
-            const addBtn = block ? block.querySelector('[data-product-id][data-supplier-id]') : null;
-            if (addBtn) {
-                // Prefer global window.addToCart (from base.html) when available, otherwise fall back to local addToCart
-                try {
-                    if (typeof window.addToCart === 'function') {
-                        window.addToCart(addBtn.dataset.productId, addBtn.dataset.supplierId);
-                    } else if (typeof addToCart === 'function') {
-                        addToCart(addBtn.dataset.productId, addBtn.dataset.supplierId);
-                    }
-                } catch (e) { /* ignore */ }
-            }
-        });
-    });
+    function switchTab(tabName) {
+        // Hide all
+        document.querySelectorAll('.modern-tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.modern-tab-link').forEach(el => el.classList.remove('active'));
+        
+        // Show target
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        
+        // Update nav
+        event.currentTarget.classList.add('active');
+    }
     
-    document.querySelectorAll('.decrement-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            const input = button.parentNode.querySelector('.quantity-input');
-            let val = parseInt(input.value, 10);
-            if (isNaN(val) || val <= 1) {
-                input.value = 1;
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-
-                // call server decrement: prefer global subToCart
-                const block = button.closest('.flex.space-x-4') || button.parentNode.parentNode;
-                const addBtn = block ? block.querySelector('[data-product-id][data-supplier-id]') : null;
-                if (addBtn) {
-                    try {
-                        if (typeof window.subToCart === 'function') {
-                            window.subToCart(addBtn.dataset.productId, addBtn.dataset.supplierId);
-                        } else if (typeof subFromCart === 'function') {
-                            subFromCart(addBtn.dataset.productId, addBtn.dataset.supplierId);
-                        }
-                    } catch (e) { /* ignore */ }
-                }
-                return;
-            }
-            input.value = val - 1;
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-
-            const block = button.closest('.flex.space-x-4') || button.parentNode.parentNode;
-            const addBtn = block ? block.querySelector('[data-product-id][data-supplier-id]') : null;
-            if (addBtn) {
-                try {
-                    if (typeof window.subToCart === 'function') {
-                        window.subToCart(addBtn.dataset.productId, addBtn.dataset.supplierId);
-                    } else if (typeof subFromCart === 'function') {
-                        subFromCart(addBtn.dataset.productId, addBtn.dataset.supplierId);
-                    }
-                } catch (e) { /* ignore */ }
-            }
-        });
-    });
-
-    // Ensure manual edits respect minimum
-    document.querySelectorAll('.quantity-input').forEach(input => {
-        input.addEventListener('input', () => {
-            let v = parseInt(input.value, 10);
-            if (isNaN(v) || v < 1) input.value = 1;
-        });
-    });
-
-    // Helper: get CSRF token
+    // Cookie Helper
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -291,339 +251,154 @@
         }
         return cookieValue;
     }
-
-    // Minimal toast utility
-    function createToastContainer() {
-        let container = document.getElementById('toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'toast-container';
-            container.style.position = 'fixed';
-            container.style.top = '1rem';
-            container.style.left = '50%';
-            container.style.transform = 'translateX(-50%)';
-            container.style.zIndex = '9999';
-            document.body.appendChild(container);
-        }
-        return container;
-    }
-
-    function showToast(message, type = 'info') {
-        const container = createToastContainer();
-        const msg = document.createElement('div');
-        msg.textContent = message;
-        msg.style.background = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#2563eb';
-        msg.style.color = 'white';
-        msg.style.padding = '8px 14px';
-        msg.style.borderRadius = '8px';
-        msg.style.marginTop = '8px';
-        msg.style.boxShadow = '0 6px 18px rgba(0,0,0,0.12)';
-        container.appendChild(msg);
-        setTimeout(() => {
-            msg.style.opacity = '0';
-            setTimeout(() => container.removeChild(msg), 400);
-        }, 2200);
-    }
-
-    // Wishlist toggle
-    function toggleWishlist(productId, btn) {
-        const csrf = getCookie('csrftoken');
+    
+    // Wishlist Toggle (reusing logic from product_list if possible, or simple version)
+     function toggleWishlist(productId, btn) {
+        const icon = btn.querySelector('i');
         btn.disabled = true;
+        
+        const csrfToken = getCookie('csrftoken');
+        
         fetch(`/wishlist/toggle/${productId}/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrf,
+                'X-CSRFToken': csrfToken,
                 'X-Requested-With': 'XMLHttpRequest'
-            },
-            credentials: 'same-origin'
+            }
         })
         .then(r => r.json())
         .then(data => {
-            if (data && data.success) {
+            if (data.success) {
                 if (data.in_wishlist) {
                     btn.classList.add('active');
-                    btn.querySelector('i').className = 'fas fa-heart text-red-500';
-                    btn.setAttribute('aria-pressed', 'true');
-                    showToast('تمت الإضافة للمفضلة', 'success');
+                    icon.className = 'fas fa-heart text-white';
                 } else {
                     btn.classList.remove('active');
-                    btn.querySelector('i').className = 'far fa-heart text-gray-400';
-                    btn.setAttribute('aria-pressed', 'false');
-                    showToast('تمت الإزالة من المفضلة', 'info');
+                    icon.className = 'far fa-heart';
                 }
-            } else {
-                showToast('فشل تحديث المفضلة', 'error');
             }
         })
-        .catch(() => showToast('خطأ في الاتصال', 'error'))
         .finally(() => btn.disabled = false);
     }
-
-    function loadWishlistStatus(productId, btn) {
-        fetch(`/wishlist/status/${productId}/`, {
-            method: 'GET',
-            headers: {'X-Requested-With':'XMLHttpRequest'},
-            credentials: 'same-origin'
-        })
-        .then(response => {
-            const contentType = response.headers.get('content-type') || '';
-            if (!contentType.includes('application/json')) return { success: false };
-            return response.json();
-        })
-        .then(data => {
-            if (data && data.success && data.in_wishlist) {
-                btn.classList.add('active');
-                btn.querySelector('i').className = 'fas fa-heart text-red-500';
-                btn.setAttribute('aria-pressed', 'true');
-            } else {
-                btn.querySelector('i').className = 'far fa-heart text-gray-400';
-                btn.setAttribute('aria-pressed', 'false');
-            }
-        })
-        .catch(() => {});
-    }
-
-    // Add to cart via AJAX
-    function addToCart(productId, supplierOrEvent, maybeEvent) {
-        // Normalize parameters: supplierOrEvent may be supplierId or an Event
-        let supplierId = '';
-        let ev = null;
-        if (supplierOrEvent && (typeof supplierOrEvent === 'object') && (supplierOrEvent instanceof Event || supplierOrEvent.type)) {
-            ev = supplierOrEvent;
-            supplierId = ev.currentTarget?.dataset?.supplierId || document.querySelector('[data-supplier-id]')?.dataset?.supplierId || '';
-        } else {
-            supplierId = supplierOrEvent || '';
-            ev = maybeEvent || null;
-        }
-
-        const button = ev ? ev.currentTarget : (document.querySelector(`[data-product-id='${productId}'][data-supplier-id]`) || document.querySelector(`[data-product-id='${productId}']`));
-        const qtyInput = document.querySelector('.quantity-input');
-        const quantity = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
-        const csrf = getCookie('csrftoken');
-
-        if (!supplierId) {
-            showToast('معرف البائع غير متوفر. حاول مرة أخرى.', 'error');
-            if (button) button.disabled = false;
+    
+    // Review Submission
+    function submitReview(e, productId, storeId) {
+        e.preventDefault();
+        const form = e.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        // Get rating
+        const ratingInput = form.querySelector('input[name="rating"]:checked');
+        if (!ratingInput) {
+            alert('الرجاء اختيار تقييم');
             return;
         }
+        
+        // UI Loading
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري النشر...';
+        submitBtn.disabled = true;
 
-        if (button) button.disabled = true;
+        const data = {
+            rating: ratingInput.value,
+            comment: form.querySelector('textarea[name="comment"]').value
+        };
 
-        // Use the server endpoint that expects product and supplier in the URL
-        const url = `/add_to_cart/${productId}/${supplierId}/`;
+        const csrfToken = getCookie('csrftoken');
 
-        return fetch(url, {
+        fetch(`/add_review/${productId}/${storeId}/`, {
             method: 'POST',
-            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrf,
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-CSRFToken': csrfToken
             },
-            body: JSON.stringify({ quantity: quantity })
+            body: JSON.stringify(data)
         })
         .then(r => r.json())
-        .then(data => {
-            if (data && data.success) {
-                showToast('تمت إضافة المنتج للسلة', 'success');
-                const badge = document.querySelector('.floating-cart-badge');
-                if (badge) {
-                    const current = parseInt(badge.textContent) || 0;
-                    badge.textContent = current + quantity;
+        .then(response => {
+            if (response.success) {
+                // Hide form
+                document.getElementById('addReviewForm').classList.add('hidden');
+                form.reset();
+                
+                // Show success message
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-xl shadow-2xl z-50 flex items-center gap-3 animate-fade-in-up';
+                toast.innerHTML = `<i class="fas fa-check-circle"></i> ${response.message}`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+                
+                // Dynamic UI Update
+                // 1. Prepend new review
+                const reviewsList = document.getElementById('reviews-list');
+                const newReviewHTML = `
+                <div class="flex gap-4 p-4 bg-gray-50 rounded-2xl animate-fade-in-up border-r-4 border-blue-500">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                        ${response.review.initial}
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h4 class="font-bold text-gray-800">${response.review.user}</h4>
+                            <div class="flex text-yellow-400 text-xs">
+                                ${Array(5).fill(0).map((_, i) => 
+                                    i < response.review.rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star text-gray-300"></i>'
+                                ).join('')}
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm">${response.review.comment}</p>
+                        <span class="text-xs text-gray-400 mt-2 block">الآن</span>
+                    </div>
+                </div>`;
+                
+                // Remove "no reviews" placeholder if exists
+                if(reviewsList.querySelector('.text-center')) {
+                    reviewsList.innerHTML = '';
                 }
-                // small visual feedback
-                try { animateCartElement(); } catch (e) { /* ignore */ }
+                reviewsList.insertAdjacentHTML('afterbegin', newReviewHTML);
+                
+                // 2. Update Stats
+                document.getElementById('summary-avg').textContent = response.new_stats.average;
+                document.getElementById('summary-count').textContent = `بناءً على ${response.new_stats.total} تقييم`;
+                
+                // Update summary stars
+                const summaryStars = document.getElementById('summary-stars');
+                summaryStars.innerHTML = Array(5).fill(0).map((_, i) => 
+                    i < response.new_stats.average ? '<i class="fas fa-star"></i>' : '<i class="far fa-star text-gray-300"></i>'
+                ).join('');
+                
             } else {
-                showToast(data && data.message ? data.message : 'فشل في إضافة المنتج', 'error');
+                alert(response.message);
             }
         })
-        .catch(() => showToast('خطأ في الاتصال', 'error'))
-        .finally(() => { if (button) button.disabled = false; });
+        .catch(err => {
+            console.error(err);
+            alert('حدث خطأ أثناء النشر. حاول مرة أخرى.');
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
+        });
     }
 
-    // Decrement (sub) endpoint caller
-    function subFromCart(productId, supplierId) {
-        const qtyInput = document.querySelector('.quantity-input');
-        const quantity = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
-        const csrf = getCookie('csrftoken');
-        const url = `/sub_to_cart/${productId}/${supplierId}/`;
-
-        // Disable the related add-to-cart button while request is in-flight
-        const button = document.querySelector(`[data-product-id='${productId}'][data-supplier-id='${supplierId}']`);
-        if (button) button.disabled = true;
-
-        fetch(url, {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrf,
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({ quantity: quantity })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data && data.success) {
-                showToast('تم تحديث كمية المنتج', 'success');
-                const badge = document.querySelector('.floating-cart-badge');
-                if (badge) {
-                    const current = parseInt(badge.textContent) || 0;
-                    // decrease badge by 1 but never below 0
-                    badge.textContent = Math.max(0, current - 1);
+    // Load initial wishlist state
+    document.addEventListener('DOMContentLoaded', () => {
+        {% if user.is_authenticated %}
+        const btn = document.querySelector('.wishlist-btn');
+        if(btn) {
+            const pid = btn.dataset.productId;
+             fetch(`/wishlist/status/${pid}/`, {
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.in_wishlist) {
+                    btn.classList.add('active');
+                    btn.querySelector('i').className = 'fas fa-heart text-white';
                 }
-                try { animateCartElement(); } catch (e) {}
-            } else {
-                showToast(data && data.message ? data.message : 'فشل في تحديث السلة', 'error');
-            }
-        })
-        .catch(() => showToast('خطأ في الاتصال', 'error'))
-        .finally(() => { if (button) button.disabled = false; });
-    }
-
-    // Simple cart badge animation used by other scripts
-    function animateCartElement() {
-        const badge = document.querySelector('.floating-cart-badge');
-        if (!badge) return;
-        badge.style.transition = 'transform 260ms cubic-bezier(.2,.8,.2,1)';
-        badge.style.transform = 'scale(1.25)';
-        setTimeout(() => { badge.style.transform = ''; }, 260);
-    }
-
-    // Hook wishlist button and addToCart buttons on DOM ready
-    document.addEventListener('DOMContentLoaded', function() {
-        // attach wishlist
-        const wishBtn = document.querySelector('.wishlist-btn');
-        if (wishBtn) {
-            const pid = wishBtn.dataset.productId;
-            {% if user.is_authenticated %}
-            loadWishlistStatus(pid, wishBtn);
-            {% endif %}
-            wishBtn.addEventListener('click', function(e) {
-                {% if user.is_authenticated %}
-                toggleWishlist(pid, wishBtn);
-                {% else %}
-                // show login prompt if user not authenticated
-                showToast('سجل الدخول لإدارة المفضلة', 'info');
-                {% endif %}
             });
         }
-
-        // attach addToCart handler to button(s) and pass supplier id explicitly
-        document.querySelectorAll('[data-product-id][data-supplier-id]').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                if (typeof isAuthenticated !== 'undefined' && !isAuthenticated) {
-                    openLoginModal(() => {
-                        return addToCart(this.dataset.productId, this.dataset.supplierId, e);
-                    });
-                } else {
-                    addToCart(this.dataset.productId, this.dataset.supplierId, e);
-                }
-            });
-        });
-    });
-
-    // Tab functionality
-    document.querySelectorAll('.tab-button').forEach(button => {
-        button.addEventListener('click', () => {
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active', 'border-blue-500', 'text-blue-600');
-                btn.classList.add('border-transparent', 'text-gray-500');
-            });
-            
-            // Add active class to clicked tab
-            button.classList.add('active', 'border-blue-500', 'text-blue-600');
-            button.classList.remove('border-transparent', 'text-gray-500');
-            
-            // Hide all tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Show selected tab content
-            const tabId = button.getAttribute('data-tab');
-            document.getElementById(`${tabId}-content`).classList.remove('hidden');
-        });
+        {% endif %}
     });
 </script>
-{% endblock %}
-
-{% block extra_css %}
-    <style>
-    :root {
-        --primary-color: {{ supplier.primary_color|default:'#2563eb' }};
-        --secondary-color: {{ supplier.secondary_color|default:'#ffffff' }};
-        --accent-color: {{ supplier.accent_color|default:'#2563eb' }};
-        --navbar-bg: {{ supplier.navbar_color|default:'#2563eb' }};
-        --footer-bg: {{ supplier.footer_color|default:'#1e293b' }};
-        --text-color: {{ supplier.text_color|default:'#1e293b' }};
-        
-        /* Flattened design - removed gradients */
-        --primary-gradient: var(--primary-color);
-    }
-
-    /* Price using supplier primary color */
-    .price-supplier {
-        color: var(--primary-color) !important;
-    }
-
-    /* Supplier themed add-to-cart button */
-    .btn-supplier-primary {
-        background: var(--primary-gradient);
-        border: none;
-        border-radius: 12px;
-        padding: 12px 20px;
-        font-weight: 700;
-        letter-spacing: 0.25px;
-        transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
-    }
-
-    .btn-supplier-primary svg { stroke: rgba(255,255,255,0.95); }
-
-    .btn-supplier-primary:hover {
-        transform: translateY(-3px);
-        filter: brightness(1.02);
-        box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-    }
-
-    /* Quantity control colors (subtle accent) */
-    .decrement-btn, .increment-btn {
-        color: var(--primary-color);
-    }
-
-    /* Tabs: neutral by default, accent when active */
-    .tab-button {
-        color: #6b7280; /* neutral */
-        border-color: transparent;
-        background: transparent;
-        cursor: pointer;
-        transition: color 0.2s ease, border-color 0.2s ease;
-    }
-
-    .tab-button.active {
-        color: var(--primary-color);
-        border-bottom-color: var(--primary-color);
-        box-shadow: inset 0 -3px 0 var(--primary-color);
-        font-weight: 700;
-    }
-
-    .tab-button:hover {
-        color: var(--primary-color);
-    }
-
-    /* Tab content typography */
-    .tab-content p { color: #374151; }
-
-    /* Ensure form inputs that show numbers remain visible on dark/light backgrounds */
-    .quantity-input {
-        color: #111827;
-    }
-
-    /* Small responsive tweak so the add button stands out on mobile */
-    @media (max-width: 768px) {
-        .btn-supplier-primary { padding: 12px 16px; width: 100%; }
-    }
-    </style>
 {% endblock %}

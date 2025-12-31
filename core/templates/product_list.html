@@ -104,7 +104,7 @@
                         {% endif %}
                         
                         <!-- Enhanced Call-to-Action -->
-                        <a href="{% url 'product_detail' ad.product.id %}" class="modern-ads-cta">
+                        <a href="{% url 'product_detail' store_id=supplier.store_id pk=ad.product.id %}" class="modern-ads-cta">
                             استكشف المنتجات
                             <i class="fas fa-arrow-left"></i>
                         </a>
@@ -162,101 +162,106 @@
 <!-- Pending Orders Sidebar -->
 <div class="pending-orders-sidebar" id="pendingOrdersSidebar">
     <div class="sidebar-header">
-        <button class="sidebar-close" onclick="closePendingOrdersSidebar()">
-            <i class="fas fa-times"></i>
-                </button>
-        <div class="sidebar-content">
-            <h3 class="mb-2">الطلبات المعلقة</h3>
-            <p class="opacity-75 mb-0">{{ pending_orders|length }} طلب بانتظار الدفع</p>
-        </div>
+        <div class="d-flex w-100">
+            <div class="sidebar-title-area">
+                <h3 class="mb-1">الطلبات المعلقة</h3>
+                <p class="opacity-75 mb-0 small">{{ pending_orders|length }} طلب بانتظار الدفع</p>
             </div>
+            <button class="sidebar-close" onclick="closePendingOrdersSidebar()" title="إغلاق">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
             
-    <!-- Order Statistics -->
+    <!-- Modern Stats Dashboard -->
     <div class="order-stats-panel">
-        <div class="stat-item">
-            <span class="stat-label">إجمالي الطلبات</span>
+        <div class="stat-card">
+            <div class="stat-icon blue">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <span class="stat-label">الكمية</span>
             <span class="stat-value">{{ pending_orders|length }}</span>
         </div>
-        <div class="stat-item">
-            <span class="stat-label">إجمالي المبلغ</span>
+        <div class="stat-card">
+            <div class="stat-icon green">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <span class="stat-label">الإجمالي</span>
             <span class="stat-value">
                 {% widthratio pending_orders|length 1 1000 as total_amount %}
-                {{ total_amount|default:"0" }} {{ supplier.currency }}
+                {{ total_amount|default:"0" }}
             </span>
         </div>
-        <div class="stat-item">
-            <span class="stat-label">متوسط قيمة الطلب</span>
+        <div class="stat-card">
+            <div class="stat-icon orange">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <span class="stat-label">المتوسط</span>
             <span class="stat-value">
                 {% if pending_orders %}
                     {% widthratio total_amount pending_orders|length 1 as avg_amount %}
-                    {{ avg_amount|default:"0" }} {{ supplier.currency }}
+                    {{ avg_amount|default:"0" }}
                 {% else %}
-                    0 {{ supplier.currency }}
+                    0
                 {% endif %}
             </span>
         </div>
     </div>
     <div class="sidebar-body" id="ordersContainer">
                 {% for order in pending_orders %}
-        <div class="pending-order-card" data-order-id="{{ order.id }}" data-order-status="{{ order.status|lower }}" data-order-date="{{ order.created_at|date:'Y-m-d' }}">
-            <!-- Order Meta Information -->
+        <div class="pending-order-card animate-fade-in-up" data-order-id="{{ order.id }}" style="animation-delay: {{ forloop.counter0|multiply:0.1 }}s">
             <div class="order-meta">
-                <span class="order-status pending">{{ order.status }}</span>
-                <div class="order-menu">
-                    <button class="order-menu-btn" onclick="toggleOrderMenu({{ order.id }})">
-                        <i class="fas fa-ellipsis-v"></i>
+                <span class="status-badge pending">
+                    <i class="fas fa-clock me-1"></i> {{ order.pipeline_status.name }}
+                </span>
+                <div class="dropdown">
+                    <button class="order-actions-trigger" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-h"></i>
                     </button>
-                    <div class="order-menu-dropdown" id="orderMenu{{ order.id }}">
-                        <button class="menu-item" onclick="duplicateOrder({{ order.id }})">
-                            <i class="fas fa-copy"></i> تكرار الطلب
-                        </button>
-                        <button class="menu-item" onclick="editOrder({{ order.id }})">
-                            <i class="fas fa-edit"></i> تعديل الطلب
-                        </button>
-                        <button class="menu-item" onclick="trackOrder({{ order.id }})">
-                            <i class="fas fa-truck"></i> تتبع الطلب
-                        </button>
-                        <button class="menu-item danger" onclick="cancelOrder({{ order.id }})">
-                            <i class="fas fa-times"></i> إلغاء الطلب
-                        </button>
-                        </div>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4">
+                        <li><button class="dropdown-item py-2" onclick="duplicateOrder({{ order.id }})"><i class="fas fa-copy me-2 text-muted"></i> تكرار</button></li>
+                        <li><button class="dropdown-item py-2" onclick="editOrder({{ order.id }})"><i class="fas fa-edit me-2 text-muted"></i> تعديل</button></li>
+                        <li><button class="dropdown-item py-2 text-danger" onclick="cancelOrder({{ order.id }})"><i class="fas fa-trash-alt me-2"></i> إلغاء</button></li>
+                    </ul>
                 </div>
             </div>
             
-            <div class="order-header">
-                <div class="order-id">الطلب #{{ order.id }}</div>
-                {% if order.has_discount %}
-                <div class="text-muted text-decoration-line-through">{{ order.total_amount|floatformat:0 }} {{ supplier.currency }}</div>
-                <div class="text-danger fw-bold">{{ order.get_total_ammout_with_discout|floatformat:0 }} {{ supplier.currency }}</div>
-
-                {% else %}
-                <div class="text-success fw-bold">{{ order.total_amount }} {{ supplier.currency }}</div>
-                {% endif %}
-                
-            </div>
-            
-            <div class="text-muted small mb-3">
-                <i class="fas fa-calendar me-2"></i>{{ order.created_at|date:"d/m/Y H:i" }}
-                <span class="ms-3">
-                    <i class="fas fa-box me-2"></i>{{ order.order_details.count }} منتج
-                </span>
-            </div>
-            
-
-            
-            <!-- Enhanced Payment Methods -->
-            <div class="payment-methods">
-                <a href="https://wa.me/+967779923330?text=أريد دفع ثمن الطلب رقم {{ order.id }} بقيمة {{ order.total_amount }} {{ supplier.currency }}" 
-                   class="payment-method whatsapp" target="_blank">
-                    <i class="fab fa-whatsapp"></i>
-                    واتساب
-                </a>
-                <button class="payment-method" data-bs-toggle="modal" data-bs-target="#orderDetailsModal{{ order.id }}">
-                    <i class="fas fa-eye"></i>
-                    التفاصيل
-                </button>
+            <div class="order-main-info">
+                <span class="order-id-label">رقم الطلب</span>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="order-id-value mb-0">#{{ order.id }}</h4>
+                    <div class="order-price-box">
+                        {% if order.has_discount or supplier.enable_delivery_fees %}
+                            <span class="order-original-price small">{{ order.total_amount|floatformat:0 }}</span>
+                            <span class="order-total-price">{{ order.get_total_after_discount|floatformat:0 }} <small class="fw-normal" style="font-size: 0.6em;">{{ supplier.currency }}</small></span>
+                        {% else %}
+                            <span class="order-total-price">{{ order.total_amount|floatformat:0 }} <small class="fw-normal" style="font-size: 0.6em;">{{ supplier.currency }}</small></span>
+                        {% endif %}
                     </div>
                 </div>
+            </div>
+            
+            <div class="order-details-mini">
+                <div class="mini-detail">
+                    <i class="far fa-calendar-alt"></i>
+                    {{ order.created_at|date:"d M, H:i" }}
+                </div>
+                <div class="mini-detail">
+                    <i class="fas fa-layer-group"></i>
+                    {{ order.order_items.count }} صنف
+                </div>
+            </div>
+            
+            <div class="payment-strip">
+                <a href="https://wa.me/+967779923330?text=أريد دفع ثمن الطلب رقم {{ order.id }} بقيمة {{ order.get_total_after_discount|floatformat:0 }} {{ supplier.currency }}" 
+                   class="btn-payment-action whatsapp" target="_blank">
+                    <i class="fab fa-whatsapp"></i> واتساب
+                </a>
+                <button class="btn-payment-action details" data-bs-toggle="modal" data-bs-target="#orderDetailsModal{{ order.id }}">
+                    مشاهدة
+                </button>
+            </div>
+        </div>
         {% endfor %}
     </div>
 </div>
@@ -267,61 +272,72 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">تفاصيل الطلب #{{ order.id }}</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title">تفاصيل الطلب #{{ order.id }}</h5>
             </div>
             <div class="modal-body">
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="fas fa-calendar text-primary me-2"></i>
-                            <span class="fw-bold">تاريخ الطلب:</span>
-                            <span class="ms-2">{{ order.created_at|date:"d/m/Y H:i" }}</span>
-                        </div>
+                <div class="modal-info-grid">
+                    <div class="modal-info-card">
+                        <i class="fas fa-calendar-alt text-primary"></i>
+                        <span class="modal-info-label">التاريخ</span>
+                        <span class="modal-info-value">{{ order.created_at|date:"d M, H:i" }}</span>
                     </div>
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="fas fa-info-circle text-warning me-2"></i>
-                            <span class="fw-bold">الحالة:</span>
-                            <span class="badge bg-warning text-dark ms-2">{{ order.status }}</span>
-                        </div>
+                    <div class="modal-info-card">
+                        <i class="fas fa-info-circle text-warning"></i>
+                        <span class="modal-info-label">الحالة</span>
+                        <span class="modal-info-value">{{ order.pipeline_status.name }}</span>
+                    </div>
+                    <div class="modal-info-card">
+                        <i class="fas fa-box text-info"></i>
+                        <span class="modal-info-label">المنتجات</span>
+                        <span class="modal-info-value">{{ order.order_items.count }} أصناف</span>
                     </div>
                 </div>
                 
-                <h6 class="fw-bold mb-3">المنتجات:</h6>
-                {% for item in order.order_items.all %}
-                <div class="modern-order-item-card mb-3">
-                    <div class="row g-0">
-                        <div class="col-md-4">
-                            <img src="{{ item.product.image.url }}" class="img-fluid rounded-start" alt="{{ item.product.name }}" style="height: 120px; object-fit: cover; width: 100%;">
+                <h6 class="fw-bold mb-3 d-flex align-items-center">
+                    <i class="fas fa-list-ul me-2 text-primary"></i> قائمة المنتجات
+                </h6>
+                
+                <div class="modal-items-container">
+                    {% for item in order.order_items.all %}
+                    <div class="modern-order-item-strip">
+                        <img src="{{ item.product.image.url }}" class="item-strip-img" alt="{{ item.product.name }}">
+                        <div class="item-strip-info">
+                            <h6 class="item-strip-name">{{ item.product.name }}</h6>
+                            <p class="item-strip-desc">{{ item.product.description|truncatewords:8 }}</p>
                         </div>
-                        <div class="col-md-8">
-                            <div class="card-body p-3">
-                                <h6 class="card-title mb-2">{{ item.product.name }}</h6>
-                                <p class="card-text text-muted small mb-2">{{ item.product.description|truncatewords:10 }}</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-primary fw-bold">الكمية: {{ item.quantity }}</span>
-                                    {% if item.has_discount %}
-                                    <span class="text-muted text-decoration-line-through">{{ item.product.price|floatformat:0 }} {{ supplier.currency }}</span>
-                                    <span class="text-danger fw-bold">{{ item.product.get_price_with_offer|floatformat:0 }} {{ supplier.currency }}</span>
-                                    {% else %}
-                                    <span class="text-success fw-bold">{{ item.product.price|floatformat:0 }} {{ supplier.currency }}</span>
-
-                                    {% endif %}
-                                </div>
-                            </div>
+                        <div class="item-strip-pricing">
+                            <span class="item-strip-qty">الكمية: {{ item.quantity }}</span>
+                            {% if item.has_discount %}
+                                <div class="small text-muted text-decoration-line-through">{{ item.product.price|floatformat:0 }}</div>
+                                <div class="item-strip-price">{{ item.product.get_price_with_offer|floatformat:0 }} <small>{{ supplier.currency }}</small></div>
+                            {% else %}
+                                <div class="item-strip-price">{{ item.product.price|floatformat:0 }} <small>{{ supplier.currency }}</small></div>
+                            {% endif %}
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
                 
-                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-                    <h5 class="mb-0">المجموع الكلي:</h5>
-                    <h4 class="text-success mb-0">{{ order.total_amount }} {{ supplier.currency }}</h4>
+                <div class="modal-finance-summary">
+                    <div class="finance-row">
+                        <span class="label text-muted">المجموع الفرعي:</span>
+                        <span class="value fw-bold">{{ order.total_amount|floatformat:0 }} {{ supplier.currency }}</span>
+                    </div>
+                    {% if supplier.enable_delivery_fees %}
+                    <div class="finance-row">
+                        <span class="label text-muted">رسوم التوصيل:</span>
+                        <span class="value text-success">+{{ order.get_expected_delivery_fee|floatformat:0 }} {{ supplier.currency }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="finance-row total">
+                        <span class="label">الإجمالي الكلي:</span>
+                        <span class="value">{{ order.get_total_after_discount|floatformat:0 }} {{ supplier.currency }}</span>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <a href="https://wa.me/+967779923330?text=أريد دفع ثمن الطلب رقم {{ order.id }} بقيمة {{ order.total_amount }} {{ supplier.currency }}" 
+            <div class="modal-footer border-0 p-4">
+                <a href="https://wa.me/+967779923330?text=أريد دفع ثمن الطلب رقم {{ order.id }} بقيمة {{ order.get_total_after_discount|floatformat:0 }} {{ supplier.currency }}" 
                    class="modern-whatsapp-btn" target="_blank">
                     <i class="fab fa-whatsapp"></i> الدفع عبر واتساب
                 </a>
@@ -333,11 +349,14 @@
 {% endif %}
 
     <!-- Categories Navigation -->
-<div class="container">
+<div class="container mt-3">
     <div class="modern-category-nav">
-        <h4 class="modern-category-title"><i class="fas fa-filter"></i> التصنيفات</h4>
-        <div class="d-flex flex-nowrap overflow-auto pb-2 gap-2 modern-scroll categories-scroll-container">
-            <a href="{% url 'product-list' supplier.id %}" class="modern-category-btn {% if not active_category_id %}active{% endif %} flex-shrink-0">
+        <div class="modern-category-title">
+            <i class="fas fa-filter me-2 text-primary"></i> التصنيفات
+        </div>
+        
+        <div class="d-flex flex-nowrap overflow-auto py-1 gap-2 modern-scroll categories-scroll-container flex-grow-1">
+            <a href="{% url 'product-list' supplier.store_id %}" class="modern-category-btn {% if not active_category_id %}active{% endif %} flex-shrink-0">
                 الكل
             </a>
             
@@ -346,20 +365,20 @@
                class="modern-category-btn flex-shrink-0" 
                data-bs-toggle="collapse" 
                aria-expanded="false">
-                {{ category.name }} <i class="fas fa-chevron-down me-2"></i>
+                {{ category.name }} <i class="fas fa-chevron-down ms-1" style="font-size: 0.8em; opacity: 0.7;"></i>
             </a>
-            
             {% endfor %}
         </div>
+    </div>
         
         <!-- Subcategories Section -->
         {% for category in categories %}
         <div id="subcategory-{{ category.id }}" class="collapse modern-subcategory-panel">
-            <h5 class="mb-2">تصنيفات فرعية في {{ category.name }}</h5>
-            <div class="d-flex flex-wrap">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="small fw-bold text-muted me-2"><i class="fas fa-level-down-alt fa-rotate-180 ms-1"></i> {{ category.name }}:</span>
                 
                 {% for subcategory in category.productcategory_set.all %}
-                <a href="{% url 'product_list_subcategory' subcategory.id category.supplier.id %}" 
+                <a href="{% url 'product_list_subcategory' subcategory.id category.supplier.store_id %}" 
                    class="modern-subcategory-btn">
                     {{ subcategory.name }}
                 </a>
@@ -370,123 +389,66 @@
     </div>
 </div>
 
-    <!-- Products Grid -->
-<div class="container">
-    <h2 class="section-title" style="margin-bottom: 1rem;">المنتجات المتاحة</h2>
+<div class="container container-products mt-5">
+    <h2 class="section-title mb-4">المنتجات المتاحة</h2>
     
-    {% if products %}
-    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2 g-md-4" id="productsGrid">
-        {% for product in products %}
-        <div class="col animate-fade-in-up" style="animation-delay: {{ forloop.counter0|divisibleby:4|yesno:'0,0.1,0.2,0.3' }}s">
-            <div class="modern-product-card" data-product-id="{{ product.id }}">
-                <div class="modern-product-image-container">
-                    <a href="{% url 'product_detail' pk=product.pk %}">
-                        <img src="{{ product.image.url }}" class="modern-product-image" alt="{{ product.name }}">
-                    </a>
-                    
-                    <!-- Glass Badges -->
-                    {% if product.has_discount %}
-                    <span class="modern-product-badge sale">خصم {{ product.get_discount_precentage }}%</span>
-                    {% elif product.is_new %}
-                    <span class="modern-product-badge">جديد</span>
-                    {% endif %}
-                    
-                    <!-- Floating Wishlist -->
-                    {% if user.is_authenticated %}
-                    <button class="wishlist-btn" onclick="toggleWishlist({{ product.id }})" data-bs-toggle="tooltip" title="إضافة للمفضلة">
-                        <i class="far fa-heart"></i>
-                    </button>
-                    {% else %}
-                    <button class="wishlist-btn" onclick="showLoginPrompt()" data-bs-toggle="tooltip" title="سجل دخولك لإضافة المنتجات للمفضلة">
-                        <i class="far fa-heart"></i>
-                    </button>
-                    {% endif %}
-                    
-                    <!-- Advanced Hover Overlay -->
-                    <div class="product-overlay">
-                        <div class="overlay-actions">
-                            <a href="{% url 'product_detail' pk=product.pk %}" class="overlay-btn" data-bs-toggle="tooltip" title="عرض سريع">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <button class="overlay-btn" onclick="shareProduct({{ product.id }})" data-bs-toggle="tooltip" title="مشاركة">
-                                <i class="fas fa-share-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="modern-product-info">
-                    <div class="product-category-tag">{{ product.category.name }}</div>
-                    
-                    <h3 class="modern-product-name">
-                        <a href="{% url 'product_detail' pk=product.pk %}" class="text-decoration-none">{{ product.name }}</a>
-                    </h3>
-                    
-                    <div class="product-rating">
-                        <div class="stars">
-                            {% with rating=product.get_average_rating %}
-                                <i class="{% if rating >= 1 %}fas{% else %}far{% endif %} fa-star"></i>
-                                <i class="{% if rating >= 2 %}fas{% else %}far{% endif %} fa-star"></i>
-                                <i class="{% if rating >= 3 %}fas{% else %}far{% endif %} fa-star"></i>
-                                <i class="{% if rating >= 4 %}fas{% else %}far{% endif %} fa-star"></i>
-                                <i class="{% if rating >= 5 %}fas{% else %}far{% endif %} fa-star"></i>
-                            {% endwith %}
-                        </div>
-                        <span class="rating-text">({{ product.get_total_reviews }})</span>
-                    </div>
-                    
-                        <div class="pricing-wrapper">
-                            {% if product.has_discount %}
-                                <span class="modern-product-price">{{ product.get_price_with_offer|floatformat:0 }} {{ supplier.currency }}</span>
-                                <span class="old-price">{{ product.price|floatformat:0 }} {{ supplier.currency }}</span>
-                            {% else %}
-                                <span class="modern-product-price">{{ product.price|floatformat:0 }} {{ supplier.currency }}</span>
-                            {% endif %}
-                        </div>
-                    
-                    <div class="modern-product-actions">
-                        {% with cart_item_qty=product.quantity_in_cart|default:0 %}
-                            <div class="modern-quantity-controls {% if cart_item_qty == 0 %}d-none{% endif %}" id="qty-ctrl-{{ product.id }}" data-product-id="{{ product.id }}">
-                                <button class="modern-qty-btn" onclick="subToCart('{{ product.id }}', '{{ supplier.id }}')">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                                <span class="modern-qty-display" id="total-qty-items-{{ product.id }}">{{ cart_item_qty }}</span>
-                                <button class="modern-qty-btn" onclick="addToCart('{{ product.id }}', '{{ supplier.id }}')">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                            
-                            <button class="modern-cart-btn-long {% if cart_item_qty > 0 %}d-none{% endif %}" id="add-btn-{{ product.id }}" onclick="addToCart('{{ product.id }}', '{{ supplier.id }}')">
-                                <i class="fas fa-shopping-cart"></i>
-                                <span>إضافة للسلة</span>
-                            </button>
-                        {% endwith %}
-                    </div>
-                </div>
-                    
-                    <!-- Social Share Menu (Hidden by default) -->
-                    <div class="social-share-menu" id="share-menu-{{ product.id }}">
-                        <button class="share-item whatsapp" onclick="shareWhatsApp('{{ product.name }}', '{{ product.id }}')">
-                            <i class="fab fa-whatsapp"></i>
-                        </button>
-                        <button class="share-item facebook" onclick="shareFacebook('{{ product.id }}')">
-                            <i class="fab fa-facebook-f"></i>
-                        </button>
-                        <button class="share-item copy" onclick="copyProductLink('{{ product.id }}')">
-                            <i class="fas fa-link"></i>
-                        </button>
-                    </div>
-                </div>
+    {% if offer_products %}
+    <div class="product-section mb-5">
+        <div class="d-flex align-items-center mb-4">
+            <div class="section-icon-wrapper bg-red-100 text-red-500 rounded-circle p-2 me-3">
+                <i class="fas fa-fire fa-lg"></i>
             </div>
+            <h2 class="section-title m-0">أقوى العروض</h2>
+            <span class="badge bg-danger rounded-pill ms-3">{{ offer_products|length }}</span>
         </div>
-        {% endfor %}
+        <div class="products-horizontal-scroll">
+            {% for product in offer_products %}
+                {% include "product_card_snippet.html" %}
+            {% endfor %}
+        </div>
     </div>
-    {% else %}
-    <div class="modern-no-products">
-        <i class="fas fa-box-open"></i>
-        <h3>لا توجد منتجات متاحة</h3>
-        <p class="text-muted">لم يتم العثور على أي منتجات في هذا المتجر</p>
+    {% endif %}
+
+    {% if new_products %}
+    <div class="product-section mb-5">
+        <div class="d-flex align-items-center mb-4">
+            <div class="section-icon-wrapper bg-blue-100 text-blue-500 rounded-circle p-2 me-3">
+                <i class="fas fa-certificate fa-lg"></i>
+            </div>
+            <h2 class="section-title m-0">وصل حديثاً</h2>
+            <span class="badge bg-primary rounded-pill ms-3">{{ new_products|length }}</span>
+        </div>
+        <div class="products-horizontal-scroll">
+            {% for product in new_products %}
+                {% include "product_card_snippet.html" %}
+            {% endfor %}
+        </div>
     </div>
+    {% endif %}
+
+    {% if other_products %}
+    <div class="product-section mb-5">
+        <div class="d-flex align-items-center mb-4">
+            <div class="section-icon-wrapper bg-gray-100 text-gray-500 rounded-circle p-2 me-3">
+                <i class="fas fa-th fa-lg"></i>
+            </div>
+            <h2 class="section-title m-0">جميع المنتجات</h2>
+        </div>
+        <div class="products-horizontal-scroll">
+            {% for product in other_products %}
+                {% include "product_card_snippet.html" %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if not offer_products and not new_products and not other_products %}
+        <div class="text-center py-5">
+            <div class="empty-state-icon mb-3">
+                <i class="fas fa-box-open fa-3x text-muted opacity-50"></i>
+            </div>
+            <h3 class="text-muted">لا توجد منتجات متاحة حالياً</h3>
+        </div>
     {% endif %}
 </div>
 </div>
@@ -501,10 +463,16 @@
         </div>
         <div class="cart-total">
             <span class="text-muted small">المجموع:</span>
-            <span class="total-price" id="mobile-cart-total">{{ cart.get_total_after_discount|floatformat:0 }}</span> {{ supplier.currency }}
+            <span class="total-price" id="mobile-cart-total">
+                {% if supplier.enable_delivery_fees %}
+                    {{ cart.get_total_after_discount|add:estimated_fee|floatformat:0 }}
+                {% else %}
+                    {{ cart.get_total_after_discount|floatformat:0 }}
+                {% endif %}
+            </span> {{ supplier.currency }}
         </div>
     </div>
-    <a href="{% url 'cart-detail' supplier.id %}" class="cart-action-btn">
+    <a href="{% url 'cart-detail' supplier.store_id %}" class="cart-action-btn">
         مشاهدة السلة <i class="fas fa-arrow-left me-2"></i>
     </a>
 </div>
@@ -703,20 +671,20 @@
     
     // Social sharing functions
     function shareWhatsApp(productName, productId) {
-        const url = encodeURIComponent(window.location.origin + '/products/details/' + productId + '/');
+        const url = window.location.origin + '/products/{{ supplier.store_id }}/details/' + productId + '/';
         const text = encodeURIComponent(`شاهد هذا المنتج الرائع: ${productName}`);
         window.open(`https://wa.me/?text=${text} ${url}`, '_blank');
     }
     
     function shareFacebook(productId) {
-        const url = encodeURIComponent(window.location.origin + '/products/details/' + productId + '/');
+        const url = window.location.origin + '/products/{{ supplier.store_id }}/details/' + productId + '/';
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
     }
     
 
     
     function copyProductLink(productId) {
-        const url = window.location.origin + '/products/details/' + productId + '/';
+        const url = window.location.origin + '/products/{{ supplier.store_id }}/details/' + productId + '/';
         navigator.clipboard.writeText(url).then(() => {
             showToast('تم نسخ رابط المنتج', 'success');
         }).catch(() => {
@@ -986,7 +954,7 @@
     }
     
     function loadCartStatus() {
-        const supplierId = "{{ supplier.id }}";
+        const supplierId = "{{ supplier.store_id }}";
         fetch(`/cart/status/${supplierId}/`)
             .then(response => response.json())
             .then(data => {

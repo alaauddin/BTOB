@@ -528,12 +528,24 @@
                 
                 <div class="summary-item">
                     <span class="summary-label">التوصيل</span>
-                    <span class="summary-value">0.00 {{ supplier.currency }}</span>
+                    <span class="summary-value">
+                        {% if supplier.enable_delivery_fees %}
+                            {{ estimated_fee|floatformat:2 }} {{ supplier.currency }}
+                        {% else %}
+                            0.00 {{ supplier.currency }}
+                        {% endif %}
+                    </span>
                 </div>
                 
                 <div class="summary-total">
                     <span class="total-label">المجموع الكلي</span>
-                    <span class="total-amount">{{ order.get_total_after_discount|floatformat:2 }} {{ supplier.currency }}</span>
+                    <span class="total-amount">
+                        {% if supplier.enable_delivery_fees %}
+                            {{ cart.get_total_after_discount|add:estimated_fee|floatformat:2 }} {{ supplier.currency }}
+                        {% else %}
+                            {{ cart.get_total_after_discount|floatformat:2 }} {{ supplier.currency }}
+                        {% endif %}
+                    </span>
                 </div>
             </div>
 
@@ -591,11 +603,24 @@
                                 <p class="mb-1 small">{{ user_address.address_line2 }}</p>
                             {% endif %}
                             <p class="mb-1 small">{{ user_address.city }}, {{ user_address.state }}</p>
-                            <p class="mb-0 small">{{ user_address.country }}, {{ user_address.postal_code }}</p>
+                            <p class="mb-2 small">{{ user_address.country }}, {{ user_address.postal_code }}</p>
+
+                            {% if supplier.enable_delivery_fees and estimated_distance %}
+                            <div class="mt-2 p-2 rounded bg-light border-dashed small">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">المسافة:</span>
+                                    <span>{{ estimated_distance|floatformat:1 }} كم</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">رسوم التوصيل:</span>
+                                    <span class="fw-bold text-primary">{{ estimated_fee|floatformat:2 }} {{ supplier.currency }}</span>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
-                    <a href="{% url 'existing_address' supplier.id %}" class="action-btn w-100 text-center">
+                    <a href="{% url 'existing_address' supplier.store_id %}" class="action-btn w-100 text-center">
                         <i class="fas fa-check-circle"></i>
                         <span>تأكيد الطلب بهذا العنوان</span>
                     </a>

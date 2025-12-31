@@ -161,9 +161,19 @@
         color: #d97706;
     }
     
-    .status-confirmed {
+    .status-confirmed, .status-processing, .status-shipped, .status-out_for_delivery {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+    
+    .status-delivered, .status-completed {
         background: #d1fae5;
         color: #059669;
+    }
+
+    .status-canceled {
+        background: #fee2e2;
+        color: #dc2626;
     }
     
     .btn-view {
@@ -267,8 +277,16 @@
                                 <label for="status">حالة الطلب</label>
                                 <select name="status" id="status">
                                     <option value="">جميع الحالات</option>
-                                    <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>معلق</option>
-                                    <option value="Confirmed" {% if status_filter == 'Confirmed' %}selected{% endif %}>مؤكد</option>
+                                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>معلق</option>
+                                    <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>مؤكد</option>
+                                    <option value="processing" {% if status_filter == 'processing' %}selected{% endif %}>قيد التجهيز</option>
+                                    <option value="shipped" {% if status_filter == 'shipped' %}selected{% endif %}>تم الشحن</option>
+                                    <option value="out_for_delivery" {% if status_filter == 'out_for_delivery' %}selected{% endif %}>خارج بالتوصيل</option>
+                                    <option value="delivered" {% if status_filter == 'delivered' %}selected{% endif %}>تم التسليم</option>
+                                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>مكتمل</option>
+                                    <option value="canceled" {% if status_filter == 'canceled' %}selected{% endif %}>ملغي</option>
+                                    <option value="returned" {% if status_filter == 'returned' %}selected{% endif %}>تم الإرجاع</option>
+                                    <option value="refunded" {% if status_filter == 'refunded' %}selected{% endif %}>تم الاسترداد</option>
                                 </select>
                             </div>
                             <div class="filter-group">
@@ -318,8 +336,8 @@
                                     <td>{{ order.created_at|date:"Y/m/d H:i" }}</td>
                                     <td>${{ order.total_amount|floatformat:2 }}</td>
                                     <td>
-                                        <span class="status-badge status-{{ order.status|lower }}">
-                                            {% if order.status == 'Pending' %}معلق{% else %}مؤكد{% endif %}
+                                        <span class="status-badge status-{{ order.pipeline_status.slug }}">
+                                            {{ order.pipeline_status.name }}
                                         </span>
                                     </td>
                                     <td>

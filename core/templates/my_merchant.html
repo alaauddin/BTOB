@@ -280,8 +280,8 @@
                         </div>
                         <div class="text-left">
                             <div class="font-bold text-gray-800">{{ order.total_amount }} {{ supplier.currency }}</div>
-                            <span class="px-3 py-1 rounded-full text-xs font-bold {% if order.status == 'Pending' %}bg-orange-100 text-orange-800{% else %}bg-green-100 text-green-800{% endif %}">
-                                {{ order.get_status_display }}
+                            <span class="px-3 py-1 rounded-full text-xs font-bold {% if order.pipeline_status.slug == 'pending' %}bg-orange-100 text-orange-800{% elif order.pipeline_status.slug == 'canceled' %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ order.pipeline_status.name }}
                             </span>
                         </div>
                     </div>
@@ -356,8 +356,35 @@
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         
-        document.getElementById(tabId + '-tab').classList.remove('hidden');
+        const tab = document.getElementById(tabId + '-tab');
+        if (tab) {
+            tab.classList.remove('hidden');
+        }
         event.currentTarget.classList.add('active');
+    }
+
+    // Product Actions
+    function editProduct(productId) {
+        window.location.href = `/edit-product/${productId}/`;
+    }
+
+    function openAddProductModal() {
+        window.location.href = "{% url 'add_product' %}";
+    }
+
+    // Offer Actions
+    function editOffer(offerId) {
+        window.location.href = `/edit-offer/${offerId}/`;
+    }
+
+    function openAddOfferModal() {
+        window.location.href = "{% url 'add_product_offer' %}";
+    }
+
+    // Analytics Export
+    function exportAnalytics() {
+        // Implement export functionality or redirect
+        alert('سيتم تفعيل هذه الميزة قريباً');
     }
 
     function showQuickActions() {

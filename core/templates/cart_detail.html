@@ -140,13 +140,13 @@
                     <div class="d-flex align-items-center">
                         <!-- Quantity Controls -->
                         <div class="quantity-controls me-4">
-                            <button class="qty-btn" onclick="decreaseQuantity('{{ item.id }}', '{{ supplier.id }}')">
+                            <button class="qty-btn" onclick="decreaseQuantity('{{ item.id }}', '{{ supplier.store_id }}')">
                                 <i class="fas fa-minus"></i>
                             </button>
                     
                             <span id="quantity-{{ item.id }}" class="qty-display">{{ item.quantity }}</span>
                     
-                            <button class="qty-btn" onclick="increaseQuantity('{{ item.id }}', '{{ supplier.id }}')">
+                            <button class="qty-btn" onclick="increaseQuantity('{{ item.id }}', '{{ supplier.store_id }}')">
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
@@ -157,7 +157,7 @@
                         </div>
                 
                         <!-- Remove Button -->
-                        <button class="remove-btn" onclick="removeItem('{{ item.id }}', '{{ supplier.id }}')">
+                        <button class="remove-btn" onclick="removeItem('{{ item.id }}', '{{ supplier.store_id }}')">
                             <i class="fas fa-trash-alt"></i>
                             <span class="d-none d-md-inline ms-2">حذف</span>
                         </button>
@@ -192,12 +192,25 @@
                 
                 <div class="summary-item">
                     <span class="summary-label">التوصيل</span>
-                    <span class="summary-value"> {{ supplier.currency }} 0.00</span>
+                    <span class="summary-value" id="cart-delivery-fee">
+                        {% if supplier.enable_delivery_fees %}
+                            {{ supplier.currency }} {{ estimated_fee|floatformat:2 }}
+                        {% else %}
+                            {{ supplier.currency }} 0.00
+                        {% endif %}
+                    </span>
                 </div>
                 
                 <div class="summary-total">
                     <span class="total-label">المجموع الكلي</span>
-                    <span id="total-amount" class="total-amount"> {{ supplier.currency }} {{ cart.get_total_after_discount|floatformat:0 }}</span>
+                    <span id="total-amount" class="total-amount"> 
+                        {{ supplier.currency }} 
+                        {% if supplier.enable_delivery_fees %}
+                            {{ cart.get_total_after_discount|add:estimated_fee|floatformat:0 }}
+                        {% else %}
+                            {{ cart.get_total_after_discount|floatformat:0 }}
+                        {% endif %}
+                    </span>
                 </div>
                 
                 <button type="button" class="checkout-btn" data-bs-toggle="modal" data-bs-target="#checkoutModal">
@@ -205,7 +218,7 @@
                     اتمام الشراء
                 </button>
                 
-                <a href="{% url 'product-list' supplier.id %}" class="continue-shopping">
+                <a href="{% url 'product-list' supplier.store_id %}" class="continue-shopping">
                     <i class="fas fa-arrow-right"></i>
                     مواصلة التسوق
                 </a>
@@ -218,7 +231,7 @@
         <i class="fas fa-shopping-cart"></i>
         <h3>سلة التسوق فارغة</h3>
         <p class="text-muted">لم تقم بإضافة أي منتجات إلى سلة التسوق بعد</p>
-        <a href="{% url 'product-list' supplier.id %}" class="continue-shopping">
+        <a href="{% url 'product-list' supplier.store_id %}" class="continue-shopping">
             <i class="fas fa-arrow-right"></i>
             ابدأ التسوق الآن
         </a>
@@ -268,9 +281,22 @@
                             <p class="mb-1">{{ user_address.address_line2 }}</p>
                             {% endif %}
                             <p class="mb-0 text-muted small">{{ user_address.city }}, {{ user_address.country }}</p>
+                            
+                            {% if supplier.enable_delivery_fees and estimated_distance %}
+                            <div class="mt-2 p-2 rounded bg-white border border-dashed small">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">المسافة:</span>
+                                    <span>{{ estimated_distance|floatformat:1 }} كم</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">رسوم التوصيل المقدرة:</span>
+                                    <span class="fw-bold text-primary">{{ estimated_fee|floatformat:2 }} {{ supplier.currency }}</span>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
-                    <a href="{% url 'existing_address' supplier.id %}" class="btn btn-primary w-100 py-3 rounded-3 fw-bold">
+                    <a href="{% url 'existing_address' supplier.store_id %}" class="btn btn-primary w-100 py-3 rounded-3 fw-bold">
                         تأكيد وإتمام الطلب
                     </a>
                     {% else %}
@@ -352,7 +378,13 @@
     <div class="checkout-info">
         <span class="text-muted small">الإجمالي:</span>
         <div class="checkout-total">
-            <span id="mobile-total-amount">{{ cart.get_total_after_discount|floatformat:0 }}</span>
+            <span id="mobile-total-amount">
+            {% if supplier.enable_delivery_fees %}
+                {{ cart.get_total_after_discount|add:estimated_fee|floatformat:0 }}
+            {% else %}
+                {{ cart.get_total_after_discount|floatformat:0 }}
+            {% endif %}
+        </span>
             <small>{{ supplier.currency }}</small>
         </div>
     </div>
@@ -416,8 +448,10 @@
                     }
                     
                     const totalAmountElement = $('#total-amount');
-                    totalAmountElement.text(` {{ supplier.currency }} ${Math.floor(data.cart_total)}`);
-                    $('#mobile-total-amount').text(Math.floor(data.cart_total)); // Update mobile bar
+                    const estimatedFee = parseFloat('{{ estimated_fee|default:0 }}');
+                    const totalWithShipping = Math.floor(data.cart_total + estimatedFee);
+                    totalAmountElement.text(` {{ supplier.currency }} ${totalWithShipping}`);
+                    $('#mobile-total-amount').text(totalWithShipping); // Update mobile bar
                     const totalDiscountElement = $('#total-discount');
                     totalDiscountElement.text(` {{ supplier.currency }} ${data.new_total_discout}`);
 
@@ -470,8 +504,10 @@
                     }
 
                     const totalAmountElement = $('#total-amount');
-                    totalAmountElement.text(` {{ supplier.currency }} ${Math.floor(data.cart_total)}`);
-                    $('#mobile-total-amount').text(Math.floor(data.cart_total)); // Update mobile bar
+                    const estimatedFee = parseFloat('{{ estimated_fee|default:0 }}');
+                    const totalWithShipping = Math.floor(data.cart_total + estimatedFee);
+                    totalAmountElement.text(` {{ supplier.currency }} ${totalWithShipping}`);
+                    $('#mobile-total-amount').text(totalWithShipping); // Update mobile bar
                     const totalDiscountElement = $('#total-discount');
                     totalDiscountElement.text(` {{ supplier.currency }} ${data.new_total_discout}`);
 
@@ -499,7 +535,7 @@
         var csrftoken = getCookie('csrftoken');
 
         $.ajax({
-            url: `{% url 'remove_item' item_id=0 supplier_id=0 %}`.replace('0', itemId).replace('0', supplierId),
+            url: `{% url 'remove_item' item_id=0 store_id=0 %}`.replace('0', itemId).replace('0', supplierId),
             type: "POST",
             headers: { "X-CSRFToken": csrftoken },
             success: function (data) {
@@ -515,9 +551,12 @@
                         }
                     }, 500);
 
+                    const estimatedFee = parseFloat('{{ estimated_fee|default:0 }}');
+                    const totalWithShipping = Math.floor(data.cart_total + estimatedFee);
+
                     const totalAmountElement = $('#total-amount');
-                    totalAmountElement.text(` {{ supplier.currency }} ${Math.floor(data.cart_total)}`);
-                    $('#mobile-total-amount').text(Math.floor(data.cart_total)); // Update mobile bar
+                    totalAmountElement.text(` {{ supplier.currency }} ${totalWithShipping}`);
+                    $('#mobile-total-amount').text(totalWithShipping); // Update mobile bar
                     const totalDiscountElement = $('#total-discount');
                     totalDiscountElement.text(` {{ supplier.currency }} ${Math.floor(data.new_total_discout)}`);
                     
