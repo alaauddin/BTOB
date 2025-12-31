@@ -5,6 +5,14 @@
     {{ product.name }} - Product Detail
 {% endblock %}
 
+{% block extra_meta %}
+    <meta property="og:title" content="{{ product.name }}">
+    <meta property="og:description" content="{{ product.description|truncatewords:20 }}">
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:type" content="website">
+{% endblock %}
+
 {% block content %}
 <div class="min-h-screen bg-gray-50 py-8" dir="rtl">
     <div class="container mx-auto px-4 max-w-6xl text-right">
