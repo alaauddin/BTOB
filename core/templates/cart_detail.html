@@ -196,7 +196,7 @@
                         {% if supplier.enable_delivery_fees %}
                             {{ supplier.currency }} {{ estimated_fee|floatformat:2 }}
                         {% else %}
-                            {{ supplier.currency }} 0.00
+                            <span class="small text-muted">سيتم تحديدها مع خدمة العملاء</span>
                         {% endif %}
                     </span>
                 </div>

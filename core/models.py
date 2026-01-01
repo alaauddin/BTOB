@@ -360,7 +360,7 @@ class Order(models.Model):
 
     def get_total_amount(self):
         items_total = sum([item.get_subtotal() for item in self.order_items.all()])
-        return items_total + self.get_expected_delivery_fee()
+        return items_total
     
     def get_total_ammout_with_discout(self):
         return sum([item.get_subtotal_with_discount() for item in self.order_items.all()])

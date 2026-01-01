@@ -60,7 +60,7 @@ class CartView(DetailView):
             # Note: Logic adapted from ConvertCartToOrder.checkout_select_address_or_custom_address
             order = Order.objects.create(
                 user=request.user, 
-                total_amount=self.object.get_total_amount()
+                total_amount=0 # will be calculated in set_total_amount
             )
             
             # Create Order Items
@@ -80,6 +80,9 @@ class CartView(DetailView):
             address.address_type = 'Shipping'
             address.postal_code = '00000'
             address.save()
+            
+            # Update order total with delivery fees and discounts
+            order.set_total_amount()
 
             # Check if user has a saved address, if not create one
             if not Address.objects.filter(user=request.user).exists():
@@ -219,7 +222,8 @@ class DecreaseQuantityView(View):
             cart_item.delete()
             
 
-        cart_total = int(cart.get_total_amount())
+        # Use get_total_after_discount to respect offers
+        cart_total = int(cart.get_total_after_discount())
         cart_items_count = cart.get_total_items()
         new_subtotal = int(cart_item.get_subtotal())
         new_quantity = cart_item.quantity
@@ -238,9 +242,13 @@ class RemoveItemView(View):
         cart_item.delete()
         cart_items_count = cart.get_total_items()
 
-        cart_total = int(cart.get_total_amount())
+        cart_items_count = cart.get_total_items()
 
-        return JsonResponse({'success': True, 'cart_total': cart_total, 'cart_items_count': cart_items_count})
+        # Use get_total_after_discount to respect offers
+        cart_total = int(cart.get_total_after_discount())
+        new_total_discout = round(cart.get_total_ammout_with_discout(),2)
+
+        return JsonResponse({'success': True, 'cart_total': cart_total, 'cart_items_count': cart_items_count, 'new_total_discout': new_total_discout})
 
 @login_required
 def get_cart_status(request, store_id):

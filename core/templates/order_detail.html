@@ -399,31 +399,33 @@
                     <span class="summary-value">{{ order.order_items.all|length }}</span>
                 </div>
                 
+                <!-- Subtotal (Gross Items) -->
                 <div class="summary-item">
-                    <span class="summary-label">المجموع </span>
-                    <span class="summary-value">{{ order.get_total_amount|floatformat:2 }}   {{ supplier.currency }} </span>
-                </div>
-                {% if order.has_discount %}
-                <div class="summary-item">
-                    <span class="summary-label"></span>
-                    <span class="summary-value text-success">{{ order.get_discount_amount|floatformat:0 }}   {{ supplier.currency }} -</span>
+                    <span class="summary-label">المجموع</span>
+                    <span class="summary-value">{{ order.get_total_amount|floatformat:2 }} {{ supplier.currency }}</span>
                 </div>
 
+                {% if order.has_discount %}
+                <div class="summary-item">
+                    <span class="summary-label">الخصم</span>
+                    <span class="summary-value text-success">-{{ order.get_discount_amount|floatformat:0 }} {{ supplier.currency }}</span>
+                </div>
                 {% endif %}
+
                 <div class="summary-item">
                     <span class="summary-label">التوصيل</span>
                     <span class="summary-value">
                         {% if supplier.enable_delivery_fees %}
                             {{ order.get_expected_delivery_fee|floatformat:2 }} {{ supplier.currency }}
                         {% else %}
-                            0.00 {{ supplier.currency }}
+                            <span class="small text-muted">سيتم تحديدها مع خدمة العملاء</span>
                         {% endif %}
                     </span>
                 </div>
                 
                 <div class="summary-total">
                     <span class="total-label">المجموع الكلي</span>
-                    <span class="total-amount">{{ order.total_amount|floatformat:0 }}   {{ supplier.currency }} </span>
+                    <span class="total-amount">{{ order.total_amount|floatformat:0 }} {{ supplier.currency }}</span>
                 </div>
             </div>
             
