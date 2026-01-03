@@ -54,10 +54,12 @@
                 </div>
             </div>
             <div class="flex flex-col items-center">
+                {% if supplier.show_order_amounts %}
                 <div class="text-center mb-4">
                     <div class="text-3xl font-bold text-gradient">{{ current_month_sales|floatformat:0 }} {{ supplier.currency }}</div>
                     <div class="text-gray-600">مبيعات هذا الشهر</div>
                 </div>
+                {% endif %}
                 <button class="action-btn">
                     <i class="fas fa-chart-line"></i>
                     عرض التقارير
@@ -92,6 +94,7 @@
             <div class="text-gray-600 font-semibold">طلبات معلقة</div>
         </div>
         
+        {% if supplier.show_order_amounts %}
         <div class="stats-card p-6 text-center">
             <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i class="fas fa-dollar-sign text-purple-500 text-2xl"></i>
@@ -99,6 +102,7 @@
             <div class="text-3xl font-bold text-purple-600 mb-2">${{ total_revenue|floatformat:0 }}</div>
             <div class="text-gray-600 font-semibold">إجمالي الإيرادات</div>
         </div>
+        {% endif %}
     </div>
 
     <!-- Tabs Navigation -->

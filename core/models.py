@@ -69,6 +69,7 @@ class Supplier(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     delivery_fee_ratio = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="نسبة رسوم التوصيل لكل كم")
     enable_delivery_fees = models.BooleanField(default=False, verbose_name="تفعيل رسوم التوصيل")
+    show_order_amounts = models.BooleanField(default=True, verbose_name="عرض مبالغ الطلبات")
     
     
     def __str__(self):

@@ -263,10 +263,12 @@
                         <div class="stat-number">{{ confirmed_orders }}</div>
                         <div class="stat-label">طلبات مؤكدة</div>
                     </div>
+                    {% if supplier.show_order_amounts %}
                     <div class="stat-card">
                         <div class="stat-number">${{ total_revenue|floatformat:2 }}</div>
                         <div class="stat-label">إجمالي الإيرادات</div>
                     </div>
+                    {% endif %}
                 </div>
 
                 <!-- Filters -->

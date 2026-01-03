@@ -411,12 +411,14 @@
                             <span class="stat-label">إجمالي الطلبات</span>
                         </div>
                     </div>
+                    {% if supplier.show_order_amounts %}
                     <div class="col-6">
                         <div class="stat-pill">
                             <span class="stat-value">${{ customer_stats.total_spent|floatformat:0 }}</span>
                             <span class="stat-label">القيمة الكلية</span>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
 
                 <h5 class="fw-bold mb-3 small text-muted text-uppercase">تاريخ الطلبات الأخيرة</h5>
