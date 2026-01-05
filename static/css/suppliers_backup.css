@@ -336,13 +336,11 @@
 
 .ads-scroll-container {
     display: flex;
-    gap: 30px;
+    gap: 20px;
     overflow-x: auto;
-    overflow-y: hidden;
-    /* Fix vertical scrolling bounce */
-    padding: 60px 20px 60px;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    padding: 10px 5px 25px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) #f1f5f9;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -468,8 +466,7 @@
 .ad-card {
     background: white;
     border-radius: 30px;
-    overflow: visible;
-    /* Allowing glows and embers to escape the card bounds */
+    overflow: hidden;
     position: relative;
     transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
     border: 2px solid #ffa502;
@@ -480,16 +477,6 @@
     perspective: 1000px;
     /* Continuous animations for "Always Wow" */
     animation: ultimate-glow 3s infinite ease-in-out, card-pulse 4s infinite ease-in-out;
-}
-
-/* Ensure the image stays rounded since parent is overflow:visible */
-.ad-image {
-    height: 220px;
-    width: 100%;
-    overflow: hidden;
-    position: relative;
-    border-top-left-radius: 28px;
-    border-top-right-radius: 28px;
 }
 
 /* Intensified state on Hover */
@@ -591,6 +578,13 @@
     border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
+.ad-image {
+    height: 220px;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
 .ad-image::after {
     content: '';
     position: absolute;
@@ -619,8 +613,6 @@
     display: flex;
     flex-direction: column;
     background: white;
-    border-bottom-left-radius: 28px;
-    border-bottom-right-radius: 28px;
 }
 
 .ad-supplier-name {
@@ -669,86 +661,20 @@
 }
 
 @media (max-width: 768px) {
-    .ads-scroll-container {
-        gap: 15px;
-        padding: 40px 15px 40px;
-    }
-
     .ad-card-link {
-        width: 165px;
-        /* Fits two cards on most mobile screens */
-    }
-
-    .ad-product-name {
-        font-size: 1.1rem;
-    }
-
-    .final-price {
-        font-size: 1.4rem;
-    }
-
-    .suppliers-scroll-container {
-        gap: 12px;
-        padding: 15px 15px 30px;
-    }
-
-    .supplier-card-premium {
-        width: 140px;
-        height: 180px;
-    }
-
-    .supplier-logo-container {
-        width: 65px;
-        height: 65px;
-    }
-
-    .ad-image {
-        height: 140px;
-    }
-
-    .ad-info {
-        padding: 1.25rem 1rem;
-    }
-
-    .ad-badge-discount,
-    .ad-badge-hot {
-        padding: 4px 10px;
-        font-size: 0.75rem;
-    }
-
-    .ad-badge-hot {
-        right: 40px;
-        top: 15px;
-    }
-
-    .ad-badge-discount {
-        top: 15px;
-        left: 15px;
-    }
-
-    .supplier-mini-logo {
-        width: 35px;
-        height: 35px;
-        top: 15px;
-        right: 15px;
-        border-radius: 10px;
+        width: 280px;
     }
 }
-
-/* Producing Families Premium Design */
-.producing-families-wrapper {
-    background: linear-gradient(180deg, #fff9f2 0%, #ffffff 100%);
-    border-radius: 40px;
-    margin-top: 2rem;
+/* Producing Families Section */
+.producing-families-section {
+    padding-bottom: 2rem;
 }
 
 .suppliers-scroll-container {
     display: flex;
     gap: 20px;
     overflow-x: auto;
-    overflow-y: hidden;
-    /* Fix vertical scrolling bounce */
-    padding: 20px 20px 40px;
+    padding: 15px 5px 25px;
     scrollbar-width: none;
     -ms-overflow-style: none;
     -webkit-overflow-scrolling: touch;
@@ -758,100 +684,51 @@
     display: none;
 }
 
-.supplier-card-link-premium {
+.supplier-card-link {
     text-decoration: none;
     flex: 0 0 auto;
 }
 
-.supplier-card-premium {
-    width: 160px;
-    height: 200px;
-    background: white;
-    border-radius: 24px;
-    padding: 20px 15px;
+.supplier-card-mini {
     display: flex;
     flex-direction: column;
     align-items: center;
-    position: relative;
-    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.05);
-    border: 1px solid rgba(255, 165, 2, 0.1);
+    gap: 12px;
+    width: 110px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.supplier-card-mini:hover {
+    transform: translateY(-10px) scale(1.1);
+}
+
+.supplier-image {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
     overflow: hidden;
-}
-
-.supplier-card-premium:hover {
-    transform: translateY(-15px) scale(1.05);
-    box-shadow: 0 20px 40px rgba(255, 165, 2, 0.15);
-    border-color: #ffa502;
-}
-
-.home-badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    width: 28px;
-    height: 28px;
-    background: #ffa502;
-    color: white;
-    border-radius: 8px;
+    background: white;
+    border: 4px solid white;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
-    box-shadow: 0 4px 10px rgba(255, 165, 2, 0.3);
 }
 
-.supplier-logo-container {
-    width: 80px;
-    height: 80px;
-    background: #f8fafc;
-    border-radius: 20px;
-    padding: 10px;
-    margin-bottom: 15px;
-    transition: transform 0.5s ease;
-    border: 1px solid #f1f5f9;
-}
-
-.supplier-card-premium:hover .supplier-logo-container {
-    transform: rotate(5deg) scale(1.1);
-}
-
-.supplier-logo-container img {
-    width: 100%;
-    height: 100%;
+.supplier-image img {
+    width: 85%;
+    height: 85%;
     object-fit: contain;
+    border-radius: 50%;
 }
 
-.supplier-info-glass {
-    text-align: center;
-    width: 100%;
-}
-
-.supplier-name-premium {
-    font-size: 1rem;
+.supplier-name {
+    font-size: 0.9rem;
     font-weight: 800;
-    color: #1e293b;
-    margin-bottom: 4px;
-    white-space: nowrap;
+    color: #334155;
+    text-align: center;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.home-label {
-    font-size: 0.75rem;
-    color: #ffa502;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.supplier-card-premium::before {
-    content: '';
-    position: absolute;
-    bottom: -50px;
-    right: -50px;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, rgba(255, 165, 2, 0.05) 0%, transparent 70%);
-    border-radius: 50%;
+    white-space: nowrap;
 }

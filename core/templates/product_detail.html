@@ -22,8 +22,14 @@
 
 {% block content %}
 <div class="container container-products">
+    <!-- Back Button -->
+    <a href="{% url 'product-list' supplier.store_id %}" class="back-to-store-btn mt-3 mb-1">
+        <i class="fas fa-arrow-right"></i>
+        <span>العودة للمتجر</span>
+    </a>
+
     <!-- Modern Detail Card -->
-    <div class="modern-detail-container">
+    <div class="modern-detail-container mb-4">
         <div class="modern-detail-wrapper">
             <!-- Image Section -->
             <div class="modern-detail-image-sec">
@@ -47,13 +53,6 @@
 
             <!-- Info Section -->
             <div class="modern-detail-info-sec">
-                <nav class="detail-breadcrumbs">
-                    <a href="{% url 'product-list' supplier.store_id %}">الرئيسية</a>
-                    <i class="fas fa-chevron-left text-xs"></i>
-                    <a href="#">{{ product.category.name }}</a>
-                    <i class="fas fa-chevron-left text-xs"></i>
-                    <span>{{ product.name }}</span>
-                </nav>
 
                 <h1 class="detail-product-title">{{ product.name }}</h1>
                 
@@ -113,7 +112,7 @@
                 </div>
 
                 <!-- Features Grid -->
-                <div class="grid grid-cols-2 gap-4 mt-auto">
+                {% comment %} <div class="grid grid-cols-2 gap-4 mt-auto">
                     <div class="flex items-center gap-3 text-sm text-gray-600">
                         <i class="fas fa-truck text-blue-500"></i>
                         <span>شحن سريع</span>
@@ -130,7 +129,7 @@
                         <i class="fas fa-headset text-purple-500"></i>
                         <span>دعم فني</span>
                     </div>
-                </div>
+                </div> {% endcomment %}
             </div>
         </div>
     </div>
@@ -231,6 +230,45 @@
         </div>
     </div>
 </div>
+
+<!-- Mobile Bottom Cart Bar -->
+<div class="mobile-cart-bar d-lg-none {% if cart.get_total_items == 0 %}d-none{% endif %}" id="mobileCartBar">
+    <div class="cart-info">
+        <div class="cart-count">
+            <i class="fas fa-shopping-basket"></i>
+            <span id="mobile-cart-count">{{ cart.get_total_items }}</span> منتجات
+        </div>
+        <div class="cart-total">
+            <span class="text-muted small">المجموع:</span>
+            <span class="total-price" id="mobile-cart-total">
+                {% if supplier.enable_delivery_fees %}
+                    {{ cart.get_total_after_discount|add:estimated_fee|floatformat:0 }}
+                {% else %}
+                    {{ cart.get_total_after_discount|floatformat:0 }}
+                {% endif %}
+            </span> {{ supplier.currency }}
+        </div>
+    </div>
+    <a href="{% url 'cart-detail' supplier.store_id %}" class="cart-action-btn">
+        مشاهدة السلة <i class="fas fa-arrow-left me-2"></i>
+    </a>
+</div>
+
+<!-- Mini Platform Ads (Mobile only, above cart bar) -->
+{% if supplier.show_platform_ads and platform_ads %}
+<div class="detail-ads-wrapper d-lg-none">
+    {% for ad in platform_ads|slice:":4" %}
+    <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="mini-ad-card">
+        <span class="mini-ad-badge">عرطة</span>
+        <img src="{{ ad.product.image.url }}" class="mini-ad-img" alt="{{ ad.product.name }}">
+        <div class="mini-ad-info">
+            <h5 class="mini-ad-name">{{ ad.product.name }}</h5>
+            <div class="mini-ad-price">{{ ad.product.get_price_with_offer }} {{ ad.product.supplier.currency }}</div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
 
 {% endblock %}
 

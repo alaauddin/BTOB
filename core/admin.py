@@ -81,7 +81,7 @@ class SupplierAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('المعلومات الأساسية', {
-            'fields': ('user', 'name', 'phone', 'category', 'currency', 'delivery_fee_ratio', 'enable_delivery_fees', 'show_order_amounts'),
+            'fields': ('user', 'name', 'phone', 'category', 'currency', 'delivery_fee_ratio', 'enable_delivery_fees', 'show_order_amounts','show_platform_ads'),
             'description': 'أضف المعلومات الأساسية للمورد هنا.'
         }),
         ('المكان والجغرافيا', {
@@ -160,3 +160,4 @@ admin.site.register(Supplier, SupplierAdmin)
 admin.site.register(SupplierCategory)
 admin.site.register(ProductOffer)
 admin.site.register(SuppierAds)
+admin.site.register(PlatformOfferAd)

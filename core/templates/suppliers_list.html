@@ -10,7 +10,73 @@
 {% block content %}
 <!-- Modern Hero Section -->
 
+
 <div class="container pt-12">
+    <!-- Platform Offers Ads Section -->
+    {% if platform_ads %}
+    <div class="platform-ads-section mb-12">
+        <h2 class="section-title mb-6">عروض حصرية لك</h2>
+        <div class="ads-scroll-container">
+            {% for ad in platform_ads %}
+            <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="ad-card-link">
+                <div class="ad-card">
+                    {% if ad.product.has_discount %}
+                    <div class="ad-badge-discount">
+                        -{{ ad.product.get_discount_precentage }}%
+                    </div>
+                    {% endif %}
+                    <div class="ad-badge-hot">
+                        <i class="fas fa-fire"></i> عرض حصري
+                    </div>
+                    <div class="supplier-mini-logo">
+                        <img src="{% if ad.product.supplier.profile_picture %}{{ ad.product.supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ ad.product.supplier.name }}">
+                    </div>
+                    <div class="ad-image">
+                        <img src="{{ ad.product.image.url }}" alt="{{ ad.product.name }}">
+                    </div>
+                    <div class="ad-info">
+                        <div class="ad-supplier-name">{{ ad.product.supplier.name }}</div>
+                        <h4 class="ad-product-name">{{ ad.product.name }}</h4>
+                        <p class="ad-description">{{ ad.description|truncatewords:10 }}</p>
+                        <div class="ad-price">
+                            <span class="final-price">{{ ad.product.get_price_with_offer }} {{ ad.product.supplier.currency }}</span>
+                            {% if ad.product.has_discount %}
+                            <span class="original-price" style="text-decoration: line-through; color: #94a3b8; font-size: 0.9rem; margin-right: 8px;">{{ ad.product.price }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% if producing_family_suppliers %}
+    <div class="producing-families-wrapper py-12 mb-12">
+        <div class="container">
+            <h2 class="section-title mb-8">متاجر الاسر المنتجة</h2>
+        </div>
+        <div class="suppliers-scroll-container">
+            {% for s in producing_family_suppliers %}
+            <a href="{% url 'product-list' s.store_id %}" class="supplier-card-link-premium">
+                <div class="supplier-card-premium">
+                    <div class="home-badge">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="supplier-logo-container">
+                        <img src="{% if s.profile_picture %}{{ s.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ s.name }}">
+                    </div>
+                    <div class="supplier-info-glass">
+                        <div class="supplier-name-premium">{{ s.name }}</div>
+                        <div class="home-label">إنتاج منزلي</div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Filter & Categories -->
 <div class="category-nav-wrapper">
     <div class="container">

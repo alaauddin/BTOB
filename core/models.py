@@ -43,6 +43,7 @@ class WorkflowStep(models.Model):
 class SupplierCategory(models.Model):
     image = models.ImageField(upload_to='images/supplier_category_images/', blank=True, null=True)
     name = models.CharField(max_length=100)
+    producing_family = models.BooleanField(default=False)
     def __str__(self):
         return self.name
 
@@ -70,7 +71,7 @@ class Supplier(models.Model):
     delivery_fee_ratio = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="نسبة رسوم التوصيل لكل كم")
     enable_delivery_fees = models.BooleanField(default=False, verbose_name="تفعيل رسوم التوصيل")
     show_order_amounts = models.BooleanField(default=True, verbose_name="عرض مبالغ الطلبات")
-    
+    show_platform_ads = models.BooleanField(default=True, verbose_name="عرض إعلانات المنصة")
     
     def __str__(self):
         return self.name
@@ -522,7 +523,15 @@ class SuppierAds(models.Model):
     def __str__(self):
         return str(self.supplier) + " | " + str(self.title)
     
-
+class PlatformOfferAd(models.Model):
+    product = models.ForeignKey(Product,on_delete=models.CASCADE,related_name='platform_offers')
+    description = models.TextField()
+    start_date = models.DateField()
+    end_date = models.DateField()
+    order = models.IntegerField(default=0)
+    
+    def __str__(self):
+        return str(self.product) + " | " + str(self.order)
 
 
 

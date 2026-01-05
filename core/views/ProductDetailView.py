@@ -36,4 +36,34 @@ def product_detail(request, store_id, pk):
         'cart': user_cart,
     }
 
+    # Fetch active platform ads (first 3) if enabled for this supplier
+    if supplier.show_platform_ads:
+        from core.models import PlatformOfferAd
+        from django.utils import timezone
+        today = timezone.now().date()
+        context['platform_ads'] = PlatformOfferAd.objects.filter(
+            start_date__lte=today,
+            end_date__gte=today
+        ).order_by('order').select_related('product', 'product__supplier')[:4]
+
+    # Calculate estimated delivery fee for mobile cart bar
+    if request.user.is_authenticated:
+        from core.models import Address
+        from decimal import Decimal
+        import math
+        address = Address.objects.filter(user=request.user).first()
+        estimated_fee = Decimal('0')
+        if supplier.enable_delivery_fees and address and address.latitude and address.longitude and supplier.latitude and supplier.longitude:
+            R = 6371
+            phi1, phi2 = math.radians(float(supplier.latitude)), math.radians(float(address.latitude))
+            dphi = math.radians(float(address.latitude) - float(supplier.latitude))
+            dlambda = math.radians(float(address.longitude) - float(supplier.longitude))
+            a = math.sin(dphi / 2)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2)**2
+            estimated_distance = R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+            fee = float(estimated_distance) * float(supplier.delivery_fee_ratio or 0)
+            estimated_fee = Decimal(str(fee)).quantize(Decimal('0.01'))
+        context['estimated_fee'] = estimated_fee
+    else:
+        context['estimated_fee'] = 0
+
     return render(request, 'product_detail.html', context)
