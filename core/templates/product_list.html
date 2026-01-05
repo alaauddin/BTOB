@@ -36,33 +36,34 @@
     
     @media (max-width: 768px) {
         #supplierAdsCarousel .carousel-item {
-            height: 140px;
+            /* Compact Ads */
+            height: 125px;
         }
         .modern-ads-title {
-            font-size: 1.1rem !important;
-            margin-bottom: 0.25rem !important;
+            font-size: 0.95rem !important;
+            margin-bottom: 0.1rem !important;
         }
         .modern-ads-description {
-            font-size: 0.75rem !important;
-            margin-bottom: 0.5rem !important;
-            line-height: 1.2 !important;
-            display: -webkit-box;
+            font-size: 0.65rem !important;
+            margin-bottom: 0.25rem !important;
+            line-height: 1.1 !important;
             -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
         }
         .modern-ads-cta {
-            padding: 4px 12px !important;
-            font-size: 0.7rem !important;
-            border-radius: 20px !important;
-            margin-top: 0 !important;
+            padding: 2px 10px !important;
+            font-size: 0.65rem !important;
+            border-radius: 15px !important;
         }
-        .modern-ads-overlay {
-            padding: 0 1rem !important;
+        /* Reduce gap in hero */
+        .modern-hero {
+            padding: 1.5rem 0 !important;
         }
-        /* Ensure image is not too dark */
-        .modern-ads-carousel .carousel-item img {
-             filter: brightness(0.8);
+        .hero-title {
+            font-size: 1.25rem !important;
+        }
+        .hero-subtitle {
+            font-size: 0.8rem !important;
+            margin-bottom: 0 !important;
         }
     }
 </style>
@@ -72,7 +73,7 @@
 <!-- Hero Section -->
 {% if supplier_ads %}
 <!-- Premium Ads Carousel Section -->
-<div class="container mb-5" style="margin-top: 2rem;">
+<div class="container mb-3" style="margin-top: 0.75rem;">
     <section class="modern-ads-carousel">
         <!-- Decorative Elements -->
         <div class="ads-decorative-element element-1"></div>
@@ -146,13 +147,13 @@
     <button class="dismiss-btn" onclick="dismissNotification(event)" title="إخفاء الإشعار">
         <i class="fas fa-times"></i>
     </button>
-            <div class="d-flex align-items-center">
-        <div class="pending-count-badge me-3">{{ pending_orders|length }}</div>
+        <div class="d-flex align-items-center">
+        <div class="pending-count-badge me-2" style="width:24px; height:24px; font-size:10px;">{{ pending_orders|length }}</div>
         <div>
-            <div class="fw-bold">طلبات قيد الانتظار</div>
-            <div class="small opacity-75">اضغط لعرض التفاصيل</div>
+            <div class="fw-bold" style="font-size: 0.8rem;">طلبات معلقة</div>
+            <div class="small opacity-75" style="font-size: 0.65rem;">اضغط للتفاصيل</div>
                 </div>
-        <i class="fas fa-bell ms-3"></i>
+        <i class="fas fa-bell ms-2" style="font-size: 0.9rem;"></i>
     </div>
 </div>
 
@@ -349,10 +350,10 @@
 {% endif %}
 
     <!-- Categories Navigation -->
-<div class="container mt-3">
-    <div class="modern-category-nav">
-        <div class="modern-category-title">
-            <i class="fas fa-filter me-2 text-primary"></i> التصنيفات
+<div class="container mt-2 mb-2">
+    <div class="modern-category-nav py-1 px-2">
+        <div class="modern-category-title" style="font-size: 0.85rem;">
+            <i class="fas fa-filter me-1 text-primary"></i> التصنيفات
         </div>
         
         <div class="d-flex flex-nowrap overflow-auto py-1 gap-2 modern-scroll categories-scroll-container flex-grow-1">
@@ -389,19 +390,18 @@
     </div>
 </div>
 
-<div class="container container-products mt-5">
-    <h2 class="section-title mb-4">المنتجات المتاحة</h2>
+<div class="container container-products mt-3">
     
     {% if offer_products %}
-    <div class="product-section mb-5">
-        <div class="d-flex align-items-center mb-4">
-            <div class="section-icon-wrapper bg-red-100 text-red-500 rounded-circle p-2 me-3">
-                <i class="fas fa-fire fa-lg"></i>
+    <div class="product-section mb-3">
+        <div class="d-flex align-items-center mb-2 px-1">
+            <div class="section-icon-wrapper bg-red-100 text-red-500 rounded-circle p-1 me-2" style="width: 28px; height: 28px; display:flex; align-items:center; justify-content:center;">
+                <i class="fas fa-fire fa-sm"></i>
             </div>
-            <h2 class="section-title m-0">أقوى العروض</h2>
-            <span class="badge bg-danger rounded-pill ms-3">{{ offer_products|length }}</span>
+            <h6 class="section-title m-0 fw-bold" style="font-size: 0.95rem;">أقوى العروض</h6>
+            <span class="badge bg-danger rounded-pill ms-auto" style="font-size: 0.65rem;">{{ offer_products|length }}</span>
         </div>
-        <div class="products-horizontal-scroll">
+        <div class="products-horizontal-scroll pb-1">
             {% for product in offer_products %}
                 {% include "product_card_snippet.html" %}
             {% endfor %}
@@ -410,15 +410,15 @@
     {% endif %}
 
     {% if new_products %}
-    <div class="product-section mb-5">
-        <div class="d-flex align-items-center mb-4">
-            <div class="section-icon-wrapper bg-blue-100 text-blue-500 rounded-circle p-2 me-3">
-                <i class="fas fa-certificate fa-lg"></i>
+    <div class="product-section mb-3">
+        <div class="d-flex align-items-center mb-2 px-1">
+            <div class="section-icon-wrapper bg-blue-100 text-blue-500 rounded-circle p-1 me-2" style="width: 28px; height: 28px; display:flex; align-items:center; justify-content:center;">
+                <i class="fas fa-certificate fa-sm"></i>
             </div>
-            <h2 class="section-title m-0">وصل حديثاً</h2>
-            <span class="badge bg-primary rounded-pill ms-3">{{ new_products|length }}</span>
+            <h6 class="section-title m-0 fw-bold" style="font-size: 0.95rem;">وصل حديثاً</h6>
+            <span class="badge bg-primary rounded-pill ms-auto" style="font-size: 0.65rem;">{{ new_products|length }}</span>
         </div>
-        <div class="products-horizontal-scroll">
+        <div class="products-horizontal-scroll pb-1">
             {% for product in new_products %}
                 {% include "product_card_snippet.html" %}
             {% endfor %}
@@ -427,14 +427,14 @@
     {% endif %}
 
     {% if other_products %}
-    <div class="product-section mb-5">
-        <div class="d-flex align-items-center mb-4">
-            <div class="section-icon-wrapper bg-gray-100 text-gray-500 rounded-circle p-2 me-3">
-                <i class="fas fa-th fa-lg"></i>
+    <div class="product-section mb-3">
+        <div class="d-flex align-items-center mb-2 px-1">
+            <div class="section-icon-wrapper bg-gray-100 text-gray-500 rounded-circle p-1 me-2" style="width: 28px; height: 28px; display:flex; align-items:center; justify-content:center;">
+                <i class="fas fa-th fa-sm"></i>
             </div>
-            <h2 class="section-title m-0">جميع المنتجات</h2>
+            <h6 class="section-title m-0 fw-bold" style="font-size: 0.95rem;">جميع المنتجات</h6>
         </div>
-        <div class="products-horizontal-scroll">
+        <div class="products-horizontal-scroll pb-1">
             {% for product in other_products %}
                 {% include "product_card_snippet.html" %}
             {% endfor %}

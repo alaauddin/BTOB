@@ -11,11 +11,11 @@
 <!-- Modern Hero Section -->
 
 
-<div class="container pt-12">
+<div class=" pt-4">
     <!-- Platform Offers Ads Section -->
     {% if platform_ads %}
-    <div class="platform-ads-section mb-12">
-        <h2 class="section-title mb-6">عروض حصرية لك</h2>
+    <div class="platform-ads-section">
+        <h2 class="section-title mb-3">عروض حصرية لك</h2>
         <div class="ads-scroll-container">
             {% for ad in platform_ads %}
             <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="ad-card-link">
@@ -39,9 +39,9 @@
                         <h4 class="ad-product-name">{{ ad.product.name }}</h4>
                         <p class="ad-description">{{ ad.description|truncatewords:10 }}</p>
                         <div class="ad-price">
-                            <span class="final-price">{{ ad.product.get_price_with_offer }} {{ ad.product.supplier.currency }}</span>
+                            <span class="final-price">{{ ad.product.get_price_with_offer|floatformat:0 }} {{ ad.product.supplier.currency }}</span>
                             {% if ad.product.has_discount %}
-                            <span class="original-price" style="text-decoration: line-through; color: #94a3b8; font-size: 0.9rem; margin-right: 8px;">{{ ad.product.price }}</span>
+                            <span class="original-price" style="text-decoration: line-through; color: #94a3b8; font-size: 0.9rem; margin-right: 8px;">{{ ad.product.price|floatformat:0 }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -51,31 +51,7 @@
         </div>
     </div>
     {% endif %}
-    {% if producing_family_suppliers %}
-    <div class="producing-families-wrapper py-12 mb-12">
-        <div class="container">
-            <h2 class="section-title mb-8">متاجر الاسر المنتجة</h2>
-        </div>
-        <div class="suppliers-scroll-container">
-            {% for s in producing_family_suppliers %}
-            <a href="{% url 'product-list' s.store_id %}" class="supplier-card-link-premium">
-                <div class="supplier-card-premium">
-                    <div class="home-badge">
-                        <i class="fas fa-home"></i>
-                    </div>
-                    <div class="supplier-logo-container">
-                        <img src="{% if s.profile_picture %}{{ s.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ s.name }}">
-                    </div>
-                    <div class="supplier-info-glass">
-                        <div class="supplier-name-premium">{{ s.name }}</div>
-                        <div class="home-label">إنتاج منزلي</div>
-                    </div>
-                </div>
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
+
 
     <!-- Filter & Categories -->
 <div class="category-nav-wrapper">
@@ -102,9 +78,9 @@
 
     <!-- Suppliers Grid -->
     <div class="supplier-grid">
-        <div class="row" id="supplierGrid">
+        <div class="supplier-horizontal-scroll" id="supplierGrid">
             {% for supplier in suppliers %}
-            <div class="col-lg-4 col-md-6 mb-8 supplier-card-container" data-categories="{% for cat in supplier.category.all %}{{ cat.id }},{% endfor %}">
+            <div class="supplier-card-container" data-categories="{% for cat in supplier.category.all %}{{ cat.id }},{% endfor %}">
                 <div class="supplier-card">
                     <div class="supplier-cover" style="{% if supplier.panal_picture %}background-image: url('{{ supplier.panal_picture.url }}'); background-size: cover; background-position: center;{% else %}background-color: {{ supplier.primary_color }}22;{% endif %}"></div>
                     <div class="supplier-logo-wrapper">
@@ -137,7 +113,7 @@
                 </div>
             </div>
             {% empty %}
-            <div class="col-12">
+            <div class="col-12 w-full">
                 <div class="no-suppliers">
                     <i class="fas fa-store-slash"></i>
                     <h3>لا توجد متاجر متاحة حالياً</h3>
@@ -148,6 +124,32 @@
         </div>
     </div>
 </div>
+
+    {% if producing_family_suppliers %}
+    <div class="producing-families-wrapper">
+        <div class="container pt-4">
+            <h2 class="section-title mb-1">متاجر الاسر المنتجة</h2>
+        </div>
+        <div class="suppliers-scroll-container">
+            {% for s in producing_family_suppliers %}
+            <a href="{% url 'product-list' s.store_id %}" class="supplier-card-link-premium">
+                <div class="supplier-card-premium">
+                    <div class="home-badge">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="supplier-logo-container">
+                        <img src="{% if s.profile_picture %}{{ s.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ s.name }}">
+                    </div>
+                    <div class="supplier-info-glass">
+                        <div class="supplier-name-premium">{{ s.name }}</div>
+                        <div class="home-label">إنتاج منزلي</div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
 <!-- Features Section Clean -->
 <section class="features-container">

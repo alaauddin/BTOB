@@ -263,7 +263,7 @@
         <img src="{{ ad.product.image.url }}" class="mini-ad-img" alt="{{ ad.product.name }}">
         <div class="mini-ad-info">
             <h5 class="mini-ad-name">{{ ad.product.name }}</h5>
-            <div class="mini-ad-price">{{ ad.product.get_price_with_offer }} {{ ad.product.supplier.currency }}</div>
+            <div class="mini-ad-price">{{ ad.product.get_price_with_offer|floatformat:0 }} {{ ad.product.supplier.currency }}</div>
         </div>
     </a>
     {% endfor %}

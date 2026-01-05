@@ -11,7 +11,7 @@ from django.db.models import Q
 
 
 def SuppliersListView(request):
-    suppliers = Supplier.objects.all()
+    suppliers = Supplier.objects.all().order_by('-priority')
     
     # Check if there is only one supplier
     if suppliers.count() == 1:
@@ -50,7 +50,7 @@ def SuppliersListView(request):
         
     
     # Fetch producing family suppliers
-    producing_family_suppliers = Supplier.objects.filter(category__producing_family=True).distinct()
+    producing_family_suppliers = Supplier.objects.filter(category__producing_family=True).distinct().order_by('-priority')
 
     return render(
         request,

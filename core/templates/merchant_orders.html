@@ -279,16 +279,11 @@
                                 <label for="status">حالة الطلب</label>
                                 <select name="status" id="status">
                                     <option value="">جميع الحالات</option>
-                                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>معلق</option>
-                                    <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>مؤكد</option>
-                                    <option value="processing" {% if status_filter == 'processing' %}selected{% endif %}>قيد التجهيز</option>
-                                    <option value="shipped" {% if status_filter == 'shipped' %}selected{% endif %}>تم الشحن</option>
-                                    <option value="out_for_delivery" {% if status_filter == 'out_for_delivery' %}selected{% endif %}>خارج بالتوصيل</option>
-                                    <option value="delivered" {% if status_filter == 'delivered' %}selected{% endif %}>تم التسليم</option>
-                                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>مكتمل</option>
-                                    <option value="canceled" {% if status_filter == 'canceled' %}selected{% endif %}>ملغي</option>
-                                    <option value="returned" {% if status_filter == 'returned' %}selected{% endif %}>تم الإرجاع</option>
-                                    <option value="refunded" {% if status_filter == 'refunded' %}selected{% endif %}>تم الاسترداد</option>
+                                    {% for step in workflow_steps %}
+                                        <option value="{{ step.status.slug }}" {% if status_filter == step.status.slug %}selected{% endif %}>
+                                            {{ step.status.name }}
+                                        </option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             <div class="filter-group">
@@ -336,16 +331,37 @@
                                     <td><strong>#{{ order.id }}</strong></td>
                                     <td>{{ order.user.get_full_name|default:order.user.username }}</td>
                                     <td>{{ order.created_at|date:"Y/m/d H:i" }}</td>
-                                    <td>${{ order.total_amount|floatformat:2 }}</td>
+                                    <td>{{ order.total_amount|floatformat:2 }} {{ supplier.currency }}</td>
                                     <td>
                                         <span class="status-badge status-{{ order.pipeline_status.slug }}">
                                             {{ order.pipeline_status.name }}
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="{% url 'merchant_order_detail' order.id %}" class="btn-view">
-                                            <i class="fas fa-eye me-1"></i>عرض التفاصيل
-                                        </a>
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            {% with address=order.shippingaddress_set.first %}
+                                                {% if address %}
+                                                    <!-- WhatsApp -->
+                                                    <a href="https://wa.me/{{ address.phone|default:order.user.username }}?text=مرحباً {{ order.user.get_full_name|default:'عزيزي' }}، معك {{ supplier.name }}. بخصوص طلبك رقم {{ order.id }}..." target="_blank" class="btn btn-outline-success btn-sm" title="مراسلة العميل">
+                                                        <i class="fab fa-whatsapp"></i>
+                                                    </a>
+                                                    
+                                                    <!-- Google Maps -->
+                                                    {% if address.latitude and address.longitude %}
+                                                        <a href="https://www.google.com/maps/search/?api=1&query={{ address.latitude }},{{ address.longitude }}" target="_blank" class="btn btn-outline-primary btn-sm" title="الموقع">
+                                                            <i class="fas fa-map-marker-alt"></i>
+                                                        </a>
+                                                        <button type="button" onclick="event.preventDefault(); navigator.clipboard.writeText('https://www.google.com/maps/search/?api=1&query={{ address.latitude }},{{ address.longitude }}'); alert('تم نسخ رابط الموقع');" class="btn btn-outline-secondary btn-sm" title="نسخ الرابط">
+                                                            <i class="fas fa-copy"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endwith %}
+                                            
+                                            <a href="{% url 'merchant_order_detail' order.id %}" class="btn-view">
+                                                <i class="fas fa-eye"></i> التفاصيل
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}

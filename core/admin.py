@@ -81,7 +81,7 @@ class SupplierAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('المعلومات الأساسية', {
-            'fields': ('user', 'name', 'phone', 'category', 'currency', 'delivery_fee_ratio', 'enable_delivery_fees', 'show_order_amounts','show_platform_ads'),
+            'fields': ('user', 'name', 'phone', 'category', 'currency', 'delivery_fee_ratio', 'enable_delivery_fees', 'show_order_amounts','show_platform_ads','store_id'),
             'description': 'أضف المعلومات الأساسية للمورد هنا.'
         }),
         ('المكان والجغرافيا', {
@@ -161,3 +161,27 @@ admin.site.register(SupplierCategory)
 admin.site.register(ProductOffer)
 admin.site.register(SuppierAds)
 admin.site.register(PlatformOfferAd)
+
+@admin.register(SystemSettings)
+class SystemSettingsAdmin(admin.ModelAdmin):
+    list_display = ('site_name', 'company_email', 'show_download_app')
+    fieldsets = (
+        ('المعلومات العامة', {
+            'fields': ('site_name', 'description', 'logo')
+        }),
+        ('معلومات التواصل', {
+            'fields': ('company_email', 'customer_service_number', 'company_landline')
+        }),
+        ('الروابط الاجتماعية', {
+            'fields': ('twitter_url', 'instagram_url', 'whatsapp_number')
+        }),
+        ('التطبيقات', {
+            'fields': ('show_download_app', 'app_store_link', 'google_play_link')
+        }),
+    )
+    
+    def has_add_permission(self, request):
+        # Disable add button if an instance already exists
+        if self.model.objects.exists():
+            return False
+        return super().has_add_permission(request)

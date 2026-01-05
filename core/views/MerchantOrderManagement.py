@@ -87,6 +87,11 @@ def merchant_orders(request):
     ).count()
     print(orders)
     
+    # Workflow steps for filter
+    workflow_steps = []
+    if supplier.workflow:
+        workflow_steps = supplier.workflow.steps.all().select_related('status')
+
     context = {
         'supplier': supplier,
         'page_obj': page_obj,
@@ -99,6 +104,7 @@ def merchant_orders(request):
         'search_query': search_query,
         'date_from': date_from,
         'date_to': date_to,
+        'workflow_steps': workflow_steps,
     }
     
     return render(request, template_name, context)
