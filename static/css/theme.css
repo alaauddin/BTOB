@@ -83,12 +83,12 @@ h6 {
 
 @media (max-width: 768px) {
     .main-content {
-        padding-top: 80px !important;
+        padding-top: 90px !important;
     }
 }
 
 @media (max-width: 576px) {
     .main-content {
-        padding-top: 75px !important;
+        padding-top: 100px !important;
     }
 }
