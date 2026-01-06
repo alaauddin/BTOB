@@ -671,20 +671,20 @@
     
     // Social sharing functions
     function shareWhatsApp(productName, productId) {
-        const url = window.location.origin + '/products/{{ supplier.store_id }}/details/' + productId + '/';
+        const url = window.location.origin + '/{{ supplier.store_id }}/details/' + productId + '/';
         const text = encodeURIComponent(`شاهد هذا المنتج الرائع: ${productName}`);
         window.open(`https://wa.me/?text=${text} ${url}`, '_blank');
     }
     
     function shareFacebook(productId) {
-        const url = window.location.origin + '/products/{{ supplier.store_id }}/details/' + productId + '/';
+        const url = window.location.origin + '/{{ supplier.store_id }}/details/' + productId + '/';
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
     }
     
 
     
     function copyProductLink(productId) {
-        const url = window.location.origin + '/products/{{ supplier.store_id }}/details/' + productId + '/';
+        const url = window.location.origin + '/{{ supplier.store_id }}/details/' + productId + '/';
         navigator.clipboard.writeText(url).then(() => {
             showToast('تم نسخ رابط المنتج', 'success');
         }).catch(() => {
