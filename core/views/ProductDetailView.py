@@ -13,6 +13,17 @@ def product_detail(request, store_id, pk):
     """
     product = get_object_or_404(Product, pk=pk)
     supplier = get_object_or_404(Supplier, store_id=store_id)
+    
+    # Visit tracking (session based)
+    if 'visited_products' not in request.session:
+        request.session['visited_products'] = []
+    
+    visited_products = request.session['visited_products']
+    if product.id not in visited_products:
+        product.views_count += 1
+        product.save(update_fields=['views_count'])
+        visited_products.append(product.id)
+        request.session['visited_products'] = visited_products
 
     user_cart = None
     if request.user.is_authenticated:

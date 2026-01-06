@@ -1,10 +1,11 @@
 /* Suppliers List Specific Styles */
 
 :root {
-    --primary-color: #2563eb;
-    --primary-dark: #1e40af;
-    --light-gray: #f9fafb;
-    --border-color: #f1f5f9;
+    --primary-color: #ef7d2d;
+    --primary-dark: #d6621b;
+    --brand-slate: #3a505e;
+    --light-gray: #f8fafc;
+    --border-color: #e2e8f0;
 }
 
 /* Hero Section Refinement */
@@ -24,8 +25,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.03) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.03) 0%, transparent 40%);
+    background: radial-gradient(circle at 10% 20%, rgba(239, 125, 45, 0.03) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(154, 191, 196, 0.03) 0%, transparent 40%);
     pointer-events: none;
 }
 
@@ -98,51 +99,47 @@
 
 .category-pill {
     flex: 0 0 auto;
-    background: white;
-    border: 1px solid #e2e8f0;
-    padding: 8px 16px;
-    border-radius: 12px;
-    color: #64748b;
-    font-weight: 600;
-    font-size: 0.85rem;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    padding: 10px 22px;
+    border-radius: 16px;
+    color: var(--brand-slate);
+    font-weight: 800;
+    font-size: 0.95rem;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: flex;
     align-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
-    height: 40px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    height: 48px;
+    cursor: pointer;
 }
 
 .category-pill i,
 .category-pill img {
-    margin-left: 8px;
-    font-size: 1rem;
+    margin-left: 12px;
+    font-size: 1.2rem;
     color: #94a3b8;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .category-pill:hover {
-    background: #ffffff;
+    transform: translateY(-4px);
     border-color: var(--primary-color);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.1);
-    color: var(--primary-color);
-}
-
-.category-pill:hover i {
+    box-shadow: 0 10px 20px rgba(239, 125, 45, 0.15);
     color: var(--primary-color);
 }
 
 .category-pill.active {
-    background: var(--primary-color);
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
-    border-color: transparent;
-    box-shadow: 0 8px 15px rgba(37, 99, 235, 0.25);
-    transform: scale(1.05);
+    background: var(--primary-color) !important;
+    color: white !important;
+    border-color: var(--primary-dark) !important;
+    box-shadow: 0 10px 25px rgba(239, 125, 45, 0.45) !important;
+    transform: scale(1.08) translateY(-2px);
 }
 
 .category-pill.active i {
-    color: white;
+    color: white !important;
+    transform: scale(1.1);
 }
 
 .filter-label {
@@ -202,9 +199,9 @@
 
 .supplier-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(37, 99, 235, 0.05);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(239, 125, 45, 0.05);
     /* Softer, deeper shadow */
-    border-color: rgba(37, 99, 235, 0.3);
+    border-color: rgba(239, 125, 45, 0.3);
 }
 
 .supplier-cover {
@@ -257,6 +254,30 @@
     flex-direction: column;
 }
 
+.supplier-stats-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    margin-bottom: 5px;
+}
+
+.supplier-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.supplier-stat i {
+    color: #ef7d2d;
+    font-size: 0.8rem;
+}
+
 .supplier-name {
     font-size: 1.2rem;
     font-weight: 800;
@@ -307,21 +328,66 @@
 }
 
 .btn-visit {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    background: #3a505e !important;
+    /* Brand Slate */
+    color: white !important;
+    border: none !important;
+    padding: 12px 28px !important;
+    border-radius: 16px !important;
+    font-weight: 800 !important;
+    font-size: 0.95rem !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: 0 4px 15px rgba(58, 80, 94, 0.2) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    position: relative !important;
+    overflow: hidden !important;
+    z-index: 1 !important;
+}
+
+.btn-visit::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: -1;
 }
 
 .btn-visit:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 10px 25px rgba(239, 125, 45, 0.4) !important;
+    color: white !important;
+}
+
+.btn-visit:hover::before {
+    opacity: 1;
+}
+
+.btn-visit i {
+    transition: transform 0.3s ease;
+    margin-right: 8px;
+    /* Correct spacing for Arabic RTL */
+}
+
+.btn-visit:hover i {
+    transform: translateX(-5px);
+}
+
+.rating-box {
+    background: rgba(255, 165, 2, 0.1);
+    color: #ef7d2d;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
 }
 
 .no-suppliers {
@@ -734,6 +800,13 @@
     font-weight: 500;
 }
 
+.original-price {
+    font-size: 1.1rem;
+    text-decoration: line-through;
+    color: #a0a0a0;
+    font-weight: 500;
+}
+
 /* Producing Families Premium Design - Default Desktop */
 .producing-families-wrapper {
     background: linear-gradient(180deg, #fff9f2 0%, #ffffff 100%);
@@ -1043,9 +1116,9 @@
     }
 
     .btn-visit {
-        padding: 6px 12px;
-        font-size: 0.7rem;
-        border-radius: 8px;
+        padding: 10px 5px !important;
+        font-size: 0.5rem !important;
+        border-radius: 11px !important
     }
 
     /* Mini Features Section */
@@ -1070,7 +1143,109 @@
         margin-bottom: 0.5rem;
     }
 
-    .feature-item p {
-        font-size: 0.8rem;
+}
+
+/* Business Join Section */
+.business-join-wrapper {
+    background: linear-gradient(135deg, #3a505e 0%, #1e293b 100%);
+    padding: 100px 0;
+    position: relative;
+    overflow: hidden;
+    margin-top: 80px;
+}
+
+.business-join-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 40px;
+    padding: 60px;
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 5;
+}
+
+.business-join-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.business-join-header h2 {
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 15px;
+    letter-spacing: -1px;
+}
+
+.business-join-header p {
+    color: #94a3b8;
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.business-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+}
+
+.form-group-full {
+    grid-column: span 2;
+}
+
+.business-form-label {
+    display: block;
+    color: #cbd5e1;
+    font-weight: 700;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    padding-right: 5px;
+}
+
+.btn-submit-business {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+    color: white !important;
+    padding: 18px 40px !important;
+    border-radius: 20px !important;
+    font-weight: 800 !important;
+    font-size: 1.2rem !important;
+    border: none !important;
+    width: 100%;
+    margin-top: 20px;
+    box-shadow: 0 15px 30px rgba(239, 125, 45, 0.3) !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    cursor: pointer;
+}
+
+.btn-submit-business:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(239, 125, 45, 0.45) !important;
+    filter: brightness(1.1);
+}
+
+@media (max-width: 768px) {
+    .business-join-wrapper {
+        padding: 60px 15px;
+    }
+
+    .business-join-card {
+        padding: 40px 20px;
+        border-radius: 30px;
+    }
+
+    .business-join-header h2 {
+        font-size: 2rem;
+    }
+
+    .business-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group-full {
+        grid-column: span 1;
     }
 }

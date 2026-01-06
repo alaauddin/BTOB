@@ -5,6 +5,12 @@
 
 {% block extra_css %}
 <style>
+    :root {
+        --primary-color: {{ supplier.primary_color|default:'#ef7d2d' }};
+        --secondary-color: {{ supplier.secondary_color|default:'#ffffff' }};
+        --accent-color: {{ supplier.accent_color|default:'#9abfc4' }};
+    }
+
     .orders-container {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
@@ -23,7 +29,7 @@
     }
     
     .stat-card {
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(168, 85, 247, 0.1));
+        background: linear-gradient(135deg, rgba(239, 125, 45, 0.1), rgba(154, 191, 196, 0.1));
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 20px;

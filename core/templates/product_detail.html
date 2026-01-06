@@ -57,18 +57,26 @@
                 <h1 class="detail-product-title">{{ product.name }}</h1>
                 
                 <!-- Rating -->
-                <div class="product-rating mb-4">
-                    <div class="stars" style="font-size: 1.1rem;">
-                        {% for i in '12345'|make_list %}
-                            {% if forloop.counter <= product.get_average_rating %}
-                                <i class="fas fa-star"></i>
-                            {% else %}
-                                <i class="far fa-star text-gray-300"></i>
-                            {% endif %}
-                        {% endfor %}
+                <div class="product-rating mb-4 d-flex align-items-center flex-wrap gap-3">
+                    <div class="d-flex align-items-center">
+                        <div class="stars" style="font-size: 1.1rem;">
+                            {% for i in '12345'|make_list %}
+                                {% if forloop.counter <= product.get_average_rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star text-gray-300"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="rating-value ms-2">{{ product.get_average_rating|default:"0.0" }}</span>
+                        <span class="rating-count ms-1">({{ product.get_total_reviews }} تقييم)</span>
                     </div>
-                    <span class="rating-value ms-2">{{ product.get_average_rating|default:"0.0" }}</span>
-                    <span class="rating-count ms-1">({{ product.get_total_reviews }} تقييم)</span>
+                    
+                    <div class="detail-views-badge">
+                        <i class="fas fa-eye ml-2 text-primary"></i>
+                        <span class="font-bold text-gray-700">{{ product.views_count|default:"0" }}</span>
+                        <span class="text-gray-400 text-xs mr-1">مشاهدة</span>
+                    </div>
                 </div>
 
                 <div class="detail-description-preview">

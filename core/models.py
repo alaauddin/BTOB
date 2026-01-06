@@ -3,6 +3,29 @@ from django.contrib.auth.models import User
 from decimal import Decimal
 from django.utils import timezone
 import math
+import os
+import uuid
+
+
+def upload_to_path(instance, filename):
+    ext = filename.split('.')[-1]
+    new_filename = f"{uuid.uuid4().hex}.{ext}"
+    model_name = instance._meta.model_name
+    
+    if model_name == 'suppliercategory':
+        return os.path.join('images/supplier_category_images/', new_filename)
+    elif model_name == 'supplier':
+        return os.path.join('images/supplier_images/', new_filename)
+    elif model_name == 'product':
+        return os.path.join('images/product_images/', new_filename)
+    elif model_name == 'suppierads':
+        return os.path.join('ads_image/', new_filename)
+    elif model_name == 'systemsettings':
+        return os.path.join('system/', new_filename)
+    elif model_name == 'businessrequest':
+        return os.path.join('business_requests/', new_filename)
+    
+    return os.path.join('uploads/', new_filename)
 
 
 CITY_CHO=[('Sanaa','Sanaa'),('Aden','Aden'),('Tize','Tize')]
@@ -41,7 +64,7 @@ class WorkflowStep(models.Model):
 
 
 class SupplierCategory(models.Model):
-    image = models.ImageField(upload_to='images/supplier_category_images/', blank=True, null=True)
+    image = models.ImageField(upload_to=upload_to_path, blank=True, null=True)
     name = models.CharField(max_length=100)
     producing_family = models.BooleanField(default=False)
     def __str__(self):
@@ -56,15 +79,15 @@ class Supplier(models.Model):
     city = models.CharField(max_length=100,choices=CITY_CHO)
     country = models.CharField(max_length=100, choices=COUNTRY_CHO)
     category = models.ManyToManyField(SupplierCategory)
-    primary_color = models.CharField(max_length=7, default='#2563eb')
+    primary_color = models.CharField(max_length=7, default='#ef7d2d')
     secondary_color = models.CharField(max_length=7, default='#ffffff')
-    navbar_color = models.CharField(max_length=7, default='#2563eb')
-    footer_color = models.CharField(max_length=7, default='#1e293b')
-    text_color = models.CharField(max_length=7, default='#1e293b')
-    accent_color = models.CharField(max_length=7, default='#2563eb')
+    navbar_color = models.CharField(max_length=7, default='#ef7d2d')
+    footer_color = models.CharField(max_length=7, default='#3a505e')
+    text_color = models.CharField(max_length=7, default='#3a505e')
+    accent_color = models.CharField(max_length=7, default='#9abfc4')
     currency = models.CharField(max_length=10, default='ر.س')
-    profile_picture = models.ImageField(upload_to='images/supplier_images/', blank=True, null=True)
-    panal_picture = models.ImageField(upload_to='images/supplier_images/', blank=True, null=True)
+    profile_picture = models.ImageField(upload_to=upload_to_path, blank=True, null=True)
+    panal_picture = models.ImageField(upload_to=upload_to_path, blank=True, null=True)
     workflow = models.ForeignKey(OrderWorkflow, on_delete=models.SET_NULL, null=True, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -73,6 +96,7 @@ class Supplier(models.Model):
     show_order_amounts = models.BooleanField(default=True, verbose_name="عرض مبالغ الطلبات")
     show_platform_ads = models.BooleanField(default=True, verbose_name="عرض إعلانات المنصة")
     priority = models.IntegerField(default=0, verbose_name="الأولوية (الأعلى يظهر أولاً)")
+    views_count = models.PositiveIntegerField(default=0, verbose_name="عدد المشاهدات")
     
     def __str__(self):
         return self.name
@@ -84,6 +108,18 @@ class Supplier(models.Model):
             created_at__month=timezone.now().month
         ).distinct()
         return sum([order.get_total_amount() for order in orders])
+
+    def get_total_sales_count(self):
+        return Order.objects.filter(
+            order_items__product__supplier=self,
+            pipeline_status__slug='confirmed'
+        ).distinct().count()
+
+    def get_average_rating(self):
+        from core.models import Review
+        from django.db.models import Avg
+        avg_rating = Review.objects.filter(product__supplier=self).aggregate(Avg('rating'))['rating__avg']
+        return round(float(avg_rating), 1) if avg_rating is not None else 0.0
 
 class Category(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE,related_name='categories')
@@ -104,8 +140,9 @@ class Product(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    image = models.ImageField(upload_to='images/product_images/')
+    image = models.ImageField(upload_to=upload_to_path)
     is_new = models.BooleanField(default=False)
+    views_count = models.PositiveIntegerField(default=0, verbose_name="عدد المشاهدات")
     
     def __str__(self):
         return self.name
@@ -153,9 +190,9 @@ class Product(models.Model):
     def get_average_rating(self):
         reviews = self.review_set.all()
         if reviews:
-            return int(sum([review.rating for review in reviews]) / len(reviews))
+            return round(sum([review.rating for review in reviews]) / len(reviews), 1)
         else:
-            return 0
+            return 0.0
         
     def get_total_reviews(self):
         return self.review_set.count()
@@ -514,7 +551,7 @@ class SuppierAds(models.Model):
     supplier = models.ForeignKey(Supplier,on_delete=models.CASCADE,related_name='supplier_ads')
     title = models.CharField(max_length=200,null=True,blank=True)
     description = models.TextField(max_length=1000,null=True,blank=True)
-    image = models.ImageField(upload_to="ads_image")
+    image = models.ImageField(upload_to=upload_to_path)
     created_by = models.ForeignKey(User,on_delete=models.CASCADE,related_name='supplier_ads')
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
@@ -541,7 +578,7 @@ COUNTRY_CHO=[('Yemen','Yemen')]
 
 class SystemSettings(models.Model):
     site_name = models.CharField(max_length=100, default="متجرك الإلكتروني", verbose_name="اسم الموقع")
-    logo = models.ImageField(upload_to='system/', null=True, blank=True, verbose_name="الشعار")
+    logo = models.ImageField(upload_to=upload_to_path, null=True, blank=True, verbose_name="الشعار")
     description = models.TextField(default="منصة متكاملة توفر لك تجربة تسوق فريدة ومميزة.", verbose_name="وصف الموقع")
     
     # Contact Info
@@ -558,6 +595,12 @@ class SystemSettings(models.Model):
     show_download_app = models.BooleanField(default=True, verbose_name="عرض روابط تحميل التطبيق")
     app_store_link = models.URLField(blank=True, verbose_name="رابط App Store")
     google_play_link = models.URLField(blank=True, verbose_name="رابط Google Play")
+    laoder_image = models.ImageField(upload_to=upload_to_path, null=True, blank=True, verbose_name="صورة التحميل")
+
+    # SEO Settings
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="العنوان لمحركات البحث (SEO Title)")
+    seo_description = models.TextField(null=True, blank=True, verbose_name="الوصف لمحركات البحث (SEO Description)")
+    seo_keywords = models.TextField(null=True, blank=True, verbose_name="الكلمات المفتاحية (SEO Keywords)")
     
     class Meta:
         verbose_name = "إعدادات النظام"
@@ -571,3 +614,21 @@ class SystemSettings(models.Model):
         if not self.pk and SystemSettings.objects.exists():
             return
         super(SystemSettings, self).save(*args, **kwargs)
+
+
+class BusinessRequest(models.Model):
+    name = models.CharField(max_length=200, verbose_name="اسم النشاط التجاري")
+    owner_name = models.CharField(max_length=200, verbose_name="اسم صاحب النشاط")
+    email = models.EmailField(verbose_name="البريد الإلكتروني")
+    phone = models.CharField(max_length=20, verbose_name="رقم الهاتف")
+    business_type = models.CharField(max_length=100, verbose_name="نوع النشاط")
+    message = models.TextField(verbose_name="رسالة إضافية", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_processed = models.BooleanField(default=False, verbose_name="تمت المعالجة")
+
+    class Meta:
+        verbose_name = "طلب انضمام نشاط تجاري"
+        verbose_name_plural = "طلبات انضمام الأنشطة التجارية"
+
+    def __str__(self):
+        return self.name

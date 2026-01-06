@@ -1653,6 +1653,17 @@
     line-height: 1.2;
 }
 
+.detail-views-badge {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 6px 16px;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
 .detail-description-preview {
     font-size: 1.1rem;
     color: #475569;

@@ -64,11 +64,8 @@
             </button>
             {% for category in categories %}
             <button class="category-pill" data-category="{{ category.id }}" onclick="filterByCategory('{{ category.id }}')">
-                {% if category.image %}
-                    <img src="{{ category.image.url }}" alt="{{ category.name }}" style="width: 18px; height: 18px; border-radius: 4px;">
-                {% else %}
+               
                     <i class="fas fa-tag"></i>
-                {% endif %}
                 <span>{{ category.name }}</span>
             </button>
             {% endfor %}
@@ -101,12 +98,25 @@
                             {% endfor %}
                         </div>
 
+                        <div class="supplier-stats-row">
+                            <div class="supplier-stat">
+                                <i class="fas fa-eye"></i>
+                                <span>{{ supplier.views_count|default:"0" }}</span>
+                            </div>
+                            <div class="supplier-stat">
+                                <i class="fas fa-shopping-bag"></i>
+                                <span>{{ supplier.get_total_sales_count }} مبيعة</span>
+                            </div>
+                        </div>
+
                         <div class="supplier-footer">
-                            <div class="rating text-warning font-bold">
-                                <i class="fas fa-star ml-1"></i>4.9
+                            <div class="rating-box">
+                                <i class="fas fa-star text-warning"></i>
+                                <span class="fw-bold ms-1">{{ supplier.get_average_rating|default:"5.0" }}</span>
                             </div>
                             <button class="btn-visit" onclick="window.location='{% url 'product-list' supplier.store_id %}'">
-                                زيارة المتجر
+                                <span>زيارة المتجر</span>
+                                <i class="fas fa-arrow-left me-2"></i>
                             </button>
                         </div>
                     </div>
@@ -143,6 +153,14 @@
                     <div class="supplier-info-glass">
                         <div class="supplier-name-premium">{{ s.name }}</div>
                         <div class="home-label">إنتاج منزلي</div>
+                        <div class="supplier-stats-mini mt-1 d-flex gap-2">
+                             <div class="stat-mini text-white" style="font-size: 0.65rem; opacity: 0.9;">
+                                <i class="fas fa-eye text-white opacity-75"></i> {{ s.views_count|default:"0" }}
+                            </div>
+                            <div class="stat-mini text-white" style="font-size: 0.65rem; opacity: 0.9;">
+                                <i class="fas fa-shopping-bag text-white opacity-75"></i> {{ s.get_total_sales_count }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </a>
@@ -151,37 +169,51 @@
     </div>
     {% endif %}
 
-<!-- Features Section Clean -->
-<section class="features-container">
-    <div class="container">
-        <div class="row text-center mb-12">
-            <h2 class="fw-bold">لماذا تختار منصتنا؟</h2>
+    <!-- Join as Business Section -->
+    <section class="business-join-wrapper">
+        <div class="container">
+            <div class="business-join-card">
+                <div class="business-join-header">
+                    <h2>انضم إلينا كشريك نجاح</h2>
+                    <p>هل تمتلك نشاطاً تجارياً وترغب في زيادة مبيعاتك؟ انضم إلى منصتنا اليوم واعرض منتجاتك لآلاف العملاء.</p>
+                </div>
+
+                <form method="POST" class="business-request-form">
+                    {% csrf_token %}
+                    <div class="business-form-grid">
+                        <div class="form-group">
+                            <label class="business-form-label">{{ business_form.name.label }}</label>
+                            {{ business_form.name }}
+                        </div>
+                        <div class="form-group">
+                            <label class="business-form-label">{{ business_form.owner_name.label }}</label>
+                            {{ business_form.owner_name }}
+                        </div>
+                        <div class="form-group">
+                            <label class="business-form-label">{{ business_form.email.label }}</label>
+                            {{ business_form.email }}
+                        </div>
+                        <div class="form-group">
+                            <label class="business-form-label">{{ business_form.phone.label }}</label>
+                            {{ business_form.phone }}
+                        </div>
+                        <div class="form-group-full">
+                            <label class="business-form-label">{{ business_form.business_type.label }}</label>
+                            {{ business_form.business_type }}
+                        </div>
+                        <div class="form-group-full">
+                            <label class="business-form-label">{{ business_form.message.label }}</label>
+                            {{ business_form.message }}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit-business">
+                        <span>إرسال طلب الانضمام</span>
+                        <i class="fas fa-paper-plane me-2"></i>
+                    </button>
+                </form>
+            </div>
         </div>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="feature-item">
-                    <div class="feature-icon-box"><i class="fas fa-store"></i></div>
-                    <h3>متاجر معتمدة</h3>
-                    <p>جميع متاجرنا تخضع لرقابة صارمة لضمان حقوق المستهلك وجودة المنتجات المعروضة.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="feature-item">
-                    <div class="feature-icon-box"><i class="fas fa-shipping-fast"></i></div>
-                    <h3>سرعة في التنفيذ</h3>
-                    <p>نعمل مع أفضل شركات الخدمات اللوجستية لضمان وصول طلبك في الوقت المحدد.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="feature-item">
-                    <div class="feature-icon-box"><i class="fas fa-shield-alt"></i></div>
-                    <h3>دفع آمن</h3>
-                    <p>نوفر خيارات دفع متعددة وآمنة تماماً، بما في ذلك الدفع عند الاستلام ومدى.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+    </section>
 
 <script>
 function filterByCategory(categoryId) {

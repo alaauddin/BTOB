@@ -19,6 +19,17 @@ def product_list(request, store_id, category_id=None, subcategory_id=None):
     supplier = get_object_or_404(Supplier, store_id=store_id)
     today = timezone.now().date()
     
+    # Visit tracking (session based)
+    if 'visited_suppliers' not in request.session:
+        request.session['visited_suppliers'] = []
+    
+    visited_suppliers = request.session['visited_suppliers']
+    if supplier.id not in visited_suppliers:
+        supplier.views_count += 1
+        supplier.save(update_fields=['views_count'])
+        visited_suppliers.append(supplier.id)
+        request.session['visited_suppliers'] = visited_suppliers
+    
     # Subquery for active offers
     active_offers = ProductOffer.objects.filter(
         product=OuterRef('pk'),

@@ -257,3 +257,44 @@ class SuppierAdsForm(forms.ModelForm):
                 raise forms.ValidationError('نوع الملف غير مدعوم. يرجى اختيار صورة بصيغة PNG, JPG, JPEG, GIF, أو WebP')
         
         return image
+
+
+class BusinessRequestForm(forms.ModelForm):
+    class Meta:
+        model = BusinessRequest
+        fields = ['name', 'owner_name', 'email', 'phone', 'business_type', 'message']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400',
+                'placeholder': 'اسم النشاط التجاري (مثال: متجر عرطات)'
+            }),
+            'owner_name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400',
+                'placeholder': 'اسم صاحب النشاط الكامل'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400',
+                'placeholder': 'البريد الإلكتروني'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400',
+                'placeholder': 'رقم الهاتف (واتساب)'
+            }),
+            'business_type': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400',
+                'placeholder': 'نوع النشاط (مثال: مطعم، محل ملابس)'
+            }),
+            'message': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400 resize-none',
+                'placeholder': 'أخبرنا المزيد عن نشاطك...',
+                'rows': 4
+            }),
+        }
+        labels = {
+            'name': 'اسم النشاط التجاري',
+            'owner_name': 'اسم صاحب النشاط',
+            'email': 'البريد الإلكتروني',
+            'phone': 'رقم الهاتف',
+            'business_type': 'نوع النشاط',
+            'message': 'رسالة إضافية',
+        }

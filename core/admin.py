@@ -1,9 +1,9 @@
 from django.contrib import admin
 from .models import *
+import json
 # Register your models here.
 admin.site.register(Category)
 admin.site.register(ProductCategory)
-admin.site.register(Product)
 admin.site.register(Cart)
 admin.site.register(CartItem)
 admin.site.register(Order)
@@ -13,6 +13,75 @@ admin.site.register(ShippingAddress)
 admin.site.register(Address)
 admin.site.register(Review)
 admin.site.register(OrderNote)
+
+@admin.register(BusinessRequest)
+class BusinessRequestAdmin(admin.ModelAdmin):
+    list_display = ('name', 'owner_name', 'phone', 'business_type', 'created_at', 'is_processed')
+    list_filter = ('is_processed', 'business_type', 'created_at')
+    search_fields = ('name', 'owner_name', 'phone', 'email')
+    readonly_fields = ('created_at',)
+    list_editable = ('is_processed',)
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('name', 'supplier', 'category', 'price', 'is_new', 'views_count')
+    list_filter = ('supplier', 'category', 'is_new')
+    search_fields = ('name', 'description')
+    
+    fieldsets = (
+        (None, {
+            'fields': ('supplier', 'category', 'name', 'description', 'price', 'image', 'is_new')
+        }),
+        (None, {
+            'fields': ('category_filter_script',),
+        }),
+    )
+    readonly_fields = ('category_filter_script',)
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if obj and obj.supplier:
+            form.base_fields['category'].queryset = ProductCategory.objects.filter(category__supplier=obj.supplier)
+        return form
+
+    def category_filter_script(self, obj):
+        mapping = {pc.id: pc.category.supplier_id for pc in ProductCategory.objects.select_related('category')}
+        return format_html('''
+            <script type="text/javascript">
+                (function($) {{
+                    $(document).ready(function() {{
+                        const mapping = {mapping_json};
+                        const $supplier = $('#id_supplier');
+                        const $category = $('#id_category');
+                        
+                        if (!$supplier.length || !$category.length) return;
+
+                        const $allOptions = $category.find('option').clone();
+
+                        function updateCategories() {{
+                            const supplierId = $supplier.val();
+                            const currentVal = $category.val();
+                            
+                            $category.empty();
+                            $allOptions.each(function() {{
+                                const val = $(this).val();
+                                if (!val || mapping[val] == supplierId) {{
+                                    $category.append($(this).clone());
+                                }}
+                            }});
+                            
+                            if ($category.find('option[value="' + currentVal + '"]').length) {{
+                                $category.val(currentVal);
+                            }}
+                        }}
+
+                        $supplier.on('change', updateCategories);
+                        updateCategories();
+                    }});
+                }})(django.jQuery);
+            </script>
+        ''', mapping_json=mark_safe(json.dumps(mapping)))
+    category_filter_script.short_description = ""
 
 class OrderStatusAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug', 'is_terminal')
@@ -36,7 +105,7 @@ from django.urls import reverse
 from django.utils.html import format_html, mark_safe
 
 class SupplierAdmin(admin.ModelAdmin):
-    list_display = ('name', 'city', 'country', 'primary_color')
+    list_display = ('name', 'city', 'country', 'primary_color', 'views_count')
     search_fields = ('name', 'city')
     
     def workflow_steps_list(self, obj):
@@ -167,7 +236,7 @@ class SystemSettingsAdmin(admin.ModelAdmin):
     list_display = ('site_name', 'company_email', 'show_download_app')
     fieldsets = (
         ('المعلومات العامة', {
-            'fields': ('site_name', 'description', 'logo')
+            'fields': ('site_name', 'description', 'logo','laoder_image')
         }),
         ('معلومات التواصل', {
             'fields': ('company_email', 'customer_service_number', 'company_landline')
@@ -177,6 +246,10 @@ class SystemSettingsAdmin(admin.ModelAdmin):
         }),
         ('التطبيقات', {
             'fields': ('show_download_app', 'app_store_link', 'google_play_link')
+        }),
+        ('إعدادات SEO', {
+            'fields': ('seo_title', 'seo_description', 'seo_keywords'),
+            'description': 'تحكم في كيفية ظهور موقعك في نتائج محركات البحث مثل جوجل.'
         }),
     )
     

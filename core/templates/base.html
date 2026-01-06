@@ -4,7 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ system_settings.site_name|default:"متجرك الإلكتروني" }}{% endblock %}</title>
+    <title>{% block title %}{% if system_settings.seo_title %}{{ system_settings.seo_title }}{% else %}{{ system_settings.site_name|default:"متجرك الإلكتروني" }}{% endif %}{% endblock %}</title>
+    
+    <!-- Dynamic SEO Tags -->
+    <meta name="description" content="{% block meta_description %}{{ system_settings.seo_description|default:system_settings.description }}{% endblock %}">
+    {% if system_settings.seo_keywords %}
+    <meta name="keywords" content="{{ system_settings.seo_keywords }}">
+    {% endif %}
+    
     {% block extra_meta %}{% endblock %}
     
     <!-- Favicon -->
@@ -25,9 +32,9 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
 
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    {% comment %} <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Expires" content="0"> {% endcomment %}
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
@@ -37,14 +44,14 @@
     <style>
         :root {
             /* Brand Core */
-            --primary-color: {{ supplier.primary_color|default:'#2563eb' }};
+            --primary-color: {{ supplier.primary_color|default:'#ef7d2d' }};
             --secondary-color: {{ supplier.secondary_color|default:'#ffffff' }};
-            --accent-color: {{ supplier.accent_color|default:'#2563eb' }};
-            --text-color: {{ supplier.text_color|default:'#1e293b' }};
+            --accent-color: {{ supplier.accent_color|default:'#9abfc4' }};
+            --text-color: {{ supplier.text_color|default:'#3a505e' }};
 
             /* Layout Colors */
-            --navbar-bg: {{ supplier.navbar_color|default:'#2563eb' }};
-            --footer-bg: {{ supplier.footer_color|default:'#1e293b' }};
+            --navbar-bg: {{ supplier.navbar_color|default:'#ef7d2d' }};
+            --footer-bg: {{ supplier.footer_color|default:'#3a505e' }};
 
             /* Accent & Highlights */
             --success-color: #22c55e;
@@ -61,28 +68,174 @@
             --shadow-light: 0 4px 20px rgba(0, 0, 0, 0.08); 
             --shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.15);
         }
+
+        @keyframes logo-pop-in {
+            0% {
+                opacity: 0;
+                transform: scale(0.85) translateY(-10px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .animate-logo {
+            animation: logo-pop-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            will-change: transform, opacity;
+        }
+
+        /* Amazing Page Loader Styles */
+        #page-loader {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f8fafc 100%);
+            background-size: 200% 200%;
+            animation: mesh-gradient 8s ease infinite;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
+        }
+
+        @keyframes mesh-gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #page-loader.hidden-loader {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loader-content {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loader-ring {
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            padding: 4px;
+            background: conic-gradient(from 0deg, transparent, var(--primary-color), transparent, var(--primary-color), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: rotate-ring 2s linear infinite;
+        }
+
+        @keyframes rotate-ring {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader-logo-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+
+        .loader-logo {
+            animation: logo-breath 2.5s ease-in-out infinite;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.08));
+        }
+
+        @keyframes logo-breath {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 8px 16px rgba(0,0,0,0.08)); }
+            50% { transform: scale(1.08); filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.12)); }
+        }
+
+        .logo-glimmer {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            transform: skewX(-25deg);
+            animation: glimmer 4s infinite;
+        }
+
+        @keyframes glimmer {
+            0% { left: -150%; }
+            20%, 100% { left: 150%; }
+        }
+
+        /* Brand Utility Classes */
+        .bg-brand-primary { background-color: var(--primary-color) !important; }
+        .text-brand-primary { color: var(--primary-color) !important; }
+        .border-brand-primary { border-color: var(--primary-color) !important; }
+        
+        .bg-gradient-brand {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color)) !important;
+        }
+        
+        .btn-brand {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color)) !important;
+            color: white !important;
+            transition: all 0.3s ease;
+            border: none !important;
+        }
+        
+        .btn-brand:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
 <body class="flex flex-col min-h-screen overflow-x-hidden">
+    <!-- Page Loader -->
+    <div id="page-loader">
+        <div class="loader-content">
+            <div class="loader-ring"></div>
+            <div class="loader-logo-container">
+                {% if system_settings.laoder_image %}
+                    <img src="{{ system_settings.laoder_image.url }}" alt="{{ system_settings.site_name }}" class="h-24 w-auto loader-logo">
+                {% elif supplier.profile_picture %}
+                    <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-24 w-auto loader-logo">
+                {% else %}
+                    {% if system_settings.logo %}
+                        <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-24 w-auto loader-logo">
+                    {% else %}
+                        <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-24 w-auto loader-logo">
+                    {% endif %}
+                {% endif %}
+                <div class="logo-glimmer"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Navigation Bar -->
     <nav class="bg-white nav-shadow fixed inset-x-0 top-0 z-50 border-b border-gray-100 py-2">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center">
                 <!-- Right: Logo (standard for Arabic) -->
-                <a href="/" class="flex items-center group order-last lg:order-none">
+                <a href="/" class="flex items-center group animate-logo">
                     {% if supplier.profile_picture %}
-                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-16 w-auto ml-3">
+                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-24 w-auto ml-3">
                     {% else %}
                         {% if system_settings.logo %}
-                            <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-16 w-auto ml-3">
+                            <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-24 w-auto ml-3">
                         {% else %}
-                            <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-16 w-auto ml-3">
+                            <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-24 w-auto ml-3">
                         {% endif %}
                     {% endif %}
                 </a>
-
 
                 <!-- Left: Actions (Cart, User) -->
                 <div class="flex items-center space-x-4 space-x-reverse">
@@ -105,7 +258,7 @@
                                 <i class="fas fa-user-circle text-xl"></i>
                                 {% comment %} <i class="fas fa-chevron-down text-[10px] mr-2 opacity-50"></i> {% endcomment %}
                             </button>
-                            <div id="user-dropdown" class="absolute right-0 lg:left-0 mt-3 w-56 bg-white rounded-2xl shadow-xl py-3 text-gray-800 hidden lg:group-hover:block z-20 border border-gray-100 transform origin-top-right lg:origin-top-left transition-all duration-200">
+                            <div id="user-dropdown" class="absolute left-0 mt-3 w-56 bg-white rounded-2xl shadow-xl py-3 text-gray-800 hidden lg:group-hover:block z-20 border border-gray-100 transform origin-top-left transition-all duration-200">
                                 <div class="px-6 py-2 border-b border-gray-50 mb-2">
                                     <p class="text-xs text-gray-400">مرحباً بك</p>
                                     <p class="font-bold text-sm truncate">{{ user.get_full_name }}</p>
@@ -132,12 +285,12 @@
                             <button id="guest-menu-button" class="action-btn flex items-center focus:outline-none">
                                 <i class="fas fa-user-circle text-xl text-gray-600"></i>
                             </button>
-                            <div id="guest-dropdown" class="absolute right-0 lg:left-0 mt-3 w-56 bg-white rounded-2xl shadow-xl py-3 text-gray-800 hidden lg:group-hover:block z-20 border border-gray-100 transform origin-top-right lg:origin-top-left transition-all duration-200">
+                            <div id="guest-dropdown" class="absolute left-0 mt-3 w-56 bg-white rounded-2xl shadow-xl py-3 text-gray-800 hidden lg:group-hover:block z-20 border border-gray-100 transform origin-top-left transition-all duration-200">
                                 <div class="px-6 py-2 border-b border-gray-50 mb-2">
                                     <p class="text-xs text-gray-400">مرحباً بك زائرنا</p>
                                     <p class="font-bold text-sm">يرجى تسجيل الدخول</p>
                                 </div>
-                                <a href="{% url 'login' %}" class="block px-6 py-2 hover:bg-gray-50 transition-all flex items-center text-blue-600">
+                                <a href="{% url 'login' %}" class="block px-6 py-2 hover:bg-gray-50 transition-all flex items-center text-brand-primary">
                                     <i class="fas fa-sign-in-alt ml-3"></i>
                                     <span class="text-sm font-bold">تسجيل الدخول</span>
                                 </a>
@@ -148,7 +301,7 @@
                             </div>
                         </div>
                     {% endif %}
-                    
+                </div>    
                     
                 </div>
             </div>
@@ -263,10 +416,10 @@
                 <div>
                     <h4 class="font-bold text-gray-800 text-sm mb-3">روابط مهمة</h4>
                     <ul class="space-y-2 text-xs text-gray-500">
-                        <li><a href="#" class="hover:text-blue-600 transition-colors">من نحن</a></li>
-                        <li><a href="#" class="hover:text-blue-600 transition-colors">الشروط والأحكام</a></li>
-                        <li><a href="#" class="hover:text-blue-600 transition-colors">سياسة الخصوصية</a></li>
-                        <li><a href="#" class="hover:text-blue-600 transition-colors">سياسة الاستبدال والاسترجاع</a></li>
+                        <li><a href="#" class="hover:text-brand-primary transition-colors">من نحن</a></li>
+                        <li><a href="#" class="hover:text-brand-primary transition-colors">الشروط والأحكام</a></li>
+                        <li><a href="#" class="hover:text-brand-primary transition-colors">سياسة الخصوصية</a></li>
+                        <li><a href="#" class="hover:text-brand-primary transition-colors">سياسة الاستبدال والاسترجاع</a></li>
                     </ul>
                 </div>
 
@@ -458,7 +611,7 @@
             <div class="inline-block align-middle bg-white rounded-2xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-100">
                 <div class="bg-white px-6 pt-8 pb-6 sm:p-10">
                     <div class="text-center">
-                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg mb-6">
+                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-brand shadow-lg mb-6">
                             <i class="fas fa-lock text-white text-2xl"></i>
                         </div>
                         <h3 class="text-2xl font-bold text-gray-900 mb-2" id="modal-title">
@@ -477,7 +630,7 @@
                                     </div>
                                     <input type="text" name="username" id="modal_username" required 
                                         placeholder="77xxxxxxx"
-                                        class="block w-full pr-11 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400">
+                                        class="block w-full pr-11 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
                                 </div>
                             </div>
                             
@@ -489,7 +642,7 @@
                                     </div>
                                     <input type="password" name="password" id="modal_password" required 
                                         placeholder="••••••••"
-                                        class="block w-full pr-11 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-400">
+                                        class="block w-full pr-11 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
                                 </div>
                             </div>
                             
@@ -502,7 +655,7 @@
                 </div>
                 <div class="bg-gray-50 px-6 py-6 sm:px-10 flex flex-col sm:flex-row-reverse gap-3">
                     <button type="button" onclick="submitLogin()" 
-                        class="w-full sm:flex-1 py-3.5 px-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg hover:from-blue-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform active:scale-[0.98]">
+                        class="w-full sm:flex-1 py-3.5 px-6 btn-brand text-white font-bold rounded-xl shadow-md transform active:scale-[0.98]">
                         دخول
                     </button>
                     <button type="button" onclick="closeLoginModal()" 
@@ -779,8 +932,49 @@
             }, 4000);
         }
         
-        // Dropdown Logic
+        // Global Page Loader Logic
         document.addEventListener('DOMContentLoaded', function() {
+            const loader = document.getElementById('page-loader');
+            
+            // Hide loader with a graceful delay to show off the animation
+            if (loader) {
+                setTimeout(() => {
+                    loader.classList.add('hidden-loader');
+                }, 800);
+            }
+
+            // Function to show loader
+            window.showPageLoader = function() {
+                if (loader) loader.classList.remove('hidden-loader');
+            };
+
+            // Trigger on internal link clicks
+            document.body.addEventListener('click', function(e) {
+                const link = e.target.closest('a');
+                if (!link) return;
+
+                const href = link.getAttribute('href');
+                if (href && 
+                    !href.startsWith('#') && 
+                    !href.startsWith('javascript:') && 
+                    !href.startsWith('mailto:') && 
+                    !href.startsWith('tel:') && 
+                    !link.hasAttribute('download') &&
+                    link.target !== '_blank' &&
+                    !e.ctrlKey && !e.shiftKey && !e.metaKey && !e.altKey) {
+                    
+                    showPageLoader();
+                }
+            });
+
+            // Trigger on all form submissions (except those with remote/ajax flags if any)
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                if (!form.hasAttribute('data-no-loader')) {
+                    showPageLoader();
+                }
+            });
+
             function setupDropdown(btnId, dropdownId) {
                 const btn = document.getElementById(btnId);
                 const dropdown = document.getElementById(dropdownId);
@@ -802,6 +996,13 @@
 
             setupDropdown('user-menu-button', 'user-dropdown');
             setupDropdown('guest-menu-button', 'guest-dropdown');
+
+            // Handle browser back button (pageshow event)
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted && loader) {
+                    loader.classList.add('hidden-loader');
+                }
+            });
         });
 
         // Add progress bar animation

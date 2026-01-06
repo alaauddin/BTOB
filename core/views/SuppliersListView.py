@@ -7,6 +7,8 @@ from core.models import Order
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Q
+from core.forms import BusinessRequestForm
+from django.contrib import messages
 
 
 
@@ -52,6 +54,16 @@ def SuppliersListView(request):
     # Fetch producing family suppliers
     producing_family_suppliers = Supplier.objects.filter(category__producing_family=True).distinct().order_by('-priority')
 
+    # Handle Business Request Form
+    if request.method == 'POST':
+        form = BusinessRequestForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'تم إرسال طلبك بنجاح! سنتواصل معك قريباً.')
+            return redirect('suppliers_list')
+    else:
+        form = BusinessRequestForm()
+
     return render(
         request,
         'suppliers_list.html',
@@ -63,5 +75,6 @@ def SuppliersListView(request):
             'q': q,
             'platform_ads': platform_ads,
             'producing_family_suppliers': producing_family_suppliers,
+            'business_form': form,
         },
     )
