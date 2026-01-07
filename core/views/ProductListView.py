@@ -38,7 +38,7 @@ def product_list(request, store_id, category_id=None, subcategory_id=None):
         to_date__gte=today
     )
     
-    queryset = Product.objects.filter(supplier=supplier).annotate(
+    queryset = Product.objects.filter(supplier=supplier, is_active=True).annotate(
         has_active_offer=Exists(active_offers),
         max_discount=Subquery(
             active_offers.order_by('-discount_precentage').values('discount_precentage')[:1]

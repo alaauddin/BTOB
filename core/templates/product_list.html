@@ -23,6 +23,9 @@
         --secondary-gradient: var(--secondary-color);
         --success-gradient: var(--success-color);
         --warning-gradient: var(--warning-color);
+        
+        /* Dynamic Background */
+        --body-bg-gradient: linear-gradient(135deg, {{ supplier.primary_color|default:'#2563eb' }}1A 0%, {{ supplier.secondary_color|default:'#ffffff' }}1A 100%);
     }
     
     /* Carousel Height Adjustment */
@@ -37,7 +40,7 @@
     @media (max-width: 768px) {
         #supplierAdsCarousel .carousel-item {
             /* Compact Ads */
-            height: 125px;
+            height: 200px;
         }
         .modern-ads-title {
             font-size: 0.95rem !important;
@@ -73,7 +76,7 @@
 <!-- Hero Section -->
 {% if supplier_ads %}
 <!-- Premium Ads Carousel Section -->
-<div class="container mb-3" style="margin-top: 0.75rem;">
+<div class="container-fluid px-0 mb-4" style="margin-top: 0;">
     <section class="modern-ads-carousel">
         <!-- Decorative Elements -->
         <div class="ads-decorative-element element-1"></div>
@@ -93,24 +96,27 @@
         <div class="carousel-inner">
             {% for ad in supplier_ads %}
             <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="6000">
-                <img src="{{ ad.image.url }}" class="d-block w-100" alt="{{ ad.title }}" loading="lazy">
+                <!-- Premium Overlay for better text isolation -->
                 <div class="modern-ads-overlay">
-                    <div class="container modern-ads-content">
-                        {% if ad.title %}
-                        <h1 class="modern-ads-title">{{ ad.title }}</h1>
-                        {% endif %}
-                        
-                        {% if ad.description %}
-                        <p class="modern-ads-description">{{ ad.description }}</p>
-                        {% endif %}
-                        
-                        <!-- Enhanced Call-to-Action -->
-                        <a href="{% url 'product_detail' store_id=supplier.store_id pk=ad.product.id %}" class="modern-ads-cta">
-                            استكشف المنتجات
-                            <i class="fas fa-arrow-left"></i>
-                        </a>
+                    <div class="container d-flex justify-content-end align-items-center h-100">
+                        <div class="modern-ads-content">
+                            {% if ad.title %}
+                            <h1 class="modern-ads-title">{{ ad.title }}</h1>
+                            {% endif %}
+                            
+                            {% if ad.description %}
+                            <p class="modern-ads-description">{{ ad.description }}</p>
+                            {% endif %}
+                            
+                            <!-- Enhanced Call-to-Action -->
+                            <a href="{% url 'product_detail' store_id=supplier.store_id pk=ad.product.id %}" class="modern-ads-cta">
+                                <span>استكشف العرض</span>
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
+                <img src="{{ ad.image.url }}" class="d-block w-100" alt="{{ ad.title }}" loading="lazy">
             </div>
             {% endfor %}
         </div>
@@ -393,18 +399,20 @@
 <div class="container container-products mt-3">
     
     {% if offer_products %}
-    <div class="product-section mb-3">
-        <div class="d-flex align-items-center mb-2 px-1">
-            <div class="section-icon-wrapper bg-red-100 text-red-500 rounded-circle p-1 me-2" style="width: 28px; height: 28px; display:flex; align-items:center; justify-content:center;">
-                <i class="fas fa-fire fa-sm"></i>
+    <div class="product-section offers-premium-section mb-4">
+        <div class="d-flex align-items-center mb-3 px-2">
+            <div class="section-icon-wrapper bg-red-100 text-red-500 rounded-circle shadow-sm fire-pulse" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center;">
+                <i class="fas fa-fire"></i>
             </div>
-            <h6 class="section-title m-0 fw-bold" style="font-size: 0.95rem;">أقوى العروض</h6>
-            <span class="badge bg-danger rounded-pill ms-auto" style="font-size: 0.65rem;">{{ offer_products|length }}</span>
+            <h6 class="section-title m-0 ms-2 fw-bold">أقوى العروض</h6>
+            <span class="badge premium-badge-count rounded-pill ms-auto">{{ offer_products|length }} عرض</span>
         </div>
-        <div class="products-horizontal-scroll pb-1">
-            {% for product in offer_products %}
-                {% include "product_card_snippet.html" %}
-            {% endfor %}
+        <div class="premium-scroll-wrapper">
+            <div class="products-horizontal-scroll pb-1">
+                {% for product in offer_products %}
+                    {% include "product_card_snippet.html" %}
+                {% endfor %}
+            </div>
         </div>
     </div>
     {% endif %}

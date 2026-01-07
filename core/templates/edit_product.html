@@ -5,352 +5,415 @@
 
 {% block extra_css %}
 <style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --accent: #f59e0b;
+        --accent-dark: #d97706;
+    }
+
+    body {
+        background: #f8fafc;
+        overflow-x: hidden;
+    }
+
     .modal-overlay {
-        background: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.05), transparent),
+                    radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.05), transparent);
     }
     
-    .modal-content {
-        background: rgba(255, 255, 255, 0.95);
+    .editor-container {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 0.75rem;
+        max-width: 1000px;
+        margin: 0.75rem auto;
+        padding: 0 0.5rem;
+    }
+
+    .glass-card {
+        background: var(--glass-bg);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+        height: fit-content;
     }
     
+    .preview-card {
+        position: sticky;
+        top: 0.75rem;
+        perspective: 1000px;
+    }
+
+    .product-preview-box {
+        padding: 0.75rem;
+        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .preview-image-wrapper {
+        aspect-ratio: 1;
+        width: 100%;
+        max-width: 160px;
+        margin: 0 auto 0.75rem;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #eee;
+        box-shadow: 0 4px 12px -2px rgba(0,0,0,0.1);
+    }
+
+    .preview-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-cover: cover;
+        transition: transform 0.3s;
+    }
+
     .form-group {
-        position: relative;
-        margin-bottom: 1.5rem;
+        margin-bottom: 0.75rem;
+        transition: opacity 0.3s, transform 0.3s;
     }
     
     .form-label {
-        display: block;
-        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin-bottom: 0.25rem;
         font-weight: 600;
-        color: #374151;
-        font-size: 0.875rem;
+        color: #4b5563;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
     }
     
     .form-input {
         width: 100%;
-        padding: 0.75rem 1rem;
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        font-size: 0.875rem;
-        transition: all 0.3s ease;
-        background: rgba(255, 255, 255, 0.8);
+        padding: 0.5rem 0.75rem;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        background: #fff;
     }
     
     .form-input:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        background: rgba(255, 255, 255, 1);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+        transform: translateY(-1px);
     }
-    
-    .form-input.error {
-        border-color: #ef4444;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-    }
-    
-    .error-message {
-        color: #ef4444;
-        font-size: 0.75rem;
-        margin-top: 0.25rem;
-        display: flex;
-        align-items: center;
-    }
-    
-    .error-message i {
-        margin-left: 0.25rem;
+
+    .compact-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
     }
     
     .file-input-wrapper {
         position: relative;
-        border: 2px dashed #d1d5db;
+        border: 2px dashed #cbd5e1;
         border-radius: 12px;
-        padding: 2rem;
+        padding: 0.75rem;
         text-align: center;
-        transition: all 0.3s ease;
-        background: rgba(249, 250, 251, 0.8);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(248, 250, 252, 0.5);
     }
     
-    .file-input-wrapper:hover {
-        border-color: #3b82f6;
-        background: rgba(59, 130, 246, 0.05);
-    }
-    
-    .file-input-wrapper.dragover {
-        border-color: #3b82f6;
-        background: rgba(59, 130, 246, 0.1);
-        transform: scale(1.02);
-    }
-    
-    .file-input {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        cursor: pointer;
-    }
-    
-    .current-image {
-        margin-bottom: 1rem;
-        text-align: center;
-    }
-    
-    .current-image img {
-        max-width: 200px;
-        max-height: 200px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        border: 3px solid #e5e7eb;
-    }
-    
-    .file-preview {
-        margin-top: 1rem;
-        text-align: center;
-    }
-    
-    .file-preview img {
-        max-width: 200px;
-        max-height: 200px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    .file-input-wrapper:hover, .file-input-wrapper.dragover {
+        border-color: var(--accent);
+        background: rgba(245, 158, 11, 0.03);
     }
     
     .checkbox-wrapper {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.75rem;
-        background: rgba(59, 130, 246, 0.05);
-        border-radius: 12px;
-        border: 2px solid rgba(59, 130, 246, 0.2);
-        transition: all 0.3s ease;
+        padding: 0.5rem 0.75rem;
+        background: #fff;
+        border-radius: 10px;
+        border: 1.5px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.2s;
     }
     
     .checkbox-wrapper:hover {
-        background: rgba(59, 130, 246, 0.1);
-    }
-    
-    .submit-btn {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        color: white;
-        padding: 0.875rem 2rem;
-        border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .submit-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
-    }
-    
-    .submit-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-    }
-    
-    .submit-btn .loading-spinner {
-        display: none;
-        width: 1rem;
-        height: 1rem;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-top: 2px solid white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-left: 0.5rem;
-    }
-    
-    .submit-btn.loading .loading-spinner {
-        display: inline-block;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    .success-animation {
-        animation: success-bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    }
-    
-    @keyframes success-bounce {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
+        border-color: #d1d5db;
+        background: #f9fafb;
     }
 
-    .product-info-header {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
-        border: 1px solid rgba(245, 158, 11, 0.2);
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
+    .sticky-actions {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 0.5rem 1rem;
+        border-top: 1px solid rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        z-index: 50;
+        box-shadow: 0 -10px 20px rgba(0,0,0,0.03);
+    }
+
+    .action-btn {
+        padding: 0.5rem 1.25rem;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        color: white;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-cancel {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    /* Category Modal specific styles */
+    #category-modal {
+        display: none;
+        z-index: 100;
+    }
+
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(8px);
+        z-index: 101;
+    }
+
+    .category-modal-content {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 480px;
+        background: white;
+        border-radius: 28px;
+        padding: 2.5rem;
+        z-index: 102;
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    @media (max-width: 992px) {
+        .editor-container {
+            grid-template-columns: 1fr;
+            margin: 0.5rem auto;
+            gap: 0.75rem;
+        }
+        .preview-card {
+            position: static;
+        }
+        .preview-image-wrapper {
+            max-width: 120px;
+            margin-bottom: 0.5rem;
+        }
+        .sticky-actions {
+            padding: 0.5rem;
+        }
+        .action-btn {
+            flex: 1;
+            justify-content: center;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center p-4">
-    <div class="modal-content rounded-3xl p-8 w-full max-w-2xl">
-        <div class="text-center mb-8">
-            <div class="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-edit text-white text-2xl"></i>
-            </div>
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">تعديل المنتج</h1>
-            <p class="text-gray-600">قم بتعديل بيانات المنتج</p>
-        </div>
-
-        <!-- Product Info Header -->
-        <div class="product-info-header">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-16 h-16 rounded-lg object-cover border-2 border-white shadow-md">
-                    {% else %}
-                        <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-image text-gray-400 text-xl"></i>
-                        </div>
-                    {% endif %}
-                    <div class="mr-4">
-                        <h3 class="text-xl font-bold text-gray-800">{{ product.name }}</h3>
-                        <p class="text-amber-600 font-semibold">{{ product.price }} {{ supplier.currency }}</p>
+<div class="editor-container">
+    <!-- Left Side: Product Preview -->
+    <div class="preview-card glass-card">
+        <div class="product-preview-box text-center">
+            <h2 class="text-xs font-bold text-amber-600 uppercase tracking-widest mb-4">معاينة التغييرات</h2>
+            
+            <div class="preview-image-wrapper">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" id="preview-image-main">
+                {% else %}
+                    <div class="w-full h-full flex items-center justify-center bg-gray-100">
+                        <i class="fas fa-image text-4xl text-gray-300"></i>
                     </div>
+                {% endif %}
+            </div>
+
+            <div class="space-y-2">
+                <h3 id="preview-display-name" class="text-xl font-black text-slate-800">{{ product.name }}</h3>
+                <div class="flex items-center justify-center gap-2">
+                    <span id="preview-display-price" class="text-lg font-bold text-amber-600">{{ product.price }}</span>
+                    <span class="text-xs font-semibold text-slate-500">{{ supplier.currency }}</span>
                 </div>
-                <div class="text-right">
-                    <div class="text-sm text-gray-600">الفئة: {{ product.category.name }}</div>
-                    {% if product.is_new %}
-                        <div class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold mt-1">
-                            منتج جديد
-                        </div>
-                    {% endif %}
+                <div id="preview-display-category" class="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold">
+                    {{ product.category.name }}
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Right Side: Form Content -->
+    <div class="form-card glass-card p-4">
+        <div class="mb-3 border-b border-slate-100 pb-2">
+            <h1 class="text-lg font-black text-slate-800">بيانات المنتج</h1>
+            <p class="text-[10px] text-slate-500">قم بتحديث معلومات منتجك وتصميمه</p>
         </div>
 
         <form id="editProductForm" method="post" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
             
-            <!-- Product Name -->
-            <div class="form-group">
-                <label class="form-label">
-                    <i class="fas fa-tag text-amber-500 ml-2"></i>
-                    {{ form.name.label }}
-                </label>
-                {{ form.name }}
-                <div class="error-message" id="name-error" style="display: none;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span></span>
-                </div>
-            </div>
-
-            <!-- Product Description -->
-            <div class="form-group">
-                <label class="form-label">
-                    <i class="fas fa-align-left text-amber-500 ml-2"></i>
-                    {{ form.description.label }}
-                </label>
-                {{ form.description }}
-                <div class="error-message" id="description-error" style="display: none;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span></span>
-                </div>
-            </div>
-
-            <!-- Price and Category Row -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Product Price -->
+            <!-- Basic Info Section -->
+            <div class="space-y-3">
                 <div class="form-group">
                     <label class="form-label">
-                        <i class="fas fa-dollar-sign text-green-500 ml-2"></i>
-                        {{ form.price.label }}
+                        <i class="fas fa-tag text-amber-500"></i>
+                        {{ form.name.label }}
                     </label>
-                    {{ form.price }}
-                    <div class="error-message" id="price-error" style="display: none;">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span></span>
-                    </div>
+                    {{ form.name }}
+                    <div class="error-message text-red-500 text-xs mt-1" id="name-error" style="display: none;"></div>
                 </div>
 
-                <!-- Product Category -->
                 <div class="form-group">
                     <label class="form-label">
-                        <i class="fas fa-list text-purple-500 ml-2"></i>
-                        {{ form.category.label }}
+                        <i class="fas fa-align-left text-amber-500"></i>
+                        {{ form.description.label }}
                     </label>
-                    {{ form.category }}
-                    <div class="error-message" id="category-error" style="display: none;">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span></span>
-                    </div>
+                    {{ form.description }}
+                    <div class="error-message text-red-500 text-xs mt-1" id="description-error" style="display: none;"></div>
                 </div>
-            </div>
 
-            <!-- Product Image -->
-            <div class="form-group">
-                <label class="form-label">
-                    <i class="fas fa-image text-orange-500 ml-2"></i>
-                    {{ form.image.label }}
-                </label>
-                
-                {% if product.image %}
-                    <div class="current-image">
-                        <p class="text-sm text-gray-600 mb-2">الصورة الحالية:</p>
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" id="currentImage">
-                        <p class="text-xs text-gray-500 mt-2">اختر صورة جديدة لتحديث الصورة الحالية</p>
+                <!-- Price and Category Row -->
+                <div class="compact-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-coins text-amber-500"></i>
+                            {{ form.price.label }}
+                        </label>
+                        {{ form.price }}
+                        <div class="error-message text-red-500 text-xs mt-1" id="price-error" style="display: none;"></div>
                     </div>
-                {% endif %}
-                
-                <div class="file-input-wrapper" id="fileWrapper">
-                    {{ form.image }}
-                    <div class="file-upload-content">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
-                        <p class="text-gray-600 mb-2">اسحب الصورة الجديدة هنا أو انقر للاختيار</p>
-                        <p class="text-sm text-gray-500">PNG, JPG, GIF حتى 10MB</p>
-                    </div>
-                    <div class="file-preview" id="filePreview" style="display: none;">
-                        <p class="text-sm text-gray-600 mb-2">الصورة الجديدة:</p>
-                        <img id="previewImage" src="" alt="معاينة الصورة الجديدة">
-                        <p class="text-sm text-gray-600 mt-2" id="fileName"></p>
-                    </div>
-                </div>
-                <div class="error-message" id="image-error" style="display: none;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span></span>
-                </div>
-            </div>
 
-            <!-- Is New Product -->
-            <div class="form-group">
+                    <div class="form-group">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="form-label mb-0">
+                                <i class="fas fa-layer-group text-amber-500"></i>
+                                {{ form.category.label }}
+                            </label>
+                            <button type="button" onclick="openCategoryModal()" class="text-[10px] font-bold text-amber-600 hover:text-amber-700">
+                                + إضافة فئة
+                            </button>
+                        </div>
+                        {{ form.category }}
+                        <div class="error-message text-red-500 text-xs mt-1" id="category-error" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <!-- Media Section -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-camera text-amber-500"></i>
+                        {{ form.image.label }}
+                    </label>
+                    
+                    <div class="file-input-wrapper" id="fileWrapper">
+                        {{ form.image }}
+                        <div class="file-upload-content">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-slate-400 mb-2"></i>
+                            <p class="text-slate-600 text-xs font-bold mb-1">اسحب الصورة الجديدة هنا</p>
+                            <p class="text-[10px] text-slate-400">PNG, JPG, GIF حتى 10MB</p>
+                        </div>
+                        <div class="file-preview" id="filePreview" style="display: none;">
+                            <img id="previewImage" src="" alt="معاينة" class="mx-auto w-24 h-24 rounded-lg object-cover mb-2 border-2 border-amber-500">
+                            <p class="text-[10px] text-slate-500 font-mono truncate px-4" id="fileName"></p>
+                        </div>
+                    </div>
+                    <div class="error-message text-red-500 text-xs mt-1" id="image-error" style="display: none;"></div>
+                </div>
+
+                <!-- Options -->
                 <div class="checkbox-wrapper">
                     {{ form.is_new }}
-                    <label for="{{ form.is_new.id_for_label }}" class="form-label mb-0 cursor-pointer">
-                        <i class="fas fa-star text-yellow-500 ml-2"></i>
+                    <label for="{{ form.is_new.id_for_label }}" class="text-sm font-bold text-slate-700 cursor-pointer">
+                        <i class="fas fa-sparkles text-amber-500 mr-1"></i>
                         {{ form.is_new.label }}
                     </label>
                 </div>
             </div>
+        </form>
+    </div>
+</div>
 
-            <!-- Submit Button -->
-            <div class="flex justify-end gap-4 mt-8">
-                <button type="button" onclick="window.history.back()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all">
+<!-- Sticky Bottom Navbar -->
+<div class="sticky-actions">
+    <button type="button" onclick="window.history.back()" class="action-btn btn-cancel">
+        إلغاء
+    </button>
+    <button type="submit" form="editProductForm" class="action-btn btn-submit" id="mainSubmitBtn">
+        <i class="fas fa-check"></i>
+        <span>حفظ التعديلات</span>
+        <div class="loading-spinner w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin hidden"></div>
+    </button>
+</div>
+
+<!-- Add Category Modal -->
+<div id="category-modal" style="display: none;">
+    <div class="modal-backdrop" onclick="closeCategoryModal()"></div>
+    <div class="category-modal-content">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-800">إضافة فئة جديدة</h2>
+            <button onclick="closeCategoryModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+
+        <form id="addCategoryForm" class="space-y-4">
+            <!-- Parent Category Selection -->
+            <div class="form-group">
+                <label class="form-label">الفئة الرئيسية</label>
+                <select id="parent-category-select" class="form-input" onchange="toggleNewParentInput(this.value)">
+                    <option value="">-- اختر فئة رئيسية --</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.category.id }}">{{ cat.category.name }}</option>
+                    {% endfor %}
+                    <option value="new" class="font-bold text-amber-600">+ إضافة فئة رئيسية جديدة</option>
+                </select>
+            </div>
+
+            <!-- New Parent Input (Hidden by default) -->
+            <div id="new-parent-container" class="form-group" style="display: none;">
+                <label class="form-label">اسم الفئة الرئيسية الجديدة</label>
+                <input type="text" id="new-parent-name" class="form-input" placeholder="مثلاً: إلكترونيات">
+            </div>
+
+            <!-- Subcategory Name -->
+            <div class="form-group">
+                <label class="form-label">اسم الفئة الفرعية</label>
+                <input type="text" id="subcategory-name" class="form-input" placeholder="مثلاً: هواتف ذكية">
+            </div>
+
+            <div class="flex gap-4 mt-6">
+                <button type="button" onclick="closeCategoryModal()" class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all">
                     إلغاء
                 </button>
-                <button type="submit" class="submit-btn">
-                    <i class="fas fa-save ml-2"></i>
-                    حفظ التعديلات
-                    <div class="loading-spinner"></div>
+                <button type="button" onclick="submitCategory()" id="submitCategoryBtn" class="flex-1 px-4 py-2 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 transition-all flex items-center justify-center gap-2">
+                    <span>حفظ</span>
+                    <i class="fas fa-check"></i>
                 </button>
             </div>
         </form>
@@ -361,85 +424,87 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // --- UI Elements ---
     const form = document.getElementById('editProductForm');
+    const nameInput = document.getElementById('id_name');
+    const priceInput = document.getElementById('id_price');
+    const categoryInput = document.getElementById('id_category');
     const fileInput = document.getElementById('id_image');
+    
+    const previewName = document.getElementById('preview-display-name');
+    const previewPrice = document.getElementById('preview-display-price');
+    const previewCategory = document.getElementById('preview-display-category');
+    const previewImageMain = document.getElementById('preview-image-main');
+    
     const fileWrapper = document.getElementById('fileWrapper');
     const filePreview = document.getElementById('filePreview');
-    const previewImage = document.getElementById('previewImage');
+    const previewImageSmall = document.getElementById('previewImage');
     const fileName = document.getElementById('fileName');
-    const currentImage = document.getElementById('currentImage');
-    const submitBtn = form.querySelector('.submit-btn');
-
-    // File upload handling
-    fileInput.addEventListener('change', handleFileSelect);
     
-    // Drag and drop functionality
-    fileWrapper.addEventListener('dragover', handleDragOver);
-    fileWrapper.addEventListener('dragleave', handleDragLeave);
-    fileWrapper.addEventListener('drop', handleFileDrop);
+    const submitBtn = document.getElementById('mainSubmitBtn');
+    const spinner = submitBtn.querySelector('.loading-spinner');
 
-    function handleFileSelect(e) {
-        const file = e.target.files[0];
-        if (file) {
-            displayFilePreview(file);
+    // --- Real-time Preview Logic ---
+    const updatePreview = () => {
+        if (nameInput) previewName.textContent = nameInput.value || 'اسم المنتج';
+        if (priceInput) previewPrice.textContent = priceInput.value || '0.00';
+        if (categoryInput) {
+            const selectedOption = categoryInput.options[categoryInput.selectedIndex];
+            previewCategory.textContent = selectedOption ? selectedOption.text : 'الفئة';
         }
-    }
+    };
 
-    function handleDragOver(e) {
-        e.preventDefault();
-        fileWrapper.classList.add('dragover');
-    }
+    nameInput?.addEventListener('input', updatePreview);
+    priceInput?.addEventListener('input', updatePreview);
+    categoryInput?.addEventListener('change', updatePreview);
 
-    function handleDragLeave(e) {
-        e.preventDefault();
-        fileWrapper.classList.remove('dragover');
-    }
+    // Initial sync
+    updatePreview();
 
-    function handleFileDrop(e) {
-        e.preventDefault();
-        fileWrapper.classList.remove('dragover');
-        
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            fileInput.files = files;
-            displayFilePreview(files[0]);
-        }
-    }
-
-    function displayFilePreview(file) {
+    // --- File Upload Handling ---
+    const handleFileSelect = (file) => {
         if (file && file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                previewImage.src = e.target.result;
+                // Update both previews
+                previewImageSmall.src = e.target.result;
+                if (previewImageMain) previewImageMain.src = e.target.result;
+                
                 fileName.textContent = file.name;
                 filePreview.style.display = 'block';
                 fileWrapper.querySelector('.file-upload-content').style.display = 'none';
-                
-                // Dim the current image to show new one is selected
-                if (currentImage) {
-                    currentImage.style.opacity = '0.5';
-                    currentImage.style.filter = 'grayscale(50%)';
-                }
             };
             reader.readAsDataURL(file);
         }
-    }
+    };
 
-    // Form submission
-    form.addEventListener('submit', function(e) {
+    fileInput?.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
+    
+    // Drag & Drop
+    ['dragover', 'dragleave', 'drop'].forEach(eventName => {
+        fileWrapper?.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            if (eventName === 'dragover') fileWrapper.classList.add('dragover');
+            else fileWrapper.classList.remove('dragover');
+            
+            if (eventName === 'drop' && e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+    });
+
+    // --- Form Submission ---
+    form?.addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        // Clear previous errors
         clearErrors();
         
-        // Show loading state
         submitBtn.disabled = true;
-        submitBtn.classList.add('loading');
+        spinner.classList.remove('hidden');
+        submitBtn.querySelector('span').textContent = 'جاري الحفظ...';
         
-        // Create FormData for file upload
         const formData = new FormData(form);
         
-        // Submit form via AJAX
         fetch(form.action || window.location.pathname, {
             method: 'POST',
             body: formData,
@@ -451,24 +516,11 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Show success message
                 showSuccessMessage(data.message);
-                
-                // Add success animation
-                form.classList.add('success-animation');
-                
-                // Redirect after delay
-                setTimeout(() => {
-                    window.location.href = '/my-merchant/';
-                }, 1500);
-                
+                setTimeout(() => window.location.href = '/my-merchant/', 1500);
             } else {
-                // Show errors
-                if (data.errors) {
-                    displayErrors(data.errors);
-                } else {
-                    showErrorMessage(data.message);
-                }
+                if (data.errors) displayErrors(data.errors);
+                else showErrorMessage(data.message);
             }
         })
         .catch(error => {
@@ -476,90 +528,114 @@ document.addEventListener('DOMContentLoaded', function() {
             showErrorMessage('حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.');
         })
         .finally(() => {
-            // Hide loading state
             submitBtn.disabled = false;
-            submitBtn.classList.remove('loading');
+            spinner.classList.add('hidden');
+            submitBtn.querySelector('span').textContent = 'حفظ التعديلات';
         });
     });
 
+    // --- Helpers ---
     function clearErrors() {
-        const errorElements = document.querySelectorAll('.error-message');
-        errorElements.forEach(el => {
+        document.querySelectorAll('.error-message').forEach(el => {
             el.style.display = 'none';
-            el.querySelector('span').textContent = '';
+            el.textContent = '';
         });
-        
-        const inputs = document.querySelectorAll('.form-input');
-        inputs.forEach(input => input.classList.remove('error'));
+        document.querySelectorAll('.form-input').forEach(el => el.classList.remove('border-red-500'));
     }
 
     function displayErrors(errors) {
         for (const [field, message] of Object.entries(errors)) {
-            const errorElement = document.getElementById(`${field}-error`);
-            const inputElement = document.getElementById(`id_${field}`);
-            
-            if (errorElement && inputElement) {
-                errorElement.querySelector('span').textContent = message;
-                errorElement.style.display = 'flex';
-                inputElement.classList.add('error');
+            const errorEl = document.getElementById(`${field}-error`);
+            const inputEl = document.getElementById(`id_${field}`);
+            if (errorEl) {
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
             }
+            if (inputEl) inputEl.classList.add('border-red-500');
         }
     }
 
-    function showSuccessMessage(message) {
-        showNotification(message, 'success');
-    }
-
-    function showErrorMessage(message) {
-        showNotification(message, 'error');
-    }
-
+    // --- Notification System ---
     function showNotification(message, type = 'info') {
         const notification = document.createElement('div');
-        const iconClass = {
-            'success': 'fa-check-circle text-green-400',
-            'error': 'fa-exclamation-circle text-red-400',
-            'info': 'fa-info-circle text-blue-400'
-        }[type];
-        
-        const bgClass = {
-            'success': 'bg-green-500/20 border-green-500/30',
-            'error': 'bg-red-500/20 border-red-500/30',
-            'info': 'bg-blue-500/20 border-blue-500/30'
+        const colors = {
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            info: 'bg-blue-500'
         }[type];
 
-        notification.className = `fixed top-6 right-6 z-50 backdrop-blur-sm border rounded-2xl shadow-2xl text-white transition-all transform translate-x-full scale-95 ${bgClass}`;
+        notification.className = `fixed top-6 right-6 z-[100] px-6 py-4 rounded-2xl shadow-2xl text-white transform transition-all duration-300 translate-x-full ${colors}`;
         notification.innerHTML = `
-            <div class="flex items-center p-6">
-                <div class="w-12 h-12 ${bgClass.split(' ')[0]} rounded-full flex items-center justify-center mr-4">
-                    <i class="fas ${iconClass} text-xl"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="font-semibold text-lg text-gray-800">${message}</p>
-                </div>
-                <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-white/10 mr-2">
-                    <i class="fas fa-times"></i>
-                </button>
+            <div class="flex items-center gap-3">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span class="font-bold">${message}</span>
             </div>
         `;
         
         document.body.appendChild(notification);
-        
+        setTimeout(() => notification.classList.remove('translate-x-full'), 10);
         setTimeout(() => {
-            notification.classList.remove('translate-x-full', 'scale-95');
-            notification.classList.add('translate-x-0', 'scale-100');
-        }, 10);
-        
-        setTimeout(() => {
-            notification.classList.remove('translate-x-0', 'scale-100');
-            notification.classList.add('translate-x-full', 'scale-95');
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    document.body.removeChild(notification);
-                }
-            }, 400);
+            notification.classList.add('translate-x-full');
+            setTimeout(() => notification.remove(), 300);
         }, 4000);
     }
+
+    window.showSuccessMessage = (msg) => showNotification(msg, 'success');
+    window.showErrorMessage = (msg) => showNotification(msg, 'error');
+
+    // --- Category Management Logic ---
+    window.openCategoryModal = () => {
+        document.getElementById('category-modal').style.display = 'block';
+    };
+
+    window.closeCategoryModal = () => {
+        document.getElementById('category-modal').style.display = 'none';
+        document.getElementById('addCategoryForm').reset();
+        document.getElementById('new-parent-container').style.display = 'none';
+    };
+
+    window.toggleNewParentInput = (val) => {
+        document.getElementById('new-parent-container').style.display = val === 'new' ? 'block' : 'none';
+    };
+
+    window.submitCategory = () => {
+        const parentId = document.getElementById('parent-category-select').value;
+        const newParentName = document.getElementById('new-parent-name').value;
+        const subcategoryName = document.getElementById('subcategory-name').value;
+        const btn = document.getElementById('submitCategoryBtn');
+
+        if (!subcategoryName || !parentId) {
+            showErrorMessage('يرجى إكمال جميع الحقول');
+            return;
+        }
+
+        btn.disabled = true;
+        const formData = new FormData();
+        formData.append('parent_id', parentId);
+        formData.append('new_parent_name', newParentName);
+        formData.append('subcategory_name', subcategoryName);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        fetch('{% url "add_category_ajax" %}', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const select = document.getElementById('id_category');
+                select.add(new Option(data.category.name, data.category.id));
+                select.value = data.category.id;
+                updatePreview();
+                showSuccessMessage(data.message);
+                closeCategoryModal();
+            } else {
+                showErrorMessage(data.message);
+            }
+        })
+        .finally(() => btn.disabled = false);
+    };
 });
 </script>
 {% endblock %}

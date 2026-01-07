@@ -67,6 +67,9 @@
             --glass-border: rgba(255, 255, 255, 0.2);
             --shadow-light: 0 4px 20px rgba(0, 0, 0, 0.08); 
             --shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.15);
+
+            /* Dynamic Background */
+            --body-bg-gradient: linear-gradient(135deg, {{ supplier.primary_color|default:'#ef7d2d' }}1A 0%, {{ supplier.secondary_color|default:'#ffffff' }}1A 100%);
         }
 
         @keyframes logo-pop-in {
@@ -226,14 +229,17 @@
             <div class="flex justify-between items-center">
                 <!-- Right: Logo (standard for Arabic) -->
                 <a href="/" class="flex items-center group animate-logo">
+                    <!-- Supplier Logo -->
                     {% if supplier.profile_picture %}
-                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-24 w-auto ml-3">
+                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-12 w-auto ml-3 object-contain rounded-full shadow-sm border border-gray-100">
+                        <div class="h-8 w-px bg-gray-200 ml-3"></div>
+                    {% endif %}
+
+                    <!-- System Logo -->
+                    {% if system_settings.logo %}
+                        <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-20 w-auto object-contain">
                     {% else %}
-                        {% if system_settings.logo %}
-                            <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-24 w-auto ml-3">
-                        {% else %}
-                            <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-24 w-auto ml-3">
-                        {% endif %}
+                        <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-20 w-auto object-contain">
                     {% endif %}
                 </a>
 

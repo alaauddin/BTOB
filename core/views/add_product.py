@@ -14,13 +14,18 @@ from core.models import Supplier, ProductCategory
 @require_http_methods(["GET", "POST"])
 def add_product(request):
     # Get the supplier for the current user
-    try:
-        supplier = get_object_or_404(Supplier, user=request.user)
-    except:
-        return JsonResponse({
-            'success': False, 
-            'message': 'You must be a registered supplier to add products'
-        }, status=403)
+    # Get the supplier for the current user
+    if request.user.is_superuser and (request.GET.get('supplier_id') or request.POST.get('supplier_id')):
+        supplier_id = request.GET.get('supplier_id') or request.POST.get('supplier_id')
+        supplier = get_object_or_404(Supplier, id=supplier_id)
+    else:
+        try:
+            supplier = get_object_or_404(Supplier, user=request.user)
+        except:
+            return JsonResponse({
+                'success': False, 
+                'message': 'You must be a registered supplier to add products'
+            }, status=403)
     
     if request.method == 'POST':
         # Handle AJAX form submission

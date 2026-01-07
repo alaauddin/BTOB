@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from core.models import Supplier, Product, ProductOffer, Promotion, SuppierAds, Order
+from core.forms import SupplierSettingsForm, ProductForm
 from django.db.models import Count, Sum, Avg
 from django.utils import timezone
 
@@ -11,13 +12,22 @@ from django.utils import timezone
 @login_required
 def my_merchant(request):
     template_name = 'my_merchant.html'
-    supplier = Supplier.objects.filter(user=request.user).first()
+
+    # Allow superuser to view other suppliers
+    if request.user.is_superuser and request.GET.get('supplier_id'):
+        supplier_id = request.GET.get('supplier_id')
+        supplier = Supplier.objects.filter(id=supplier_id).first()
+    else:
+        supplier = Supplier.objects.filter(user=request.user).first()
     
     if not supplier:
+        # If superuser tried to access invalid supplier, or normal user has no supplier
+        if request.user.is_superuser and request.GET.get('supplier_id'):
+             return redirect('suppliers_list') # Or show error message
         return redirect('suppliers_list')
     
     # Get all related data
-    products = Product.objects.filter(supplier=supplier)
+    products = Product.objects.filter(supplier=supplier, is_active=True)
     active_offers = ProductOffer.objects.filter(
         product__supplier=supplier, 
         is_active=True
@@ -90,6 +100,23 @@ def my_merchant(request):
         'total_reviews': total_reviews,
         'recent_orders': recent_orders,
         'recent_orders_list': recent_orders_list,
+        'settings_form': SupplierSettingsForm(instance=supplier),
+        'product_form': ProductForm(supplier=supplier),
     }
     
     return render(request, template_name, context)
+
+
+@login_required
+def update_merchant_settings(request):
+    supplier = Supplier.objects.filter(user=request.user).first()
+    if not supplier:
+        return redirect('suppliers_list')
+    
+    if request.method == 'POST':
+        form = SupplierSettingsForm(request.POST, request.FILES, instance=supplier)
+        if form.is_valid():
+            form.save()
+            return redirect('my_merchant')
+    
+    return redirect('my_merchant')

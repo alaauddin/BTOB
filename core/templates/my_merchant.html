@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/merchant_dashboard.css' %}">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
     :root {
         --primary-color: {{ supplier.primary_color|default:'#ef7d2d' }};
@@ -20,89 +21,179 @@
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
+
+    .settings-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 24px;
+        max-width: 600px;
+        width: 90%;
+        margin: 50px auto;
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 2rem;
+        position: relative;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+    }
+
+    .color-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .color-preview {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+
+    .hex-input {
+        flex: 1;
+        padding: 0.5rem;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        text-transform: uppercase;
+        font-family: monospace;
+    }
+
+    /* Map Styles */
+    #selection-map {
+        height: 300px;
+        width: 100%;
+        border-radius: 12px;
+        margin-top: 0.5rem;
+        margin-bottom: 1rem;
+        z-index: 10;
+        border: 1px solid #ddd;
+    }
+    
+    .map-preview-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f3f4f6;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .map-preview-btn:hover {
+        background: #e5e7eb;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8" dir="rtl">
     <!-- Header Section -->
-    <div class="merchant-card p-8 mb-8">
-        <div class="flex flex-col lg:flex-row items-center justify-between">
-            <div class="flex flex-col sm:flex-row items-center mb-6 lg:mb-0">
-                <div class="relative">
+    <div class="merchant-card p-6 mb-8 relative overflow-hidden group">
+        <!-- Settings Gear -->
+        <div class="absolute top-4 left-4 z-20">
+            <button class="bg-white/80 hover:bg-white text-gray-700 w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm backdrop-blur-sm" onclick="openSettingsModal()" title="إعدادات المتجر">
+                <i class="fas fa-cog text-lg"></i>
+            </button>
+        </div>
+
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+            <!-- Profile Info -->
+            <div class="flex items-center w-full lg:w-auto">
+                <div class="relative flex-shrink-0">
                     {% if supplier.profile_picture %}
-                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg">
+                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md">
                     {% else %}
-                        <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold shadow-md">
                             {{ supplier.name|first|upper }}
                         </div>
                     {% endif %}
-                    <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white flex items-center justify-center">
-                        <i class="fas fa-check text-white text-sm"></i>
+                    <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                        <i class="fas fa-check text-white text-[10px]"></i>
                     </div>
                 </div>
-                <div class="sm:mr-6 text-center sm:text-right mt-4 sm:mt-0">
-                    <h1 class="text-4xl font-bold text-gradient mb-2">{{ supplier.name }}</h1>
-                    <p class="text-gray-600 text-lg flex items-center justify-center sm:justify-end">
-                        <i class="fas fa-map-marker-alt ml-2 text-blue-500"></i>
-                        {{ supplier.city }}, {{ supplier.country }}
-                    </p>
-                    <p class="text-gray-600 flex items-center mt-1 justify-center sm:justify-end">
-                        <i class="fas fa-phone ml-2 text-green-500"></i>
-                        {{ supplier.phone }}
-                    </p>
+                
+                <div class="mr-5 flex-grow">
+                    <h1 class="text-2xl font-bold text-gray-800 mb-1 leading-tight">{{ supplier.name }}</h1>
+                    <div class="flex flex-wrap gap-3 text-sm text-gray-500">
+                        <div class="flex items-center gap-1">
+                            <i class="fas fa-map-marker-alt text-blue-500"></i>
+                            {{ supplier.city }}
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <i class="fas fa-phone text-green-500"></i>
+                            <span dir="ltr">{{ supplier.phone }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="flex flex-col items-center">
+
+            <!-- Integrated Stats Row -->
+            <div class="flex items-center justify-between w-full lg:w-auto bg-gray-50/80 rounded-2xl p-2 gap-2 lg:gap-6 border border-gray-100/50 backdrop-blur-sm">
+                <!-- Products Stat -->
+                <div class="flex flex-col items-center px-3 lg:px-4 py-1">
+                    <span class="text-xs font-semibold text-gray-400 mb-0.5">المنتجات</span>
+                    <div class="flex items-center gap-1.5 text-blue-600">
+                        <i class="fas fa-box text-sm opacity-70"></i>
+                        <span class="text-lg font-bold leading-none">{{ total_products }}</span>
+                    </div>
+                </div>
+                
+                <div class="w-px h-8 bg-gray-200"></div>
+
+                <!-- Orders Stat -->
+                <div class="flex flex-col items-center px-3 lg:px-4 py-1">
+                    <span class="text-xs font-semibold text-gray-400 mb-0.5">الطلبات</span>
+                    <div class="flex items-center gap-1.5 text-green-600">
+                        <i class="fas fa-shopping-cart text-sm opacity-70"></i>
+                        <span class="text-lg font-bold leading-none">{{ total_orders }}</span>
+                    </div>
+                </div>
+
+                <div class="w-px h-8 bg-gray-200"></div>
+
+                <!-- Pending Stat -->
+                <div class="flex flex-col items-center px-3 lg:px-4 py-1">
+                    <span class="text-xs font-semibold text-gray-400 mb-0.5">المعلقة</span>
+                    <div class="flex items-center gap-1.5 text-orange-600">
+                        <i class="fas fa-clock text-sm opacity-70"></i>
+                        <span class="text-lg font-bold leading-none">{{ pending_orders }}</span>
+                    </div>
+                </div>
+
                 {% if supplier.show_order_amounts %}
-                <div class="text-center mb-4">
-                    <div class="text-3xl font-bold text-gradient">{{ current_month_sales|floatformat:0 }} {{ supplier.currency }}</div>
-                    <div class="text-gray-600">مبيعات هذا الشهر</div>
+                <div class="w-px h-8 bg-gray-200"></div>
+
+                <!-- Revenue Stat -->
+                <div class="flex flex-col items-center px-3 lg:px-4 py-1">
+                    <span class="text-xs font-semibold text-gray-400 mb-0.5">الإيرادات</span>
+                    <div class="flex items-center gap-1.5 text-purple-600">
+                        <i class="fas fa-dollar-sign text-sm opacity-70"></i>
+                        <span class="text-lg font-bold leading-none">{{ total_revenue|floatformat:0 }}</span>
+                    </div>
                 </div>
                 {% endif %}
-                <button class="action-btn">
-                    <i class="fas fa-chart-line"></i>
-                    عرض التقارير
-                </button>
             </div>
         </div>
-    </div>
-
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="stats-card p-6 text-center">
-            <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-box text-blue-500 text-2xl"></i>
-            </div>
-            <div class="text-3xl font-bold text-blue-600 mb-2">{{ total_products }}</div>
-            <div class="text-gray-600 font-semibold">إجمالي المنتجات</div>
-        </div>
-        
-        <div class="stats-card p-6 text-center">
-            <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-shopping-cart text-green-500 text-2xl"></i>
-            </div>
-            <div class="text-3xl font-bold text-green-600 mb-2">{{ total_orders }}</div>
-            <div class="text-gray-600 font-semibold">إجمالي الطلبات</div>
-        </div>
-        
-        <div class="stats-card p-6 text-center">
-            <div class="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-clock text-orange-500 text-2xl"></i>
-            </div>
-            <div class="text-3xl font-bold text-orange-600 mb-2">{{ pending_orders }}</div>
-            <div class="text-gray-600 font-semibold">طلبات معلقة</div>
-        </div>
-        
-        {% if supplier.show_order_amounts %}
-        <div class="stats-card p-6 text-center">
-            <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-dollar-sign text-purple-500 text-2xl"></i>
-            </div>
-            <div class="text-3xl font-bold text-purple-600 mb-2">${{ total_revenue|floatformat:0 }}</div>
-            <div class="text-gray-600 font-semibold">إجمالي الإيرادات</div>
-        </div>
-        {% endif %}
     </div>
 
     <!-- Tabs Navigation -->
@@ -168,12 +259,12 @@
                         </div>
                     </div>
                     
-                    <div class="p-6 text-right">
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">{{ product.name }}</h3>
+                    <div class="p-4 text-right">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">{{ product.name }}</h3>
                         <p class="text-gray-600 mb-4 line-clamp-2">{{ product.description }}</p>
                         
                         <div class="flex justify-between items-center mb-4">
-                            <div class="text-2xl font-bold text-gradient">{{ product.price }} {{ supplier.currency }}</div>
+                            <div class="text-xl font-bold text-gradient">{{ product.price }} {{ supplier.currency }}</div>
                             <div class="flex items-center text-yellow-500">
                                 <i class="fas fa-star"></i>
                                 <span class="mr-1 text-gray-600">{{ product.get_average_rating }}</span>
@@ -227,12 +318,12 @@
                         </div>
                     </div>
                     
-                    <div class="p-6 text-right">
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">{{ offer.product.name }}</h3>
+                    <div class="p-4 text-right">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">{{ offer.product.name }}</h3>
                         <div class="flex justify-between items-center mb-4">
                             <div class="flex flex-col">
                                 <div class="text-lg text-gray-500 line-through">{{ offer.product.price }} {{ supplier.currency }}</div>
-                                <div class="text-2xl font-bold text-gradient">{{ offer.get_price_with_discount|floatformat:2 }} {{ supplier.currency }}</div>
+                                <div class="text-xl font-bold text-gradient">{{ offer.get_price_with_discount|floatformat:2 }} {{ supplier.currency }}</div>
                             </div>
                         </div>
                         <div class="flex gap-2">
@@ -355,7 +446,332 @@
     </div>
 </div>
 
+{% include 'product_modal_snippet.html' %}
+
 <script>
+    // --- UI Helpers ---
+    function toggleDeleteBtn(show, productId = null) {
+        const btn = document.getElementById('modalDeleteBtn');
+        if (show && productId) {
+            btn.classList.remove('hidden');
+            btn.onclick = () => confirmDeleteProduct(productId);
+        } else {
+            btn.classList.add('hidden');
+            btn.onclick = null;
+        }
+    }
+
+    function confirmDeleteProduct(productId) {
+        Swal.fire({
+            title: 'هل أنت متأكد؟',
+            text: "سيتم نقل المنتج إلى المهملات ولن يظهر للعملاء.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#cbd5e1',
+            confirmButtonText: 'نعم، احذفه',
+            cancelButtonText: 'إلغاء'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteProduct(productId);
+            }
+        });
+    }
+
+    function deleteProduct(productId) {
+        const btn = document.getElementById('modalDeleteBtn');
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحذف...';
+        btn.disabled = true;
+
+        fetch(`/delete-product/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire(
+                    'تم الحذف!',
+                    data.message,
+                    'success'
+                ).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire(
+                    'خطأ!',
+                    data.message || 'حدث خطأ غير متوقع',
+                    'error'
+                );
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire(
+                'خطأ!',
+                'تعذر الاتصال بالخادم',
+                'error'
+            );
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        });
+    }
+
+    // --- Modal Management ---
+    function openAddProductModal() {
+        resetModal();
+        toggleDeleteBtn(false); 
+        document.getElementById('modal-title').textContent = 'إضافة منتج جديد';
+        document.getElementById('submitBtnText').textContent = 'إضافة المنتج';
+        document.getElementById('productForm').action = "{% url 'add_product' %}";
+        document.getElementById('product-modal').classList.remove('hidden');
+    }
+
+    function editProduct(productId) {
+        resetModal();
+        const btn = event.currentTarget;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        // Fetch product details
+        fetch(`/edit-product/${productId}/`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const p = data.product;
+                
+                // Populate Form
+                document.getElementById('edit-product-id').value = p.id;
+                document.getElementById('id_name').value = p.name;
+                document.getElementById('id_description').value = p.description;
+                document.getElementById('id_price').value = p.price;
+                if (p.category_id) document.getElementById('id_category').value = p.category_id;
+                document.getElementById('id_is_new').checked = p.is_new;
+                
+                // Handle Image
+                if (p.image_url) {
+                    document.getElementById('modalPreviewImage').src = p.image_url;
+                    document.getElementById('modalFileName').textContent = 'الصورة الحالية';
+                    document.getElementById('modalFilePreview').classList.remove('hidden');
+                    document.getElementById('modalFileUploadContent').classList.add('hidden');
+
+                }
+
+                // Update UI state
+                document.getElementById('modal-title').textContent = 'تعديل المنتج';
+                document.getElementById('submitBtnText').textContent = 'حفظ التغييرات';
+                document.getElementById('productForm').action = `/edit-product/${productId}/`;
+                
+                // Show delete button
+                toggleDeleteBtn(true, productId);
+                
+                // Trigger preview updates
+                document.getElementById('id_name').dispatchEvent(new Event('input'));
+                document.getElementById('id_price').dispatchEvent(new Event('input'));
+                document.getElementById('id_category').dispatchEvent(new Event('change'));
+
+                document.getElementById('product-modal').classList.remove('hidden');
+            } else {
+                showNotification(data.message || 'حدث خطأ أثناء جلب بيانات المنتج', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showNotification('حدث خطأ في الاتصال', 'error');
+        })
+        .finally(() => {
+            btn.innerHTML = '<i class="fas fa-edit"></i> تعديل';
+        });
+    }
+
+    function closeProductModal() {
+        document.getElementById('product-modal').classList.add('hidden');
+    }
+
+    function resetModal() {
+        document.getElementById('productForm').reset();
+        document.getElementById('edit-product-id').value = '';
+        document.getElementById('modalFilePreview').classList.add('hidden');
+        document.getElementById('modalFileUploadContent').classList.remove('hidden');
+        toggleDeleteBtn(false);
+        
+        // Reset previews
+        document.getElementById('preview-display-name').textContent = 'اسم المنتج';
+        document.getElementById('preview-display-price').textContent = '0.00';
+        document.getElementById('preview-display-category').textContent = 'الفئة';
+        
+        // Clear errors
+        document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
+    }
+
+    // --- Form Submission ---
+    document.getElementById('productForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('modalSubmitBtn');
+        const spinner = btn.querySelector('.loading-spinner');
+        const text = document.getElementById('submitBtnText');
+        
+        btn.disabled = true;
+        spinner.classList.remove('hidden');
+        text.classList.add('opacity-0');
+        
+        const formData = new FormData(this);
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => window.location.reload(), 1000); // Reload to show changes
+            } else {
+                if (data.errors) {
+                    for (const [field, msg] of Object.entries(data.errors)) {
+                        const err = document.getElementById(`${field}-error`);
+                        if (err) {
+                            err.textContent = msg;
+                            err.classList.remove('hidden');
+                        }
+                    }
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            }
+            btn.disabled = false;
+        })
+        .catch(err => {
+            console.error(err);
+            showNotification('حدث خطأ في الاتصال', 'error');
+            btn.disabled = false;
+        })
+        .finally(() => {
+            spinner.classList.add('hidden');
+            text.classList.remove('opacity-0');
+        });
+    });
+
+    // --- Real-time Preview ---
+    const pName = document.getElementById('id_name');
+    const pPrice = document.getElementById('id_price');
+    const pCat = document.getElementById('id_category');
+    
+    if(pName) pName.addEventListener('input', e => document.getElementById('preview-display-name').textContent = e.target.value || 'اسم المنتج');
+    if(pPrice) pPrice.addEventListener('input', e => document.getElementById('preview-display-price').textContent = e.target.value || '0.00');
+    if(pCat) pCat.addEventListener('change', e => {
+        const opt = e.target.options[e.target.selectedIndex];
+        document.getElementById('preview-display-category').textContent = opt ? opt.text : 'الفئة';
+    });
+
+    // --- File Handling ---
+    const fileInput = document.getElementById('id_image');
+    if(fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('modalPreviewImage').src = e.target.result;
+
+                    document.getElementById('modalFileName').textContent = file.name;
+                    document.getElementById('modalFilePreview').classList.remove('hidden');
+                    document.getElementById('modalFileUploadContent').classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    document.getElementById('clearFileBtn').addEventListener('click', function() {
+        fileInput.value = '';
+        document.getElementById('modalFilePreview').classList.add('hidden');
+        document.getElementById('modalFileUploadContent').classList.remove('hidden');
+
+    });
+
+    // --- Category Modal Logic ---
+    window.toggleNewParentInput = (val) => {
+        const container = document.getElementById('new-parent-container');
+        container.classList.toggle('hidden', val !== 'new');
+    };
+
+    window.openCategoryModal = () => document.getElementById('category-modal').classList.remove('hidden');
+    window.closeCategoryModal = () => document.getElementById('category-modal').classList.add('hidden');
+
+    window.submitCategory = () => {
+        const parentId = document.getElementById('parent-category-select').value;
+        const newParentName = document.getElementById('new-parent-name').value;
+        const subName = document.getElementById('subcategory-name').value;
+        const btn = document.getElementById('submitCategoryBtn');
+
+        if ((parentId === 'new' && !newParentName) || !subName) {
+            showNotification('يرجى ملء جميع الحقول', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        const spinner = btn.querySelector('.loading-spinner');
+        spinner.classList.remove('hidden');
+
+        const formData = new FormData();
+        formData.append('parent_id', parentId);
+        formData.append('new_parent_name', newParentName);
+        formData.append('subcategory_name', subName);
+
+        fetch("{% url 'add_category_ajax' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const select = document.getElementById('id_category');
+                const opt = new Option(data.category.name, data.category.id, true, true);
+                select.add(opt);
+                showNotification(data.message, 'success');
+                closeCategoryModal();
+                // Reset form
+                document.getElementById('addCategoryForm').reset();
+                document.getElementById('new-parent-container').classList.add('hidden');
+                // Trigger preview update
+                select.dispatchEvent(new Event('change'));
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showNotification('حدث خطأ في الاتصال', 'error');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            spinner.classList.add('hidden');
+        });
+    };
+    
+    // Additional Helper for notifications if not exists
+    window.showNotification = window.showNotification || function(msg, type) {
+        // Simple fallback
+        alert(msg);
+    };
+
     function showTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -365,15 +781,6 @@
             tab.classList.remove('hidden');
         }
         event.currentTarget.classList.add('active');
-    }
-
-    // Product Actions
-    function editProduct(productId) {
-        window.location.href = `/edit-product/${productId}/`;
-    }
-
-    function openAddProductModal() {
-        window.location.href = "{% url 'add_product' %}";
     }
 
     // Offer Actions
@@ -401,6 +808,279 @@
         const fab = document.querySelector('.floating-add-btn');
         if (menu && !menu.contains(e.target) && !fab.contains(e.target)) {
             menu.classList.add('hidden');
+        }
+    });
+</script>
+
+
+
+<!-- Settings Modal -->
+<div id="settings-modal" class="settings-modal" onclick="closeSettingsModalOnOutsideClick(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gradient">إعدادات المتجر</h2>
+            <button onclick="closeSettingsModal()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <form action="{% url 'update_merchant_settings' %}" method="POST" enctype="multipart/form-data" id="merchant-settings-form">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                <!-- Name & Contact -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">{{ settings_form.name.label }}</label>
+                        {{ settings_form.name }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">{{ settings_form.phone.label }}</label>
+                        {{ settings_form.phone }}
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-2">{{ settings_form.address.label }}</label>
+                    {{ settings_form.address }}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">{{ settings_form.city.label }}</label>
+                        {{ settings_form.city }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-2">{{ settings_form.country.label }}</label>
+                        {{ settings_form.country }}
+                    </div>
+                </div>
+
+                <!-- Logo -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-2">{{ settings_form.profile_picture.label }}</label>
+                    <div class="flex items-center gap-4">
+                        {% if supplier.profile_picture %}
+                        <img src="{{ supplier.profile_picture.url }}" class="w-12 h-12 rounded-full object-cover" id="logo-preview">
+                        {% endif %}
+                        {{ settings_form.profile_picture }}
+                    </div>
+                </div>
+
+                <!-- Location Selection Map -->
+                <div class="space-y-4 pt-4 border-t">
+                    <h3 class="font-bold text-gray-700">موقع المتجر على الخريطة</h3>
+                    
+                    {{ settings_form.latitude }}
+                    {{ settings_form.longitude }}
+                    
+                    <div class="map-preview-btn" onclick="toggleMap()">
+                        <i class="fas fa-map-marked-alt text-blue-500 text-xl"></i>
+                        <div class="text-right">
+                            <div class="font-bold text-sm">حدد الموقع على الخريطة</div>
+                            <div class="text-xs text-gray-500" id="coords-status">
+                                {% if supplier.latitude and supplier.longitude %}
+                                    الإحداثيات محددة: {{ supplier.latitude|floatformat:4 }}, {{ supplier.longitude|floatformat:4 }}
+                                {% else %}
+                                    الموقع غير محدد حالياً
+                                {% endif %}
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-down mr-auto" id="map-toggle-icon"></i>
+                    </div>
+                    
+                    <div id="selection-map" style="display: none;"></div>
+                    <p class="text-[10px] text-gray-400">انقر على الخريطة ليتم تحديد موقع متجرك بدقة ليتمكن العملاء من الوصول إليك بسهولة.</p>
+                </div>
+
+                <!-- Colors -->
+                <div class="space-y-4 pt-4 border-t">
+                    <h3 class="font-bold text-gray-700">ألوان الهوية</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Primary Color -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-gray-500">{{ settings_form.primary_color.label }}</label>
+                            <div class="color-input-container">
+                                <input type="color" name="primary_color" id="primary-color-picker" 
+                                       value="{{ supplier.primary_color|default:'#ef7d2d' }}" 
+                                       class="w-full h-10 rounded cursor-pointer" 
+                                       oninput="updateHexInput('primary')">
+                                <input type="text" id="primary-hex-input" 
+                                       class="w-full mt-1 text-center font-mono text-sm border rounded p-1" 
+                                       value="{{ supplier.primary_color|default:'#ef7d2d' }}" 
+                                       oninput="updatePickerInput('primary')">
+                            </div>
+                        </div>
+
+                        <!-- Secondary Color -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-gray-500">{{ settings_form.secondary_color.label }}</label>
+                            <div class="color-input-container">
+                                <input type="color" name="secondary_color" id="secondary-color-picker" 
+                                       value="{{ supplier.secondary_color|default:'#ffffff' }}" 
+                                       class="w-full h-10 rounded border cursor-pointer" 
+                                       oninput="updateHexInput('secondary')">
+                                <input type="text" id="secondary-hex-input" 
+                                       class="w-full mt-1 text-center font-mono text-sm border rounded p-1" 
+                                       value="{{ supplier.secondary_color|default:'#ffffff' }}" 
+                                       oninput="updatePickerInput('secondary')">
+                            </div>
+                        </div>
+
+                        <!-- Accent Color -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-gray-500">{{ settings_form.accent_color.label }}</label>
+                            <div class="color-input-container">
+                                <input type="color" name="accent_color" id="accent-color-picker" 
+                                       value="{{ supplier.accent_color|default:'#9abfc4' }}" 
+                                       class="w-full h-10 rounded cursor-pointer" 
+                                       oninput="updateHexInput('accent')">
+                                <input type="text" id="accent-hex-input" 
+                                       class="w-full mt-1 text-center font-mono text-sm border rounded p-1" 
+                                       value="{{ supplier.accent_color|default:'#9abfc4' }}" 
+                                       oninput="updatePickerInput('accent')">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 pt-6">
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all">
+                        حفظ التغييرات
+                    </button>
+                    <button type="button" onclick="closeSettingsModal()" class="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl hover:bg-gray-200 transition-all">
+                        إلغاء
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    let map = null;
+    let marker = null;
+    let mapInitialized = false;
+
+    function initMap() {
+        if (mapInitialized) return;
+        
+        const defaultLat = {{ supplier.latitude|default:15.3694 }};
+        const defaultLng = {{ supplier.longitude|default:44.1910 }}; // Default to Sana'a if not set
+        
+        map = L.map('selection-map').setView([defaultLat, defaultLng], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        {% if supplier.latitude and supplier.longitude %}
+            marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
+        {% endif %}
+
+        map.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            updateLocation(lat, lng);
+        });
+
+        mapInitialized = true;
+    }
+
+    function updateLocation(lat, lng) {
+        if (marker) {
+            marker.setLatLng([lat, lng]);
+        } else {
+            marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+        }
+
+        // Add dragend listener to marker
+        marker.on('dragend', function(event) {
+            const position = marker.getLatLng();
+            updateFormInputs(position.lat, position.lng);
+        });
+
+        updateFormInputs(lat, lng);
+    }
+
+    function updateFormInputs(lat, lng) {
+        document.querySelector('[name="latitude"]').value = lat;
+        document.querySelector('[name="longitude"]').value = lng;
+        document.getElementById('coords-status').textContent = `الإحداثيات محددة: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    }
+
+    function toggleMap() {
+        const mapDiv = document.getElementById('selection-map');
+        const icon = document.getElementById('map-toggle-icon');
+        
+        if (mapDiv.style.display === 'none') {
+            mapDiv.style.display = 'block';
+            icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+            
+            // Re-initialize or invalidate size to ensure map renders correctly
+            if (!mapInitialized) {
+                initMap();
+            } else {
+                map.invalidateSize();
+            }
+        } else {
+            mapDiv.style.display = 'none';
+            icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+        }
+    }
+
+    function openSettingsModal() {
+        document.getElementById('settings-modal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSettingsModal() {
+        document.getElementById('settings-modal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+        // Hide map on close so it resets
+        document.getElementById('selection-map').style.display = 'none';
+        document.getElementById('map-toggle-icon').classList.replace('fa-chevron-up', 'fa-chevron-down');
+    }
+
+    function closeSettingsModalOnOutsideClick(e) {
+        if (e.target.id === 'settings-modal') {
+            closeSettingsModal();
+        }
+    }
+
+    function updateHexInput(prefix) {
+        const picker = document.getElementById(prefix + '-color-picker');
+        const hex = document.getElementById(prefix + '-hex-input');
+        hex.value = picker.value.toUpperCase();
+    }
+
+    function updatePickerInput(prefix) {
+        const picker = document.getElementById(prefix + '-color-picker');
+        const hex = document.getElementById(prefix + '-hex-input');
+        let val = hex.value;
+        if (!val.startsWith('#')) val = '#' + val;
+        if (/^#[0-9A-F]{6}$/i.test(val)) {
+            picker.value = val;
+        }
+    }
+
+    // Preview logo before upload
+    document.querySelector('input[name="profile_picture"]').addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let preview = document.getElementById('logo-preview');
+                if (!preview) {
+                    preview = document.createElement('img');
+                    preview.id = 'logo-preview';
+                    preview.className = 'w-12 h-12 rounded-full object-cover';
+                    document.querySelector('input[name="profile_picture"]').parentElement.prepend(preview);
+                }
+                preview.src = e.target.result;
+            }
+            reader.readAsDataURL(this.files[0]);
         }
     });
 </script>

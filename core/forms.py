@@ -298,3 +298,62 @@ class BusinessRequestForm(forms.ModelForm):
             'business_type': 'نوع النشاط',
             'message': 'رسالة إضافية',
         }
+
+
+class SupplierSettingsForm(forms.ModelForm):
+    class Meta:
+        model = Supplier
+        fields = [
+            'name', 'phone', 'address', 'city', 'country', 
+            'primary_color', 'secondary_color', 'accent_color',
+            'profile_picture', 'latitude', 'longitude'
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all',
+                'placeholder': 'اسم المتجر'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all',
+                'placeholder': 'رقم الهاتف'
+            }),
+            'address': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all',
+                'placeholder': 'العنوان'
+            }),
+            'city': forms.Select(attrs={
+                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all'
+            }),
+            'country': forms.Select(attrs={
+                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all'
+            }),
+            'primary_color': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all color-picker-input',
+                'type': 'color'
+            }),
+            'secondary_color': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all color-picker-input',
+                'type': 'color'
+            }),
+            'accent_color': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all color-picker-input',
+                'type': 'color'
+            }),
+            'profile_picture': forms.FileInput(attrs={
+                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all',
+                'accept': 'image/*'
+            }),
+            'latitude': forms.HiddenInput(),
+            'longitude': forms.HiddenInput(),
+        }
+        labels = {
+            'name': 'اسم المتجر',
+            'phone': 'رقم الهاتف',
+            'address': 'العنوان',
+            'city': 'المدينة',
+            'country': 'الدولة',
+            'primary_color': 'اللون الأساسي',
+            'secondary_color': 'اللون الثانوي',
+            'accent_color': 'لون التمييز',
+            'profile_picture': 'شعار المتجر'
+        }

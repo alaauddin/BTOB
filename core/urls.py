@@ -17,7 +17,7 @@ from core.views.ProductListView import product_list
 from core.views.ConvertCartToOrder import checkout_select_address_or_custom_address
 from core.views.SuppliersListView import SuppliersListView
 from core.views.add_to_wish_list import toggle_wishlist, get_wishlist_status
-from core.views.MyMerchant import my_merchant
+from core.views.MyMerchant import my_merchant, update_merchant_settings
 from core.views.add_product import add_product
 from core.views.edit_product import edit_product
 from core.views.add_product_offer import add_product_offer
@@ -25,6 +25,8 @@ from core.views.edit_product_offer import edit_product_offer
 from core.views.add_ads import add_ads
 from core.views.edit_ads import edit_ads
 from core.views.MerchantOrderManagement import merchant_orders, merchant_order_detail, update_order_status, add_order_note, add_payment_reference
+from core.views.category_views import add_category_ajax
+from core.views.delete_product import delete_product
 
 urlpatterns = [
     # path('products/', ProductListView.as_view(), name='product-list'),
@@ -63,12 +65,15 @@ urlpatterns = [
     
     # Merchant Dashboard
     path('my-merchant/', my_merchant, name='my_merchant'),
+    path('update-merchant-settings/', update_merchant_settings, name='update_merchant_settings'),
     path('add-product/', add_product, name='add_product'),
     path('edit-product/<int:product_id>/', edit_product, name='edit_product'),
     path('add-offer/', add_product_offer, name='add_product_offer'),
     path('edit-offer/<int:offer_id>/', edit_product_offer, name='edit_product_offer'),
     path('add-ads/', add_ads, name='add_ads'),
     path('edit-ads/<int:ad_id>/', edit_ads, name='edit_ads'),
+    path('delete-product/<int:product_id>/', delete_product, name='delete_product'),
+    path('add-category-ajax/', add_category_ajax, name='add_category_ajax'),
     
     # Merchant Order Management
     path('merchant-orders/', merchant_orders, name='merchant_orders'),

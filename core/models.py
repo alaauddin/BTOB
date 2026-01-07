@@ -132,7 +132,7 @@ class ProductCategory(models.Model):
     name = models.CharField(max_length=100)
     
     def __str__(self):
-        return self.name
+        return f"{self.category.name} > {self.name}"
 
 class Product(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, related_name='products')
@@ -142,6 +142,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to=upload_to_path)
     is_new = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     views_count = models.PositiveIntegerField(default=0, verbose_name="عدد المشاهدات")
     
     def __str__(self):

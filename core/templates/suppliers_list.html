@@ -78,7 +78,12 @@
         <div class="supplier-horizontal-scroll" id="supplierGrid">
             {% for supplier in suppliers %}
             <div class="supplier-card-container" data-categories="{% for cat in supplier.category.all %}{{ cat.id }},{% endfor %}">
-                <div class="supplier-card">
+                <div class="supplier-card relative group">
+                    {% if request.user.is_superuser %}
+                    <a href="{% url 'my_merchant' %}?supplier_id={{ supplier.id }}" class="absolute top-2 left-2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm text-gray-700 rounded-full shadow-sm hover:bg-red-500 hover:text-white transition-all transform hover:scale-110" title="إدارة المتجر">
+                        <i class="fas fa-cog text-sm"></i>
+                    </a>
+                    {% endif %}
                     <div class="supplier-cover" style="{% if supplier.panal_picture %}background-image: url('{{ supplier.panal_picture.url }}'); background-size: cover; background-position: center;{% else %}background-color: {{ supplier.primary_color }}22;{% endif %}"></div>
                     <div class="supplier-logo-wrapper">
                         <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}">

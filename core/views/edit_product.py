@@ -14,16 +14,34 @@ from core.models import Supplier, ProductCategory, Product
 @require_http_methods(["GET", "POST"])
 def edit_product(request, product_id):
     # Get the supplier for the current user
-    try:
-        supplier = get_object_or_404(Supplier, user=request.user)
-    except:
+    # Determine supplier and fetch product
+    if request.user.is_superuser:
+        product = get_object_or_404(Product, id=product_id)
+        supplier = product.supplier
+    else:
+        try:
+            supplier = get_object_or_404(Supplier, user=request.user)
+        except:
+             return JsonResponse({
+                'success': False, 
+                'message': 'You must be a registered supplier to edit products'
+            }, status=403)
+        product = get_object_or_404(Product, id=product_id, supplier=supplier)
+
+    # Handle AJAX GET request for product details
+    if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
-            'success': False, 
-            'message': 'You must be a registered supplier to edit products'
-        }, status=403)
-    
-    # Get the product and ensure it belongs to the current supplier
-    product = get_object_or_404(Product, id=product_id, supplier=supplier)
+            'success': True,
+            'product': {
+                'id': product.id,
+                'name': product.name,
+                'description': product.description,
+                'price': str(product.price),
+                'category_id': product.category.id if product.category else None,
+                'is_new': product.is_new,
+                'image_url': product.image.url if product.image else None
+            }
+        })
     
     if request.method == 'POST':
         # Handle AJAX form submission
