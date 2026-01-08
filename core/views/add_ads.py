@@ -13,10 +13,14 @@ from core.models import Supplier, SuppierAds
 @login_required
 @require_http_methods(["GET", "POST"])
 def add_ads(request):
-    # Get the supplier for the current user
-    try:
-        supplier = get_object_or_404(Supplier, user=request.user)
-    except:
+    # Get the supplier for the current user or via supplier_id/POST for superuser
+    supplier_id = request.GET.get('supplier_id') or request.POST.get('supplier_id')
+    if request.user.is_superuser and supplier_id:
+        supplier = get_object_or_404(Supplier, id=supplier_id)
+    else:
+        supplier = Supplier.objects.filter(user=request.user).first()
+        
+    if not supplier:
         return JsonResponse({
             'success': False, 
             'message': 'You must be a registered supplier to add ads'

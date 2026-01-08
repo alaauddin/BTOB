@@ -361,7 +361,7 @@
             <p><i class="fas fa-calendar-alt me-2"></i> {{ order.created_at|date:"Y/m/d H:i" }}</p>
         </div>
         <div class="header-actions">
-            <a href="{% url 'merchant_orders' %}" class="btn glass" style="color: white; border: 1px solid rgba(255,255,255,0.3);">
+            <a href="{% url 'merchant_orders' %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="btn glass" style="color: white; border: 1px solid rgba(255,255,255,0.3);">
                 <i class="fas fa-arrow-right me-2"></i> العودة للقائمة
             </a>
             <button class="btn btn-light rounded-pill px-4 font-weight-bold">
@@ -427,7 +427,7 @@
 
                 <h5 class="fw-bold mb-3 small text-muted text-uppercase">تاريخ الطلبات الأخيرة</h5>
                 {% for past_order in customer_stats.recent_history %}
-                    <a href="{% url 'merchant_order_detail' past_order.id %}" class="d-flex justify-content-between align-items-center p-3 mb-2 rounded-3 text-decoration-none hover-bg-light border">
+                    <a href="{% url 'merchant_order_detail' past_order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="d-flex justify-content-between align-items-center p-3 mb-2 rounded-3 text-decoration-none hover-bg-light border">
                         <div class="text-dark">#{{ past_order.id }}</div>
                         <div class="small text-muted">{{ past_order.created_at|date:"d M Y" }}</div>
                         <div class="fw-bold text-primary">{{ past_order.total_amount|floatformat:0 }} {{ supplier.currency }}</div>
@@ -544,7 +544,10 @@
                 <h3 class="section-title"><i class="fas fa-bolt"></i> إجراءات سريعة</h3>
                 
                 {% if order.get_next_status %}
-                <form method="post" action="{% url 'update_order_status' order.id %}" class="mb-4">
+                <form method="post" action="{% url 'update_order_status' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="mb-4">
+                        {% if request.GET.supplier_id %}
+                            <input type="hidden" name="supplier_id" value="{{ request.GET.supplier_id }}">
+                        {% endif %}
                     {% csrf_token %}
                     <input type="hidden" name="status" value="next">
                     <button type="submit" class="btn-premium-action">
@@ -556,7 +559,10 @@
 
                 <div class="manual-override mt-4">
                     <label class="form-label fw-bold small text-uppercase">تغيير الحالة يدوياً</label>
-                    <form method="post" action="{% url 'update_order_status' order.id %}">
+                    <form method="post" action="{% url 'update_order_status' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}">
+                        {% if request.GET.supplier_id %}
+                            <input type="hidden" name="supplier_id" value="{{ request.GET.supplier_id }}">
+                        {% endif %}
                         {% csrf_token %}
                         <div class="input-group">
                             <select name="status" class="form-select border-0 bg-light">
@@ -600,7 +606,7 @@
                     </table>
                 </div>
 
-                <form method="post" action="{% url 'add_order_note' order.id %}">
+                <form method="post" action="{% url 'add_order_note' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-uppercase">إضافة ملاحظة جديدة</label>
@@ -638,7 +644,7 @@
                 <div class="modal-body p-4">
                     <div class="list-group list-group-flush">
                         {% for p_order in pending_orders %}
-                        <a href="{% url 'merchant_order_detail' p_order.id %}" class="list-group-item list-group-item-action order-item-link border-0 mb-2 p-3 d-flex justify-content-between align-items-center">
+                        <a href="{% url 'merchant_order_detail' p_order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="list-group-item list-group-item-action order-item-link border-0 mb-2 p-3 d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center">
                                 <div class="bg-soft-primary rounded-circle p-3 me-3" style="background: rgba(79, 70, 229, 0.1); color: var(--primary);">
                                     <i class="fas fa-shopping-cart"></i>
@@ -662,7 +668,7 @@
                     </div>
                 </div>
                 <div class="modal-footer border-0 p-4">
-                    <a href="{% url 'merchant_orders' %}" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-lg">
+                    <a href="{% url 'merchant_orders' %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-lg">
                         مشاهدة جميع الطلبات <i class="fas fa-arrow-left ms-2"></i>
                     </a>
                 </div>
@@ -700,7 +706,7 @@
         </table>
     </div>
 
-    <form method="post" action="{% url 'add_payment_reference' order.id %}" class="bg-light p-4 rounded-3 border">
+    <form method="post" action="{% url 'add_payment_reference' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="bg-light p-4 rounded-3 border">
         {% csrf_token %}
         <div class="row g-3">
             <div class="col-md-5">

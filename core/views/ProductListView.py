@@ -79,8 +79,8 @@ def product_list(request, store_id, category_id=None, subcategory_id=None):
         'active_subcategory_id': int(subcategory_id) if subcategory_id else None,
         'active_store_id': store_id,
         'supplier': supplier,
-        'categories': Category.objects.filter(supplier=supplier),
-        'product_categories': ProductCategory.objects.filter(category_id=category_id) if category_id else None,
+        'categories': Category.objects.filter(productcategory__products__supplier=supplier).distinct(),
+        'product_categories': ProductCategory.objects.filter(category_id=category_id, products__supplier=supplier).distinct() if category_id else None,
         'suppliers': Product.objects.values('supplier_id').distinct(),
         'supplier_ads':supplier_ads
     }

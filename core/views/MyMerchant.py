@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from core.models import Supplier, Product, ProductOffer, Promotion, SuppierAds, Order
+from core.models import Supplier, Product, ProductOffer, Promotion, SuppierAds, Order, Category, PlatformOfferAd
 from core.forms import SupplierSettingsForm, ProductForm
 from django.db.models import Count, Sum, Avg
 from django.utils import timezone
@@ -27,7 +27,7 @@ def my_merchant(request):
         return redirect('suppliers_list')
     
     # Get all related data
-    products = Product.objects.filter(supplier=supplier, is_active=True)
+    products = Product.objects.filter(supplier=supplier)
     active_offers = ProductOffer.objects.filter(
         product__supplier=supplier, 
         is_active=True
@@ -77,7 +77,13 @@ def my_merchant(request):
     ).count()
     
     # Get recent orders for display
+    # Get promotions and ads
+    ads = SuppierAds.objects.filter(supplier=supplier)
+    platform_promotions = PlatformOfferAd.objects.filter(product__supplier=supplier).order_by('-id')
+    
+    ads_count = ads.count() # This was calculated before, moving it here after ads is defined.
     recent_orders_list = orders.order_by('-created_at')[:5]
+    categories = Category.objects.all()
     
     context = {
         'supplier': supplier,
@@ -85,6 +91,7 @@ def my_merchant(request):
         'active_offers': active_offers,
         'promotions': promotions,
         'ads': ads,
+        'platform_promotions': platform_promotions,
         'total_products': total_products,
         'active_offers_count': active_offers_count,
         'promotions_count': promotions_count,
@@ -102,6 +109,7 @@ def my_merchant(request):
         'recent_orders_list': recent_orders_list,
         'settings_form': SupplierSettingsForm(instance=supplier),
         'product_form': ProductForm(supplier=supplier),
+        'categories': Category.objects.all(),
     }
     
     return render(request, template_name, context)
@@ -109,7 +117,16 @@ def my_merchant(request):
 
 @login_required
 def update_merchant_settings(request):
-    supplier = Supplier.objects.filter(user=request.user).first()
+    supplier = None
+    if request.user.is_superuser:
+        if request.POST.get('supplier_id'):
+           supplier = Supplier.objects.filter(id=request.POST.get('supplier_id')).first()
+        elif request.GET.get('supplier_id'):
+            supplier = Supplier.objects.filter(id=request.GET.get('supplier_id')).first()
+
+    if not supplier:
+        supplier = Supplier.objects.filter(user=request.user).first()
+        
     if not supplier:
         return redirect('suppliers_list')
     
@@ -117,6 +134,14 @@ def update_merchant_settings(request):
         form = SupplierSettingsForm(request.POST, request.FILES, instance=supplier)
         if form.is_valid():
             form.save()
+            
+            # If superuser is editing another merchant, redirect back to that merchant's dashboard
+            if request.user.is_superuser and supplier.user != request.user:
+                return redirect(f"/my-merchant/?supplier_id={supplier.id}")
+                
             return redirect('my_merchant')
     
+    # Also handle the final redirect similarly
+    if request.user.is_superuser and supplier.user != request.user:
+        return redirect(f"/my-merchant/?supplier_id={supplier.id}")
     return redirect('my_merchant')

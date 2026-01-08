@@ -250,7 +250,7 @@
                 <!-- Header -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="fas fa-shopping-cart me-2"></i>إدارة الطلبات</h2>
-                    <a href="{% url 'my_merchant' %}" class="btn btn-outline-primary">
+                    <a href="{% url 'my_merchant' %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="btn btn-outline-primary">
                         <i class="fas fa-arrow-right me-2"></i>العودة للوحة التحكم
                     </a>
                 </div>
@@ -280,6 +280,9 @@
                 <!-- Filters -->
                 <div class="filters-section">
                     <form method="get" class="filter-form">
+                        {% if request.GET.supplier_id %}
+                            <input type="hidden" name="supplier_id" value="{{ request.GET.supplier_id }}">
+                        {% endif %}
                         <div class="filter-row">
                             <div class="filter-group">
                                 <label for="status">حالة الطلب</label>
@@ -364,7 +367,7 @@
                                                 {% endif %}
                                             {% endwith %}
                                             
-                                            <a href="{% url 'merchant_order_detail' order.id %}" class="btn-view">
+                                            <a href="{% url 'merchant_order_detail' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="btn-view">
                                                 <i class="fas fa-eye"></i> التفاصيل
                                             </a>
                                         </div>
@@ -378,8 +381,8 @@
                         {% if page_obj.has_other_pages %}
                         <div class="pagination">
                             {% if page_obj.has_previous %}
-                                <a href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">الأولى</a>
-                                <a href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">السابقة</a>
+                                <a href="?page=1{% if request.GET.supplier_id %}&supplier_id={{ request.GET.supplier_id }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">الأولى</a>
+                                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.supplier_id %}&supplier_id={{ request.GET.supplier_id }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">السابقة</a>
                             {% endif %}
                             
                             <span class="current">
@@ -387,8 +390,8 @@
                             </span>
                             
                             {% if page_obj.has_next %}
-                                <a href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">التالية</a>
-                                <a href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">الأخيرة</a>
+                                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.supplier_id %}&supplier_id={{ request.GET.supplier_id }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">التالية</a>
+                                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.supplier_id %}&supplier_id={{ request.GET.supplier_id }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">الأخيرة</a>
                             {% endif %}
                         </div>
                         {% endif %}

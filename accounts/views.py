@@ -95,4 +95,39 @@ def ajax_login_view(request):
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
             
+@csrf_exempt
+def ajax_signup_view(request):
+    """
+    Handle AJAX signup requests.
+    Expects JSON data: {'username': '...', 'first_name': '...', 'password': '...'}
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            form = SignUpForm(data)
+            if form.is_valid():
+                user = form.save(commit=False)
+                # Auto-generate email from phone number
+                user.email = f"{user.username}@aratatt.com"
+                user.save()
+                
+                auth_login(request, user)
+                return JsonResponse({
+                    'success': True, 
+                    'message': 'Signup successful',
+                    'username': user.username
+                })
+            else:
+                # Get form errors
+                errors = {}
+                for field, error_list in form.errors.items():
+                    errors[field] = error_list[0]
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'يرجى تصحيح الأخطاء',
+                    'errors': errors
+                })
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+            
     return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)

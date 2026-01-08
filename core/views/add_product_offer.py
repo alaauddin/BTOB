@@ -13,14 +13,19 @@ from core.models import Supplier, Product, ProductOffer
 @login_required
 @require_http_methods(["GET", "POST"])
 def add_product_offer(request):
-    # Get the supplier for the current user
-    try:
-        supplier = get_object_or_404(Supplier, user=request.user)
-    except:
-        return JsonResponse({
-            'success': False, 
-            'message': 'You must be a registered supplier to add product offers'
-        }, status=403)
+    # Support superuser visiting via supplier_id query param
+    if request.user.is_superuser and request.GET.get('supplier_id'):
+        supplier_id = request.GET.get('supplier_id')
+        supplier = get_object_or_404(Supplier, id=supplier_id)
+    else:
+        # Get the supplier for the current user
+        try:
+            supplier = get_object_or_404(Supplier, user=request.user)
+        except:
+            return JsonResponse({
+                'success': False, 
+                'message': 'You must be a registered supplier to add product offers'
+            }, status=403)
     
     if request.method == 'POST':
         # Handle AJAX form submission
@@ -73,6 +78,8 @@ def add_product_offer(request):
                 offer.created_by = request.user
                 offer.save()
                 messages.success(request, 'تم إضافة العرض بنجاح!')
+                if request.user.is_superuser:
+                    return redirect(f'/my-merchant/?supplier_id={supplier.id}')
                 return redirect('my_merchant')
             else:
                 messages.error(request, 'يرجى تصحيح الأخطاء في النموذج')

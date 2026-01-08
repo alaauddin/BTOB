@@ -7,7 +7,7 @@ from django.views.decorators.http import require_http_methods
 import json
 
 from core.forms import ProductForm
-from core.models import Supplier, ProductCategory, Product
+from core.models import Supplier, ProductCategory, Product, Category
 
 
 @login_required
@@ -39,6 +39,7 @@ def edit_product(request, product_id):
                 'price': str(product.price),
                 'category_id': product.category.id if product.category else None,
                 'is_new': product.is_new,
+                'is_active': product.is_active,
                 'image_url': product.image.url if product.image else None
             }
         })
@@ -89,6 +90,11 @@ def edit_product(request, product_id):
                 updated_product.supplier = supplier
                 updated_product.save()
                 messages.success(request, 'تم تحديث المنتج بنجاح!')
+                
+                # If superuser is editing for another merchant, redirect back to that merchant's dashboard
+                if request.user.is_superuser and supplier.user != request.user:
+                    return redirect(f"/my-merchant/?supplier_id={supplier.id}")
+                    
                 return redirect('my_merchant')
             else:
                 messages.error(request, 'يرجى تصحيح الأخطاء في النموذج')
@@ -96,8 +102,8 @@ def edit_product(request, product_id):
     else:
         form = ProductForm(instance=product, supplier=supplier)
     
-    # Get categories for this supplier
-    categories = ProductCategory.objects.filter(category__supplier=supplier)
+    # Get all categories (global)
+    categories = Category.objects.all()
     
     context = {
         'form': form,

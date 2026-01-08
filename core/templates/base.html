@@ -22,6 +22,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Arabic web fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@300;400;700;900&display=swap" rel="stylesheet">
@@ -197,6 +198,11 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
         }
+
+        /* Ensure SweetAlert2 is always on top of custom modals */
+        .swal2-container {
+            z-index: 2000000 !important;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -222,6 +228,139 @@
             </div>
         </div>
     </div>
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 z-[2000000] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-opacity" aria-hidden="true" onclick="closeLoginModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-middle bg-white rounded-3xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full border border-gray-100">
+                
+                <!-- Logo Header -->
+                <div class="bg-gray-50/50 border-b border-gray-100 py-4 flex items-center justify-center gap-1">
+                    {% if supplier.profile_picture %}
+                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-10 w-auto object-contain rounded-full shadow-sm">
+                        <div class="h-4 w-px bg-gray-300 mx-1"></div>
+                    {% endif %}
+                    {% if system_settings.logo %}
+                        <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-10 w-auto object-contain">
+                    {% else %}
+                        <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-10 w-auto object-contain">
+                    {% endif %}
+                </div>
+
+                <!-- Auth Tabs -->
+                <div class="flex border-b border-gray-100">
+                    <button onclick="switchAuthTab('login')" id="login-tab-btn" class="flex-1 py-4 font-bold text-blue-600 border-b-2 border-blue-600 transition-all bg-white text-sm">تسجيل الدخول</button>
+                    <button onclick="switchAuthTab('signup')" id="signup-tab-btn" class="flex-1 py-4 font-bold text-gray-400 hover:text-gray-600 transition-all border-b-2 border-transparent bg-white text-sm">إنشاء حساب</button>
+                </div>
+
+                <div class="bg-white px-6 pt-8 pb-6 sm:p-8">
+                    <div class="text-center">
+                        <div id="auth-icon-container" class="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-brand shadow-lg mb-6">
+                            <i id="auth-icon" class="fas fa-lock text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" id="modal-title">
+                            تسجيل الدخول مطلوب
+                        </h3>
+                        <p class="text-gray-500 mb-8 text-sm" id="modal-desc">
+                            الرجاء إدخال بياناتك للمتابعة وإضافة المنتجات للسلة.
+                        </p>
+                        
+                        <!-- Login Form -->
+                        <form id="ajaxLoginForm" class="space-y-6">
+                            <div class="text-right">
+                                <label for="modal_username" class="block text-sm font-semibold text-gray-700 mb-2 mr-1">رقم الهاتف</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                                        <i class="fas fa-phone-alt"></i>
+                                    </div>
+                                    <input type="text" name="username" id="modal_username" required 
+                                        placeholder="77xxxxxxx"
+                                        class="block w-full pr-11 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
+                                </div>
+                            </div>
+                            
+                            <div class="text-right">
+                                <label for="modal_password" class="block text-sm font-semibold text-gray-700 mb-2 mr-1">كلمة المرور</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                                        <i class="fas fa-key"></i>
+                                    </div>
+                                    <input type="password" name="password" id="modal_password" required 
+                                        placeholder="••••••••"
+                                        class="block w-full pr-11 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
+                                </div>
+                            </div>
+                            
+                            <div class="pt-2">
+                                <button type="button" onclick="sendWhatsAppLink()" id="waLoginBtn"
+                                    class="w-full text-sm font-bold text-green-600 hover:text-green-700 bg-green-50 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 border border-green-100">
+                                    <i class="fab fa-whatsapp text-lg"></i>
+                                    <span>تسجيل الدخول عبر واتساب</span>
+                                </button>
+                                <p class="text-[10px] text-gray-400 mt-2">سيتم إرسال رابط تسجيل دخول آمن لرقم هاتفك.</p>
+                            </div>
+                        </form>
+
+                        <!-- Signup Form (Initially Hidden) -->
+                        <form id="ajaxSignupForm" class="space-y-6 hidden">
+                            <div class="text-right">
+                                <label for="signup_fullname" class="block text-sm font-semibold text-gray-700 mb-2 mr-1">الاسم بالكامل</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <input type="text" name="first_name" id="signup_fullname" required 
+                                        placeholder="الاسم الثلاثي"
+                                        class="block w-full pr-11 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
+                                </div>
+                            </div>
+
+                            <div class="text-right">
+                                <label for="signup_phone" class="block text-sm font-semibold text-gray-700 mb-2 mr-1">رقم الهاتف</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                                        <i class="fas fa-phone-alt"></i>
+                                    </div>
+                                    <input type="text" name="username" id="signup_phone" required 
+                                        placeholder="77xxxxxxx"
+                                        class="block w-full pr-11 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
+                                </div>
+                            </div>
+
+                            <div class="text-right">
+                                <label for="signup_password" class="block text-sm font-semibold text-gray-700 mb-2 mr-1">كلمة المرور</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                                        <i class="fas fa-key"></i>
+                                    </div>
+                                    <input type="password" name="password" id="signup_password" required 
+                                        placeholder="••••••••"
+                                        class="block w-full pr-11 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
+                                </div>
+                            </div>
+                        </form>
+
+                        <div id="loginError" class="bg-red-50 text-red-600 text-sm py-3 px-4 rounded-xl mt-4 hidden flex items-center gap-2">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span class="error-text"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 px-6 py-6 sm:px-10 flex flex-col sm:flex-row-reverse gap-3">
+                    <button type="button" id="authSubmitBtn" onclick="handleAuthSubmit()" 
+                        class="w-full sm:flex-1 py-3.5 px-6 btn-brand text-white font-bold rounded-xl shadow-md transform active:scale-[0.98]">
+                        دخول
+                    </button>
+                    <button type="button" onclick="closeLoginModal()" 
+                        class="w-full sm:flex-1 py-3.5 px-6 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all">
+                        إلغاء
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Navigation Bar -->
     <nav class="bg-white nav-shadow fixed inset-x-0 top-0 z-50 border-b border-gray-100 py-2">
@@ -231,15 +370,15 @@
                 <a href="/" class="flex items-center group animate-logo">
                     <!-- Supplier Logo -->
                     {% if supplier.profile_picture %}
-                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-12 w-auto ml-3 object-contain rounded-full shadow-sm border border-gray-100">
+                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-16 w-auto ml-3 object-contain rounded-full shadow-sm border border-gray-100">
                         <div class="h-8 w-px bg-gray-200 ml-3"></div>
                     {% endif %}
 
                     <!-- System Logo -->
                     {% if system_settings.logo %}
-                        <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-20 w-auto object-contain">
+                        <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-16 w-auto object-contain">
                     {% else %}
-                        <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-20 w-auto object-contain">
+                        <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-16 w-auto object-contain">
                     {% endif %}
                 </a>
 
@@ -609,69 +748,7 @@
     </script>
 
 
-    <!-- Login Modal -->
-    <div id="loginModal" class="fixed inset-0 z-[1000] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-opacity" aria-hidden="true" onclick="closeLoginModal()"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-middle bg-white rounded-2xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-100">
-                <div class="bg-white px-6 pt-8 pb-6 sm:p-10">
-                    <div class="text-center">
-                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-brand shadow-lg mb-6">
-                            <i class="fas fa-lock text-white text-2xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2" id="modal-title">
-                            تسجيل الدخول مطلوب
-                        </h3>
-                        <p class="text-gray-500 mb-8">
-                            الرجاء إدخال بياناتك للمتابعة وإضافة المنتجات للسلة.
-                        </p>
-                        
-                        <form id="ajaxLoginForm" class="space-y-6">
-                            <div class="text-right">
-                                <label for="modal_username" class="block text-sm font-semibold text-gray-700 mb-2 mr-1">رقم الهاتف</label>
-                                <div class="relative group">
-                                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
-                                        <i class="fas fa-phone-alt"></i>
-                                    </div>
-                                    <input type="text" name="username" id="modal_username" required 
-                                        placeholder="77xxxxxxx"
-                                        class="block w-full pr-11 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
-                                </div>
-                            </div>
-                            
-                            <div class="text-right">
-                                <label for="modal_password" class="block text-sm font-semibold text-gray-700 mb-2 mr-1">كلمة المرور</label>
-                                <div class="relative group">
-                                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
-                                        <i class="fas fa-key"></i>
-                                    </div>
-                                    <input type="password" name="password" id="modal_password" required 
-                                        placeholder="••••••••"
-                                        class="block w-full pr-11 pl-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
-                                </div>
-                            </div>
-                            
-                            <div id="loginError" class="bg-red-50 text-red-600 text-sm py-3 px-4 rounded-xl hidden flex items-center gap-2">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <span class="error-text"></span>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="bg-gray-50 px-6 py-6 sm:px-10 flex flex-col sm:flex-row-reverse gap-3">
-                    <button type="button" onclick="submitLogin()" 
-                        class="w-full sm:flex-1 py-3.5 px-6 btn-brand text-white font-bold rounded-xl shadow-md transform active:scale-[0.98]">
-                        دخول
-                    </button>
-                    <button type="button" onclick="closeLoginModal()" 
-                        class="w-full sm:flex-1 py-3.5 px-6 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all">
-                        إلغاء
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     {% if user.is_authenticated %}
     <script>
@@ -709,11 +786,193 @@
             document.getElementById('loginError').classList.add('hidden');
         }
 
+        function sendWhatsAppLink() {
+            const phone = document.getElementById('modal_username').value;
+            const errorDiv = document.getElementById('loginError');
+            const btn = document.getElementById('waLoginBtn');
+            const originalContent = btn.innerHTML;
+            
+            if (!phone) {
+                errorDiv.querySelector('.error-text').textContent = 'الرجاء إدخال رقم الهاتف أولاً';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i> جاري الإرسال...';
+            errorDiv.classList.add('hidden');
+
+            const formData = new FormData();
+            formData.append('phone', phone);
+            // Capture current URL to redirect back after login
+            formData.append('next', window.location.pathname + window.location.search);
+
+            fetch('/api/whatsapp-login-link/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    // Show a success message in the modal too
+                    errorDiv.querySelector('.error-text').textContent = data.message;
+                    errorDiv.classList.remove('hidden');
+                    errorDiv.classList.replace('bg-red-50', 'bg-green-50');
+                    errorDiv.classList.replace('text-red-600', 'text-green-600');
+                } else {
+                    errorDiv.querySelector('.error-text').textContent = data.message || 'فشل إرسال الرابط';
+                    errorDiv.classList.remove('hidden');
+                    errorDiv.classList.replace('bg-green-50', 'bg-red-50');
+                    errorDiv.classList.replace('text-green-600', 'text-red-600');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                showNotification('حدث خطأ في الاتصال', 'error');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            });
+        }
+        
+        let currentAuthTab = 'login';
+
+        function switchAuthTab(tab) {
+            currentAuthTab = tab;
+            const loginForm = document.getElementById('ajaxLoginForm');
+            const signupForm = document.getElementById('ajaxSignupForm');
+            const loginBtn = document.getElementById('login-tab-btn');
+            const signupBtn = document.getElementById('signup-tab-btn');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            const modalTitle = document.getElementById('modal-title');
+            const modalDesc = document.getElementById('modal-desc');
+            const authIcon = document.getElementById('auth-icon');
+            const errorDiv = document.getElementById('loginError');
+
+            errorDiv.classList.add('hidden');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                loginBtn.classList.add('text-blue-600', 'border-blue-600');
+                loginBtn.classList.remove('text-gray-400', 'border-transparent');
+                signupBtn.classList.add('text-gray-400', 'border-transparent');
+                signupBtn.classList.remove('text-blue-600', 'border-blue-600');
+                submitBtn.textContent = 'دخول';
+                modalTitle.textContent = 'تسجيل الدخول مطلوب';
+                modalDesc.textContent = 'الرجاء إدخال بياناتك للمتابعة وإضافة المنتجات للسلة.';
+                authIcon.className = 'fas fa-lock text-white text-2xl';
+            } else {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+                signupBtn.classList.add('text-blue-600', 'border-blue-600');
+                signupBtn.classList.remove('text-gray-400', 'border-transparent');
+                loginBtn.classList.add('text-gray-400', 'border-transparent');
+                loginBtn.classList.remove('text-blue-600', 'border-blue-600');
+                submitBtn.textContent = 'إنشاء حساب وتدشين الطلب';
+                modalTitle.textContent = 'إنشاء حساب جديد';
+                modalDesc.textContent = 'انضم إلينا الآن لتتمكن من الطلب وتتبع مشترياتك بكل سهولة.';
+                authIcon.className = 'fas fa-user-plus text-white text-2xl';
+            }
+        }
+
+        function handleAuthSubmit() {
+            if (currentAuthTab === 'login') {
+                submitLogin();
+            } else {
+                submitSignup();
+            }
+        }
+
+        function submitSignup() {
+            const fullName = document.getElementById('signup_fullname').value;
+            const phone = document.getElementById('signup_phone').value;
+            const password = document.getElementById('signup_password').value;
+            const errorDiv = document.getElementById('loginError');
+            const submitBtn = document.getElementById('authSubmitBtn');
+
+            if (!fullName || !phone || !password) {
+                errorDiv.querySelector('.error-text').textContent = 'جميع الحقول مطلوبة';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i> جاري الإنشاء...';
+
+            fetch('/api/signup/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ 
+                    first_name: fullName,
+                    username: phone, 
+                    password: password 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('تم إنشاء الحساب بنجاح!', 'success');
+                    handlePostAuth(data);
+                } else {
+                    let msg = data.message || 'فشل إنشاء الحساب';
+                    if (data.errors) {
+                        const firstError = Object.values(data.errors)[0];
+                        msg = firstError;
+                    }
+                    errorDiv.querySelector('.error-text').textContent = msg;
+                    errorDiv.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                errorDiv.querySelector('.error-text').textContent = 'حدث خطأ في الاتصال';
+                errorDiv.classList.remove('hidden');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+        }
+
+        function handlePostAuth(data) {
+            const actionToRun = pendingAction;
+            closeLoginModal();
+            isAuthenticated = true;
+            
+            if (actionToRun) {
+                const actionResult = actionToRun();
+                if (actionResult && typeof actionResult.always === 'function') {
+                    actionResult.always(() => window.location.reload());
+                } else if (actionResult && typeof actionResult.then === 'function') {
+                    actionResult.then(() => window.location.reload()).catch(() => window.location.reload());
+                } else {
+                    window.location.reload();
+                }
+            } else {
+                window.location.reload(); 
+            }
+        }
+
         function submitLogin() {
             const username = document.getElementById('modal_username').value;
             const password = document.getElementById('modal_password').value;
             const errorDiv = document.getElementById('loginError');
+            const submitBtn = document.getElementById('authSubmitBtn');
             const csrftoken = getCookie('csrftoken');
+
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i> جاري الدخول...';
 
             fetch('/api/login/', {
                 method: 'POST',
@@ -726,31 +985,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    const actionToRun = pendingAction; // Capture locally
-                    closeLoginModal();
-                    isAuthenticated = true; // Update local state
-                    
-                    if (actionToRun) {
-                        const actionResult = actionToRun();
-                        if (actionResult && typeof actionResult.always === 'function') {
-                            // It's a jQuery promise ($.ajax)
-                            actionResult.always(function() {
-                                window.location.reload();
-                            });
-                        } else if (actionResult && typeof actionResult.then === 'function') {
-                            // Standard promise
-                            actionResult.then(function() {
-                                window.location.reload();
-                            }).catch(function() {
-                                window.location.reload();
-                            });
-                        } else {
-                            // Not a promise or synchronous
-                            window.location.reload();
-                        }
-                    } else {
-                        window.location.reload(); 
-                    }
+                    handlePostAuth(data);
                 } else {
                     errorDiv.querySelector('.error-text').textContent = data.message || 'فشل تسجيل الدخول';
                     errorDiv.classList.remove('hidden');
@@ -760,6 +995,10 @@
                 console.error(error);
                 errorDiv.querySelector('.error-text').textContent = 'حدث خطأ في الاتصال';
                 errorDiv.classList.remove('hidden');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
             });
         }
         

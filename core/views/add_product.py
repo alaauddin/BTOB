@@ -7,7 +7,7 @@ from django.views.decorators.http import require_http_methods
 import json
 
 from core.forms import ProductForm
-from core.models import Supplier, ProductCategory
+from core.models import Supplier, ProductCategory, Category
 
 
 @login_required
@@ -73,6 +73,11 @@ def add_product(request):
                 product.supplier = supplier
                 product.save()
                 messages.success(request, 'تم إضافة المنتج بنجاح!')
+                
+                # If superuser is adding for another merchant, redirect back to that merchant's dashboard
+                if request.user.is_superuser and supplier.user != request.user:
+                    return redirect(f"/my-merchant/?supplier_id={supplier.id}")
+                    
                 return redirect('my_merchant')
             else:
                 messages.error(request, 'يرجى تصحيح الأخطاء في النموذج')
@@ -80,8 +85,8 @@ def add_product(request):
     else:
         form = ProductForm(supplier=supplier)
     
-    # Get categories for this supplier
-    categories = ProductCategory.objects.filter(category__supplier=supplier)
+    # Get all categories (global)
+    categories = Category.objects.all()
     
     context = {
         'form': form,

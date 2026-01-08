@@ -30,8 +30,12 @@ def merchant_orders(request):
     """Display all orders for the merchant's supplier"""
     template_name = 'merchant_orders.html'
     
-    # Get the supplier for the current user
-    supplier = Supplier.objects.filter(user=request.user).first()
+    # Get the supplier for the current user or via supplier_id for superuser
+    if request.user.is_superuser and request.GET.get('supplier_id'):
+        supplier_id = request.GET.get('supplier_id')
+        supplier = get_object_or_404(Supplier, id=supplier_id)
+    else:
+        supplier = Supplier.objects.filter(user=request.user).first()
     
     if not supplier:
         messages.error(request, 'You are not registered as a supplier.')
@@ -115,8 +119,12 @@ def merchant_order_detail(request, order_id):
     """Display detailed view of a specific order for the merchant with premium insights"""
     template_name = 'merchant_order_detail.html'
     
-    # Get the supplier for the current user
-    supplier = Supplier.objects.filter(user=request.user).first()
+    # Get the supplier for the current user or via supplier_id for superuser
+    if request.user.is_superuser and request.GET.get('supplier_id'):
+        supplier_id = request.GET.get('supplier_id')
+        supplier = get_object_or_404(Supplier, id=supplier_id)
+    else:
+        supplier = Supplier.objects.filter(user=request.user).first()
     
     if not supplier:
         messages.error(request, 'You are not registered as a supplier.')
@@ -251,8 +259,12 @@ def update_order_status(request, order_id):
     if request.method == 'POST':
         new_status = request.POST.get('status')
         
-        # Get the supplier for the current user
-        supplier = Supplier.objects.filter(user=request.user).first()
+        # Get the supplier for the current user or via supplier_id for superuser
+        if request.user.is_superuser and request.POST.get('supplier_id'):
+            supplier_id = request.POST.get('supplier_id')
+            supplier = get_object_or_404(Supplier, id=supplier_id)
+        else:
+            supplier = Supplier.objects.filter(user=request.user).first()
         
         if not supplier:
             messages.error(request, 'You are not registered as a supplier.')

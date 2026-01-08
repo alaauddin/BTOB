@@ -109,10 +109,12 @@
                             {% endif %}
                             
                             <!-- Enhanced Call-to-Action -->
+                             {% if ad.product %}
                             <a href="{% url 'product_detail' store_id=supplier.store_id pk=ad.product.id %}" class="modern-ads-cta">
                                 <span>استكشف العرض</span>
                                 <i class="fas fa-arrow-left"></i>
                             </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -385,7 +387,7 @@
                 <span class="small fw-bold text-muted me-2"><i class="fas fa-level-down-alt fa-rotate-180 ms-1"></i> {{ category.name }}:</span>
                 
                 {% for subcategory in category.productcategory_set.all %}
-                <a href="{% url 'product_list_subcategory' subcategory.id category.supplier.store_id %}" 
+                <a href="{% url 'product_list_subcategory' subcategory.id supplier.store_id %}" 
                    class="modern-subcategory-btn">
                     {{ subcategory.name }}
                 </a>

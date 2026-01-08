@@ -6,10 +6,8 @@ from core.models import Product, Supplier, ProductOffer
 
 @login_required
 @require_POST
-def delete_product(request, product_id):
+def toggle_product_status(request, product_id):
     # Determine context (checking for superuser masquerade logic similar to edit/add)
-    # However, for safety, we generally check ownership unless superuser
-    
     if request.user.is_superuser:
         product = get_object_or_404(Product, id=product_id)
     else:
@@ -23,16 +21,19 @@ def delete_product(request, product_id):
             }, status=403)
 
     try:
-        # Soft delete: Set is_active to False
-        product.is_active = False
+        # Toggle: Switch is_active status
+        product.is_active = not product.is_active
         product.save()
         
-        # Deactivate related offers
-        ProductOffer.objects.filter(product=product).update(is_active=False)
+        # If deactivating, also deactivate related offers
+        if not product.is_active:
+            ProductOffer.objects.filter(product=product).update(is_active=False)
         
+        status_text = "تنشيط" if product.is_active else "تعطيل"
         return JsonResponse({
             'success': True,
-            'message': 'تم حذف المنتج بنجاح (نقل إلى المهملات)'
+            'message': f'تم {status_text} المنتج بنجاح',
+            'is_active': product.is_active
         })
     except Exception as e:
         return JsonResponse({

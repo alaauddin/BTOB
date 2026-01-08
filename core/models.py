@@ -97,6 +97,8 @@ class Supplier(models.Model):
     show_platform_ads = models.BooleanField(default=True, verbose_name="عرض إعلانات المنصة")
     priority = models.IntegerField(default=0, verbose_name="الأولوية (الأعلى يظهر أولاً)")
     views_count = models.PositiveIntegerField(default=0, verbose_name="عدد المشاهدات")
+    can_add_categories = models.BooleanField(default=False, verbose_name="إضافة فئات")
+    can_add_product_categories = models.BooleanField(default=False, verbose_name="إضافة فئات المنتجات")
     
     def __str__(self):
         return self.name
@@ -122,7 +124,6 @@ class Supplier(models.Model):
         return round(float(avg_rating), 1) if avg_rating is not None else 0.0
 
 class Category(models.Model):
-    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE,related_name='categories')
     name = models.CharField(max_length=100)
     def __str__(self):
         return self.name
@@ -568,6 +569,7 @@ class PlatformOfferAd(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     order = models.IntegerField(default=0)
+    is_approved = models.BooleanField(default=False)
     
     def __str__(self):
         return str(self.product) + " | " + str(self.order)
@@ -603,6 +605,11 @@ class SystemSettings(models.Model):
     seo_description = models.TextField(null=True, blank=True, verbose_name="الوصف لمحركات البحث (SEO Description)")
     seo_keywords = models.TextField(null=True, blank=True, verbose_name="الكلمات المفتاحية (SEO Keywords)")
     
+    whatsapp_api_url = models.URLField(blank=True, verbose_name="رابط API واتساب")
+    whatsapp_api_key = models.CharField(max_length=500, blank=True, verbose_name="الكود API واتساب")
+
+
+
     class Meta:
         verbose_name = "إعدادات النظام"
         verbose_name_plural = "إعدادات النظام"

@@ -106,9 +106,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8" dir="rtl">
+<div class="container mx-auto" dir="rtl">
     <!-- Header Section -->
-    <div class="merchant-card p-6 mb-8 relative overflow-hidden group">
+    <div class="merchant-card p-6 mb-3 relative overflow-hidden group">
         <!-- Settings Gear -->
         <div class="absolute top-4 left-4 z-20">
             <button class="bg-white/80 hover:bg-white text-gray-700 w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm backdrop-blur-sm" onclick="openSettingsModal()" title="إعدادات المتجر">
@@ -248,7 +248,7 @@
             <div class="product-grid">
                 {% for product in products %}
                 <div class="product-card">
-                    <div class="product-image" style="background-image: url('{{ product.image.url }}');">
+                    <div class="product-image {% if not product.is_active %}opacity-50 grayscale{% endif %}" style="background-image: url('{{ product.image.url }}');">
                         {% if product.is_new %}
                             <div class="absolute top-4 right-4 bg-gradient-to-r from-green-400 to-green-600 text-white px-3 py-1 rounded-full text-sm font-bold">
                                 جديد
@@ -257,6 +257,11 @@
                         <div class="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm">
                             {{ product.category.name }}
                         </div>
+                        {% if not product.is_active %}
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="bg-red-500 text-white px-4 py-2 rounded-full font-bold shadow-lg">غير نشط</span>
+                            </div>
+                        {% endif %}
                     </div>
                     
                     <div class="p-4 text-right">
@@ -276,9 +281,10 @@
                                 <i class="fas fa-edit"></i>
                                 تعديل
                             </button>
-                            <button class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-red-600 hover:to-red-700 transition-all">
-                                <i class="fas fa-trash"></i>
-                                حذف
+                            <button class="flex-1 {% if product.is_active %}bg-gradient-to-r from-orange-500 to-red-600{% else %}bg-gradient-to-r from-green-500 to-green-600{% endif %} text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all" 
+                                    onclick="confirmToggleProductStatus({{ product.id }}, {{ product.is_active|yesno:'true,false' }})">
+                                <i class="fas {% if product.is_active %}fa-eye-slash{% else %}fa-eye{% endif %}"></i>
+                                {% if product.is_active %}تعطيل{% else %}تنشيط{% endif %}
                             </button>
                         </div>
                     </div>
@@ -345,6 +351,54 @@
     </div>
 
 
+    <!-- Promotions Tab -->
+    <div id="promotions-tab" class="tab-content hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <div>
+                <h2 class="text-2xl font-black text-slate-800 mb-1">طلبات الترويج</h2>
+                <p class="text-slate-500 text-sm">إدارة طلبات ظهور منتجاتك في قسم العروض الرئيسية للمنصة.</p>
+            </div>
+            <button onclick="openPromotionModal()" class="w-full sm:w-auto px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <i class="fas fa-plus-circle"></i>
+                طلب ترويج جديد
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for promo in platform_promotions %}
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-lg transition-all group">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                        <i class="fas fa-bullhorn text-xl"></i>
+                    </div>
+                    {% if promo.is_approved %}
+                    <span class="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-black rounded-full border border-green-100 uppercase tracking-wider">مقبول</span>
+                    {% else %}
+                    <span class="px-3 py-1 bg-orange-50 text-orange-600 text-[10px] font-black rounded-full border border-orange-100 uppercase tracking-wider">قيد المعالجة</span>
+                    {% endif %}
+                </div>
+                
+                <h3 class="text-lg font-black text-slate-800 mb-2">{{ promo.product.name }}</h3>
+                <p class="text-slate-500 text-xs leading-relaxed mb-6 line-clamp-2">{{ promo.description }}</p>
+                
+                <div class="pt-4 border-t border-slate-50 flex items-center justify-between text-[10px] font-bold text-slate-400">
+                    <div class="flex items-center gap-2">
+                        <i class="far fa-calendar-alt"></i>
+                        <span>{{ promo.start_date|date:"Y/m/d" }} - {{ promo.end_date|date:"Y/m/d" }}</span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full py-20 bg-slate-50/50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
+                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm mb-6">
+                    <i class="fas fa-bullhorn text-4xl text-slate-200"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">لا يوجد طلبات ترويج</h3>
+                <p class="text-slate-500 max-w-sm">لم تقم بإرسال أي طلبات ترويج حتى الآن. ابدأ بالترويج لمنتجاتك لزيادة مبيعاتك!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 
     <!-- Orders Tab -->
     <div id="orders-tab" class="tab-content hidden">
@@ -389,6 +443,70 @@
                 </div>
             {% endif %}
         </div>
+    </div>
+
+    <!-- Ads Tab -->
+    <div id="ads-tab" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-gradient">إعلانات المتجر</h2>
+            <button class="action-btn" onclick="openAddAdModal()">
+                <i class="fas fa-plus"></i>
+                إضافة إعلان جديد
+            </button>
+        </div>
+
+        {% if ads %}
+            <div class="product-grid">
+                {% for ad in ads %}
+                <div class="product-card">
+                    <div class="product-image {% if not ad.is_active %}opacity-50 grayscale{% endif %}" style="background-image: url('{{ ad.image.url }}');">
+                        <div class="absolute top-4 right-4 bg-orange-600 text-white px-3 py-1 rounded-full text-[10px] font-bold shadow-lg">
+                            إعلان
+                        </div>
+                        {% if not ad.is_active %}
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="bg-red-500 text-white px-4 py-2 rounded-full font-bold shadow-lg">غير نشط</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="p-4 text-right">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">{{ ad.title }}</h3>
+                        <p class="text-gray-600 mb-4 line-clamp-2">{{ ad.description }}</p>
+                        
+                        {% if ad.product %}
+                        <div class="flex items-center gap-2 mb-4 text-orange-600 font-semibold text-sm">
+                            <i class="fas fa-link text-xs"></i>
+                            <span>{{ ad.product.name }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="flex gap-2">
+                            <button class="flex-1 action-btn text-sm" onclick="editAd({{ ad.id }}, this)">
+                                <i class="fas fa-edit"></i>
+                                تعديل
+                            </button>
+                            <button class="flex-1 {% if ad.is_active %}bg-gradient-to-r from-orange-500 to-red-600{% else %}bg-gradient-to-r from-green-500 to-green-600{% endif %} text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all" 
+                                    onclick="confirmToggleAdStatus({{ ad.id }}, {{ ad.is_active|yesno:'true,false' }})">
+                                <i class="fas {% if ad.is_active %}fa-eye-slash{% else %}fa-eye{% endif %}"></i>
+                                {% if ad.is_active %}تعطيل{% else %}تنشيط{% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-ad"></i>
+                <h3 class="text-2xl font-bold text-gray-600 mb-4">لا توجد إعلانات بعد</h3>
+                <p class="text-gray-500 mb-6">أضف إعلانات لتظهر لعملائك في أعلى الصفحة الرئيسية</p>
+                <button class="action-btn" onclick="openAddAdModal()">
+                    <i class="fas fa-plus"></i>
+                    إضافة إعلان الآن
+                </button>
+            </div>
+        {% endif %}
     </div>
 
     <!-- Analytics Tab -->
@@ -437,54 +555,70 @@
 
 <div id="quick-actions-menu" class="fixed bottom-24 right-8 hidden z-50">
     <div class="flex flex-col gap-3">
-        <button class="w-12 h-12 bg-blue-500 text-white rounded-full shadow-lg hover:scale-110 transition-all" onclick="window.location.href='/add-product/'" title="إضافة منتج">
+        <button class="w-12 h-12 bg-blue-500 text-white rounded-full shadow-lg hover:scale-110 transition-all" onclick="window.location.href='/add-product/{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}'" title="إضافة منتج">
             <i class="fas fa-box"></i>
         </button>
-        <button class="w-12 h-12 bg-green-500 text-white rounded-full shadow-lg hover:scale-110 transition-all" onclick="window.location.href='/add-offer/'" title="إضافة عرض">
+        <button class="w-12 h-12 bg-green-500 text-white rounded-full shadow-lg hover:scale-110 transition-all" onclick="window.location.href='/add-offer/{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}'" title="إضافة عرض">
             <i class="fas fa-tag"></i>
         </button>
     </div>
 </div>
 
 {% include 'product_modal_snippet.html' %}
+{% include 'ad_modal_snippet.html' %}
+{% include 'promotion_modal_snippet.html' %}
 
 <script>
-    // --- UI Helpers ---
-    function toggleDeleteBtn(show, productId = null) {
+    function updateModalStatusBtn(productId, isActive) {
         const btn = document.getElementById('modalDeleteBtn');
-        if (show && productId) {
+        if (!btn) return;
+
+        if (productId) {
             btn.classList.remove('hidden');
-            btn.onclick = () => confirmDeleteProduct(productId);
+            btn.onclick = () => confirmToggleProductStatus(productId, isActive);
+            
+            // Clear status-specific classes but keep layout
+            btn.classList.remove('bg-orange-50', 'text-orange-500', 'hover:bg-orange-100', 'bg-green-50', 'text-green-500', 'hover:bg-green-100', 'bg-red-50', 'text-red-500', 'hover:bg-red-100');
+            
+            if (isActive) {
+                btn.classList.add('bg-orange-50', 'text-orange-500', 'hover:bg-orange-100');
+                btn.innerHTML = '<i class="fas fa-eye-slash ml-1"></i> تعطيل';
+            } else {
+                btn.classList.add('bg-green-50', 'text-green-500', 'hover:bg-green-100');
+                btn.innerHTML = '<i class="fas fa-eye ml-1"></i> تنشيط';
+            }
         } else {
             btn.classList.add('hidden');
             btn.onclick = null;
         }
     }
 
-    function confirmDeleteProduct(productId) {
+    function confirmToggleProductStatus(productId, isActive) {
         Swal.fire({
-            title: 'هل أنت متأكد؟',
-            text: "سيتم نقل المنتج إلى المهملات ولن يظهر للعملاء.",
-            icon: 'warning',
+            title: isActive ? 'تعطيل المنتج؟' : 'تنشيط المنتج؟',
+            text: isActive ? "لن يظهر هذا المنتج للعملاء بعد التعطيل." : "سيظهر هذا المنتج للعملاء مرة أخرى.",
+            icon: isActive ? 'warning' : 'info',
             showCancelButton: true,
-            confirmButtonColor: '#ef4444',
+            confirmButtonColor: isActive ? '#ef4444' : '#10b981',
             cancelButtonColor: '#cbd5e1',
-            confirmButtonText: 'نعم، احذفه',
+            confirmButtonText: isActive ? 'نعم، تعطيل' : 'نعم، تنشيط',
             cancelButtonText: 'إلغاء'
         }).then((result) => {
             if (result.isConfirmed) {
-                deleteProduct(productId);
+                toggleProductStatus(productId);
             }
         });
     }
 
-    function deleteProduct(productId) {
-        const btn = document.getElementById('modalDeleteBtn');
-        const originalContent = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحذف...';
-        btn.disabled = true;
+    function toggleProductStatus(productId) {
+        const modalBtn = document.getElementById('modalDeleteBtn');
+        const originalContent = modalBtn ? modalBtn.innerHTML : '';
+        if (modalBtn) {
+            modalBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التنفيذ...';
+            modalBtn.disabled = true;
+        }
 
-        fetch(`/delete-product/${productId}/`, {
+        fetch(`/toggle-product-status/${productId}/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
@@ -495,7 +629,7 @@
         .then(data => {
             if (data.success) {
                 Swal.fire(
-                    'تم الحذف!',
+                    'تم التعديل!',
                     data.message,
                     'success'
                 ).then(() => {
@@ -507,8 +641,10 @@
                     data.message || 'حدث خطأ غير متوقع',
                     'error'
                 );
-                btn.innerHTML = originalContent;
-                btn.disabled = false;
+                if (modalBtn) {
+                    modalBtn.innerHTML = originalContent;
+                    modalBtn.disabled = false;
+                }
             }
         })
         .catch(error => {
@@ -518,15 +654,17 @@
                 'تعذر الاتصال بالخادم',
                 'error'
             );
-            btn.innerHTML = originalContent;
-            btn.disabled = false;
+            if (modalBtn) {
+                modalBtn.innerHTML = originalContent;
+                modalBtn.disabled = false;
+            }
         });
     }
 
     // --- Modal Management ---
     function openAddProductModal() {
         resetModal();
-        toggleDeleteBtn(false); 
+        updateModalStatusBtn(null); 
         document.getElementById('modal-title').textContent = 'إضافة منتج جديد';
         document.getElementById('submitBtnText').textContent = 'إضافة المنتج';
         document.getElementById('productForm').action = "{% url 'add_product' %}";
@@ -535,8 +673,9 @@
 
     function editProduct(productId) {
         resetModal();
-        const btn = event.currentTarget;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        // Fallback for button if event is not available
+        const btn = (typeof event !== 'undefined' && event.currentTarget) ? event.currentTarget : null;
+        if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         
         // Fetch product details
         fetch(`/edit-product/${productId}/`, {
@@ -571,8 +710,8 @@
                 document.getElementById('submitBtnText').textContent = 'حفظ التغييرات';
                 document.getElementById('productForm').action = `/edit-product/${productId}/`;
                 
-                // Show delete button
-                toggleDeleteBtn(true, productId);
+                // Show status toggle button
+                updateModalStatusBtn(productId, p.is_active);
                 
                 // Trigger preview updates
                 document.getElementById('id_name').dispatchEvent(new Event('input'));
@@ -581,15 +720,15 @@
 
                 document.getElementById('product-modal').classList.remove('hidden');
             } else {
-                showNotification(data.message || 'حدث خطأ أثناء جلب بيانات المنتج', 'error');
+                Swal.fire('خطأ', data.message || 'حدث خطأ أثناء جلب بيانات المنتج', 'error');
             }
         })
         .catch(err => {
             console.error(err);
-            showNotification('حدث خطأ في الاتصال', 'error');
+            Swal.fire('خطأ', 'حدث خطأ في الاتصال', 'error');
         })
         .finally(() => {
-            btn.innerHTML = '<i class="fas fa-edit"></i> تعديل';
+            if (btn) btn.innerHTML = '<i class="fas fa-edit"></i> تعديل';
         });
     }
 
@@ -597,12 +736,101 @@
         document.getElementById('product-modal').classList.add('hidden');
     }
 
+    // --- Category Management ---
+    function openCategoryModal() {
+        document.getElementById('category-modal').classList.remove('hidden');
+    }
+
+    function closeCategoryModal() {
+        document.getElementById('category-modal').classList.add('hidden');
+        document.getElementById('addCategoryForm').reset();
+        document.getElementById('new-parent-container').classList.add('hidden');
+    }
+
+    function toggleNewParentInput(value) {
+        const container = document.getElementById('new-parent-container');
+        if (value === 'new') {
+            container.classList.remove('hidden');
+        } else {
+            container.classList.add('hidden');
+        }
+    }
+
+    function submitCategory() {
+        const parentId = document.getElementById('parent-category-select').value;
+        const newParentName = document.getElementById('new-parent-name').value;
+        const subcategoryName = document.getElementById('subcategory-name').value;
+        const btn = document.getElementById('submitCategoryBtn');
+        const spinner = btn.querySelector('.loading-spinner');
+        
+        if (!subcategoryName) {
+            Swal.fire('خطأ', 'يرجى إدخال اسم الفئة الفرعية', 'error');
+            return;
+        }
+
+        if (!parentId) {
+            Swal.fire('خطأ', 'يرجى اختيار فئة رئيسية', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        spinner.classList.remove('hidden');
+
+        const formData = new FormData();
+        formData.append('parent_id', parentId);
+        formData.append('new_parent_name', newParentName);
+        formData.append('subcategory_name', subcategoryName);
+        formData.append('supplier_id', document.querySelector('[name="supplier_id"]').value);
+
+        fetch('{% url "add_category_ajax" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Add to product category select
+                const select = document.getElementById('id_category');
+                const option = new Option(data.category.name, data.category.id, true, true);
+                select.add(option);
+                
+                // Also add to parent category select if it was a new parent
+                if (parentId === 'new') {
+                   // This is a bit more complex since we'd need the parent ID too, 
+                   // for now let's just refresh or rely on the user choosing from existing next time.
+                   // Actually, we can just reload the page or show a success message.
+                   Swal.fire('تم', data.message, 'success').then(() => {
+                       closeCategoryModal();
+                   });
+                } else {
+                   Swal.fire('تم', data.message, 'success').then(() => {
+                       closeCategoryModal();
+                   });
+                }
+            } else {
+                Swal.fire('خطأ', data.message, 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire('خطأ', 'حدث خطأ في الاتصال بالخادم', 'error');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            spinner.classList.add('hidden');
+        });
+    }
+
     function resetModal() {
         document.getElementById('productForm').reset();
         document.getElementById('edit-product-id').value = '';
         document.getElementById('modalFilePreview').classList.add('hidden');
         document.getElementById('modalFileUploadContent').classList.remove('hidden');
-        toggleDeleteBtn(false);
+        updateModalStatusBtn(null);
         
         // Reset previews
         document.getElementById('preview-display-name').textContent = 'اسم المنتج';
@@ -731,6 +959,7 @@
         formData.append('parent_id', parentId);
         formData.append('new_parent_name', newParentName);
         formData.append('subcategory_name', subName);
+        formData.append('supplier_id', '{{ supplier.id }}');
 
         fetch("{% url 'add_category_ajax' %}", {
             method: 'POST',
@@ -779,17 +1008,41 @@
         const tab = document.getElementById(tabId + '-tab');
         if (tab) {
             tab.classList.remove('hidden');
+            // Update URL hash without jumping
+            history.replaceState(null, null, '#' + tabId);
         }
-        event.currentTarget.classList.add('active');
+        
+        // Find and activate the correct button
+        const btn = document.querySelector(`[onclick="showTab('${tabId}')"]`);
+        if (btn) btn.classList.add('active');
     }
+
+    // Restore tab from hash on load
+    window.addEventListener('load', () => {
+        const hash = window.location.hash.replace('#', '');
+        if (hash) {
+            showTab(hash);
+        } else {
+            // Default to products tab if no hash
+            showTab('products');
+        }
+    });
 
     // Offer Actions
     function editOffer(offerId) {
-        window.location.href = `/edit-offer/${offerId}/`;
+        let url = `/edit-offer/${offerId}/`;
+        {% if request.GET.supplier_id %}
+        url += `?supplier_id={{ supplier.id }}`;
+        {% endif %}
+        window.location.href = url;
     }
 
     function openAddOfferModal() {
-        window.location.href = "{% url 'add_product_offer' %}";
+        let url = "{% url 'add_product_offer' %}";
+        {% if request.GET.supplier_id %}
+        url += `?supplier_id={{ supplier.id }}`;
+        {% endif %}
+        window.location.href = url;
     }
 
     // Analytics Export
@@ -810,6 +1063,225 @@
             menu.classList.add('hidden');
         }
     });
+
+    // --- Ad Management JS ---
+    function openAddAdModal() {
+        resetAdModal();
+        updateAdModalStatusBtn(null);
+        document.getElementById('ad-modal-title').textContent = 'إضافة إعلان جديد';
+        document.getElementById('adSubmitBtnText').textContent = 'إضافة الإعلان';
+        document.getElementById('adForm').action = "{% url 'add_ads' %}";
+        document.getElementById('ad-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function editAd(adId, btn) {
+        resetAdModal();
+        if (!btn && typeof event !== 'undefined') btn = event.currentTarget || event.target;
+        const originalHtml = btn ? btn.innerHTML : '<i class="fas fa-edit"></i> تعديل';
+        if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        fetch(`/edit-ads/${adId}/`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const ad = data.ad;
+                document.getElementById('edit-ad-id').value = ad.id;
+                document.getElementById('ad_title').value = ad.title;
+                document.getElementById('ad_description').value = ad.description;
+                if (ad.product_id) document.getElementById('ad_product').value = ad.product_id;
+                document.getElementById('ad_is_active').checked = ad.is_active;
+
+                if (ad.image_url) {
+                    document.getElementById('ad-image-preview').src = ad.image_url;
+                    document.getElementById('ad-preview-container').classList.remove('hidden');
+                    document.getElementById('ad-upload-content').classList.add('hidden');
+                    
+                    const liveImg = document.getElementById('live-ad-image');
+                    liveImg.src = ad.image_url;
+                    liveImg.classList.remove('opacity-0');
+                    document.getElementById('live-ad-placeholder').classList.add('opacity-0');
+                }
+
+                document.getElementById('ad-modal-title').textContent = 'تعديل الإعلان';
+                document.getElementById('adSubmitBtnText').textContent = 'حفظ التغييرات';
+                document.getElementById('adForm').action = `/edit-ads/${adId}/`;
+                
+                updateAdModalStatusBtn(adId, ad.is_active);
+                
+                // Trigger live preview
+                document.getElementById('ad_title').dispatchEvent(new Event('input'));
+                document.getElementById('ad_description').dispatchEvent(new Event('input'));
+                document.getElementById('ad_product').dispatchEvent(new Event('change'));
+
+                document.getElementById('ad-modal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        })
+        .finally(() => btn.innerHTML = originalHtml);
+    }
+
+    function closeAdModal() {
+        document.getElementById('ad-modal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    function resetAdModal() {
+        document.getElementById('adForm').reset();
+        document.getElementById('edit-ad-id').value = '';
+        document.getElementById('ad-preview-container').classList.add('hidden');
+        document.getElementById('ad-upload-content').classList.remove('hidden');
+        document.getElementById('ad-image-preview').src = '';
+        
+        // Reset live preview
+        document.getElementById('live-ad-title').textContent = 'عنوان الإعلان';
+        document.getElementById('live-ad-description').textContent = 'هنا سيظهر وصف إعلانك الجذاب...';
+        document.getElementById('live-ad-image').src = '';
+        document.getElementById('live-ad-image').classList.add('opacity-0');
+        document.getElementById('live-ad-placeholder').classList.remove('opacity-0');
+        document.getElementById('live-ad-link').classList.add('hidden');
+        
+        updateAdModalStatusBtn(null);
+    }
+
+    function updateAdModalStatusBtn(adId, isActive) {
+        const btn = document.getElementById('adModalStatusBtn');
+        if (!btn) return;
+
+        if (adId) {
+            btn.classList.remove('hidden');
+            btn.onclick = () => confirmToggleAdStatus(adId, isActive);
+            btn.classList.remove('bg-orange-50', 'text-orange-500', 'bg-green-50', 'text-green-500');
+            
+            if (isActive) {
+                btn.classList.add('bg-orange-50', 'text-orange-500');
+                btn.innerHTML = '<i class="fas fa-eye-slash ml-1"></i> تعطيل';
+            } else {
+                btn.classList.add('bg-green-50', 'text-green-500');
+                btn.innerHTML = '<i class="fas fa-eye ml-1"></i> تنشيط';
+            }
+        } else {
+            btn.classList.add('hidden');
+        }
+    }
+
+    function confirmToggleAdStatus(adId, isActive) {
+        Swal.fire({
+            title: isActive ? 'تعطيل الإعلان؟' : 'تنشيط الإعلان؟',
+            text: isActive ? "لن يظهر هذا الإعلان للعملاء بعد التعطيل." : "سيظهر هذا الإعلان للعملاء مرة أخرى.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: isActive ? 'نعم، تعطيل' : 'نعم، تنشيط',
+            cancelButtonText: 'إلغاء'
+        }).then((result) => {
+            if (result.isConfirmed) toggleAdStatus(adId);
+        });
+    }
+
+    function toggleAdStatus(adId) {
+        fetch(`/toggle-ad-status/${adId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire('تم العمالية بنجاح', data.message, 'success').then(() => location.reload());
+            }
+        });
+    }
+
+    // Ad Preview Logic
+    document.getElementById('ad_title')?.addEventListener('input', e => {
+        document.getElementById('live-ad-title').textContent = e.target.value || 'عنوان الإعلان';
+    });
+    document.getElementById('ad_description')?.addEventListener('input', e => {
+        document.getElementById('live-ad-description').textContent = e.target.value || 'هنا سيظهر وصف إعلانك الجذاب...';
+    });
+    document.getElementById('ad_product')?.addEventListener('change', e => {
+        const link = document.getElementById('live-ad-link');
+        const name = document.getElementById('live-ad-product-name');
+        if (e.target.value) {
+            link.classList.remove('hidden');
+            link.classList.add('flex');
+            name.textContent = e.target.options[e.target.selectedIndex].text;
+        } else {
+            link.classList.add('hidden');
+            link.classList.remove('flex');
+        }
+    });
+
+    document.getElementById('ad_image')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('ad-image-preview').src = e.target.result;
+                document.getElementById('ad-preview-container').classList.remove('hidden');
+                document.getElementById('ad-upload-content').classList.add('hidden');
+                
+                const liveImg = document.getElementById('live-ad-image');
+                liveImg.src = e.target.result;
+                liveImg.classList.remove('opacity-0');
+                document.getElementById('live-ad-placeholder').classList.add('opacity-0');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById('clearAdImage')?.addEventListener('click', () => {
+        document.getElementById('ad_image').value = '';
+        document.getElementById('ad-preview-container').classList.add('hidden');
+        document.getElementById('ad-upload-content').classList.remove('hidden');
+        document.getElementById('live-ad-image').classList.add('opacity-0');
+        document.getElementById('live-ad-placeholder').classList.remove('opacity-0');
+    });
+
+    document.getElementById('adForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('adSubmitBtn');
+        const spinner = btn.querySelector('.loading-spinner');
+        const text = document.getElementById('adSubmitBtnText');
+        
+        btn.disabled = true;
+        spinner.classList.remove('hidden');
+        text.classList.add('hidden');
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: new FormData(this),
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                if (data.errors) {
+                    Object.entries(data.errors).forEach(([field, msg]) => {
+                        const err = document.getElementById(`${field}-error`);
+                        if (err) { err.textContent = msg; err.classList.remove('hidden'); }
+                    });
+                } else {
+                    showNotification(data.message, 'error');
+                }
+                btn.disabled = false;
+                spinner.classList.add('hidden');
+                text.classList.remove('hidden');
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            spinner.classList.add('hidden');
+            text.classList.remove('hidden');
+        });
+    });
 </script>
 
 
@@ -826,6 +1298,7 @@
 
         <form action="{% url 'update_merchant_settings' %}" method="POST" enctype="multipart/form-data" id="merchant-settings-form">
             {% csrf_token %}
+            <input type="hidden" name="supplier_id" value="{{ supplier.id }}">
             
             <div class="space-y-6">
                 <!-- Name & Contact -->
@@ -1082,6 +1555,98 @@
             }
             reader.readAsDataURL(this.files[0]);
         }
+    });
+
+    // --- Promotion Management ---
+    function openPromotionModal() {
+        document.getElementById('promotion-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closePromotionModal() {
+        document.getElementById('promotion-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+        document.getElementById('promotionForm').reset();
+    }
+
+    function handlePromotionProductChange(productId) {
+        if (!productId) {
+            document.getElementById('id_promotion_description').value = '';
+            return;
+        }
+        
+        const select = document.getElementById('id_promotion_product');
+        const option = select.options[select.selectedIndex];
+        const description = option.getAttribute('data-description');
+        
+        if (description) {
+            document.getElementById('id_promotion_description').value = description;
+        }
+    }
+
+    document.getElementById('promotionForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const formData = new FormData(form);
+        const submitBtn = document.getElementById('promotionSubmitBtn');
+        const submitBtnText = submitBtn.querySelector('span');
+        const spinner = submitBtn.querySelector('.loading-spinner');
+        
+        // Disable UI
+        submitBtn.disabled = true;
+        submitBtnText.classList.add('opacity-0');
+        spinner.classList.remove('hidden');
+        
+        fetch("{% url 'request_promotion' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم الإرسال!',
+                    text: data.message,
+                    confirmButtonText: 'حسناً',
+                    customClass: {
+                        popup: 'rounded-3xl',
+                        confirmButton: 'bg-blue-600 rounded-xl px-8 py-3'
+                    }
+                }).then(() => {
+                    location.reload(); // Reload to see the new promotion
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ في الإرسال',
+                    text: data.message || 'حدث خطأ غير متوقع',
+                    confirmButtonText: 'حسناً',
+                    customClass: {
+                        popup: 'rounded-3xl'
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'خطأ في الاتصال',
+                text: 'فشل الاتصال بالخادم. يرجى المحاولة مرة أخرى.',
+                confirmButtonText: 'حسناً'
+            });
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtnText.classList.remove('opacity-0');
+            spinner.classList.add('hidden');
+        });
     });
 </script>
 {% endblock %}

@@ -28,60 +28,8 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ('supplier', 'category', 'is_new')
     search_fields = ('name', 'description')
     
-    fieldsets = (
-        (None, {
-            'fields': ('supplier', 'category', 'name', 'description', 'price', 'image', 'is_new')
-        }),
-        (None, {
-            'fields': ('category_filter_script',),
-        }),
-    )
-    readonly_fields = ('category_filter_script',)
+    fields = ('supplier', 'category', 'name', 'description', 'price', 'image', 'is_new')
 
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        if obj and obj.supplier:
-            form.base_fields['category'].queryset = ProductCategory.objects.filter(category__supplier=obj.supplier)
-        return form
-
-    def category_filter_script(self, obj):
-        mapping = {pc.id: pc.category.supplier_id for pc in ProductCategory.objects.select_related('category')}
-        return format_html('''
-            <script type="text/javascript">
-                (function($) {{
-                    $(document).ready(function() {{
-                        const mapping = {mapping_json};
-                        const $supplier = $('#id_supplier');
-                        const $category = $('#id_category');
-                        
-                        if (!$supplier.length || !$category.length) return;
-
-                        const $allOptions = $category.find('option').clone();
-
-                        function updateCategories() {{
-                            const supplierId = $supplier.val();
-                            const currentVal = $category.val();
-                            
-                            $category.empty();
-                            $allOptions.each(function() {{
-                                const val = $(this).val();
-                                if (!val || mapping[val] == supplierId) {{
-                                    $category.append($(this).clone());
-                                }}
-                            }});
-                            
-                            if ($category.find('option[value="' + currentVal + '"]').length) {{
-                                $category.val(currentVal);
-                            }}
-                        }}
-
-                        $supplier.on('change', updateCategories);
-                        updateCategories();
-                    }});
-                }})(django.jQuery);
-            </script>
-        ''', mapping_json=mark_safe(json.dumps(mapping)))
-    category_filter_script.short_description = ""
 
 class OrderStatusAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug', 'is_terminal')
@@ -168,6 +116,9 @@ class SupplierAdmin(admin.ModelAdmin):
             'fields': ('primary_color', 'secondary_color', 'navbar_color', 'footer_color', 'text_color', 'accent_color'),
             'description': 'استخدم منتقي الألوان لتحديد ألوان متناسقة لمتجرك.'
         }),
+        ('اعدادات الفئات', {
+            'fields': ('can_add_categories', 'can_add_product_categories')
+        }),
     )
 
     readonly_fields = ('workflow_steps_list', 'map_picker')
@@ -246,6 +197,9 @@ class SystemSettingsAdmin(admin.ModelAdmin):
         }),
         ('التطبيقات', {
             'fields': ('show_download_app', 'app_store_link', 'google_play_link')
+        }),
+        ('واتساب', {
+            'fields': ('whatsapp_api_url', 'whatsapp_api_key')
         }),
         ('إعدادات SEO', {
             'fields': ('seo_title', 'seo_description', 'seo_keywords'),

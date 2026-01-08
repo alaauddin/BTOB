@@ -13,10 +13,14 @@ from core.models import Supplier, SuppierAds
 @login_required
 @require_http_methods(["GET", "POST"])
 def edit_ads(request, ad_id):
-    # Get the supplier for the current user
-    try:
-        supplier = get_object_or_404(Supplier, user=request.user)
-    except:
+    # Get the supplier for the current user or via supplier_id/POST for superuser
+    supplier_id = request.GET.get('supplier_id') or request.POST.get('supplier_id')
+    if request.user.is_superuser and supplier_id:
+        supplier = get_object_or_404(Supplier, id=supplier_id)
+    else:
+        supplier = Supplier.objects.filter(user=request.user).first()
+        
+    if not supplier:
         return JsonResponse({
             'success': False, 
             'message': 'You must be a registered supplier to edit ads'
@@ -82,6 +86,18 @@ def edit_ads(request, ad_id):
                 messages.error(request, 'يرجى تصحيح الأخطاء في النموذج')
     
     else:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'ad': {
+                    'id': ad.id,
+                    'title': ad.title,
+                    'description': ad.description,
+                    'image_url': ad.image.url if ad.image else None,
+                    'is_active': ad.is_active,
+                    'product_id': ad.product.id if ad.product else None
+                }
+            })
         form = SuppierAdsForm(instance=ad, supplier=supplier)
     
     # Get current ads count for this supplier
@@ -97,5 +113,4 @@ def edit_ads(request, ad_id):
         'is_edit': True
     }
     
-    # Return template for regular GET request
     return render(request, 'edit_ads.html', context)

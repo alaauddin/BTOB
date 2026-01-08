@@ -81,10 +81,8 @@ class ProductForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         
         if supplier:
-            # Filter categories to only show those belonging to the supplier
-            self.fields['category'].queryset = ProductCategory.objects.filter(
-                category__supplier=supplier
-            )
+            # Show all categories as they are now general
+            self.fields['category'].queryset = ProductCategory.objects.all()
         
         # Add required attribute to required fields
         self.fields['name'].required = True
@@ -195,7 +193,7 @@ class ProductOfferForm(forms.ModelForm):
 class SuppierAdsForm(forms.ModelForm):
     class Meta:
         model = SuppierAds
-        fields = ['title', 'description', 'image', 'is_active']
+        fields = ['title', 'description', 'image', 'is_active', 'product']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all',
@@ -212,26 +210,38 @@ class SuppierAdsForm(forms.ModelForm):
             }),
             'is_active': forms.CheckboxInput(attrs={
                 'class': 'w-5 h-5 text-orange-600 rounded focus:ring-2 focus:ring-orange-200'
+            }),
+            'product': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all'
             })
         }
         labels = {
             'title': 'عنوان الإعلان',
             'description': 'وصف الإعلان',
             'image': 'صورة الإعلان',
-            'is_active': 'إعلان نشط'
+            'is_active': 'إعلان نشط',
+            'product': 'المنتج الملحق (اختياري)'
         }
 
     def __init__(self, *args, **kwargs):
         supplier = kwargs.pop('supplier', None)
         super().__init__(*args, **kwargs)
         
+        if supplier:
+            self.fields['product'].queryset = Product.objects.filter(supplier=supplier)
+        
         # Add required attribute to required fields
         self.fields['title'].required = True
         self.fields['description'].required = True
-        self.fields['image'].required = True
-        
+        # Image is not required in edit mode if it already exists
+        if not self.instance.pk:
+            self.fields['image'].required = True
+        else:
+            self.fields['image'].required = False
+            
         # Set default value for is_active
-        self.fields['is_active'].initial = True
+        if not self.instance.pk:
+            self.fields['is_active'].initial = True
 
     def clean_title(self):
         title = self.cleaned_data.get('title')
@@ -257,6 +267,58 @@ class SuppierAdsForm(forms.ModelForm):
                 raise forms.ValidationError('نوع الملف غير مدعوم. يرجى اختيار صورة بصيغة PNG, JPG, JPEG, GIF, أو WebP')
         
         return image
+
+
+
+class PlatformOfferAdForm(forms.ModelForm):
+    class Meta:
+        model = PlatformOfferAd
+        fields = ['product', 'description', 'start_date', 'end_date']
+        widgets = {
+            'product': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm',
+                'onchange': 'handleProductSelect(this.value)'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all resize-none text-sm',
+                'placeholder': 'صف العرض المميز هنا...',
+                'rows': 4
+            }),
+            'start_date': forms.DateInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm',
+                'type': 'date'
+            }),
+            'end_date': forms.DateInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm',
+                'type': 'date'
+            })
+        }
+        labels = {
+            'product': 'المنتج المختار',
+            'description': 'وصف العرض (سيظهر للجميع)',
+            'start_date': 'تاريخ البدء',
+            'end_date': 'تاريخ الانتهاء'
+        }
+
+    def __init__(self, *args, **kwargs):
+        supplier = kwargs.pop('supplier', None)
+        super().__init__(*args, **kwargs)
+        if supplier:
+            self.fields['product'].queryset = Product.objects.filter(supplier=supplier)
+            
+        # Add required attribute
+        for field in self.fields:
+            self.fields[field].required = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+
+        if start_date and end_date and start_date > end_date:
+            raise forms.ValidationError('تاريخ البدء يجب أن يكون قبل تاريخ الانتهاء')
+        
+        return cleaned_data
 
 
 class BusinessRequestForm(forms.ModelForm):

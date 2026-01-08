@@ -6,14 +6,35 @@ from core.models import Cart, Supplier, SupplierCategory, PlatformOfferAd
 from core.models import Order
 from django.utils import timezone
 from datetime import timedelta
-from django.db.models import Q
+from django.db.models import Q, Max, Count
 from core.forms import BusinessRequestForm
 from django.contrib import messages
 
 
 
 def SuppliersListView(request):
-    suppliers = Supplier.objects.all().order_by('-priority')
+    today = timezone.now().date()
+    
+    # Annotate suppliers with max discount and offers count to sort by "strongest offers"
+    suppliers = Supplier.objects.all().annotate(
+        max_offer_discount=Max(
+            'products__products_offer__discount_precentage',
+            filter=Q(
+                products__products_offer__is_active=True,
+                products__products_offer__from_date__lte=today,
+                products__products_offer__to_date__gte=today
+            )
+        ),
+        offers_count=Count(
+            'products__products_offer',
+            filter=Q(
+                products__products_offer__is_active=True,
+                products__products_offer__from_date__lte=today,
+                products__products_offer__to_date__gte=today
+            ),
+            distinct=True
+        )
+    ).order_by('-max_offer_discount', '-offers_count', '-priority')
     
     # Check if there is only one supplier
     if suppliers.count() == 1:

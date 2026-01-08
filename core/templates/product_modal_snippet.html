@@ -67,6 +67,7 @@
                     <form id="productForm" method="post" enctype="multipart/form-data" novalidate class="flex flex-col gap-3">
                         {% csrf_token %}
                         <input type="hidden" id="edit-product-id" name="product_id">
+                        <input type="hidden" name="supplier_id" value="{{ supplier.id }}">
                         
                         <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-100 space-y-2">
                             <!-- Name -->
@@ -107,9 +108,11 @@
                                             <i class="fas fa-layer-group text-blue-500 ml-1"></i>
                                             {{ product_form.category.label }}
                                         </label>
+                                        {% if supplier.can_add_product_categories or user.is_superuser %}
                                         <button type="button" onclick="openCategoryModal()" class="text-[9px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full transition-colors">
                                             <i class="fas fa-plus-circle"></i> جديد
                                         </button>
+                                        {% endif %}
                                     </div>
                                     {{ product_form.category }}
                                     <div class="error-message text-red-500 text-[10px] mt-1 hidden" id="category-error"></div>
@@ -195,10 +198,12 @@
                 <label class="form-label text-xs font-bold text-slate-600 mb-1.5 block">الفئة الرئيسية</label>
                 <select id="parent-category-select" class="form-input w-full p-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" onchange="toggleNewParentInput(this.value)">
                     <option value="">-- اختر فئة رئيسية --</option>
-                    {% for cat in supplier.categories.all %}
+                    {% for cat in categories %}
                         <option value="{{ cat.id }}">{{ cat.name }}</option>
                     {% endfor %}
+                    {% if supplier.can_add_categories or user.is_superuser %}
                     <option value="new" class="font-bold text-blue-600">+ إضافة فئة رئيسية جديدة</option>
+                    {% endif %}
                 </select>
             </div>
 

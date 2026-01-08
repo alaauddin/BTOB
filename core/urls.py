@@ -26,7 +26,10 @@ from core.views.add_ads import add_ads
 from core.views.edit_ads import edit_ads
 from core.views.MerchantOrderManagement import merchant_orders, merchant_order_detail, update_order_status, add_order_note, add_payment_reference
 from core.views.category_views import add_category_ajax
-from core.views.delete_product import delete_product
+from core.views.delete_product import toggle_product_status
+from core.views.toggle_ad_status import toggle_ad_status
+from core.views.request_promotion import request_promotion
+from core.views.whatsapp_auth import send_whatsapp_login_link, verify_whatsapp_login
 
 urlpatterns = [
     # path('products/', ProductListView.as_view(), name='product-list'),
@@ -72,7 +75,9 @@ urlpatterns = [
     path('edit-offer/<int:offer_id>/', edit_product_offer, name='edit_product_offer'),
     path('add-ads/', add_ads, name='add_ads'),
     path('edit-ads/<int:ad_id>/', edit_ads, name='edit_ads'),
-    path('delete-product/<int:product_id>/', delete_product, name='delete_product'),
+    path('toggle-product-status/<int:product_id>/', toggle_product_status, name='toggle_product_status'),
+    path('toggle-ad-status/<int:ad_id>/', toggle_ad_status, name='toggle_ad_status'),
+    path('request-promotion/', request_promotion, name='request_promotion'),
     path('add-category-ajax/', add_category_ajax, name='add_category_ajax'),
     
     # Merchant Order Management
@@ -82,5 +87,7 @@ urlpatterns = [
     path('add-order-note/<int:order_id>/', add_order_note, name='add_order_note'),
     path('add-payment-reference/<int:order_id>/', add_payment_reference, name='add_payment_reference'),
 
+    path('api/whatsapp-login-link/', send_whatsapp_login_link, name='send_whatsapp_login_link'),
+    path('verify-whatsapp-login/', verify_whatsapp_login, name='verify_whatsapp_login'),
 ]
 
