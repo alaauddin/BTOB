@@ -49,13 +49,15 @@ def add_ads(request):
                         }
                     })
                 else:
+                    print(f"DEBUG: Form errors: {form.errors}")
+                    print(f"DEBUG: request.FILES: {request.FILES.keys()}")
                     # Return form errors
                     errors = {}
                     for field, error_list in form.errors.items():
                         if field == '__all__':
                             errors['general'] = error_list[0]
                         else:
-                            errors[field] = error_list[0]  # Get first error for each field
+                            errors[field] = error_list[0]
                     
                     return JsonResponse({
                         'success': False,

@@ -51,7 +51,8 @@ def SuppliersListView(request):
     today = timezone.now().date()
     platform_ads = PlatformOfferAd.objects.filter(
         start_date__lte=today,
-        end_date__gte=today
+        end_date__gte=today,
+        is_approved=True,
     ).order_by('order').select_related('product', 'product__supplier')
 
     
