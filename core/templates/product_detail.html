@@ -21,9 +21,25 @@
 {% endblock %}
 
 {% block content %}
-<div class="container container-products">
+<div class="container container-products {% if supplier.show_platform_ads and platform_ads %}has-fixed-mobile-ads{% endif %}">
+    <!-- Mini Platform Ads (Mobile only, above everything else in content) -->
+    {% if supplier.show_platform_ads and platform_ads %}
+    <div class="detail-ads-wrapper d-lg-none">
+        {% for ad in platform_ads|slice:":4" %}
+        <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="mini-ad-card">
+            <span class="mini-ad-badge">عرطة</span>
+            <img src="{{ ad.product.image.url }}" class="mini-ad-img" alt="{{ ad.product.name }}">
+            <div class="mini-ad-info">
+                <h5 class="mini-ad-name">{{ ad.product.name }}</h5>
+                <div class="mini-ad-price">{{ ad.product.get_price_with_offer|floatformat:0 }} {{ ad.product.supplier.currency }}</div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Back Button -->
-    <a href="{% url 'product-list' supplier.store_id %}" class="back-to-store-btn mt-3 mb-1">
+    <a href="{% url 'product-list' supplier.store_id %}" class="back-to-store-btn mb-1">
         <i class="fas fa-arrow-right"></i>
         <span>العودة للمتجر</span>
     </a>
@@ -261,22 +277,6 @@
         مشاهدة السلة <i class="fas fa-arrow-left me-2"></i>
     </a>
 </div>
-
-<!-- Mini Platform Ads (Mobile only, above cart bar) -->
-{% if supplier.show_platform_ads and platform_ads %}
-<div class="detail-ads-wrapper d-lg-none">
-    {% for ad in platform_ads|slice:":4" %}
-    <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="mini-ad-card">
-        <span class="mini-ad-badge">عرطة</span>
-        <img src="{{ ad.product.image.url }}" class="mini-ad-img" alt="{{ ad.product.name }}">
-        <div class="mini-ad-info">
-            <h5 class="mini-ad-name">{{ ad.product.name }}</h5>
-            <div class="mini-ad-price">{{ ad.product.get_price_with_offer|floatformat:0 }} {{ ad.product.supplier.currency }}</div>
-        </div>
-    </a>
-    {% endfor %}
-</div>
-{% endif %}
 
 {% endblock %}
 

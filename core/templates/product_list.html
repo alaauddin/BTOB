@@ -723,37 +723,11 @@
     
     // Show login prompt for non-authenticated users
     function showLoginPrompt() {
-        const modal = document.createElement('div');
-        modal.className = 'modal fade';
-        modal.innerHTML = `
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">تسجيل الدخول مطلوب</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body text-center">
-                        <i class="fas fa-heart text-danger mb-3" style="font-size: 3rem;"></i>
-                        <h4>سجل دخولك لإضافة المنتجات للمفضلة</h4>
-                        <p class="text-muted">يمكنك حفظ منتجاتك المفضلة والوصول إليها في أي وقت بعد تسجيل الدخول</p>
-                    </div>
-                    <div class="modal-footer justify-content-center">
-                        <a href="{% url 'login' %}" class="btn btn-primary px-4">
-                            <i class="fas fa-sign-in-alt me-2"></i>تسجيل الدخول
-                        </a>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        const bsModal = new bootstrap.Modal(modal);
-        bsModal.show();
-        
-        modal.addEventListener('hidden.bs.modal', function() {
-            document.body.removeChild(modal);
-        });
+        if (typeof openLoginModal === 'function') {
+            openLoginModal();
+        } else {
+            window.location.href = "{% url 'login' %}";
+        }
     }
     
     // Pending Orders Sidebar Functions

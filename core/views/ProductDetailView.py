@@ -54,7 +54,8 @@ def product_detail(request, store_id, pk):
         today = timezone.now().date()
         context['platform_ads'] = PlatformOfferAd.objects.filter(
             start_date__lte=today,
-            end_date__gte=today
+            end_date__gte=today,
+            # is_approved=True    
         ).order_by('order').select_related('product', 'product__supplier')[:4]
 
     # Calculate estimated delivery fee for mobile cart bar

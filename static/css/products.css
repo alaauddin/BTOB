@@ -375,6 +375,8 @@
     display: flex;
     flex-direction: column;
     position: relative;
+    /* Isolate stacking context but keep low */
+    z-index: 1;
     box-shadow:
         0 1px 3px 0 rgba(0, 0, 0, 0.05),
         0 1px 2px 0 rgba(0, 0, 0, 0.03);
@@ -386,6 +388,8 @@
     box-shadow:
         0 25px 50px -12px rgba(0, 0, 0, 0.12),
         0 0 0 1px rgba(0, 0, 0, 0.05);
+    /* Ensure it doesn't jump above modal */
+    z-index: 2;
 }
 
 .modern-product-image-container {
@@ -1201,90 +1205,101 @@
         transform: scale(0.95);
     }
 
-    /* Detail Ads Above Cart Bar */
+    /* Detail Ads at Top (Mobile) - FIXED to Navbar */
     .detail-ads-wrapper {
         position: fixed;
-        bottom: 74px;
-        /* Default height of cart bar */
+        top: 60px;
+        /* Default mobile navbar height */
         left: 0;
         right: 0;
-        background: #f97316;
-        /* Orange background */
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-        padding: 8px 15px;
-        z-index: 1049;
-        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        background: #fdf2f0;
+        padding: 10px 15px;
+        z-index: 50;
+        /* Above regular content but below some dropdowns */
         display: flex;
-        gap: 10px;
+        gap: 12px;
         overflow-x: auto;
         scrollbar-width: none;
-        transition: bottom 0.3s ease;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
-    .detail-ads-wrapper::-webkit-scrollbar {
-        display: none;
+    /* Small mobile adjustment */
+    @media (max-width: 576px) {
+        .detail-ads-wrapper {
+            top: 81px;
+            /* Narrower navbar height */
+            padding: 8px 12px;
+        }
+
+        /* Offset for content when ads are fixed at top */
+        .container-products.has-fixed-mobile-ads {
+            padding-top: 126px !important;
+        }
     }
 
-    /* Adjust ads position if cart bar is hidden */
-    #mobileCartBar.d-none~.detail-ads-wrapper,
-    .mobile-cart-bar.d-none+.detail-ads-wrapper {
-        bottom: 0;
+    /* Tablet adjustment */
+    @media (min-width: 577px) and (max-width: 991px) {
+        .container-products.has-fixed-mobile-ads {
+            padding-top: 190px !important;
+        }
     }
 
     .mini-ad-card {
-        flex: 0 0 115px;
+        flex: 0 0 140px;
         background: white;
-        border-radius: 8px;
-        padding: 4px;
+        border-radius: 12px;
+        padding: 8px;
         display: flex;
-        align-items: center;
-        gap: 6px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         text-decoration: none !important;
         color: inherit !important;
-        border: 1px solid rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(0, 0, 0, 0.02);
         position: relative;
     }
 
     .mini-ad-badge {
         position: absolute;
-        top: -6px;
-        left: -4px;
+        top: 8px;
+        right: 8px;
         background: #ef4444;
         color: white;
-        font-size: 0.6rem;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-weight: 700;
-        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+        font-size: 10px;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 6px;
+        z-index: 2;
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
     }
 
     .mini-ad-img {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
+        width: 100%;
+        height: 56px;
         object-fit: cover;
+        border-radius: 8px;
     }
 
     .mini-ad-info {
         flex: 1;
-        overflow: hidden;
+        width: 100%;
     }
 
     .mini-ad-name {
-        font-size: 0.75rem !important;
-        font-weight: 700 !important;
+        font-size: 12px;
+        font-weight: 700;
+        margin: 0 0 4px 0 !important;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        margin: 0 !important;
         color: var(--dark-color);
     }
 
     .mini-ad-price {
-        font-size: 0.7rem;
-        font-weight: 600;
+        font-size: 13px;
+        font-weight: 800;
         color: var(--primary-color);
     }
 
@@ -2014,6 +2029,7 @@
         width: 100%;
         height: 42px;
         font-size: 0.95rem;
+        padding: 10px;
     }
 
     .modern-detail-info-sec .grid {
