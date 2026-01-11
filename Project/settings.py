@@ -88,11 +88,9 @@ MIDDLEWARE = [
 ]
 
 # Add allauth middleware if available (required for version >= 0.56.0)
-try:
-    import allauth.account.middleware
+import importlib.util
+if importlib.util.find_spec('allauth.account.middleware'):
     MIDDLEWARE.append('allauth.account.middleware.AccountMiddleware')
-except ImportError:
-    pass
 
 ROOT_URLCONF = 'Project.urls'
 
