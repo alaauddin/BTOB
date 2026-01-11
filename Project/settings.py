@@ -87,6 +87,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Add allauth middleware if available (required for version >= 0.56.0)
+try:
+    import allauth.account.middleware
+    MIDDLEWARE.append('allauth.account.middleware.AccountMiddleware')
+except ImportError:
+    pass
+
 ROOT_URLCONF = 'Project.urls'
 
 TEMPLATES = [
