@@ -434,7 +434,9 @@
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-3xl font-bold text-gradient">إدارة الطلبات</h2>
             <div class="flex gap-4">
-                <a href="{% url 'merchant_orders' %}" class="action-btn">
+                <a href="
+                {% url 'merchant_orders' %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}
+                " class="action-btn">
                     <i class="fas fa-list"></i>
                     عرض جميع الطلبات
                 </a>
