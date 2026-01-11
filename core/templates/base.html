@@ -18,11 +18,12 @@
     <link rel="icon" type="image/png" href="{% static 'logo.png' %}">
     
     <!-- CSS Libraries -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://unpkg.com/nprogress@0.2.0/nprogress.css" rel="stylesheet">
+    <script>NProgress.configure({ showSpinner: true, trickleSpeed: 200 }); NProgress.start();</script>
 
     <!-- Arabic web fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@300;400;700;900&display=swap" rel="stylesheet">
@@ -38,9 +39,9 @@
     <meta http-equiv="Expires" content="0"> {% endcomment %}
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
-    <link rel="stylesheet" href="{% static 'css/components.css' %}">
-    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v={{ css_version }}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}?v={{ css_version }}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}?v={{ css_version }}">
 
     <style>
         :root {
@@ -100,13 +101,19 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s;
         }
 
-        @keyframes mesh-gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        #nprogress .bar {
+            background: var(--primary-color) !important;
+            height: 3px !important;
+        }
+        #nprogress .spinner-icon {
+            border-top-color: var(--primary-color) !important;
+            border-left-color: var(--primary-color) !important;
+        }
+        #nprogress .peg {
+            box-shadow: 0 0 10px var(--primary-color), 0 0 5px var(--primary-color) !important;
         }
 
         #page-loader.hidden-loader {
@@ -336,13 +343,13 @@
                     <!-- Dual Logos at the Bottom -->
                     <div class="flex items-center justify-center gap-3 pt-4 border-t border-gray-100 opacity-60">
                         {% if supplier.profile_picture %}
-                            <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-8 w-auto object-contain grayscale hover:grayscale-0 transition-all">
+                            <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-8 w-auto object-contain grayscale hover:grayscale-0 transition-all" loading="lazy">
                             <div class="h-4 w-px bg-gray-300"></div>
                         {% endif %}
                         {% if system_settings.logo %}
-                            <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-8 w-auto object-contain grayscale hover:grayscale-0 transition-all">
+                            <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-8 w-auto object-contain grayscale hover:grayscale-0 transition-all" loading="lazy">
                         {% else %}
-                            <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-8 w-auto object-contain grayscale">
+                            <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-8 w-auto object-contain grayscale" loading="lazy">
                         {% endif %}
                     </div>
                 </div>
@@ -509,7 +516,7 @@
                         {% if supplier %}
                             <!-- Supplier Logo -->
                             {% if supplier.profile_picture %}
-                                <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-12 w-auto object-contain">
+                                <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-12 w-auto object-contain" loading="lazy">
                             {% else %}
                                 <span class="text-xl font-bold text-gray-800">{{ supplier.name }}</span>
                             {% endif %}
@@ -519,13 +526,13 @@
 
                             <!-- System/Platform Logo (Powered By) -->
                             {% if system_settings.logo %}
-                                <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-8 w-auto grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300" title="Powered by {{ system_settings.site_name }}">
+                                <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-8 w-auto grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300" title="Powered by {{ system_settings.site_name }}" loading="lazy">
                             {% else %}
                                 <span class="text-sm font-bold text-gray-500">{{ system_settings.site_name }}</span>
                             {% endif %}
                         {% elif system_settings.logo %}
                             <!-- System Logo Only (Platform Mode) -->
-                            <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-10 w-auto">
+                            <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-10 w-auto" loading="lazy">
                         {% else %}
                             <i class="fas fa-store text-xl text-[var(--primary-color)]"></i>
                             <h3 class="text-xl font-black text-gray-900">{{ system_settings.site_name|default:"متجرك" }}</h3>
@@ -640,8 +647,10 @@
 
     <!-- JavaScript Libraries -->
     <!-- Load non-blocking: defer external libs so parsing isn't blocked. Keep execution order (jQuery before code that expects it). -->
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" defer></script>
     
     <!-- Custom JavaScript -->
     <script>
@@ -1170,16 +1179,20 @@
         document.addEventListener('DOMContentLoaded', function() {
             const loader = document.getElementById('page-loader');
             
-            // Hide loader with a graceful delay to show off the animation
+            // Hide loader immediately on DOM content ready (doesn't wait for images)
             if (loader) {
                 setTimeout(() => {
                     loader.classList.add('hidden-loader');
-                }, 800);
+                    NProgress.done();
+                }, 100); 
+            } else {
+                NProgress.done();
             }
 
             // Function to show loader
             window.showPageLoader = function() {
                 if (loader) loader.classList.remove('hidden-loader');
+                NProgress.start();
             };
 
             // Trigger on internal link clicks

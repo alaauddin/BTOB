@@ -1,224 +1,341 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load widget_tweaks %}
 
-{% block title %}إنشاء حساب جديد | Sign Up{% endblock %}
-
-{% block extra_css %}
-<style>
-    .auth-page {
-        background: #f8fafc;
-        min-height: calc(100vh - 200px);
-        display: flex;
-        align-items: center;
-        padding: 2rem 0;
-    }
-
-    .auth-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        border: 1px solid rgba(0,0,0,0.05);
-        overflow: hidden;
-        transition: transform 0.3s ease;
-    }
-
-    .auth-header {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
-        padding: 2.5rem 2rem;
-        color: white;
-        text-align: center;
-        position: relative;
-    }
-
-    .auth-header::after {
-        content: '';
-        position: absolute;
-        bottom: -10px;
-        left: 0;
-        right: 0;
-        height: 20px;
-        background: white;
-        border-radius: 50% 50% 0 0;
-    }
-
-    .auth-body {
-        padding: 2.5rem 2rem;
-    }
-
-    .form-floating > label {
-        right: 0;
-        left: auto;
-        padding-right: 1rem;
-    }
-
-    .form-control {
-        border-radius: 12px;
-        padding: 0.8rem 1rem;
-        border: 1.5px solid #e2e8f0;
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-    }
-
-    .btn-auth {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 0.8rem;
-        font-weight: 700;
-        font-size: 1.1rem;
-        width: 100%;
-        margin-top: 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .btn-auth:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        color: white;
-    }
-
-    .auth-footer {
-        text-align: center;
-        margin-top: 1.5rem;
-        color: #64748b;
-        font-size: 0.95rem;
-    }
-
-    .auth-footer a {
-        color: var(--primary-color);
-        font-weight: 700;
-        text-decoration: none;
-    }
-
-    .field-icon {
-        position: absolute;
-        left: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #94a3b8;
-        pointer-events: none;
-    }
-
-    .form-group {
-        position: relative;
-        margin-bottom: 1.5rem;
-    }
-
-    .invalid-feedback {
-        font-size: 0.85rem;
-        margin-top: 0.4rem;
-        color: #ef4444;
-    }
-
-    .bilingual-label {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-        color: #475569;
-        font-size: 0.9rem;
-    }
-
-    .english-label {
-        font-size: 0.8rem;
-        color: #94a3b8;
-    }
-</style>
-{% endblock %}
+{% block title %}إنشاء حساب | تجربة مميزة{% endblock %}
 
 {% block content %}
-<div class="auth-page">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-5 col-md-8">
-                <div class="auth-card">
-                    <div class="auth-header">
-                        <i class="fas fa-user-plus fa-3x mb-3"></i>
-                        <h2 class="fw-bold mb-1">إنشاء حساب</h2>
-                        <p class="opacity-75">Create a new account</p>
+<div class="auth-wrapper min-h-screen flex items-center justify-center p-6 lg:p-12">
+    <!-- Immersive Background System (Consistent with Login) -->
+    <div class="bg-system">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="glass-overlay"></div>
+    </div>
+
+    <!-- Main Auth Card -->
+    <div class="auth-card-premium relative z-10 w-full max-w-lg">
+        <div class="auth-card-inner p-8 lg:p-12">
+            
+            <!-- Dual Logo Presentation -->
+            <div class="header-section text-center mb-10">
+                <div class="logo-stack flex items-center justify-center gap-6 mb-8">
+                    {% if supplier.profile_picture %}
+                    <div class="supplier-logo-box">
+                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}">
                     </div>
+                    <div class="divider-line"></div>
+                    {% endif %}
                     
-                    <div class="auth-body">
-                        <form method="post" novalidate>
-                            {% csrf_token %}
-
-                            {% if form.non_field_errors %}
-                            <div class="alert alert-danger rounded-3 mb-4">
-                                {% for error in form.non_field_errors %}
-                                <p class="mb-0 small"><i class="fas fa-exclamation-circle me-2"></i>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-
-                            <!-- Full Name -->
-                            <div class="form-group">
-                                <div class="bilingual-label">
-                                    <span>الاسم بالكامل</span>
-                                    <span class="english-label">Full Name</span>
-                                </div>
-                                {% render_field form.first_name class="form-control" placeholder="أدخل اسمك بالكامل" %}
-                                {% if form.first_name.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.first_name.errors %}
-                                    <p class="mb-0">{{ error }}</p>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Phone Number -->
-                            <div class="form-group">
-                                <div class="bilingual-label">
-                                    <span>رقم الهاتف</span>
-                                    <span class="english-label">Phone Number</span>
-                                </div>
-                                {% render_field form.username class="form-control" placeholder="أدخل رقم هاتفك" %}
-                                <small class="text-muted mt-1 d-block"><i class="fas fa-info-circle me-1"></i> سيتم استخدام هذا الرقم كاسم مستخدم.</small>
-                                {% if form.username.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.username.errors %}
-                                    <p class="mb-0">{{ error }}</p>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Password -->
-                            <div class="form-group">
-                                <div class="bilingual-label">
-                                    <span>كلمة المرور</span>
-                                    <span class="english-label">Password</span>
-                                </div>
-                                {% render_field form.password class="form-control" placeholder="اختر كلمة مرور قوية" %}
-                                {% if form.password.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.password.errors %}
-                                    <p class="mb-0">{{ error }}</p>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <button type="submit" class="btn-auth">
-                                <span class="me-2">إنشاء الحساب</span>
-                                <i class="fas fa-arrow-left"></i>
-                            </button>
-                        </form>
-
-                        <div class="auth-footer">
-                            هل لديك حساب بالفعل؟ 
-                            <a href="{% url 'login' %}">سجل دخولك هنا</a>
-                        </div>
+                    <div class="system-logo-box">
+                        {% if system_settings.logo %}
+                        <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}">
+                        {% else %}
+                        <img src="{% static 'logo.png' %}" alt="Logo">
+                        {% endif %}
                     </div>
                 </div>
+                
+                <h1 class="welcome-text">ابدأ رحلتك معنا</h1>
+                <p class="subtitle-text">انضم لآلاف المتسوقين الأذكياء اليوم</p>
+            </div>
+
+            <!-- Enhanced Form -->
+            <form method="post" novalidate class="auth-form space-y-6">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="error-toast-premium animate-fade-in">
+                    {% for error in form.non_field_errors %}
+                    <p><i class="fas fa-exclamation-triangle"></i> {{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="form-fields-container space-y-6">
+                     <!-- Full Name -->
+                    <div class="form-group-premium">
+                        <label class="premium-label">
+                            <span class="ar">الاسم بالكامل</span>
+                            <span class="en">FULL NAME</span>
+                        </label>
+                        <div class="input-wrapper">
+                            {% render_field form.first_name class="form-control-premium" placeholder="مثال: أحمد علي" %}
+                            <div class="input-glow"></div>
+                        </div>
+                        {% if form.first_name.errors %}
+                        <span class="error-hint">{% for error in form.first_name.errors %}{{ error }}{% endfor %}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="form-group-premium">
+                        <label class="premium-label">
+                             <span class="ar">رقم الهاتف</span>
+                             <span class="en">PHONE NUMBER</span>
+                        </label>
+                        <div class="input-wrapper">
+                            {% render_field form.username class="form-control-premium" placeholder="0XXXXX" %}
+                            <div class="input-glow"></div>
+                        </div>
+                        <p class="usage-tip"><i class="fas fa-info-circle"></i> سيتم استخدام هذا الرقم للدخول لحسابك</p>
+                        {% if form.username.errors %}
+                        <span class="error-hint">{% for error in form.username.errors %}{{ error }}{% endfor %}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group-premium">
+                        <label class="premium-label">
+                            <span class="ar">كلمة المرور</span>
+                            <span class="en">PASSWORD</span>
+                        </label>
+                        <div class="input-wrapper">
+                            {% render_field form.password class="form-control-premium" placeholder="••••••••" %}
+                            <div class="input-glow"></div>
+                        </div>
+                        {% if form.password.errors %}
+                        <span class="error-hint">{% for error in form.password.errors %}{{ error }}{% endfor %}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="action-section pt-4">
+                    <button type="submit" class="btn-submit-premium">
+                        <span class="btn-text">إنشاء الحساب</span>
+                        <div class="btn-icon"><i class="fas fa-check"></i></div>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Social Signup Divider -->
+            <div class="social-auth-divider my-10 relative">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
+                <div class="relative flex justify-center text-xs uppercase"><span class="bg-card-dark px-4 text-white/30 tracking-widest backdrop-blur-md">أو عبر</span></div>
+            </div>
+
+            <!-- Google Signup Button -->
+            {% load socialaccount %}
+            <div class="social-actions">
+                <a href="{% provider_login_url 'google' %}" class="btn-google-premium">
+                    <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" alt="Google" class="w-6 h-6">
+                    <span>التسجيل باستخدام جوجل</span>
+                </a>
+            </div>
+
+            <!-- Bottom Utilities -->
+            <div class="auth-footer-premium mt-12 pt-8 border-t border-white/10 text-center">
+                <p class="signup-prompt">
+                    لديك حساب بالفعل؟ 
+                    <a href="{% url 'login' %}" class="link-highlight">سجل دخولك الآن</a>
+                </p>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --glass-blur: 40px;
+    }
+
+    .auth-wrapper {
+        background: #020617;
+        font-family: 'Cairo', sans-serif;
+        overflow-x: hidden;
+    }
+
+    /* Background consistent with Login */
+    .bg-system {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+    }
+
+    .glass-overlay {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, transparent 0%, rgba(2, 6, 23, 0.8) 100%);
+        backdrop-filter: blur(10px);
+    }
+
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.4;
+        animation: orbRotate 20s infinite linear;
+    }
+
+    .orb-1 { width: 600px; height: 600px; background: var(--primary-color, #3b82f6); top: -10%; left: -10%; }
+    .orb-2 { width: 500px; height: 500px; background: var(--accent-color, #a855f7); bottom: -5%; right: -5%; animation-delay: -5s; }
+    .orb-3 { width: 400px; height: 400px; background: #f43f5e; top: 40%; left: 30%; opacity: 0.15; animation-delay: -10s; }
+
+    @keyframes orbRotate {
+        0% { transform: translate(0, 0) scale(1); }
+        33% { transform: translate(50px, 80px) scale(1.1); }
+        66% { transform: translate(-30px, 20px) scale(0.9); }
+        100% { transform: translate(0, 0) scale(1); }
+    }
+
+    /* Card Aesthetics */
+    .auth-card-inner {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(var(--glass-blur));
+        border: 1px solid var(--glass-border);
+        border-radius: 40px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    /* Logo Stack */
+    .logo-stack img {
+        height: 60px;
+        width: auto;
+        object-fit: contain;
+        filter: drop-shadow(0 0 15px rgba(255,255,255,0.2));
+    }
+
+    .divider-line {
+        width: 1px;
+        height: 30px;
+        background: rgba(255,255,255,0.2);
+    }
+
+    /* Typography */
+    .welcome-text { color: #fff; font-size: 2.25rem; font-weight: 900; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+    .subtitle-text { color: rgba(255,255,255,0.4); font-size: 0.875rem; font-weight: 500; }
+
+    /* Premium Inputs */
+    .premium-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .premium-label .ar { color: rgba(255,255,255,0.7); font-size: 0.85rem; font-weight: 700; }
+    .premium-label .en { color: rgba(255,255,255,0.2); font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .form-control-premium {
+        width: 100%;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 18px;
+        padding: 1.1rem 1.5rem;
+        color: #fff;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+
+    .form-control-premium:focus {
+        background: rgba(255,255,255,0.07);
+        border-color: var(--primary-color);
+        box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.2);
+    }
+
+    .input-glow {
+        position: absolute;
+        inset: -2px;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        border-radius: 20px;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        filter: blur(10px);
+    }
+
+    .form-control-premium:focus + .input-glow {
+        opacity: 0.2;
+    }
+
+    /* Errors & Tips */
+    .error-toast-premium {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        padding: 1rem;
+        border-radius: 16px;
+        color: #fca5a5;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+    }
+
+    .error-hint { color: #fca5a5; font-size: 0.75rem; font-weight: 700; margin-top: 0.5rem; display: block; }
+    .usage-tip { color: rgba(255,255,255,0.25); font-size: 0.75rem; margin-top: 0.6rem; display: flex; align-items: center; gap: 0.5rem; }
+
+    /* Submit Button */
+    .btn-submit-premium {
+        position: relative;
+        width: 100%;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, var(--primary-color, #3b82f6), var(--accent-color, #a855f7));
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 800;
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        transition: all 0.4s ease;
+        box-shadow: 0 15px 35px -5px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-submit-premium:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 25px 45px -10px rgba(59, 130, 246, 0.5);
+        filter: brightness(1.1);
+    }
+
+    /* Footer */
+    .signup-prompt { color: rgba(255,255,255,0.4); font-size: 0.95rem; }
+    .link-highlight { color: #fff; font-weight: 800; text-decoration: none; border-bottom: 2.5px solid var(--primary-color); padding-bottom: 2px; }
+    .link-highlight:hover { background: rgba(255,255,255,0.05); }
+
+    .animate-fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* RTL Support */
+    [dir="rtl"] .btn-icon { order: -1; }
+
+    /* Google Button Ultra-Premium */
+    .btn-google-premium {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        color: #fff;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-google-premium:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    }
+
+    .bg-card-dark {
+        background: #0f172a;
+    }
+</style>
 {% endblock %}

@@ -9,4 +9,7 @@ def system_settings(request):
     except Exception:
         settings = None
         
-    return {'system_settings': settings}
+    return {
+        'system_settings': settings,
+        'css_version': '1.0.1'  # Update this to bust cache
+    }

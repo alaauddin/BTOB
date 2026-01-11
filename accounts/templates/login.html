@@ -1,143 +1,384 @@
-{%extends 'base.html'%}
+{% extends 'base.html' %}
+{% load static %}
 
-{%block title%} Login {%endblock%}
+{% block title %}تسجيل الدخول | تجربة مميزة{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-gray-50">
-    <!-- Animated Background Elements -->
-    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div class="absolute top-[-10%] right-[-10%] w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+<div class="auth-wrapper min-h-screen flex items-center justify-center p-6 lg:p-12">
+    <!-- Immersive Background System -->
+    <div class="bg-system">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="glass-overlay"></div>
     </div>
 
-    <div class="max-w-md w-full space-y-8 relative z-10">
-        <!-- Logo/Header Section -->
-        <div class="text-center mb-8">
-            {% if supplier.profile_picture %}
-                <img class="mx-auto h-24 w-auto drop-shadow-lg mb-4 hover:scale-105 transition-transform duration-300" src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}">
-            {% else %}
-               <div class="mx-auto h-20 w-20 bg-gradient-to-tr from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg mb-4 transform rotate-3 hover:rotate-0 transition-all duration-300">
-                    <i class="fas fa-user-lock text-3xl text-white"></i>
-               </div>
-            {% endif %}
-            <h2 class="mt-2 text-3xl font-black text-gray-900 tracking-tight">
-                مرحباً بك مجدداً
-            </h2>
-            <p class="mt-2 text-sm text-gray-600">
-                تسجيل الدخول إلى حسابك للمتابعة
-            </p>
-        </div>
+    <!-- Main Auth Card -->
+    <div class="auth-card-premium relative z-10 w-full max-w-lg">
+        <div class="auth-card-inner p-8 lg:p-12">
+            
+            <!-- Dual Logo Presentation -->
+            <div class="header-section text-center mb-10">
+                <div class="logo-stack flex items-center justify-center gap-6 mb-8">
+                    {% if supplier.profile_picture %}
+                    <div class="supplier-logo-box">
+                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}">
+                    </div>
+                    <div class="divider-line"></div>
+                    {% endif %}
+                    
+                    <div class="system-logo-box">
+                        {% if system_settings.logo %}
+                        <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}">
+                        {% else %}
+                        <img src="{% static 'logo.png' %}" alt="Logo">
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <h1 class="welcome-text">مرحباً بك مجدداً</h1>
+                <p class="subtitle-text">استمتع بتجربة تسوق ذكية وآمنة</p>
+            </div>
 
-        <!-- Glass Card -->
-        <div class="backdrop-blur-xl bg-white/70 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/20 p-8 transform transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
-            <form class="space-y-6" method="post" novalidate>
+            <!-- Enhanced Form -->
+            <form method="post" novalidate class="auth-form space-y-6">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ next }}">
 
-                <!-- Form Fields Container -->
-                <div class="space-y-4">
+                <div class="form-fields-container space-y-5">
                     {% include 'includes/form.html' %}
                 </div>
 
-                <!-- Submit Button -->
-                <div>
-                    <button type="submit" 
-                            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 transform hover:-translate-y-0.5">
-                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                            <i class="fas fa-sign-in-alt group-hover:text-blue-100 transition-colors"></i>
-                        </span>
-                        تسجيل الدخول
+                <div class="action-section pt-4">
+                    <button type="submit" class="btn-submit-premium">
+                        <span class="btn-text">تسجيل الدخول</span>
+                        <div class="btn-icon"><i class="fas fa-arrow-left"></i></div>
                     </button>
                 </div>
             </form>
 
-            <div class="mt-8">
-                <div class="relative">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-200"></div>
-                    </div>
+            <!-- Social Login Divider -->
+            <div class="social-auth-divider my-10 relative">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
+                <div class="relative flex justify-center text-xs uppercase"><span class="bg-card-dark px-4 text-white/30 tracking-widest backdrop-blur-md">أو عبر</span></div>
+            </div>
+
+            <!-- Google Login Button -->
+            {% load socialaccount %}
+            <div class="social-actions">
+                <a href="{% provider_login_url 'google' %}" class="btn-google-premium">
+                    <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" alt="Google" class="w-6 h-6">
+                    <span>متابعة باستخدام جوجل</span>
+                </a>
+            </div>
+
+            <!-- Bottom Utilities -->
+            <div class="auth-footer-premium mt-12 pt-8 border-t border-white/10">
+                <div class="flex flex-col gap-6 text-center">
+                    <p class="signup-prompt">
+                        ليس لديك حساب؟ 
+                        <a href="{% url 'signup' %}" class="link-highlight">أنشئ حسابك الآن</a>
+                    </p>
+                    
+                    <a href="https://wa.me/{{ system_settings.whatsapp_number|default:'+779923330' }}?text=لقد نسيت كلمة المرور الخاصة بي اريد تغييرها" 
+                       class="whatsapp-assistant">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>تحتاج مساعدة؟ تواصل معنا عبر واتساب</span>
+                    </a>
                 </div>
             </div>
-
-            <!-- Footer Links -->
-            <div class="mt-6 flex flex-col space-y-4 text-center text-sm">
-                <p class="text-gray-600">
-                    ليس لديك حساب؟ 
-                    <a href="{% url 'signup' %}" class="font-bold text-blue-600 hover:text-blue-500 transition-colors hover:underline decoration-2 underline-offset-4">
-                        سجل الان
-                    </a>
-                </p>
-                <p class="text-gray-600">
-                    نسيت كلمة المرور؟ 
-                    <a href="whatsapp://send?phone=+779923330&text=لقد نسيت كلمة المرور الخاصة بي اريد تغييرها" class="font-bold text-blue-600 hover:text-blue-500 transition-colors hover:underline decoration-2 underline-offset-4">
-                        استعادة كلمة المرور
-                    </a>
-                </p>
-            </div>
         </div>
-
-        <!-- Trust Badges -->
-        <div class="text-center">
-            <p class="text-xs text-gray-400 flex items-center justify-center gap-2">
-                <i class="fas fa-shield-alt"></i>
-                بياناتك محمية ومشفرة بأمان
-            </p>
+        
+        <!-- Trust Indicator -->
+        <div class="security-badge mt-8 flex justify-center items-center gap-2 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+            <i class="fas fa-shield-check text-green-400"></i>
+            <span class="text-[10px] font-bold tracking-[0.2em] text-white uppercase">Secure Encrypted Login</span>
         </div>
     </div>
 </div>
 
 <style>
-    /* Custom Animations */
-    @keyframes blob {
-        0% { transform: translate(0px, 0px) scale(1); }
-        33% { transform: translate(30px, -50px) scale(1.1); }
-        66% { transform: translate(-20px, 20px) scale(0.9); }
-        100% { transform: translate(0px, 0px) scale(1); }
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --glass-blur: 40px;
     }
-    .animate-blob {
-        animation: blob 7s infinite;
+
+    .auth-wrapper {
+        background: #020617; /* Deep midnight */
+        font-family: 'Cairo', sans-serif;
+        overflow-x: hidden;
     }
-    .animation-delay-2000 {
-        animation-delay: 2s;
+
+    /* Immersive Background */
+    .bg-system {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
     }
-    .animation-delay-4000 {
-        animation-delay: 4s;
+
+    .glass-overlay {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, transparent 0%, rgba(2, 6, 23, 0.8) 100%);
+        backdrop-filter: blur(10px);
     }
-    
-    /* Enhance form inputs within the include */
-    .form-group label {
-        display: block;
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #374151;
+
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.4;
+        animation: orbRotate 20s infinite linear;
+    }
+
+    .orb-1 {
+        width: 600px;
+        height: 600px;
+        background: var(--primary-color, #3b82f6);
+        top: -10%;
+        left: -10%;
+    }
+
+    .orb-2 {
+        width: 500px;
+        height: 500px;
+        background: var(--accent-color, #a855f7);
+        bottom: -5%;
+        right: -5%;
+        animation-delay: -5s;
+    }
+
+    .orb-3 {
+        width: 400px;
+        height: 400px;
+        background: #f43f5e;
+        top: 40%;
+        left: 30%;
+        opacity: 0.15;
+        animation-delay: -10s;
+    }
+
+    @keyframes orbRotate {
+        0% { transform: translate(0, 0) scale(1); }
+        33% { transform: translate(50px, 80px) scale(1.1); }
+        66% { transform: translate(-30px, 20px) scale(0.9); }
+        100% { transform: translate(0, 0) scale(1); }
+    }
+
+    /* Card Aesthetics */
+    .auth-card-premium {
+        perspective: 1000px;
+    }
+
+    .auth-card-inner {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(var(--glass-blur));
+        border: 1px solid var(--glass-border);
+        border-radius: 40px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .auth-card-inner:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-5px);
+    }
+
+    /* Logo Presentation */
+    .logo-stack img {
+        height: 70px;
+        width: auto;
+        object-fit: contain;
+        filter: drop-shadow(0 0 15px rgba(255,255,255,0.2));
+        transition: transform 0.3s ease;
+    }
+
+    .logo-stack img:hover {
+        transform: scale(1.1);
+    }
+
+    .divider-line {
+        width: 1px;
+        height: 40px;
+        background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent);
+    }
+
+    /* Typography */
+    .welcome-text {
+        color: #fff;
+        font-size: 2.25rem;
+        font-weight: 900;
+        letter-spacing: -0.02em;
         margin-bottom: 0.5rem;
     }
-    
-    .form-control {
-        appearance: none;
-        background-color: #f9fafb;
-        border-color: #e5e7eb;
-        border-width: 1px;
-        border-radius: 0.75rem;
-        padding-top: 0.75rem;
-        padding-bottom: 0.75rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
-        width: 100%;
+
+    .subtitle-text {
+        color: rgba(255,255,255,0.4);
         font-size: 0.875rem;
-        line-height: 1.25rem;
-        transition-property: all;
-        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        transition-duration: 300ms;
+        font-weight: 500;
+        letter-spacing: 0.05em;
     }
-    
-    .form-control:focus {
-        background-color: #ffffff;
-        border-color: #3b82f6;
-        outline: 0;
-        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+
+    /* Premium Inputs */
+    .form-fields-container .form-group label {
+        color: rgba(255,255,255,0.6) !important;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.75rem !important;
+        display: block;
+    }
+
+    .form-fields-container .form-control {
+        background: rgba(255,255,255,0.03) !important;
+        border: 1px solid rgba(255,255,255,0.05) !important;
+        border-radius: 16px !important;
+        padding: 1.1rem 1.5rem !important;
+        color: #fff !important;
+        font-size: 0.95rem !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .form-fields-container .form-control:focus {
+        background: rgba(255,255,255,0.06) !important;
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.1) !important;
+        outline: none !important;
+    }
+
+    /* Glowing Submit Button */
+    .btn-submit-premium {
+        position: relative;
+        width: 100%;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, var(--primary-color, #3b82f6), var(--accent-color, #a855f7));
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 800;
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-submit-premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 35px -10px rgba(59, 130, 246, 0.6);
+        filter: brightness(1.1);
+    }
+
+    .btn-submit-premium:active {
+        transform: translateY(0);
+    }
+
+    .btn-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .btn-submit-premium:hover .btn-icon {
+        transform: translateX(-5px);
+    }
+
+    /* Footer Links */
+    .signup-prompt {
+        color: rgba(255,255,255,0.5);
+        font-size: 0.95rem;
+    }
+
+    .link-highlight {
+        color: #fff;
+        font-weight: 800;
+        text-decoration: none;
+        position: relative;
+    }
+
+    .link-highlight::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--primary-color);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .link-highlight:hover::after {
+        transform: scaleX(1);
+    }
+
+    .whatsapp-assistant {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        color: #4ade80;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+
+    .whatsapp-assistant:hover {
+        color: #22c55e;
+        transform: scale(1.02);
+    }
+
+    /* RTL Adjustments */
+    [dir="rtl"] .btn-submit-premium .btn-icon {
+        order: -1;
+    }
+
+    /* Google Button Ultra-Premium */
+    .btn-google-premium {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        color: #fff;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-google-premium:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    }
+
+    .bg-card-dark {
+        background: #0f172a;
     }
 </style>
 
+<script>
+    // Smooth input interaction
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.addEventListener('focus', () => {
+            const group = input.closest('.form-group');
+            if(group) group.style.transform = 'translateX(-5px)';
+        });
+        input.addEventListener('blur', () => {
+            const group = input.closest('.form-group');
+            if(group) group.style.transform = 'translateX(0)';
+        });
+    });
+</script>
 {% endblock %}

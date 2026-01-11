@@ -17,7 +17,7 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/products.css' %}">
+<link rel="stylesheet" href="{% static 'css/products.css' %}?v={{ css_version }}">
 {% endblock %}
 
 {% block content %}
@@ -28,7 +28,7 @@
         {% for ad in platform_ads|slice:":4" %}
         <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="mini-ad-card">
             <span class="mini-ad-badge">عرطة</span>
-            <img src="{{ ad.product.image.url }}" class="mini-ad-img" alt="{{ ad.product.name }}">
+            <img src="{{ ad.product.image.url }}" class="mini-ad-img" alt="{{ ad.product.name }}" loading="lazy">
             <div class="mini-ad-info">
                 <h5 class="mini-ad-name">{{ ad.product.name }}</h5>
                 <div class="mini-ad-price">{{ ad.product.get_price_with_offer|floatformat:0 }} {{ ad.product.supplier.currency }}</div>
@@ -49,7 +49,7 @@
         <div class="modern-detail-wrapper">
             <!-- Image Section -->
             <div class="modern-detail-image-sec">
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="modern-detail-main-img" id="mainImage">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="modern-detail-main-img" id="mainImage" loading="lazy">
                 
                 <!-- Floating Wishlist -->
                 <button class="wishlist-btn detail-mode" onclick="toggleWishlist({{ product.id }}, this)" data-product-id="{{ product.id }}">

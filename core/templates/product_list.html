@@ -5,7 +5,7 @@
 {% block title %}منتجات {{ supplier.name }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/products.css' %}">
+<link rel="stylesheet" href="{% static 'css/products.css' %}?v={{ css_version }}">
 <style>
     /* Dynamic Theme Variables */
     :root {

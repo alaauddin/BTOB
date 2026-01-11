@@ -2,7 +2,7 @@
     <div class="modern-product-card" data-product-id="{{ product.id }}" style="cursor: pointer;" onclick="if (!event.target.closest('button') && !event.target.closest('a') && !event.target.closest('.modern-quantity-controls')) window.location.href='{% url 'product_detail' store_id=supplier.store_id pk=product.pk %}'">
         <div class="modern-product-image-container">
             <a href="{% url 'product_detail' store_id=supplier.store_id pk=product.pk %}">
-                <img src="{{ product.image.url }}" class="modern-product-image" alt="{{ product.name }}">
+                <img src="{{ product.image.url }}" class="modern-product-image" alt="{{ product.name }}" loading="lazy">
             </a>
             
             <!-- World-Class Badges -->

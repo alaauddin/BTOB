@@ -27,6 +27,7 @@ urlpatterns = [
     path('', include(urls)),
     path('', include(accounts_urls)),
     path('service_provider/', include(service_provider_urls)),
+    path('accounts/', include('allauth.urls')),
 ]
 
 if settings.DEBUG:
