@@ -23,7 +23,8 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://unpkg.com/nprogress@0.2.0/nprogress.css" rel="stylesheet">
-    <script>NProgress.configure({ showSpinner: true, trickleSpeed: 200 }); NProgress.start();</script>
+    <script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
+    <script>NProgress.configure({ showSpinner: true, trickleSpeed: 200 });</script>
 
     <!-- Arabic web fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@300;400;700;900&display=swap" rel="stylesheet">
@@ -215,6 +216,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="flex flex-col min-h-screen overflow-x-hidden">
+    <script>NProgress.start();</script>
     <!-- Page Loader -->
     <div id="page-loader">
         <div class="loader-content">
@@ -648,7 +650,6 @@
     <!-- JavaScript Libraries -->
     <!-- Load non-blocking: defer external libs so parsing isn't blocked. Keep execution order (jQuery before code that expects it). -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
-    <script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" defer></script>
     
