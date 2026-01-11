@@ -7,7 +7,7 @@ from django.views.decorators.http import require_http_methods
 import json
 
 from core.forms import ProductForm
-from core.models import Supplier, ProductCategory, Category
+from core.models import Supplier, ProductCategory, Category, Product, ProductImage
 
 
 @login_required

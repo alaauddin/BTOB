@@ -90,6 +90,31 @@
                                 <div class="error-message text-red-500 text-[10px] mt-1 hidden" id="description-error"></div>
                             </div>
 
+                            <!-- Main Image -->
+                            <div class="form-group">
+                                <label class="form-label text-xs font-bold text-slate-600 mb-1.5 block">
+                                    <i class="fas fa-image text-blue-500 ml-1"></i>
+                                    {{ product_form.image.label }}
+                                </label>
+                                <div class="file-input-wrapper relative border-2 border-dashed border-slate-200 rounded-xl p-3 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer group" id="modalFileWrapper">
+                                    <input type="file" name="image" id="id_image" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*">
+                                    <div id="modalFileUploadContent" class="pointer-events-none transition-opacity">
+                                        <i class="fas fa-cloud-upload-alt text-blue-400 text-lg mb-1 block"></i>
+                                        <p class="text-[9px] text-slate-500">اختر صورة المنتج الرئيسية</p>
+                                    </div>
+                                    <div id="modalFilePreview" class="hidden flex items-center justify-between gap-2 text-right bg-white p-2 rounded-lg shadow-sm border border-slate-100 absolute inset-1 z-20">
+                                        <div class="flex items-center gap-2 overflow-hidden">
+                                            <img id="modalPreviewImage" src="" class="w-8 h-8 rounded object-cover">
+                                            <span id="modalFileName" class="text-[9px] font-bold text-slate-700 truncate"></span>
+                                        </div>
+                                        <button type="button" id="clearFileBtn" class="text-red-400 hover:text-red-500 p-1">
+                                            <i class="fas fa-times-circle"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="error-message text-red-500 text-[10px] mt-1 hidden" id="image-error"></div>
+                            </div>
+
                             <div class="grid grid-cols-2 gap-4">
                                 <!-- Price -->
                                 <div class="form-group">
