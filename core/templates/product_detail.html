@@ -49,22 +49,62 @@
         <div class="modern-detail-wrapper">
             <!-- Image Section -->
             <div class="modern-detail-image-sec">
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="modern-detail-main-img" id="mainImage" loading="lazy">
-                
-                <!-- Floating Wishlist -->
-                <button class="wishlist-btn detail-mode" onclick="toggleWishlist({{ product.id }}, this)" data-product-id="{{ product.id }}">
-                    <i class="far fa-heart"></i>
-                </button>
-                
-                {% if product.has_discount %}
-                <span class="modern-product-badge hot" style="top: 30px; left: 30px; font-size: 0.9rem; padding: 8px 16px;">
-                    <i class="fas fa-fire me-1"></i> خصم {{ product.get_discount_precentage }}%
-                </span>
-                {% elif product.is_new %}
-                <span class="modern-product-badge" style="top: 30px; left: 30px; font-size: 0.9rem; padding: 8px 16px;">
-                    جديد
-                </span>
-                {% endif %}
+                <div class="gallery-main-wrapper">
+                    <div class="main-media-container position-relative">
+                        <!-- Main Image Display -->
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="modern-detail-main-img" id="mainMediaDisplay" loading="lazy">
+                        
+                        <!-- Video Player Display (Hidden by default) -->
+                        {% if product.video %}
+                        <video id="productVideoPlayer" class="modern-detail-main-img d-none" controls>
+                            <source src="{{ product.video.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        {% endif %}
+
+                        <!-- Floating Wishlist -->
+                        <button class="wishlist-btn detail-mode" onclick="toggleWishlist({{ product.id }}, this)" data-product-id="{{ product.id }}">
+                            <i class="far fa-heart"></i>
+                        </button>
+                        
+                        {% if product.has_discount %}
+                        <span class="modern-product-badge hot" style="top: 25px; left: 25px; font-size: 0.85rem; padding: 8px 16px;">
+                            <i class="fas fa-fire me-1"></i> خصم {{ product.get_discount_precentage }}%
+                        </span>
+                        {% elif product.is_new %}
+                        <span class="modern-product-badge" style="top: 25px; left: 25px; font-size: 0.85rem; padding: 8px 16px;">
+                            جديد
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Media Thumbnails -->
+                    {% if product.video or product.additional_images.exists %}
+                    <div class="media-thumbnails-container d-flex gap-2 overflow-auto py-1 custom-scrollbar">
+                        <!-- Main Image Thumb -->
+                        <div class="thumb-item active" onclick="switchMedia('image', '{{ product.image.url }}', this)">
+                            <img src="{{ product.image.url }}" alt="Main image thumb">
+                        </div>
+
+                        <!-- Video Thumb -->
+                        {% if product.video %}
+                        <div class="thumb-item video-thumb" onclick="switchMedia('video', '{{ product.video.url }}', this)">
+                            <div class="video-icon-overlay">
+                                <i class="fas fa-play"></i>
+                            </div>
+                            <img src="{{ product.image.url }}" alt="Video preview thumb">
+                        </div>
+                        {% endif %}
+
+                        <!-- Additional Images Thumbs -->
+                        {% for img in product.additional_images.all %}
+                        <div class="thumb-item" onclick="switchMedia('image', '{{ img.image.url }}', this)">
+                            <img src="{{ img.image.url }}" alt="Additional image {{ forloop.counter }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Info Section -->
@@ -282,6 +322,48 @@
 
 {% block extra_js %}
 <script>
+    function switchMedia(type, url, element) {
+        const container = document.querySelector('.main-media-container');
+        const mainImage = document.getElementById('mainMediaDisplay');
+        const videoPlayer = document.getElementById('productVideoPlayer');
+        const thumbs = document.querySelectorAll('.thumb-item');
+
+        if (element.classList.contains('active')) return;
+
+        // Add switching class for transition
+        container.classList.add('switching');
+
+        setTimeout(() => {
+            // Update active thumb
+            thumbs.forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+
+            if (type === 'video') {
+                if (mainImage) mainImage.classList.add('d-none');
+                if (videoPlayer) {
+                    videoPlayer.classList.remove('d-none');
+                    videoPlayer.querySelector('source').src = url;
+                    videoPlayer.load();
+                    videoPlayer.play().catch(e => console.log("Auto-play blocked"));
+                }
+            } else {
+                if (videoPlayer) {
+                    videoPlayer.classList.add('d-none');
+                    videoPlayer.pause();
+                }
+                if (mainImage) {
+                    mainImage.classList.remove('d-none');
+                    mainImage.src = url;
+                }
+            }
+
+            // Remove switching class after content update
+            setTimeout(() => {
+                container.classList.remove('switching');
+            }, 50);
+        }, 300);
+    }
+
     function switchTab(tabName) {
         // Hide all
         document.querySelectorAll('.modern-tab-content').forEach(el => el.classList.remove('active'));

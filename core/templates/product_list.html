@@ -262,9 +262,9 @@
             </div>
             
             <div class="payment-strip">
-                <a href="https://wa.me/+967779923330?text=أريد دفع ثمن الطلب رقم {{ order.id }} بقيمة {{ order.get_total_after_discount|floatformat:0 }} {{ supplier.currency }}" 
+                <a href="https://wa.me/{{ order.order_items.first.product.supplier.phone }}?text=أريد دفع ثمن الطلب رقم {{ order.id }} بقيمة {{ order.get_total_after_discount|floatformat:0 }} {{ supplier.currency }}" 
                    class="btn-payment-action whatsapp" target="_blank">
-                    <i class="fab fa-whatsapp"></i> واتساب
+                    <i class="fab fa-whatsapp"></i>  تواصل بـ {{ order.order_items.first.product.supplier.name }}
                 </a>
                 <button class="btn-payment-action details" data-bs-toggle="modal" data-bs-target="#orderDetailsModal{{ order.id }}">
                     مشاهدة

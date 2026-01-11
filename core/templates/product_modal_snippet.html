@@ -119,34 +119,40 @@
                                 </div>
                             </div>
 
-                            <!-- Image Upload -->
+                            <!-- Video Upload -->
                             <div class="form-group">
                                 <label class="form-label text-xs font-bold text-slate-600 mb-1.5 block">
-                                    <i class="fas fa-cloud-upload-alt text-blue-500 ml-1"></i>
-                                    صورة المنتج
+                                    <i class="fas fa-video text-blue-500 ml-1"></i>
+                                    {{ product_form.video.label }}
                                 </label>
-                                <div class="file-input-wrapper relative border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer group" id="modalFileWrapper">
-                                    <input type="file" name="image" id="id_image" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                                    
-                                    <div id="modalFileUploadContent" class="pointer-events-none transition-opacity">
-                                        <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
-                                            <i class="fas fa-image text-blue-400 text-lg"></i>
-                                        </div>
-                                        <p class="text-[10px] text-slate-500">اسحب الصورة أو <span class="text-blue-600 font-bold">تصفح</span></p>
+                                <div class="file-input-wrapper relative border-2 border-dashed border-slate-200 rounded-xl p-3 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer group" id="modalVideoWrapper">
+                                    <input type="file" name="video" id="id_video" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="video/*">
+                                    <div id="modalVideoUploadContent" class="pointer-events-none transition-opacity">
+                                        <i class="fas fa-film text-blue-400 text-lg mb-1 block"></i>
+                                        <p class="text-[9px] text-slate-500">اختر فيديو المنتج</p>
                                     </div>
-                                    
-                                    <div id="modalFilePreview" class="hidden flex items-center gap-3 text-right bg-white p-2 rounded-lg shadow-sm border border-slate-100 absolute inset-2 z-20">
-                                        <img id="modalPreviewImage" class="w-10 h-10 rounded-lg object-cover ring-2 ring-blue-50" src="" loading="lazy">
-                                        <div class="flex-1 min-w-0">
-                                            <p id="modalFileName" class="text-[10px] font-bold text-slate-700 truncate"></p>
-                                            <p class="text-[9px] text-green-500 font-medium">تم اختيار الصورة</p>
-                                        </div>
-                                        <button type="button" id="clearFileBtn" class="p-1.5 text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors z-30">
-                                            <i class="fas fa-times text-xs"></i>
-                                        </button>
+                                    <div id="modalVideoPreview" class="hidden flex items-center gap-2 text-right bg-white p-2 rounded-lg shadow-sm border border-slate-100 absolute inset-1 z-20">
+                                        <i class="fas fa-video text-blue-500"></i>
+                                        <span id="modalVideoName" class="text-[9px] font-bold text-slate-700 truncate"></span>
                                     </div>
                                 </div>
-                                <div class="error-message text-red-500 text-[10px] mt-1 hidden" id="image-error"></div>
+                                <div class="error-message text-red-500 text-[10px] mt-1 hidden" id="video-error"></div>
+                            </div>
+
+                            <!-- Additional Images -->
+                            <div class="form-group">
+                                <label class="form-label text-xs font-bold text-slate-600 mb-1.5 block">
+                                    <i class="fas fa-images text-blue-500 ml-1"></i>
+                                    صور إضافية للمنتج
+                                </label>
+                                <div class="file-input-wrapper relative border-2 border-dashed border-slate-200 rounded-xl p-3 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer group">
+                                    <input type="file" name="additional_images" id="id_additional_images" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" multiple accept="image/*">
+                                    <div class="pointer-events-none">
+                                        <i class="fas fa-plus-square text-blue-400 text-lg mb-1 block"></i>
+                                        <p class="text-[9px] text-slate-500">اختر صور إضافية</p>
+                                    </div>
+                                </div>
+                                <div id="additional-images-preview" class="flex flex-wrap gap-2 mt-2"></div>
                             </div>
 
                             <!-- Is New -->
@@ -225,3 +231,57 @@
         </form>
     </div>
 </div>
+
+<script>
+    // Preview for Main Image (already exists in some form but let's ensure it's there or updated)
+    document.getElementById('id_image')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('modalPreviewImage').src = e.target.result;
+                document.getElementById('modalFileName').textContent = file.name;
+                document.getElementById('modalFilePreview').classList.remove('hidden');
+                document.getElementById('modalFileUploadContent').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Preview for Video
+    document.getElementById('id_video')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            document.getElementById('modalVideoName').textContent = file.name;
+            document.getElementById('modalVideoPreview').classList.remove('hidden');
+            document.getElementById('modalVideoUploadContent').classList.add('hidden');
+        }
+    });
+
+    // Preview for Additional Images
+    document.getElementById('id_additional_images')?.addEventListener('change', function(e) {
+        const files = e.target.files;
+        const previewContainer = document.getElementById('additional-images-preview');
+        previewContainer.innerHTML = '';
+        
+        if (files) {
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-10 h-10 rounded-lg object-cover ring-2 ring-slate-100';
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    });
+
+    // Clear main image logic if not yet defined
+    document.getElementById('clearFileBtn')?.addEventListener('click', function() {
+        document.getElementById('id_image').value = '';
+        document.getElementById('modalFilePreview').classList.add('hidden');
+        document.getElementById('modalFileUploadContent').classList.remove('hidden');
+    });
+</script>

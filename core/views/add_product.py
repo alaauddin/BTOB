@@ -37,6 +37,11 @@ def add_product(request):
                     product.supplier = supplier
                     product.save()
                     
+                    # Handle additional images
+                    additional_images = request.FILES.getlist('additional_images')
+                    for img in additional_images:
+                        ProductImage.objects.create(product=product, image=img)
+                    
                     return JsonResponse({
                         'success': True,
                         'message': 'تم إضافة المنتج بنجاح!',

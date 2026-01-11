@@ -20,7 +20,9 @@ class CartView(DetailView):
 
     def get_object(self, queryset=None):
         supplier = get_object_or_404(Supplier, store_id=self.kwargs.get('store_id'))
-        cart, _ = Cart.objects.get_or_create(user=self.request.user, supplier=supplier)
+        cart = Cart.objects.filter(user=self.request.user, supplier=supplier).prefetch_related('cart_items__product__additional_images').first()
+        if not cart:
+            cart = Cart.objects.create(user=self.request.user, supplier=supplier)
         return cart
 
     def get_context_data(self, **kwargs):

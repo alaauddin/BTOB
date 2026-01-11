@@ -11,7 +11,7 @@ def product_detail(request, store_id, pk):
     - supplier: Supplier related to the product (if any)
     - cart: user's Cart for that supplier (or None)
     """
-    product = get_object_or_404(Product, pk=pk)
+    product = get_object_or_404(Product.objects.prefetch_related('additional_images'), pk=pk)
     supplier = get_object_or_404(Supplier, store_id=store_id)
     
     # Visit tracking (session based)

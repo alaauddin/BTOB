@@ -2404,3 +2404,203 @@
         font-size: 1.1rem !important;
     }
 }
+/* Product Detail Gallery Styles */
+.media-thumbnails-container {
+    max-width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) #f1f5f9;
+}
+
+.media-thumbnails-container::-webkit-scrollbar {
+    height: 4px;
+}
+
+.media-thumbnails-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.media-thumbnails-container::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+}
+
+.thumb-item {
+    min-width: 80px;
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    background: #f8fafc;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.thumb-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.thumb-item:hover img {
+    opacity: 1;
+}
+
+.thumb-item.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.thumb-item.active img {
+    opacity: 1;
+}
+
+.video-thumb .video-icon-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    background: rgba(37, 99, 235, 0.9);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.main-media-container {
+    background: #f8fafc;
+    border-radius: 24px;
+    overflow: hidden;
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.main-media-container video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    background: #000;
+}
+
+@media (max-width: 768px) {
+    .thumb-item {
+        min-width: 60px;
+        width: 60px;
+        height: 60px;
+    }
+    .main-media-container {
+        border-radius: 16px;
+    }
+}
+
+/* --- Elite Product Gallery Refinements --- */
+.modern-detail-image-sec {
+    display: flex;
+    flex-direction: column;
+}
+
+.gallery-main-wrapper {
+    display: flex;
+    gap: 1.5rem;
+    flex-direction: column-reverse; /* Default for mobile/small screens */
+}
+
+@media (min-width: 992px) {
+    .gallery-main-wrapper {
+        flex-direction: row-reverse; /* Right thumbnails for RTL */
+        max-height: 600px;
+    }
+    
+    .media-thumbnails-container {
+        flex-direction: column !important;
+        width: 100px;
+        min-width: 100px;
+        max-height: 100%;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding-right: 5px; /* Space for scrollbar */
+    }
+
+    .thumb-item {
+        width: 80px !important;
+        height: 80px !important;
+        margin-bottom: 0.5rem;
+    }
+}
+
+.main-media-container {
+    flex-grow: 1;
+    background: #ffffff;
+    border-radius: 32px; /* Extra smooth radius */
+    box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.03);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modern-detail-main-img {
+    transition: opacity 0.4s ease-in-out, transform 0.6s ease;
+}
+
+.main-media-container.switching .modern-detail-main-img {
+    opacity: 0;
+    transform: scale(0.98);
+}
+
+/* Premium Thumb Styling */
+.thumb-item {
+    border: 2px solid transparent;
+    border-radius: 18px;
+    padding: 4px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.thumb-item img {
+    border-radius: 14px;
+    opacity: 0.6;
+}
+
+.thumb-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+}
+
+.thumb-item.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 10px 25px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.thumb-item.active img {
+    opacity: 1;
+}
+
+/* Scrollbar refinement for thumbs */
+.media-thumbnails-container::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+}
+
+.media-thumbnails-container::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+
+.media-thumbnails-container:hover::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+}

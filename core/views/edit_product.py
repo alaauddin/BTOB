@@ -40,7 +40,9 @@ def edit_product(request, product_id):
                 'category_id': product.category.id if product.category else None,
                 'is_new': product.is_new,
                 'is_active': product.is_active,
-                'image_url': product.image.url if product.image else None
+                'image_url': product.image.url if product.image else None,
+                'video_url': product.video.url if product.video else None,
+                'additional_images': [img.image.url for img in product.additional_images.all()]
             }
         })
     
@@ -53,6 +55,13 @@ def edit_product(request, product_id):
                     updated_product = form.save(commit=False)
                     updated_product.supplier = supplier
                     updated_product.save()
+                    
+                    # Handle additional images
+                    additional_images = request.FILES.getlist('additional_images')
+                    if additional_images:
+                        # For simplicity, we add new ones. Optionally delete old ones if requested.
+                        for img in additional_images:
+                            ProductImage.objects.create(product=updated_product, image=img)
                     
                     return JsonResponse({
                         'success': True,

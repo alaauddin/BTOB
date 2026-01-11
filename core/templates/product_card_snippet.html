@@ -18,6 +18,20 @@
             <span class="modern-product-badge">جديد</span>
             {% endif %}
             
+            <!-- Media Indicators -->
+            <div class="absolute bottom-2 left-2 flex flex-col gap-1 z-20">
+                {% if product.video %}
+                    <div class="bg-blue-600/90 text-white p-1 rounded backdrop-blur-md shadow-lg" style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;" title="يحتوي على فيديو">
+                        <i class="fas fa-video" style="font-size: 10px;"></i>
+                    </div>
+                {% endif %}
+                {% if product.additional_images.exists %}
+                    <div class="bg-slate-800/80 text-white p-1 rounded backdrop-blur-md shadow-lg" style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;" title="يحتوي على صور إضافية">
+                        <i class="fas fa-images" style="font-size: 10px;"></i>
+                    </div>
+                {% endif %}
+            </div>
+            
             <!-- Floating Wishlist -->
             {% if user.is_authenticated %}
             <button class="wishlist-btn" onclick="toggleWishlist({{ product.id }})" data-bs-toggle="tooltip" title="إضافة للمفضلة">

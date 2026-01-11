@@ -248,14 +248,30 @@
             <div class="product-grid">
                 {% for product in products %}
                 <div class="product-card">
-                    <div class="product-image {% if not product.is_active %}opacity-50 grayscale{% endif %}" style="background-image: url('{{ product.image.url }}');">
+                    <div class="product-image Relative {% if not product.is_active %}opacity-50 grayscale{% endif %}" style="background-image: url('{{ product.image.url }}');">
                         {% if product.is_new %}
-                            <div class="absolute top-4 right-4 bg-gradient-to-r from-green-400 to-green-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                            <div class="absolute top-4 right-4 bg-gradient-to-r from-green-400 to-green-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
                                 جديد
                             </div>
                         {% endif %}
-                        <div class="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm">
-                            {{ product.category.name }}
+                        
+                        <!-- Media Badges -->
+                        <div class="absolute top-4 left-4 flex flex-col gap-1">
+                            <div class="bg-black/50 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm mb-1">
+                                {{ product.category.name }}
+                            </div>
+                            <div class="flex gap-1">
+                                {% if product.video %}
+                                    <div class="bg-blue-600/90 text-white p-1.5 rounded-lg backdrop-blur-md shadow-lg" title="يحتوي على فيديو">
+                                        <i class="fas fa-video text-xs"></i>
+                                    </div>
+                                {% endif %}
+                                {% if product.additional_images.exists %}
+                                    <div class="bg-slate-800/80 text-white p-1.5 rounded-lg backdrop-blur-md shadow-lg" title="يحتوي على صور إضافية">
+                                        <i class="fas fa-images text-xs"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
                         {% if not product.is_active %}
                             <div class="absolute inset-0 flex items-center justify-center">
@@ -749,7 +765,25 @@
                     document.getElementById('modalFileName').textContent = 'الصورة الحالية';
                     document.getElementById('modalFilePreview').classList.remove('hidden');
                     document.getElementById('modalFileUploadContent').classList.add('hidden');
+                }
 
+                // Handle Video
+                if (p.video_url) {
+                    document.getElementById('modalVideoName').textContent = 'الفيديو الحالي';
+                    document.getElementById('modalVideoPreview').classList.remove('hidden');
+                    document.getElementById('modalVideoUploadContent').classList.add('hidden');
+                }
+
+                // Handle Additional Images
+                if (p.additional_images && p.additional_images.length > 0) {
+                    const previewContainer = document.getElementById('additional-images-preview');
+                    previewContainer.innerHTML = '';
+                    p.additional_images.forEach(url => {
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.className = 'w-10 h-10 rounded-lg object-cover ring-2 ring-slate-100';
+                        previewContainer.appendChild(img);
+                    });
                 }
 
                 // Update UI state
@@ -877,6 +911,14 @@
         document.getElementById('edit-product-id').value = '';
         document.getElementById('modalFilePreview').classList.add('hidden');
         document.getElementById('modalFileUploadContent').classList.remove('hidden');
+        
+        // Reset Video
+        document.getElementById('modalVideoPreview').classList.add('hidden');
+        document.getElementById('modalVideoUploadContent').classList.remove('hidden');
+        
+        // Reset Additional Images
+        document.getElementById('additional-images-preview').innerHTML = '';
+        
         updateModalStatusBtn(null);
         
         // Reset previews

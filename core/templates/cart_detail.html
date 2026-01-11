@@ -123,7 +123,21 @@
                 {% for item in cart.cart_items.all %}
                 <div class="cart-item d-flex align-items-center justify-content-between" id="row-{{ item.id }}">
                     <div class="d-flex align-items-center">
+                    <div class="position-relative">
                         <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image ml-3">
+                        <div class="position-absolute top-0 start-0 p-1 d-flex flex-column gap-1">
+                            {% if item.product.video %}
+                                <div class="bg-blue-600/80 text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 18px; height: 18px;" title="فيديو">
+                                    <i class="fas fa-video" style="font-size: 8px;"></i>
+                                </div>
+                            {% endif %}
+                            {% if item.product.additional_images.exists %}
+                                <div class="bg-slate-800/80 text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 18px; height: 18px;" title="صور إضافية">
+                                    <i class="fas fa-images" style="font-size: 8px;"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
                         <div class="ms-4 cart-item-details">
                             <h4 class="cart-item-name">{{ item.product.name }}</h4>
                             <div class="cart-item-price">

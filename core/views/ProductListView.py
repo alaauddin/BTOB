@@ -43,7 +43,7 @@ def product_list(request, store_id, category_id=None, subcategory_id=None):
         max_discount=Subquery(
             active_offers.order_by('-discount_precentage').values('discount_precentage')[:1]
         )
-    )
+    ).prefetch_related('additional_images')
 
     # Filter by category or subcategory
     if subcategory_id:
@@ -89,7 +89,7 @@ def product_list(request, store_id, category_id=None, subcategory_id=None):
     if request.user.is_authenticated:
         user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
         print(user_cart)
-        one_day_ago = timezone.now() - timedelta(days=1)
+        one_day_ago = timezone.now() - timedelta(days=3)
         context['pending_orders'] = Order.objects.filter(
             user=request.user, created_at__gte=one_day_ago, pipeline_status__slug='pending'
         )

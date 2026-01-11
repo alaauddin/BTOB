@@ -22,13 +22,18 @@ class BusinessRequestAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at',)
     list_editable = ('is_processed',)
 
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'supplier', 'category', 'price', 'is_new', 'views_count')
     list_filter = ('supplier', 'category', 'is_new')
     search_fields = ('name', 'description')
+    inlines = [ProductImageInline]
     
-    fields = ('supplier', 'category', 'name', 'description', 'price', 'image', 'is_new')
+    fields = ('supplier', 'category', 'name', 'description', 'price', 'image', 'video', 'is_new')
 
 
 class OrderStatusAdmin(admin.ModelAdmin):
