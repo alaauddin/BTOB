@@ -259,7 +259,9 @@
 
 <script>
     // Preview for Main Image (already exists in some form but let's ensure it's there or updated)
-    document.getElementById('id_image')?.addEventListener('change', function(e) {
+    document.getElementById('id_image')?.addEventListener('change', async function(e) {
+        if (this._isCompressing) return;
+        await handleImageUpload(this);
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
@@ -284,7 +286,9 @@
     });
 
     // Preview for Additional Images
-    document.getElementById('id_additional_images')?.addEventListener('change', function(e) {
+    document.getElementById('id_additional_images')?.addEventListener('change', async function(e) {
+        if (this._isCompressing) return;
+        await handleImageUpload(this);
         const files = e.target.files;
         const previewContainer = document.getElementById('additional-images-preview');
         previewContainer.innerHTML = '';
