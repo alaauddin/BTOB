@@ -34,9 +34,15 @@
     }
 
     .premium-container {
-        padding: 2rem;
+        padding: 1rem;
         max-width: 1600px;
         margin: 0 auto;
+    }
+
+    @media (min-width: 768px) {
+        .premium-container {
+            padding: 2rem;
+        }
     }
 
     /* Glassmorphism Cards */
@@ -44,11 +50,19 @@
         background: var(--bg-glass);
         backdrop-filter: blur(20px);
         border: 1px solid var(--border-glass);
-        border-radius: 24px;
-        padding: 1.5rem;
+        border-radius: 20px;
+        padding: 1.25rem;
         box-shadow: var(--shadow-premium);
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    @media (min-width: 768px) {
+        .glass-card {
+            border-radius: 24px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
     }
 
     .glass-card:hover {
@@ -59,35 +73,75 @@
     /* Header Overhaul */
     .premium-header {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2.5rem;
+        flex-direction: column;
+        gap: 1.5rem;
         background: linear-gradient(135deg, var(--primary), var(--secondary));
-        padding: 2rem 3rem;
-        border-radius: 32px;
+        padding: 1.5rem;
+        border-radius: 24px;
         color: white;
-        box-shadow: 0 20px 30px -10px rgba(239, 125, 45, 0.3);
+        box-shadow: 0 20px 30px -10px rgba(239, 125, 45, 0.2);
+        margin-bottom: 2rem;
+    }
+
+    @media (min-width: 768px) {
+        .premium-header {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 3rem;
+            border-radius: 32px;
+            margin-bottom: 2.5rem;
+        }
     }
 
     .header-content h1 {
-        font-size: 2.25rem;
+        font-size: 1.75rem;
         font-weight: 700;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
         letter-spacing: -0.02em;
+    }
+
+    @media (min-width: 768px) {
+        .header-content h1 {
+            font-size: 2.25rem;
+            margin-bottom: 0.5rem;
+        }
     }
 
     .header-actions {
         display: flex;
-        gap: 1rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
     }
 
     /* Pipeline / Stepper */
+    .pipeline-wrapper {
+        overflow-x: auto;
+        padding-bottom: 2rem;
+        margin-bottom: 1rem;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .pipeline-wrapper::-webkit-scrollbar {
+        height: 4px;
+    }
+    .pipeline-wrapper::-webkit-scrollbar-thumb {
+        background: #e2e8f0;
+        border-radius: 4px;
+    }
+
     .pipeline-stepper {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 3rem;
         position: relative;
         padding: 0 1rem;
+        min-width: 600px; /* Force minimum width for scrolling on mobile */
+    }
+
+    @media (min-width: 992px) {
+        .pipeline-stepper {
+            min-width: auto;
+        }
     }
 
     .pipeline-stepper::before {
@@ -128,10 +182,10 @@
 
     .step-item.active .step-icon {
         background: var(--primary);
-        border-color: #c7d2fe;
+        border-color: #fbd38d;
         color: white;
-        transform: scale(1.2);
-        box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+        transform: scale(1.15);
+        box-shadow: 0 0 20px rgba(239, 125, 45, 0.3);
     }
 
     .step-item.completed .step-icon {
@@ -142,8 +196,15 @@
 
     .step-label {
         font-weight: 600;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    @media (min-width: 768px) {
+        .step-label {
+            font-size: 0.85rem;
+        }
     }
 
     .step-item.active .step-label {
@@ -152,16 +213,33 @@
 
     /* Main Grid */
     .order-grid {
-        display: grid;
-        grid-template-columns: 350px 1fr 400px;
-        gap: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    @media (min-width: 1200px) {
+        .order-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr 400px;
+            gap: 2rem;
+        }
+        [dir="rtl"] .order-grid {
+            grid-template-columns: 400px 1fr 350px;
+        }
+    }
+
+    @media (min-width: 1400px) {
+        .order-grid {
+            grid-template-columns: 380px 1fr 420px;
+        }
     }
 
     /* Section Typography */
     .section-title {
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 600;
-        margin-bottom: 1.25rem;
+        margin-bottom: 1rem;
         display: flex;
         align-items: center;
         gap: 0.75rem;
@@ -170,22 +248,33 @@
 
     .section-title i {
         color: var(--primary);
-        background: rgba(79, 70, 229, 0.1);
-        padding: 10px;
-        border-radius: 12px;
+        background: rgba(239, 125, 45, 0.08);
+        padding: 8px;
+        border-radius: 10px;
+        font-size: 0.875rem;
     }
 
     /* Item Cards */
     .premium-item {
         display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        padding: 1.25rem;
-        border-radius: 18px;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 16px;
         background: rgba(248, 250, 252, 0.5);
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
         border: 1px solid transparent;
         transition: all 0.2s ease;
+    }
+
+    @media (min-width: 768px) {
+        .premium-item {
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1.25rem;
+            border-radius: 18px;
+            margin-bottom: 1rem;
+        }
     }
 
     .premium-item:hover {
@@ -195,109 +284,151 @@
     }
 
     .item-thumb {
-        width: 80px;
-        height: 80px;
-        border-radius: 14px;
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
         object-fit: cover;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    @media (min-width: 768px) {
+        .item-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: 14px;
+        }
     }
 
     .item-info {
         flex: 1;
+        min-width: 0;
     }
 
     .item-name {
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 0.9rem;
         margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    @media (min-width: 768px) {
+        .item-name {
+            font-size: 1rem;
+        }
     }
 
     .item-sub {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         color: var(--text-muted);
     }
 
     .item-pricing {
         text-align: right;
+        flex-shrink: 0;
+    }
+    
+    .item-quantity {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin: 0 0.5rem;
     }
 
     /* Customer Stats */
     .stat-pill {
-        background: #f1f5f9;
-        padding: 1rem;
-        border-radius: 16px;
+        background: #f8fafc;
+        padding: 0.75rem;
+        border-radius: 14px;
         text-align: center;
+        border: 1px solid #f1f5f9;
     }
 
     .stat-value {
         display: block;
-        font-size: 1.25rem;
+        font-size: 1.1rem;
         font-weight: 700;
         color: var(--primary);
     }
 
     .stat-label {
-        font-size: 0.75rem;
+        font-size: 0.65rem;
         color: var(--text-muted);
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.05rem;
     }
 
     /* Primary Action Button */
     .btn-premium-action {
         background: linear-gradient(135deg, var(--primary), var(--secondary));
         color: white;
-        padding: 1rem 2rem;
-        border-radius: 16px;
-        font-weight: 600;
+        padding: 0.875rem 1.5rem;
+        border-radius: 14px;
+        font-weight: 700;
         border: none;
-        box-shadow: 0 10px 20px -5px rgba(239, 125, 45, 0.3);
+        box-shadow: 0 8px 15px -3px rgba(239, 125, 45, 0.2);
         transition: all 0.3s ease;
         width: 100%;
-        font-size: 1.1rem;
+        font-size: 1rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .btn-premium-action:hover {
-        transform: scale(1.02);
-        box-shadow: 0 15px 30px -5px rgba(79, 70, 229, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px -5px rgba(239, 125, 45, 0.3);
+        color: white;
     }
 
-    /* RTL Support */
-    [dir="rtl"] .order-grid {
-        grid-template-columns: 400px 1fr 350px;
-    }
-
-    @media (max-width: 1400px) {
-        .order-grid {
-            grid-template-columns: 1fr 1fr;
-        }
+    @media (max-width: 1200px) {
+        .order-sidebar-left,
         .order-sidebar-right {
-            grid-column: span 2;
+            order: 2;
+        }
+        .order-main-content {
+            order: 1;
         }
     }
 
     /* Fixed FAB */
     .fab-container {
         position: fixed;
-        bottom: 40px;
-        right: 40px;
+        bottom: 20px;
+        right: 20px;
         z-index: 1000;
     }
 
+    @media (min-width: 768px) {
+        .fab-container {
+            bottom: 40px;
+            right: 40px;
+        }
+    }
+
     .fab-button {
-        width: 70px;
-        height: 70px;
+        width: 60px;
+        height: 60px;
         background: linear-gradient(135deg, #10b981, #059669);
         border: none;
         border-radius: 50%;
         color: white;
-        font-size: 1.75rem;
+        font-size: 1.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 15px 35px -5px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @media (min-width: 768px) {
+        .fab-button {
+            width: 70px;
+            height: 70px;
+            font-size: 1.75rem;
+        }
     }
 
     .fab-button:hover {
@@ -371,22 +502,24 @@
     </header>
 
     <!-- Visual Pipeline -->
-    <div class="pipeline-stepper">
-        {% for step in workflow_steps %}
-            <div class="step-item 
-                {% if order.pipeline_status.slug == step.status.slug %}active{% endif %}
-                {% if step.priority < order.get_current_workflow_step.priority %}completed{% endif %}">
-                <div class="step-icon">
-                    {% if step.status.slug == 'pending' %}<i class="fas fa-clock"></i>
-                    {% elif step.status.slug == 'confirmed' %}<i class="fas fa-check"></i>
-                    {% elif step.status.slug == 'processing' %}<i class="fas fa-cog fa-spin"></i>
-                    {% elif step.status.slug == 'shipped' %}<i class="fas fa-truck"></i>
-                    {% elif step.status.slug == 'delivered' %}<i class="fas fa-box-open"></i>
-                    {% else %}<i class="fas fa-flag-checkered"></i>{% endif %}
+    <div class="pipeline-wrapper">
+        <div class="pipeline-stepper">
+            {% for step in workflow_steps %}
+                <div class="step-item 
+                    {% if order.pipeline_status.slug == step.status.slug %}active{% endif %}
+                    {% if step.priority < order.get_current_workflow_step.priority %}completed{% endif %}">
+                    <div class="step-icon">
+                        {% if step.status.slug == 'pending' %}<i class="fas fa-clock"></i>
+                        {% elif step.status.slug == 'confirmed' %}<i class="fas fa-check"></i>
+                        {% elif step.status.slug == 'processing' %}<i class="fas fa-cog fa-spin"></i>
+                        {% elif step.status.slug == 'shipped' %}<i class="fas fa-truck"></i>
+                        {% elif step.status.slug == 'delivered' %}<i class="fas fa-box-open"></i>
+                        {% else %}<i class="fas fa-flag-checkered"></i>{% endif %}
+                    </div>
+                    <span class="step-label">{{ step.status.name }}</span>
                 </div>
-                <span class="step-label">{{ step.status.name }}</span>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
     </div>
 
     <div class="order-grid">
@@ -408,15 +541,15 @@
                     <i class="fab fa-whatsapp fa-lg"></i> محادثة واتساب
                 </a>
 
-                <div class="row g-3 mb-4">
-                    <div class="col-6">
+                <div class="row g-2 g-md-3 mb-4">
+                    <div class="col-6 col-md-6">
                         <div class="stat-pill">
                             <span class="stat-value">{{ customer_stats.order_count }}</span>
                             <span class="stat-label">إجمالي الطلبات</span>
                         </div>
                     </div>
                     {% if supplier.show_order_amounts %}
-                    <div class="col-6">
+                    <div class="col-6 col-md-6">
                         <div class="stat-pill">
                             <span class="stat-value">{{ customer_stats.total_spent|floatformat:0 }} {{ supplier.currency }}</span>
                             <span class="stat-label">القيمة الكلية</span>
@@ -679,49 +812,49 @@
 
 <div class="glass-card mt-4">
     <h3 class="section-title"><i class="fas fa-receipt"></i> مراجع الدفع (Payment References)</h3>
-    <div class="table-responsive mb-4">
-        <table class="table table-hover border-light">
+    <div class="table-responsive mb-4" style="border-radius: 12px; border: 1px solid #f1f5f9;">
+        <table class="table table-hover mb-0">
             <thead class="bg-light">
                 <tr>
-                    <th class="small text-muted">المبلغ</th>
-                    <th class="small text-muted">رقم المرجع (Ref)</th>
-                    <th class="small text-muted">المسؤول</th>
-                    <th class="small text-muted text-end">التاريخ</th>
+                    <th class="small text-muted py-3">المبلغ</th>
+                    <th class="small text-muted py-3">رقم المرجع (Ref)</th>
+                    <th class="small text-muted py-3">المسؤول</th>
+                    <th class="small text-muted py-3 text-end">التاريخ</th>
                 </tr>
             </thead>
             <tbody>
                 {% for ref in payment_references %}
                 <tr>
-                    <td class="fw-bold text-primary">{{ ref.amount|floatformat:2 }} {{ order.get_supplier.currency|default:"ر.س" }}</td>
-                    <td><code class="px-2 py-1 bg-light rounded">{{ ref.reference_number }}</code></td>
-                    <td class="small">{{ ref.recorded_by.username }}</td>
-                    <td class="small text-muted text-end">{{ ref.created_at|date:"d/m/Y H:i" }}</td>
+                    <td class="fw-bold text-primary py-3">{{ ref.amount|floatformat:2 }} {{ order.get_supplier.currency|default:"ر.س" }}</td>
+                    <td class="py-3"><code class="px-2 py-1 bg-light rounded" style="font-size: 0.85rem;">{{ ref.reference_number }}</code></td>
+                    <td class="small py-3">{{ ref.recorded_by.username }}</td>
+                    <td class="small text-muted py-3 text-end">{{ ref.created_at|date:"d/m/Y H:i" }}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" class="text-center py-4 text-muted small">لا توجد مراجع دفع مسجلة لهذا الطلب.</td>
+                    <td colspan="4" class="text-center py-5 text-muted small">لا توجد مراجع دفع مسجلة لهذا الطلب.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
-    <form method="post" action="{% url 'add_payment_reference' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="bg-light p-4 rounded-3 border">
+    <form method="post" action="{% url 'add_payment_reference' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="bg-light p-3 p-md-4 rounded-3 border">
         {% csrf_token %}
         <div class="row g-3">
-            <div class="col-md-5">
+            <div class="col-12 col-md-5">
                 <label class="form-label small fw-bold">المبلغ المسدد</label>
                 <div class="input-group">
                     <input type="number" step="0.01" name="amount" class="form-control" value="{{ order.total_amount }}" required>
                     <span class="input-group-text small">{{ order.get_supplier.currency|default:"ر.س" }}</span>
                 </div>
             </div>
-            <div class="col-md-5">
+            <div class="col-12 col-md-5">
                 <label class="form-label small fw-bold">رقم المرجع (Reference)</label>
                 <input type="text" name="reference_number" class="form-control" placeholder="أدخل رقم العملية..." required>
             </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">
+            <div class="col-12 col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100 py-2">
                     <i class="fas fa-save me-1"></i> حفظ
                 </button>
             </div>

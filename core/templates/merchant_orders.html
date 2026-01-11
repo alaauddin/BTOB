@@ -17,149 +17,203 @@
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 24px;
-        padding: 2rem;
-        margin: 2rem 0;
+        padding: 1.5rem;
+        margin: 1rem 0;
     }
     
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
         margin-bottom: 2rem;
     }
     
     .stat-card {
-        background: linear-gradient(135deg, rgba(239, 125, 45, 0.1), rgba(154, 191, 196, 0.1));
+        background: linear-gradient(135deg, rgba(239, 125, 45, 0.05), rgba(154, 191, 196, 0.05));
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 20px;
-        padding: 1.5rem;
+        padding: 1.25rem;
         text-align: center;
         transition: all 0.3s ease;
     }
     
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-    }
-    
     .stat-number {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: bold;
         color: var(--primary-color);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
     }
     
     .stat-label {
         color: #666;
-        font-size: 1rem;
+        font-size: 0.875rem;
     }
     
     .filters-section {
-        background: rgba(255, 255, 255, 0.8);
-        border-radius: 16px;
-        padding: 1.5rem;
+        background: rgba(248, 250, 252, 0.8);
+        border-radius: 20px;
+        padding: 1.25rem;
         margin-bottom: 2rem;
     }
     
     .filter-row {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 1rem;
         align-items: end;
     }
-    
-    .filter-group {
-        display: flex;
-        flex-direction: column;
+
+    @media (max-width: 768px) {
+        .filter-row {
+            grid-template-columns: 1fr;
+        }
+        .orders-container {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 16px;
+        }
     }
     
     .filter-group label {
         font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: #333;
+        margin-bottom: 0.4rem;
+        color: #475569;
+        font-size: 0.875rem;
     }
     
     .filter-group input,
     .filter-group select {
-        padding: 0.75rem;
-        border: 2px solid #e1e5e9;
+        width: 100%;
+        padding: 0.625rem;
+        border: 1px solid #e2e8f0;
         border-radius: 12px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-    }
-    
-    .filter-group input:focus,
-    .filter-group select:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
     }
     
     .btn-filter {
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        background: var(--primary-color);
         color: white;
         border: none;
         padding: 0.75rem 1.5rem;
         border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
+        font-weight: 700;
+        width: 100%;
     }
     
-    .btn-filter:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
-    }
-    
-    .orders-table {
+    /* Table & Mobile Optimization */
+    .orders-table-wrapper {
         background: white;
-        border-radius: 16px;
+        border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid #f1f5f9;
     }
     
     .table-header {
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-        color: white;
-        padding: 1rem;
-    }
-    
-    .table-header h3 {
-        margin: 0;
-        font-size: 1.25rem;
+        background: #f8fafc;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
     
     .table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    
-    .table th,
-    .table td {
-        padding: 1rem;
-        text-align: right;
-        border-bottom: 1px solid #e1e5e9;
+        margin-bottom: 0;
     }
     
     .table th {
-        background: #f8f9fa;
-        font-weight: 600;
-        color: #333;
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        border-top: none;
+        padding: 1rem 1.5rem;
     }
     
-    .table tbody tr:hover {
-        background: #f8f9fa;
+    .table td {
+        padding: 1rem 1.5rem;
+        vertical-align: middle;
+        color: #1e293b;
+        font-size: 0.875rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* Mobile Cards View (hidden on desktop) */
+    .order-mobile-card {
+        display: none;
+        background: white;
+        border-radius: 16px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid #f1f5f9;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .desktop-only { display: block; }
+    .mobile-only { display: none; }
+
+    @media (max-width: 991px) {
+        .desktop-only { display: none !important; }
+        .mobile-only { display: block !important; }
+        
+        .table-responsive-custom {
+            display: none;
+        }
+        
+        .order-mobile-card {
+            display: block;
+        }
+    }
+    
+    .btn-details {
+        background-color: var(--primary-color);
+        color: white !important;
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        transition: all 0.2s ease;
+        border: none;
+    }
+    
+    .btn-details:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        color: white !important;
+    }
+    
+    .btn-whatsapp-mobile {
+        background-color: #f0fdf4;
+        color: #16a34a !important;
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-whatsapp-mobile:hover {
+        background-color: #16a34a;
+        color: white !important;
     }
     
     .status-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        text-align: center;
+        padding: 0.35rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
         display: inline-block;
-        min-width: 80px;
     }
     
     .status-pending {
@@ -198,46 +252,63 @@
         transform: translateY(-2px);
     }
     
-    .pagination {
+    .pagination-section {
         display: flex;
-        justify-content: center;
+        flex-direction: column;
         align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        padding: 2rem 0;
+        border-top: 1px solid #f1f5f9;
         margin-top: 2rem;
+    }
+    
+    .pagination-container {
+        display: flex;
+        align-items: center;
         gap: 0.5rem;
     }
     
-    .pagination a,
-    .pagination span {
-        padding: 0.5rem 1rem;
-        border: 1px solid #e1e5e9;
-        border-radius: 8px;
+    .pagination-pages {
+        display: flex;
+        gap: 0.25rem;
+    }
+    
+    .pagination-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        color: #64748b !important;
         text-decoration: none;
-        color: #333;
-        transition: all 0.3s ease;
+        font-size: 0.875rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        background: white;
     }
     
-    .pagination a:hover {
-        background: var(--primary-color);
-        color: white;
+    .pagination-btn:hover {
+        background-color: #f8fafc;
+        color: var(--primary-color) !important;
         border-color: var(--primary-color);
     }
     
-    .pagination .current {
-        background: var(--primary-color);
-        color: white;
+    .pagination-btn.active {
+        background-color: var(--primary-color);
+        color: white !important;
         border-color: var(--primary-color);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     
-    .no-orders {
-        text-align: center;
-        padding: 3rem;
-        color: #666;
-    }
-    
-    .no-orders i {
-        font-size: 4rem;
-        color: #ddd;
-        margin-bottom: 1rem;
+    .pagination-info {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 </style>
 {% endblock %}
@@ -317,82 +388,146 @@
                 </div>
 
                 <!-- Orders Table -->
-                <div class="orders-table">
+                <div class="orders-table-wrapper">
                     <div class="table-header">
-                        <h3><i class="fas fa-list me-2"></i>قائمة الطلبات</h3>
+                        <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-list me-2"></i>قائمة الطلبات</h3>
+                        <span class="text-sm text-gray-500">{{ page_obj.paginator.count }} طلب</span>
                     </div>
                     
                     {% if page_obj %}
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>رقم الطلب</th>
-                                    <th>العميل</th>
-                                    <th>التاريخ</th>
-                                    <th>المبلغ</th>
-                                    <th>الحالة</th>
-                                    <th>الإجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for order in page_obj %}
-                                <tr>
-                                    <td><strong>#{{ order.id }}</strong></td>
-                                    <td>{{ order.user.get_full_name|default:order.user.username }}</td>
-                                    <td>{{ order.created_at|date:"Y/m/d H:i" }}</td>
-                                    <td>{{ order.total_amount|floatformat:2 }} {{ supplier.currency }}</td>
-                                    <td>
-                                        <span class="status-badge status-{{ order.pipeline_status.slug }}">
-                                            {{ order.pipeline_status.name }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex gap-2 justify-content-end">
-                                            {% with address=order.shippingaddress_set.first %}
-                                                {% if address %}
-                                                    <!-- WhatsApp -->
-                                                    <a href="https://wa.me/{{ address.phone|default:order.user.username }}?text=مرحباً {{ order.user.get_full_name|default:'عزيزي' }}، معك {{ supplier.name }}. بخصوص طلبك رقم {{ order.id }}..." target="_blank" class="btn btn-outline-success btn-sm" title="مراسلة العميل">
-                                                        <i class="fab fa-whatsapp"></i>
-                                                    </a>
-                                                    
-                                                    <!-- Google Maps -->
-                                                    {% if address.latitude and address.longitude %}
-                                                        <a href="https://www.google.com/maps/search/?api=1&query={{ address.latitude }},{{ address.longitude }}" target="_blank" class="btn btn-outline-primary btn-sm" title="الموقع">
-                                                            <i class="fas fa-map-marker-alt"></i>
+                        <!-- Desktop Table -->
+                        <div class="table-responsive-custom">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>رقم الطلب</th>
+                                        <th>العميل</th>
+                                        <th class="desktop-only">التاريخ</th>
+                                        <th>المبلغ</th>
+                                        <th>الحالة</th>
+                                        <th class="text-center">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in page_obj %}
+                                    <tr>
+                                        <td><span class="font-bold">#{{ order.id }}</span></td>
+                                        <td>
+                                            <div class="flex flex-col">
+                                                <span class="font-medium">{{ order.user.get_full_name|default:order.user.username }}</span>
+                                                <span class="text-xs text-gray-400 mobile-only">{{ order.created_at|date:"Y/m/d H:i" }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="desktop-only text-gray-500">{{ order.created_at|date:"Y/m/d H:i" }}</td>
+                                        <td class="font-bold">{{ order.total_amount|floatformat:2 }} {{ supplier.currency }}</td>
+                                        <td>
+                                            <span class="status-badge status-{{ order.pipeline_status.slug }}">
+                                                {{ order.pipeline_status.name }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-2 justify-content-center">
+                                                {% with address=order.shippingaddress_set.first %}
+                                                    {% if address %}
+                                                        <a href="https://wa.me/{{ address.phone|default:order.user.username }}?text=مرحباً {{ order.user.get_full_name|default:'عزيزي' }}، معك {{ supplier.name }}. بخصوص طلبك رقم {{ order.id }}..." target="_blank" class="btn-whatsapp-mobile" title="مراسلة العميل">
+                                                            <i class="fab fa-whatsapp"></i>
                                                         </a>
-                                                        <button type="button" onclick="event.preventDefault(); navigator.clipboard.writeText('https://www.google.com/maps/search/?api=1&query={{ address.latitude }},{{ address.longitude }}'); alert('تم نسخ رابط الموقع');" class="btn btn-outline-secondary btn-sm" title="نسخ الرابط">
-                                                            <i class="fas fa-copy"></i>
-                                                        </button>
                                                     {% endif %}
-                                                {% endif %}
-                                            {% endwith %}
-                                            
-                                            <a href="{% url 'merchant_order_detail' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="btn-view">
-                                                <i class="fas fa-eye"></i> التفاصيل
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                                {% endwith %}
+                                                
+                                                <a href="{% url 'merchant_order_detail' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="btn-details">
+                                                    <i class="fas fa-eye me-1"></i> التفاصيل
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mobile Cards -->
+                        <div class="mobile-only">
+                            {% for order in page_obj %}
+                            <div class="order-mobile-card">
+                                <div class="flex justify-between items-start mb-3" style="display: flex; justify-content: space-between;">
+                                    <div>
+                                        <span class="text-xs text-gray-400 block mb-1" style="display:block; font-size: 0.75rem; color: #94a3b8;">رقم الطلب</span>
+                                        <span class="font-bold">#{{ order.id }}</span>
+                                    </div>
+                                    <span class="status-badge status-{{ order.pipeline_status.slug }}">
+                                        {{ order.pipeline_status.name }}
+                                    </span>
+                                </div>
+                                <div class="mb-3">
+                                    <span class="text-xs text-gray-400 block mb-1" style="display:block; font-size: 0.75rem; color: #94a3b8;">العميل</span>
+                                    <span class="font-medium text-sm">{{ order.user.get_full_name|default:order.user.username }}</span>
+                                </div>
+                                <div class="flex justify-between items-end" style="display: flex; justify-content: space-between; align-items: flex-end;">
+                                    <div>
+                                        <span class="text-xs text-gray-400 block mb-1" style="display:block; font-size: 0.75rem; color: #94a3b8;">المبلغ الإجمالي</span>
+                                        <span class="font-bold" style="color: var(--primary-color);">{{ order.total_amount|floatformat:2 }} {{ supplier.currency }}</span>
+                                    </div>
+                                    <div class="flex gap-2" style="display: flex; gap: 0.5rem;">
+                                        {% with address=order.shippingaddress_set.first %}
+                                            {% if address %}
+                                                <a href="https://wa.me/{{ address.phone|default:order.user.username }}?text=مرحباً {{ order.user.get_full_name|default:'عزيزي' }}..." target="_blank" class="btn-whatsapp-mobile">
+                                                    <i class="fab fa-whatsapp"></i>
+                                                </a>
+                                            {% endif %}
+                                        {% endwith %}
+                                        <a href="{% url 'merchant_order_detail' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="btn-details">
+                                            التفاصيل
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-t border-gray-50 flex justify-between items-center text-[10px] text-gray-400" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #f8fafc; font-size: 10px; display: flex; justify-content: space-between;">
+                                    <span>{{ order.created_at|date:"Y/m/d H:i" }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
 
                         <!-- Pagination -->
                         {% if page_obj.has_other_pages %}
-                        <div class="pagination">
-                            {% if page_obj.has_previous %}
-                                <a href="?page=1{% if request.GET.supplier_id %}&supplier_id={{ request.GET.supplier_id }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">الأولى</a>
-                                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.supplier_id %}&supplier_id={{ request.GET.supplier_id }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">السابقة</a>
-                            {% endif %}
-                            
-                            <span class="current">
+                        <div class="pagination-section">
+                            <div class="pagination-container">
+                                {% if page_obj.has_previous %}
+                                    <a href="?page=1{% if request.GET.supplier_id %}&supplier_id={{ request.GET.supplier_id }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}" 
+                                       class="pagination-btn">
+                                        <i class="fas fa-angles-right"></i>
+                                    </a>
+                                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.supplier_id %}&supplier_id={{ request.GET.supplier_id }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                                       class="pagination-btn">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                {% endif %}
+
+                                <div class="pagination-pages">
+                                    {% for i in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == i %}
+                                            <span class="pagination-btn active">{{ i }}</span>
+                                        {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                                            <a href="?page={{ i }}{% if request.GET.supplier_id %}&supplier_id={{ request.GET.supplier_id }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                                               class="pagination-btn">{{ i }}</a>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+
+                                {% if page_obj.has_next %}
+                                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.supplier_id %}&supplier_id={{ request.GET.supplier_id }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                                       class="pagination-btn">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                    <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.supplier_id %}&supplier_id={{ request.GET.supplier_id }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}"
+                                       class="pagination-btn">
+                                        <i class="fas fa-angles-left"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                            <span class="pagination-info">
                                 صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}
                             </span>
-                            
-                            {% if page_obj.has_next %}
-                                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.supplier_id %}&supplier_id={{ request.GET.supplier_id }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">التالية</a>
-                                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.supplier_id %}&supplier_id={{ request.GET.supplier_id }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}">الأخيرة</a>
-                            {% endif %}
                         </div>
                         {% endif %}
                     {% else %}
