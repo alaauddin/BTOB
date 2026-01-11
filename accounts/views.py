@@ -29,7 +29,7 @@ def signup (request):
             user.email = f"{user.username}@aratatt.com"
             user.save()
             
-            auth_login(request, user)
+            auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect('suppliers_list')
            
            
@@ -111,7 +111,7 @@ def ajax_signup_view(request):
                 user.email = f"{user.username}@aratatt.com"
                 user.save()
                 
-                auth_login(request, user)
+                auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 return JsonResponse({
                     'success': True, 
                     'message': 'Signup successful',
