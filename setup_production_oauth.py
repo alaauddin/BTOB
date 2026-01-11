@@ -21,7 +21,9 @@ def setup_production():
         print("[ERROR] Client ID and Secret are required.")
         return
     # 1. Update or create the Site
-    # Usually Site ID 1 exists, we just update it
+    # Delete other sites with the same domain if they exist to avoid unique constraint error
+    Site.objects.filter(domain=DOMAIN).exclude(id=1).delete()
+    
     site, created = Site.objects.get_or_create(id=1)
     site.domain = DOMAIN
     site.name = NAME
