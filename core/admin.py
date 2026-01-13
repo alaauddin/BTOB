@@ -184,7 +184,8 @@ class SupplierAdmin(admin.ModelAdmin):
 admin.site.register(Supplier, SupplierAdmin)
 admin.site.register(SupplierCategory)
 admin.site.register(ProductOffer)
-admin.site.register(SuppierAds)
+admin.site.register(SupplierAds)
+admin.site.register(Currency)
 admin.site.register(PlatformOfferAd)
 
 @admin.register(SystemSettings)

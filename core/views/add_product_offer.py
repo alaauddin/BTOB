@@ -20,12 +20,15 @@ def add_product_offer(request):
     else:
         # Get the supplier for the current user
         try:
-            supplier = get_object_or_404(Supplier, user=request.user)
-        except:
-            return JsonResponse({
-                'success': False, 
-                'message': 'You must be a registered supplier to add product offers'
-            }, status=403)
+            supplier = Supplier.objects.get(user=request.user)
+        except Supplier.DoesNotExist:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'يجب أن تكون مورداً مسجلاً لإضافة عروض المنتجات'
+                }, status=403)
+            messages.error(request, 'يجب أن تكون مورداً مسجلاً لإضافة عروض المنتجات')
+            return redirect('suppliers_list')
     
     if request.method == 'POST':
         # Handle AJAX form submission

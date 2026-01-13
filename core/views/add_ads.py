@@ -6,8 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
 
-from core.forms import SuppierAdsForm
-from core.models import Supplier, SuppierAds
+from core.forms import SupplierAdsForm
+from core.models import Supplier, SupplierAds
 
 
 @login_required
@@ -30,7 +30,7 @@ def add_ads(request):
         # Handle AJAX form submission
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             try:
-                form = SuppierAdsForm(request.POST, request.FILES, supplier=supplier)
+                form = SupplierAdsForm(request.POST, request.FILES, supplier=supplier)
                 if form.is_valid():
                     ad = form.save(commit=False)
                     ad.supplier = supplier
@@ -73,7 +73,7 @@ def add_ads(request):
         
         # Handle regular form submission
         else:
-            form = SuppierAdsForm(request.POST, request.FILES, supplier=supplier)
+            form = SupplierAdsForm(request.POST, request.FILES, supplier=supplier)
             if form.is_valid():
                 ad = form.save(commit=False)
                 ad.supplier = supplier
@@ -85,11 +85,11 @@ def add_ads(request):
                 messages.error(request, 'يرجى تصحيح الأخطاء في النموذج')
     
     else:
-        form = SuppierAdsForm(supplier=supplier)
+        form = SupplierAdsForm(supplier=supplier)
     
     # Get current ads count for this supplier
-    current_ads_count = SuppierAds.objects.filter(supplier=supplier).count()
-    active_ads_count = SuppierAds.objects.filter(supplier=supplier, is_active=True).count()
+    current_ads_count = SupplierAds.objects.filter(supplier=supplier).count()
+    active_ads_count = SupplierAds.objects.filter(supplier=supplier, is_active=True).count()
     
     context = {
         'form': form,

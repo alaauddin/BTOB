@@ -7,20 +7,14 @@ from core.models import Product, Supplier, ProductOffer
 @login_required
 @require_POST
 def toggle_product_status(request, product_id):
-    # Determine context (checking for superuser masquerade logic similar to edit/add)
-    if request.user.is_superuser:
-        product = get_object_or_404(Product, id=product_id)
-    else:
-        try:
-            supplier = get_object_or_404(Supplier, user=request.user)
-            product = get_object_or_404(Product, id=product_id, supplier=supplier)
-        except:
-             return JsonResponse({
-                'success': False, 
-                'message': 'Permission denied'
-            }, status=403)
-
     try:
+        # Determine context
+        if request.user.is_superuser:
+            product = Product.objects.get(id=product_id)
+        else:
+            supplier = Supplier.objects.get(user=request.user)
+            product = Product.objects.get(id=product_id, supplier=supplier)
+
         # Toggle: Switch is_active status
         product.is_active = not product.is_active
         product.save()
@@ -35,8 +29,13 @@ def toggle_product_status(request, product_id):
             'message': f'تم {status_text} المنتج بنجاح',
             'is_active': product.is_active
         })
+    except (Product.DoesNotExist, Supplier.DoesNotExist):
+        return JsonResponse({
+            'success': False,
+            'message': 'المنتج غير موجود أو لا تملك صلاحية الوصول إليه'
+        }, status=404)
     except Exception as e:
         return JsonResponse({
             'success': False,
-            'message': f'Error: {str(e)}'
+            'message': f'حدث خطأ: {str(e)}'
         }, status=500)

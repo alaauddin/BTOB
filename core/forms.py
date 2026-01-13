@@ -195,9 +195,9 @@ class ProductOfferForm(forms.ModelForm):
         return cleaned_data
 
 
-class SuppierAdsForm(forms.ModelForm):
+class SupplierAdsForm(forms.ModelForm):
     class Meta:
-        model = SuppierAds
+        model = SupplierAds
         fields = ['title', 'description', 'image', 'is_active', 'product']
         widgets = {
             'title': forms.TextInput(attrs={

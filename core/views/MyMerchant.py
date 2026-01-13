@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from core.models import Supplier, Product, ProductOffer, Promotion, SuppierAds, Order, Category, PlatformOfferAd
+from core.models import Supplier, Product, ProductOffer, Promotion, SupplierAds, Order, Category, PlatformOfferAd
 from core.forms import SupplierSettingsForm, ProductForm
 from django.db.models import Count, Sum, Avg
 from django.utils import timezone
@@ -33,7 +33,7 @@ def my_merchant(request):
         is_active=True
     )
     promotions = Promotion.objects.filter(supplier=supplier)
-    ads = SuppierAds.objects.filter(supplier=supplier)
+    ads = SupplierAds.objects.filter(supplier=supplier)
     
     # Calculate statistics
     total_products = products.count()
@@ -78,7 +78,7 @@ def my_merchant(request):
     
     # Get recent orders for display
     # Get promotions and ads
-    ads = SuppierAds.objects.filter(supplier=supplier)
+    ads = SupplierAds.objects.filter(supplier=supplier)
     platform_promotions = PlatformOfferAd.objects.filter(product__supplier=supplier).order_by('-id')
     
     ads_count = ads.count() # This was calculated before, moving it here after ads is defined.

@@ -70,6 +70,15 @@ class SupplierCategory(models.Model):
     def __str__(self):
         return self.name
 
+class Currency(models.Model):
+    name = models.CharField(max_length=100, verbose_name="اسم العملة")
+    code = models.CharField(max_length=10, unique=True, verbose_name="رمز العملة (ISO)")
+    symbol = models.CharField(max_length=10, verbose_name="الرمز (الشعار)")
+
+    def __str__(self):
+        return self.symbol
+
+
 class Supplier(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='supplier')
     name = models.CharField(max_length=100)
@@ -85,7 +94,7 @@ class Supplier(models.Model):
     footer_color = models.CharField(max_length=7, default='#3a505e')
     text_color = models.CharField(max_length=7, default='#3a505e')
     accent_color = models.CharField(max_length=7, default='#9abfc4')
-    currency = models.CharField(max_length=10, default='ر.س')
+    currency = models.ForeignKey(Currency, on_delete=models.SET_NULL, null=True, blank=True)
     profile_picture = models.ImageField(upload_to=upload_to_path, blank=True, null=True)
     panal_picture = models.ImageField(upload_to=upload_to_path, blank=True, null=True)
     workflow = models.ForeignKey(OrderWorkflow, on_delete=models.SET_NULL, null=True, blank=True)
@@ -559,7 +568,7 @@ class Discount(models.Model):
         return f"{self.code} - {self.discount_amount}% off"
     
     
-class SuppierAds(models.Model):
+class SupplierAds(models.Model):
     supplier = models.ForeignKey(Supplier,on_delete=models.CASCADE,related_name='supplier_ads')
     title = models.CharField(max_length=200,null=True,blank=True)
     description = models.TextField(max_length=1000,null=True,blank=True)

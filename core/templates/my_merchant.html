@@ -926,41 +926,35 @@
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().catch(() => {
+                    throw new Error('حدث خطأ في الخادم');
+                }).then(errData => {
+                    throw new Error(errData.message || 'حدث خطأ غير متوقع');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                Swal.fire(
-                    'تم التعديل!',
-                    data.message,
-                    'success'
-                ).then(() => {
-                    location.reload();
-                });
+                Swal.fire('تم العمالية نجاح', data.message, 'success').then(() => location.reload());
             } else {
-                Swal.fire(
-                    'خطأ!',
-                    data.message || 'حدث خطأ غير متوقع',
-                    'error'
-                );
-                if (modalBtn) {
-                    modalBtn.innerHTML = originalContent;
-                    modalBtn.disabled = false;
-                }
+                Swal.fire('خطأ', data.message || 'فشل في تحديث الحالة', 'error');
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            Swal.fire(
-                'خطأ!',
-                'تعذر الاتصال بالخادم',
-                'error'
-            );
+            console.error('Error toggling product status:', error);
+            Swal.fire('خطأ', error.message || 'حدث خطأ أثناء الاتصال بالخادم', 'error');
+        })
+        .finally(() => {
             if (modalBtn) {
                 modalBtn.innerHTML = originalContent;
                 modalBtn.disabled = false;
             }
         });
     }
+
 
     // --- Modal Management ---
     function openAddProductModal() {
@@ -1515,11 +1509,26 @@
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(res => res.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().catch(() => {
+                    throw new Error('حدث خطأ في الخادم');
+                }).then(errData => {
+                    throw new Error(errData.message || 'حدث خطأ غير متوقع');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                Swal.fire('تم العمالية بنجاح', data.message, 'success').then(() => location.reload());
+                Swal.fire('تمت العملية بنجاح', data.message, 'success').then(() => location.reload());
+            } else {
+                Swal.fire('خطأ', data.message || 'فشل في تحديث الحالة', 'error');
             }
+        })
+        .catch(error => {
+            console.error('Error toggling ad status:', error);
+            Swal.fire('خطأ', error.message || 'حدث خطأ أثناء الاتصال بالخادم', 'error');
         });
     }
 

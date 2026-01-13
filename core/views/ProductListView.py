@@ -3,7 +3,7 @@ import math
 from decimal import Decimal
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView
-from core.models import Product, Category, ProductCategory, Cart, Order, SuppierAds, Supplier, Address, ProductOffer
+from core.models import Product, Category, ProductCategory, Cart, Order, SupplierAds, Supplier, Address, ProductOffer
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Exists, OuterRef, Subquery
@@ -67,7 +67,7 @@ def product_list(request, store_id, category_id=None, subcategory_id=None):
         else:
             other_products.append(product)
 
-    supplier_ads = SuppierAds.objects.filter(supplier=supplier,is_active = True)
+    supplier_ads = SupplierAds.objects.filter(supplier=supplier,is_active = True)
 
     # Context dictionary
     context = {

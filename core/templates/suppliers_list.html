@@ -82,7 +82,7 @@
 <!-- Modern Hero Section -->
 
 
-<div class=" pt-4">
+<div>
     <!-- Platform Offers Ads Section -->
     {% if platform_ads %}
     <div class="platform-ads-section">
@@ -97,7 +97,7 @@
                     </div>
                     {% endif %}
                     <div class="ad-badge-hot">
-                        <i class="fas fa-fire"></i> عرض حصري
+                        <i class="fas fa-fire"></i> <span>عرض حصري</span>
                     </div>
                     <div class="supplier-mini-logo">
                         <img src="{% if ad.product.supplier.profile_picture %}{{ ad.product.supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ ad.product.supplier.name }}" loading="lazy">
@@ -124,17 +124,27 @@
     {% endif %}
 
 
+    <!-- Search Bar Section -->
+    <div class="search-section-wrapper">
+        <div class="container">
+            <div class="search-input-group">
+                <i class="fas fa-search search-icon"></i>
+                <input dir="ltr" type="text" id="supplierSearchInput" placeholder="ابحث عن متجر أو تصنيف..." onkeyup="applyFilters()">
+            </div>
+        </div>
+    </div>
+
     <!-- Filter & Categories -->
 <div class="category-nav-wrapper">
     <div class="container">
-        <span class="filter-label">استكشف عبر التصنيفات</span>
+        <span class="filter-label mb-4"> </span>
         <div class="category-scroll-container">
-            <button class="category-pill active" data-category="all" onclick="filterByCategory('all')">
+            <button class="category-pill active" data-category="all" onclick="setCategory('all')">
                 <i class="fas fa-border-all"></i>
                 <span>الكل</span>
             </button>
             {% for category in categories %}
-            <button class="category-pill" data-category="{{ category.id }}" onclick="filterByCategory('{{ category.id }}')">
+            <button class="category-pill" data-category="{{ category.id }}" onclick="setCategory('{{ category.id }}')">
                
                     <i class="fas fa-tag"></i>
                 <span>{{ category.name }}</span>
@@ -148,7 +158,10 @@
     <div class="supplier-grid">
         <div class="supplier-horizontal-scroll" id="supplierGrid">
             {% for supplier in suppliers %}
-            <div class="supplier-card-container" data-categories="{% for cat in supplier.category.all %}{{ cat.id }},{% endfor %}">
+            <div class="supplier-card-container" 
+                 data-name="{{ supplier.name|lower }}" 
+                 data-categories="{% for cat in supplier.category.all %}{{ cat.id }},{% endfor %}"
+                 data-category-names="{% for cat in supplier.category.all %}{{ cat.name|lower }},{% endfor %}">
                 <div class="supplier-card relative group" style="cursor: pointer;" onclick="if (!event.target.closest('a')) window.location='{% url 'product-list' supplier.store_id %}'">
                     {% if request.user.is_superuser %}
                     <a href="{% url 'my_merchant' %}?supplier_id={{ supplier.id }}" class="absolute top-2 left-2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm text-gray-700 rounded-full shadow-sm hover:bg-red-500 hover:text-white transition-all transform hover:scale-110" title="إدارة المتجر">
@@ -283,11 +296,13 @@
     </section>
 
 <script>
-function filterByCategory(categoryId) {
-    const cards = document.querySelectorAll('.supplier-card-container');
-    const buttons = document.querySelectorAll('.category-pill');
+let currentCategoryId = 'all';
+
+function setCategory(categoryId) {
+    currentCategoryId = categoryId;
     
-    buttons.forEach(btn => {
+    // Update active pill UI
+    document.querySelectorAll('.category-pill').forEach(btn => {
         if (btn.getAttribute('data-category') === categoryId) {
             btn.classList.add('active');
         } else {
@@ -295,18 +310,50 @@ function filterByCategory(categoryId) {
         }
     });
 
+    applyFilters();
+}
+
+function applyFilters() {
+    const searchText = document.getElementById('supplierSearchInput').value.toLowerCase();
+    const cards = document.querySelectorAll('.supplier-card-container');
+    let visibleCount = 0;
+
     cards.forEach(card => {
-        if (categoryId === 'all') {
+        const name = card.getAttribute('data-name');
+        const categoryNames = card.getAttribute('data-category-names');
+        const categories = card.getAttribute('data-categories').split(',');
+        
+        const matchesCategory = (currentCategoryId === 'all' || categories.includes(currentCategoryId));
+        const matchesSearch = (name.includes(searchText) || categoryNames.includes(searchText));
+
+        if (matchesCategory && matchesSearch) {
             card.style.display = 'block';
+            visibleCount++;
         } else {
-            const categories = card.getAttribute('data-categories').split(',');
-            if (categories.includes(categoryId)) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
+            card.style.display = 'none';
         }
     });
+
+    // Handle no results state
+    const emptyState = document.getElementById('noSuppliersMessage');
+    if (visibleCount === 0) {
+        if (!emptyState) {
+            const grid = document.getElementById('supplierGrid');
+            const message = document.createElement('div');
+            message.id = 'noSuppliersMessage';
+            message.className = 'col-12 w-full text-center py-5';
+            message.innerHTML = `
+                <div class="no-suppliers">
+                    <i class="fas fa-search-minus mb-3" style="font-size: 3rem; color: #e2e8f0;"></i>
+                    <h3 class="text-slate-800">لا توجد نتائج</h3>
+                    <p class="text-slate-400">لم نجد أي موردين يطابقون بحثك الحالي.</p>
+                </div>
+            `;
+            grid.appendChild(message);
+        }
+    } else {
+        if (emptyState) emptyState.remove();
+    }
 }
 </script>
 

@@ -13,17 +13,32 @@ from core.models import Supplier, Product, ProductOffer
 @login_required
 @require_http_methods(["GET", "POST"])
 def edit_product_offer(request, offer_id):
-    # Get the supplier for the current user
     try:
-        supplier = get_object_or_404(Supplier, user=request.user)
-    except:
-        return JsonResponse({
-            'success': False, 
-            'message': 'You must be a registered supplier to edit product offers'
-        }, status=403)
-    
-    # Get the offer and ensure it belongs to the current supplier
-    offer = get_object_or_404(ProductOffer, id=offer_id, product__supplier=supplier)
+        # Get the offer first to identify the correct supplier
+        offer = ProductOffer.objects.get(id=offer_id)
+        
+        # Check permissions
+        if not request.user.is_superuser:
+            supplier = Supplier.objects.get(user=request.user)
+            if offer.product.supplier != supplier:
+                raise PermissionError("You do not have permission to edit this offer")
+        else:
+            supplier = offer.product.supplier
+            
+    except (ProductOffer.DoesNotExist, Supplier.DoesNotExist):
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'العرض غير موجود أو لا تملك صلاحية الوصول إليه'
+            }, status=404)
+        return redirect('my_merchant')
+    except (PermissionError, Exception) as e:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=403 if isinstance(e, PermissionError) else 500)
+        return redirect('my_merchant')
     
     if request.method == 'POST':
         # Handle AJAX form submission
@@ -33,9 +48,10 @@ def edit_product_offer(request, offer_id):
                 if form.is_valid():
                     updated_offer = form.save(commit=True)
                     updated_offer.created_by = request.user
-                    updated_offer.discount_precentage = form.clean_discount_precentage()
-                    print(form.clean_discount_precentage())
-                    print(updated_offer.discount_precentage)
+                    # Ensure discount is recalculated if needed from form clean
+                    if hasattr(form, 'clean_discount_precentage'):
+                         updated_offer.discount_precentage = form.clean_discount_precentage()
+                    
                     updated_offer.save()
                     return JsonResponse({
                         'success': True,
@@ -57,7 +73,7 @@ def edit_product_offer(request, offer_id):
                         if field == '__all__':
                             errors['general'] = error_list[0]
                         else:
-                            errors[field] = error_list[0]  # Get first error for each field
+                            errors[field] = error_list[0]
                     
                     return JsonResponse({
                         'success': False,
@@ -79,6 +95,8 @@ def edit_product_offer(request, offer_id):
                 updated_offer.created_by = request.user
                 updated_offer.save()
                 messages.success(request, 'تم تحديث العرض بنجاح!')
+                if request.user.is_superuser:
+                    return redirect(f'/my-merchant/?supplier_id={supplier.id}')
                 return redirect('my_merchant')
             else:
                 messages.error(request, 'يرجى تصحيح الأخطاء في النموذج')
@@ -86,7 +104,7 @@ def edit_product_offer(request, offer_id):
     else:
         form = ProductOfferForm(instance=offer, supplier=supplier)
     
-    # Get all products for this supplier (for editing, we allow changing the product)
+    # Get all products for this supplier
     available_products = Product.objects.filter(supplier=supplier)
     
     context = {
@@ -97,5 +115,4 @@ def edit_product_offer(request, offer_id):
         'is_edit': True
     }
     
-    # Return template for regular GET request
     return render(request, 'edit_product_offer.html', context)

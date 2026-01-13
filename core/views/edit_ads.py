@@ -6,8 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
 
-from core.forms import SuppierAdsForm
-from core.models import Supplier, SuppierAds
+from core.forms import SupplierAdsForm
+from core.models import Supplier, SupplierAds
 
 
 @login_required
@@ -27,13 +27,19 @@ def edit_ads(request, ad_id):
         }, status=403)
     
     # Get the ad and ensure it belongs to the current supplier
-    ad = get_object_or_404(SuppierAds, id=ad_id, supplier=supplier)
+    try:
+        ad = SupplierAds.objects.get(id=ad_id, supplier=supplier)
+    except SupplierAds.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'الإعلان غير موجود أو لا تملك صلاحية الوصول إليه'
+        }, status=404)
     
     if request.method == 'POST':
         # Handle AJAX form submission
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             try:
-                form = SuppierAdsForm(request.POST, request.FILES, instance=ad, supplier=supplier)
+                form = SupplierAdsForm(request.POST, request.FILES, instance=ad, supplier=supplier)
                 if form.is_valid():
                     updated_ad = form.save(commit=False)
                     updated_ad.supplier = supplier
@@ -74,7 +80,7 @@ def edit_ads(request, ad_id):
         
         # Handle regular form submission
         else:
-            form = SuppierAdsForm(request.POST, request.FILES, instance=ad, supplier=supplier)
+            form = SupplierAdsForm(request.POST, request.FILES, instance=ad, supplier=supplier)
             if form.is_valid():
                 updated_ad = form.save(commit=False)
                 updated_ad.supplier = supplier
@@ -98,11 +104,11 @@ def edit_ads(request, ad_id):
                     'product_id': ad.product.id if ad.product else None
                 }
             })
-        form = SuppierAdsForm(instance=ad, supplier=supplier)
+        form = SupplierAdsForm(instance=ad, supplier=supplier)
     
     # Get current ads count for this supplier
-    current_ads_count = SuppierAds.objects.filter(supplier=supplier).count()
-    active_ads_count = SuppierAds.objects.filter(supplier=supplier, is_active=True).count()
+    current_ads_count = SupplierAds.objects.filter(supplier=supplier).count()
+    active_ads_count = SupplierAds.objects.filter(supplier=supplier, is_active=True).count()
     
     context = {
         'form': form,
