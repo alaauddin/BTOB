@@ -58,7 +58,7 @@ from django.urls import reverse
 from django.utils.html import format_html, mark_safe
 
 class SupplierAdmin(admin.ModelAdmin):
-    list_display = ('name', 'city', 'country', 'primary_color', 'views_count')
+    list_display = ('name', 'city', 'country', 'primary_color', 'views_count', 'is_active')
     search_fields = ('name', 'city')
     
     def workflow_steps_list(self, obj):
@@ -103,7 +103,7 @@ class SupplierAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('المعلومات الأساسية', {
-            'fields': ('user', 'name', 'phone', 'category', 'currency', 'delivery_fee_ratio', 'enable_delivery_fees', 'show_order_amounts','show_platform_ads','store_id'),
+            'fields': ('user', 'name', 'is_active', 'phone', 'category', 'currency', 'delivery_fee_ratio', 'enable_delivery_fees', 'show_order_amounts','show_platform_ads','store_id'),
             'description': 'أضف المعلومات الأساسية للمورد هنا.'
         }),
         ('المكان والجغرافيا', {

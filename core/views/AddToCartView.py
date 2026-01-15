@@ -13,6 +13,9 @@ class AddToCartView(View):
         supplier_id = request.POST.get('supplier_id')
 
         product = get_object_or_404(Product, pk=product_id)
+        if not product.supplier.is_active:
+            return JsonResponse({'success': False, 'message': 'المورد غير نشط حالياً.'})
+            
         user_cart, created = Cart.objects.get_or_create(user=request.user)
 
         # Check if the item is already in the cart

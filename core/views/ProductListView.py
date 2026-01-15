@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # @login_required <-- Removed for public access
 def product_list(request, store_id, category_id=None, subcategory_id=None):
     # Base queryset
-    supplier = get_object_or_404(Supplier, store_id=store_id)
+    supplier = get_object_or_404(Supplier, store_id=store_id, is_active=True)
     today = timezone.now().date()
     
     # Visit tracking (session based)

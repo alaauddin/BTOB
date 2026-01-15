@@ -12,7 +12,7 @@ def product_detail(request, store_id, pk):
     - cart: user's Cart for that supplier (or None)
     """
     product = get_object_or_404(Product.objects.prefetch_related('additional_images'), pk=pk)
-    supplier = get_object_or_404(Supplier, store_id=store_id)
+    supplier = get_object_or_404(Supplier, store_id=store_id, is_active=True)
     
     # Visit tracking (session based)
     if 'visited_products' not in request.session:
@@ -55,7 +55,8 @@ def product_detail(request, store_id, pk):
         context['platform_ads'] = PlatformOfferAd.objects.filter(
             start_date__lte=today,
             end_date__gte=today,
-            # is_approved=True    
+            is_approved=True,
+            product__supplier__is_active=True
         ).order_by('order').select_related('product', 'product__supplier')[:4]
 
     # Calculate estimated delivery fee for mobile cart bar

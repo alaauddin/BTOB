@@ -108,9 +108,19 @@ class Supplier(models.Model):
     views_count = models.PositiveIntegerField(default=0, verbose_name="عدد المشاهدات")
     can_add_categories = models.BooleanField(default=False, verbose_name="إضافة فئات")
     can_add_product_categories = models.BooleanField(default=False, verbose_name="إضافة فئات المنتجات")
+    is_active = models.BooleanField(default=True, verbose_name="نشط")
     
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old_instance = Supplier.objects.filter(pk=self.pk).first()
+            if old_instance and old_instance.is_active and not self.is_active:
+                # Deactivating supplier: deactivate ads
+                self.supplier_ads.all().update(is_active=False)
+                PlatformOfferAd.objects.filter(product__supplier=self).update(is_approved=False)
+        super().save(*args, **kwargs)
     
     def get_total_sales_for_current_month(self):
         orders = Order.objects.filter(

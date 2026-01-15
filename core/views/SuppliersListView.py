@@ -16,7 +16,7 @@ def SuppliersListView(request):
     today = timezone.now().date()
     
     # Annotate suppliers with max discount and offers count to sort by "strongest offers"
-    suppliers = Supplier.objects.all().annotate(
+    suppliers = Supplier.objects.filter(is_active=True).annotate(
         max_offer_discount=Max(
             'products__products_offer__discount_precentage',
             filter=Q(
@@ -53,6 +53,7 @@ def SuppliersListView(request):
         start_date__lte=today,
         end_date__gte=today,
         is_approved=True,
+        product__supplier__is_active=True
     ).order_by('order').select_related('product', 'product__supplier')
 
     
@@ -74,7 +75,7 @@ def SuppliersListView(request):
         
     
     # Fetch producing family suppliers
-    producing_family_suppliers = Supplier.objects.filter(category__producing_family=True).distinct().order_by('-priority')
+    producing_family_suppliers = Supplier.objects.filter(category__producing_family=True, is_active=True).distinct().order_by('-priority')
 
     # Handle Business Request Form
     if request.method == 'POST':
