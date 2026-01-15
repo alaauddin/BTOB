@@ -5,16 +5,15 @@
 {% block title %}{{ product.name }} - {{ supplier.name }}{% endblock %}
 
 {% block extra_meta %}
-<meta property="og:title" content="{{ product.name }} - {% if product.has_discount %}{{ product.get_price_with_offer|floatformat:0 }}{% else %}{{ product.price|floatformat:0 }}{% endif %} {{ supplier.currency }}" />
-<meta property="og:description" content="{% if product.has_discount %}خصم {{ product.get_discount_precentage }}%! {% endif %}{{ product.description|striptags|truncatechars:160 }}" />
+<meta property="og:title" content="{{ product.name }}{% if product.has_discount %} - خصم {{ product.get_discount_precentage }}%!{% endif %}" />
+<meta property="og:description" content="{% if product.has_discount %}عرطة مميزة! خصم {{ product.get_discount_precentage }}% لفترة محدودة. {% endif %}{{ product.description|striptags|truncatechars:160 }}" />
 <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}" />
 <meta property="og:url" content="{{ request.build_absolute_uri }}" />
 <meta property="og:type" content="product" />
-<meta property="product:price:amount" content="{% if product.has_discount %}{{ product.get_price_with_offer|floatformat:0 }}{% else %}{{ product.price|floatformat:0 }}{% endif %}">
-<meta property="product:price:currency" content="{{ supplier.currency }}">
+<meta property="product:condition" content="new">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ product.name }} - {% if product.has_discount %}{{ product.get_price_with_offer|floatformat:0 }}{% else %}{{ product.price|floatformat:0 }}{% endif %} {{ supplier.currency }}">
-<meta name="twitter:description" content="{% if product.has_discount %}خصم {{ product.get_discount_precentage }}%! {% endif %}{{ product.description|striptags|truncatechars:160 }}">
+<meta name="twitter:title" content="{{ product.name }}{% if product.has_discount %} - خصم {{ product.get_discount_precentage }}%!{% endif %}">
+<meta name="twitter:description" content="{% if product.has_discount %}عرطة مميزة! خصم {{ product.get_discount_precentage }}% لفترة محدودة. {% endif %}{{ product.description|striptags|truncatechars:160 }}">
 <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}">
 {% endblock %}
 
