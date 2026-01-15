@@ -74,8 +74,17 @@ def SuppliersListView(request):
         
         
     
-    # Fetch producing family suppliers
-    producing_family_suppliers = Supplier.objects.filter(category__producing_family=True, is_active=True).distinct().order_by('-priority')
+    # Fetch producing family suppliers with max discount annotation
+    producing_family_suppliers = Supplier.objects.filter(category__producing_family=True, is_active=True).annotate(
+        max_offer_discount=Max(
+            'products__products_offer__discount_precentage',
+            filter=Q(
+                products__products_offer__is_active=True,
+                products__products_offer__from_date__lte=today,
+                products__products_offer__to_date__gte=today
+            )
+        )
+    ).distinct().order_by('-max_offer_discount', '-priority')
 
     # Handle Business Request Form
     if request.method == 'POST':

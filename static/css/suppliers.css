@@ -222,24 +222,7 @@
     background: linear-gradient(to top, rgba(255, 255, 255, 1) 0%, transparent 100%);
 }
 
-.supplier-logo-wrapper {
-    width: 80px;
-    height: 80px;
-    background: white;
-    border-radius: 50%;
-    /* Circle for standard profile look */
-    padding: 2px;
-    /* Minimal padding inside border */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    position: absolute;
-    top: 100px;
-    /* 140px cover - 40px half logo */
-    right: 20px;
-    overflow: hidden;
-    border: 4px solid white;
-    /* Thick contrast border */
-    z-index: 10;
-}
+/* Legacy logo wrapper removed */
 
 .supplier-logo-wrapper img {
     width: 100%;
@@ -248,7 +231,7 @@
 }
 
 .supplier-content {
-    padding: 3rem 1.5rem 1.5rem;
+    padding: 1.5rem;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -670,21 +653,19 @@
 .ad-card {
     background: white;
     border-radius: 30px;
-    overflow: visible;
-    /* Allowing glows and embers to escape the card bounds */
+    overflow: hidden;
+    /* Changed to hidden for cleaner look */
     position: relative;
-    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-    border: 2px solid #ffa502;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    /* Softer border */
     height: 100%;
     display: flex;
     flex-direction: column;
     z-index: 1;
     perspective: 1000px;
-    /* Continuous animations for "Always Wow" */
-    animation: ultimate-glow 3s infinite ease-in-out, card-pulse 4s infinite ease-in-out;
 }
 
-/* Ensure the image stays rounded since parent is overflow:visible */
 .ad-image {
     height: 220px;
     width: 100%;
@@ -694,12 +675,10 @@
     border-top-right-radius: 28px;
 }
 
-/* Intensified state on Hover */
 .ad-card:hover {
-    transform: translateY(-20px) rotateX(8deg) rotateY(-5px) scale(1.02);
-    animation: hover-glow 1.5s infinite ease-in-out;
-    z-index: 10;
-    border-color: #ff4757;
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color);
 }
 
 /* Continuous Sheen Sweep */
@@ -746,54 +725,36 @@
 
 .ad-badge-discount {
     position: absolute;
-    top: 20px;
-    left: 20px;
+    top: 15px;
+    left: 15px;
     background: linear-gradient(135deg, #ff4757, #ff6b81);
     color: white;
-    padding: 8px 16px;
-    border-radius: 12px;
-    font-weight: 900;
-    font-size: 1rem;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 0.85rem;
     z-index: 11;
-    box-shadow: 0 8px 15px rgba(255, 71, 87, 0.4);
+    box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3);
 }
 
 .ad-badge-hot {
     position: absolute;
-    top: 185px;
-    /* Pin to bottom of 220px image */
-    bottom: auto;
+    top: 20px;
     right: 20px;
     background: linear-gradient(135deg, #ffa502, #ff7f50);
     color: white;
-    padding: 8px 18px;
-    border-radius: 12px;
+    padding: 6px 14px;
+    border-radius: 10px;
     font-weight: 800;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     z-index: 10;
-    box-shadow: 0 8px 15px rgba(255, 165, 2, 0.3);
+    box-shadow: 0 4px 12px rgba(255, 165, 2, 0.3);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
-.supplier-mini-logo {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    border-radius: 18px;
-    padding: 8px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    z-index: 12;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.8);
-}
+/* Old mini logo removed */
 
 .ad-image::after {
     content: '';
@@ -818,22 +779,38 @@
 }
 
 .ad-info {
-    padding: 1.5rem;
+    padding: 1.25rem 1.5rem 1.5rem;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     background: white;
     border-bottom-left-radius: 28px;
     border-bottom-right-radius: 28px;
+    text-align: center;
 }
 
 .ad-supplier-name {
-    font-size: 0.8rem;
-    font-weight: 800;
-    color: #ff7f50;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    /* More subtle color */
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 0.25rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.supplier-inline-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    object-fit: contain;
+    background: #f8fafc;
+    padding: 2px;
+    border: 1px solid #f1f5f9;
 }
 
 .ad-product-name {
@@ -851,10 +828,11 @@
 }
 
 .ad-price {
-    margin-top: auto;
+    margin-top: 1rem;
     display: flex;
     align-items: baseline;
-    gap: 15px;
+    justify-content: center;
+    gap: 12px;
 }
 
 .final-price {
@@ -1137,24 +1115,30 @@
     }
 
     .ad-badge-hot {
-        right: 4px;
-        top: 85px;
-        /* Position relative to top approx image bottom - badge height */
-        bottom: auto;
+        right: 6px;
+        top: 6px;
+        padding: 4px 8px;
+        font-size: 0.65rem;
+        gap: 4px;
     }
 
     .ad-badge-discount {
         top: 6px;
         left: 6px;
+        padding: 2px 6px;
+        font-size: 0.65rem;
+        border-radius: 4px;
     }
 
     .supplier-mini-logo {
-        width: 28px;
-        height: 28px;
-        top: 6px;
-        right: 6px;
-        border-radius: 8px;
-        padding: 4px;
+        display: none;
+    }
+
+    .supplier-inline-logo {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        padding: 1px;
     }
 
     .ad-price {
@@ -1187,20 +1171,11 @@
     }
 
     .supplier-logo-wrapper {
-        width: 50px;
-        height: 50px;
-        padding: 2px;
-        border-radius: 50%;
-        top: 55px;
-        /* Overlap cover */
-        bottom: auto;
-        right: 15px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        border: 2px solid white;
+        display: none;
     }
 
     .supplier-content {
-        padding: 1.75rem 0.75rem 0.75rem;
+        padding: 1rem 0.75rem 0.75rem;
     }
 
     .supplier-name {
