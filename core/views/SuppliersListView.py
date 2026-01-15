@@ -45,7 +45,7 @@ def SuppliersListView(request):
     q = request.GET.get('q', '').strip()
     
     # Get all categories for the filter buttons
-    categories = SupplierCategory.objects.all().distinct()
+    categories = SupplierCategory.objects.filter(supplier__is_active=True).distinct()
 
     # Fetch active platform ads
     today = timezone.now().date()
