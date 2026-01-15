@@ -444,7 +444,10 @@ class Order(models.Model):
         return items_gross - self.get_total_ammout_with_discout()
     
     def get_supplier(self):
-        return self.order_items.first().product.supplier
+        first_item = self.order_items.first()
+        if first_item:
+            return first_item.product.supplier
+        return None
     
     def has_discount(self):
         order_items = self.order_items.all()

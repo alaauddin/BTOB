@@ -262,10 +262,14 @@
             </div>
             
             <div class="payment-strip">
-                <a href="https://wa.me/{{ order.order_items.first.product.supplier.phone }}?text=أريد دفع ثمن الطلب رقم {{ order.id }} بقيمة {{ order.get_total_after_discount|floatformat:0 }} {{ supplier.currency }}" 
+                {% with first_item=order.order_items.first %}
+                {% if first_item %}
+                <a href="https://wa.me/{{ first_item.product.supplier.phone }}?text=أريد دفع ثمن الطلب رقم {{ order.id }} بقيمة {{ order.get_total_after_discount|floatformat:0 }} {{ supplier.currency }}" 
                    class="btn-payment-action whatsapp" target="_blank">
-                    <i class="fab fa-whatsapp"></i>  تواصل بـ {{ order.order_items.first.product.supplier.name }}
+                    <i class="fab fa-whatsapp"></i>  تواصل بـ {{ first_item.product.supplier.name }}
                 </a>
+                {% endif %}
+                {% endwith %}
                 <button class="btn-payment-action details" data-bs-toggle="modal" data-bs-target="#orderDetailsModal{{ order.id }}">
                     مشاهدة
                 </button>
