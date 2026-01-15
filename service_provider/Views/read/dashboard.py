@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
+import logging
 from core.models import Supplier, Product, Order, Review, Promotion, Discount
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -10,7 +13,7 @@ def supplier_dashboard(request):
     # Get the supplier associated with the current logged-in user
     supplier = get_object_or_404(Supplier, user=request.user)
     this_monthe_name = timezone.now().strftime('%B')
-    print(this_monthe_name)
+    logger.info(this_monthe_name)
     # Get related products, orders, reviews, promotions, and discounts
     products = Product.objects.filter(supplier=supplier)
     orders = Order.objects.filter(order_items__product__supplier=supplier, created_at__month=timezone.now().month).distinct()

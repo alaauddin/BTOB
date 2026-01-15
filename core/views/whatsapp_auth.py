@@ -7,6 +7,7 @@ from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
 from django.http import JsonResponse
 from django.urls import reverse
 from django.conf import settings
+from django.contrib import messages
 from core.models import SystemSettings
 
 logger = logging.getLogger(__name__)
@@ -61,7 +62,7 @@ def send_whatsapp_login_link(request):
                 'phone': username,
                 'message': message
             },
-            timeout=10
+            timeout=20
         )
         
         if response.status_code == 200:
@@ -78,6 +79,10 @@ def verify_whatsapp_login(request):
     """
     Verify the token from the magic link and log the user in.
     """
+    if request.user.is_authenticated:
+        messages.info(request, "أنت مسجل الدخول بالفعل. لإعادة المصادقة، يرجى تسجيل الخروج أولاً.")
+        return redirect('login')
+
     token = request.GET.get('token')
     next_url = request.GET.get('next', '/')
 

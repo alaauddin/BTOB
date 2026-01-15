@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+import logging
 from django.views.generic import DetailView
 from django.views import View
 import math
@@ -10,6 +11,8 @@ from django.utils.decorators import method_decorator
 from core.models import Cart, Product, CartItem, Supplier, Order, OrderItem, Address
 from django.contrib.auth.mixins import LoginRequiredMixin
 from core.forms import ShippingAddressForm
+
+logger = logging.getLogger(__name__)
 
 
 @method_decorator(login_required, name='dispatch')
@@ -107,7 +110,7 @@ class CartView(DetailView):
             return redirect('product-list', store_id=supplier.store_id)
         
         # If invalid, re-render cart with errors
-        print("Form Errors:", form.errors) # Debugging
+        logger.debug("Form Errors: %s", form.errors) # Debugging
         context = self.get_context_data(object=self.object)
         context['shipping_form'] = form
         return self.render_to_response(context)
@@ -165,7 +168,7 @@ def sub_to_cart(request, product_id, store_id):
         if cart_item.quantity > 1:
             # If the item is already in the cart, update the quantity
             cart_item.quantity -= 1
-            print(cart_item.quantity)
+            logger.debug(cart_item.quantity)
             cart_item.save()
         else:
             # If the item is not in the cart, create a new cart item

@@ -1,4 +1,5 @@
 import math
+import logging
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -6,6 +7,8 @@ from django.db.models import Q, Sum, Count
 from django.utils import timezone
 from core.models import Supplier, Order, OrderItem, ShippingAddress, OrderStatus, OrderNote, OrderPaymentReference
 from django.core.paginator import Paginator
+
+logger = logging.getLogger(__name__)
 
 
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -89,7 +92,7 @@ def merchant_orders(request):
     recent_orders = orders.filter(
         created_at__gte=timezone.now() - timezone.timedelta(days=7)
     ).count()
-    print(orders)
+    logger.info(orders)
     
     # Workflow steps for filter
     workflow_steps = []
@@ -272,7 +275,7 @@ def update_order_status(request, order_id):
         
         # Get the order and verify it belongs to this supplier
         order = get_object_or_404(Order, id=order_id)
-        print(order)
+        logger.info(order)
         # Check if this order contains products from the supplier
         order_items = order.order_items.filter(product__supplier=supplier)
         if not order_items.exists():

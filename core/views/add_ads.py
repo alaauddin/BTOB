@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+import logging
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -8,6 +9,8 @@ import json
 
 from core.forms import SupplierAdsForm
 from core.models import Supplier, SupplierAds
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -49,8 +52,8 @@ def add_ads(request):
                         }
                     })
                 else:
-                    print(f"DEBUG: Form errors: {form.errors}")
-                    print(f"DEBUG: request.FILES: {request.FILES.keys()}")
+                    logger.debug(f"Form errors: {form.errors}")
+                    logger.debug(f"request.FILES: {request.FILES.keys()}")
                     # Return form errors
                     errors = {}
                     for field, error_list in form.errors.items():

@@ -1,10 +1,13 @@
 from core.models import *
 from django.shortcuts import render, redirect, get_object_or_404
+import logging
 import math
 from decimal import Decimal
 from django.contrib.auth.decorators import login_required
 from core.forms import ShippingAddressForm
 from django.contrib import messages
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -80,7 +83,7 @@ def existing_address(request, store_id):
 
     user_address = Address.objects.get(user = request.user)
 
-    print(user_address)
+    logger.info(user_address)
     shipping_address = ShippingAddress.objects.create(
         order = order,
         phone = user_address.phone,

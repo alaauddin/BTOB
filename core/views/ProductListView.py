@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+import logging
 import math
 from decimal import Decimal
 from django.shortcuts import get_object_or_404
@@ -12,6 +13,8 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from datetime import timedelta
+
+logger = logging.getLogger(__name__)
 
 # @login_required <-- Removed for public access
 def product_list(request, store_id, category_id=None, subcategory_id=None):
@@ -88,7 +91,7 @@ def product_list(request, store_id, category_id=None, subcategory_id=None):
     # Cart and pending orders
     if request.user.is_authenticated:
         user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
-        print(user_cart)
+        logger.info(user_cart)
         one_day_ago = timezone.now() - timedelta(days=3)
         context['pending_orders'] = Order.objects.filter(
             user=request.user, created_at__gte=one_day_ago, pipeline_status__slug='pending'
