@@ -168,14 +168,13 @@
                         <i class="fas fa-cog text-sm"></i>
                     </a>
                     {% endif %}
-                    <div class="supplier-cover" style="{% if supplier.panal_picture %}background-image: url('{{ supplier.panal_picture.url }}'); background-size: cover; background-position: center;{% else %}background-color: {{ supplier.primary_color }}22;{% endif %}">
+                    <div class="supplier-cover" style="{% if supplier.panal_picture %}background-image: url('{{ supplier.panal_picture.url }}'); background-size: cover; background-position: center;{% else %}background-color: {{ supplier.primary_color }}22;{% endif %}"></div>
+                    <div class="supplier-logo-wrapper">
+                        <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}" loading="lazy">
                     </div>
                     
                     <div class="supplier-content">
-                        <h3 class="supplier-name">
-                             <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}" class="supplier-inline-logo" loading="lazy">
-                            <span>{{ supplier.name }}</span>
-                        </h3>
+                        <h3 class="supplier-name">{{ supplier.name }}</h3>
                         
                         <div class="supplier-meta">
                             <i class="fas fa-map-marker-alt"></i>
@@ -228,11 +227,11 @@
                     <div class="home-badge">
                         <i class="fas fa-home"></i>
                     </div>
+                    <div class="supplier-logo-container">
+                        <img src="{% if s.profile_picture %}{{ s.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ s.name }}" loading="lazy">
+                    </div>
                     <div class="supplier-info-glass">
-                        <div class="supplier-name-premium">
-                             <img src="{% if s.profile_picture %}{{ s.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ s.name }}" class="supplier-inline-logo" style="width: 20px; height: 20px; vertical-align: middle; margin-left: 2px;" loading="lazy">
-                            <span>{{ s.name }}</span>
-                        </div>
+                        <div class="supplier-name-premium">{{ s.name }}</div>
                         <div class="home-label">إنتاج منزلي</div>
                         <div class="supplier-stats-mini mt-1 d-flex gap-2">
                              <div class="stat-mini text-white" style="font-size: 0.65rem; opacity: 0.9;">
