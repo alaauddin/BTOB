@@ -222,7 +222,24 @@
     background: linear-gradient(to top, rgba(255, 255, 255, 1) 0%, transparent 100%);
 }
 
-/* Legacy logo wrapper removed */
+.supplier-logo-wrapper {
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: 50%;
+    /* Circle for standard profile look */
+    padding: 2px;
+    /* Minimal padding inside border */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    top: 100px;
+    /* 140px cover - 40px half logo */
+    right: 20px;
+    overflow: hidden;
+    border: 4px solid white;
+    /* Thick contrast border */
+    z-index: 10;
+}
 
 .supplier-logo-wrapper img {
     width: 100%;
@@ -231,7 +248,7 @@
 }
 
 .supplier-content {
-    padding: 1.5rem;
+    padding: 3rem 1.5rem 1.5rem;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -1171,11 +1188,22 @@
     }
 
     .supplier-logo-wrapper {
-        display: none;
+        width: 50px;
+        height: 50px;
+        padding: 2px;
+        border-radius: 50%;
+        top: 55px;
+        /* Overlap cover */
+        bottom: auto;
+        right: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border: 2px solid white;
+        display: block;
+        /* Ensure it's displayed */
     }
 
     .supplier-content {
-        padding: 1rem 0.75rem 0.75rem;
+        padding: 1.75rem 0.75rem 0.75rem;
     }
 
     .supplier-name {
