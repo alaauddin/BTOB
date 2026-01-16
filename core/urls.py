@@ -29,7 +29,6 @@ from core.views.category_views import add_category_ajax
 from core.views.delete_product import toggle_product_status
 from core.views.toggle_ad_status import toggle_ad_status
 from core.views.request_promotion import request_promotion
-from core.views.whatsapp_auth import send_whatsapp_login_link, verify_whatsapp_login
 
 urlpatterns = [
     # path('products/', ProductListView.as_view(), name='product-list'),
@@ -87,7 +86,5 @@ urlpatterns = [
     path('add-order-note/<int:order_id>/', add_order_note, name='add_order_note'),
     path('add-payment-reference/<int:order_id>/', add_payment_reference, name='add_payment_reference'),
 
-    path('api/whatsapp-login-link/', send_whatsapp_login_link, name='send_whatsapp_login_link'),
-    path('verify-whatsapp-login/', verify_whatsapp_login, name='verify_whatsapp_login'),
 ]
 

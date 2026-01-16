@@ -11,7 +11,11 @@ from django.views.generic import UpdateView
 from django.views.generic import CreateView
 
 from django.urls import reverse_lazy
+from django.urls import reverse_lazy
 from django.contrib.auth.models import User
+from django.utils.crypto import get_random_string
+from django.core.cache import cache
+import time
 
 
 # Create your views here.
@@ -129,5 +133,76 @@ def ajax_signup_view(request):
                 })
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+            
+    return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+
+@csrf_exempt
+def ajax_unified_auth_view(request):
+    """
+    Handle Unified Authentication (Phone Only).
+    Expects JSON data: {'phone': '...'}
+    """
+    if request.method == 'POST':
+        try:
+            # Basic Rate Limiting (IP based)
+            ip = request.META.get('REMOTE_ADDR')
+            cache_key = f"auth_rate_limit_{ip}"
+            attempts = cache.get(cache_key, 0)
+            
+            if attempts > 10: # 10 attempts per minute
+                return JsonResponse({'success': False, 'message': 'Too many attempts. Please try again later.'})
+            
+            cache.set(cache_key, attempts + 1, 60) # Expire in 60s
+
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+
+            phone = data.get('phone')
+
+            if not phone:
+                return JsonResponse({'success': False, 'message': 'رقم الهاتف مطلوب'})
+
+            # Check if user exists
+            user = User.objects.filter(username=phone).first()
+
+            if user:
+                # Login existing user without password check
+                auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                return JsonResponse({
+                    'success': True, 
+                    'message': 'تم تسجيل الدخول بنجاح',
+                    'username': user.username
+                })
+            else:
+                # Create New User with random password
+                random_password = get_random_string(length=12)
+                user = User.objects.create_user(
+                    username=phone,
+                    email=f"{phone}@aratatt.com",
+                    password=random_password,
+                    first_name="" # Deferred to checkout
+                )
+                user.save()
+                
+                # Log them in immediately
+                auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                
+                return JsonResponse({
+                    'success': True, 
+                    'message': 'تم إنشاء الحساب بنجاح',
+                    'is_new': True,
+                    'username': user.username
+                })
+
+        except Exception as e:
+            # Catch ALL errors to prevent 500 HTML response
+            import traceback
+            traceback.print_exc() # Print to server logs
+            return JsonResponse({
+                'success': False, 
+                'message': f'System Error: {str(e)}'
+            }, status=200) # Return 200 so frontend displays message instead of catch block
             
     return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)

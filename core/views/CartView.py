@@ -1,5 +1,7 @@
 from django.http import JsonResponse
 import logging
+import random
+from urllib.parse import quote
 from django.views.generic import DetailView
 from django.views import View
 import math
@@ -77,6 +79,16 @@ class CartView(DetailView):
                     quantity=cart_item.quantity
                 )
 
+            # Update User Profile with Name if provided
+            full_name = request.POST.get('full_name', '').strip()
+            if full_name:
+                # Update user name if not set or if user wants to update it (implicit here)
+                if not request.user.first_name:
+                    names = full_name.split(' ', 1)
+                    request.user.first_name = names[0]
+                    request.user.last_name = names[1] if len(names) > 1 else ''
+                    request.user.save()
+
             # Save Shipping Address linked to Order
             address = form.save(commit=False)
             address.order = order
@@ -127,9 +139,13 @@ class CartView(DetailView):
                 # 2. Supplier Notification
                 shipping = address
                 location_link = f"https://www.google.com/maps?q={shipping.latitude},{shipping.longitude}" if shipping.latitude and shipping.longitude else "غير متوفر"
+                
+                # Use the name from the form, or fallback to user's saved name
+                customer_name = full_name if full_name else (request.user.get_full_name() or request.user.username)
+                
                 supp_msg = (
                     f"طلب جديد رقم #{order.id}\n"
-                    f"العميل: {request.user.get_full_name() or request.user.username}\n"
+                    f"العميل: {customer_name}\n"
                     f"رقم العميل: {shipping.phone}\n"
                     f"الموقع: {location_link}\n"
                     f"ملاحظات: {shipping.address_line2 or 'لا يوجد'}\n"
@@ -144,7 +160,11 @@ class CartView(DetailView):
                 logger.error(f"Error sending order notifications: {str(e)}")
 
             messages.success(request, 'تم اتمام الطلب بنجاح سيتواصل معك فريق العمليات لأتمام عملية الدفع')
-            return redirect('product-list', store_id=supplier.store_id)
+            
+            # WhatsApp Redirection
+            wa_message = random.choice(["أريد طلبي", "ممتاز ضخمة"])
+            wa_url = f"https://wa.me/{supplier.phone}?text={quote(wa_message)}"
+            return redirect(wa_url)
         
         # If invalid, re-render cart with errors
         logger.debug("Form Errors: %s", form.errors) # Debugging

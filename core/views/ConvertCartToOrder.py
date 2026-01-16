@@ -7,6 +7,8 @@ from django.contrib.auth.decorators import login_required
 from core.forms import ShippingAddressForm
 from django.contrib import messages
 from core.utils.whatsapp_utils import send_whatsapp_message
+import random
+from urllib.parse import quote
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +95,11 @@ def checkout_select_address_or_custom_address(request, store_id):
                 logger.error(f"Error sending order notifications: {str(e)}")
 
             return redirect('order_detail', pk=created_order.id)
+            
+            # WhatsApp Redirection
+            wa_message = random.choice(["أريد طلبي", "ممتاز ضخمة"])
+            wa_url = f"https://wa.me/{supplier.phone}?text={quote(wa_message)}"
+            return redirect(wa_url)
     else:
         form = ShippingAddressForm()
  
@@ -171,7 +178,11 @@ def existing_address(request, store_id):
 
     cart.cart_items.all().delete()
     messages.success(request, 'تم اتمام الطلب بنجاح سيتواصل معك فريق العمليات لأتمام عملية الدفع')
-    return redirect('product-list', store_id=store_id)
+    
+    # WhatsApp Redirection
+    wa_message = random.choice(["أريد طلبي", "ممتاز ضخمة"])
+    wa_url = f"https://wa.me/{supplier.phone}?text={quote(wa_message)}"
+    return redirect(wa_url)
 
   
   

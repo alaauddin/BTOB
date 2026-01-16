@@ -246,95 +246,51 @@
                 
                 <!-- Logo Header Removed from top -->
 
-                <!-- Auth Tabs -->
-                <div class="flex border-b border-gray-100">
-                    <button onclick="switchAuthTab('login')" id="login-tab-btn" class="flex-1 py-4 font-bold text-blue-600 border-b-2 border-blue-600 transition-all bg-white text-sm">تسجيل الدخول</button>
-                    <button onclick="switchAuthTab('signup')" id="signup-tab-btn" class="flex-1 py-4 font-bold text-gray-400 hover:text-gray-600 transition-all border-b-2 border-transparent bg-white text-sm">إنشاء حساب</button>
-                </div>
-
+                <!-- Unified Auth Form -->
                 <div class="bg-white px-6 pt-8 pb-6 sm:p-8">
                     <div class="text-center">
+                        <div class="mb-6">
+                            <i class="fas fa-mobile-alt text-5xl text-[var(--primary-color)] opacity-20"></i>
+                        </div>
                         <h3 class="text-2xl font-bold text-gray-900 mb-2" id="modal-title">
-                            تسجيل الدخول مطلوب
+                            تسجيل الدخول / إنشاء حساب
                         </h3>
                         <p class="text-gray-500 mb-8 text-sm" id="modal-desc">
-                            الرجاء إدخال بياناتك للمتابعة وإضافة المنتجات للسلة.
+                            أدخل رقم هاتفك للمتابعة. إذا كنت جديداً، سيتم إنشاء حساب لك تلقائياً.
                         </p>
                         
-                        <!-- Login Form -->
-                        <form id="ajaxLoginForm" class="space-y-6">
-                            <!-- Simplified Username Field -->
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[var(--primary-color)] transition-colors">
-                                    <i class="fas fa-phone-alt"></i>
-                                </div>
-                                <input type="text" name="username" id="modal_username" required 
-                                    placeholder="رقم الهاتف (77xxxxxxx)"
-                                    class="block w-full pr-11 pl-4 py-4 bg-white border border-gray-100 rounded-2xl text-gray-900 shadow-sm focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
-                            </div>
-
-                            <!-- Simplified Password Field -->
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[var(--primary-color)] transition-colors">
-                                    <i class="fas fa-key"></i>
-                                </div>
-                                <input type="password" name="password" id="modal_password" required 
-                                    placeholder="كلمة المرور"
-                                    class="block w-full pr-11 pl-4 py-4 bg-white border border-gray-100 rounded-2xl text-gray-900 shadow-sm focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
-                            </div>
-                            
-                            <div class="pt-2 text-center">
-                                <button type="button" onclick="sendWhatsAppLink()" id="waLoginBtn"
-                                    class="w-full text-xs font-bold text-green-600 hover:text-green-700 bg-green-50/50 py-3 rounded-2xl transition-all flex items-center justify-center gap-2 border border-green-100 mb-3">
-                                    <i class="fab fa-whatsapp text-lg"></i>
-                                    <span>الدخول السريع عبر واتساب</span>
-                                </button>
-                                
-                                <a href="{% provider_login_url 'google' %}" class="w-full text-xs font-bold text-gray-700 hover:bg-gray-50 bg-white py-3 rounded-2xl transition-all flex items-center justify-center gap-2 border border-gray-100">
-                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google Logo">
-                                    <span>الدخول باستخدام Google</span>
-                                </a>
-
-                                <p class="text-[10px] text-gray-400 mt-2">أو قم بالدخول باستخدام حسابك</p>
-                            </div>
-                        </form>
-
-                        <!-- Signup Form (Initially Hidden) -->
-                        <form id="ajaxSignupForm" class="space-y-6 hidden">
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[var(--primary-color)] transition-colors">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <input type="text" name="first_name" id="signup_fullname" required 
-                                    placeholder="الاسم بالكامل"
-                                    class="block w-full pr-11 pl-4 py-4 bg-white border border-gray-100 rounded-2xl text-gray-900 shadow-sm focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
-                            </div>
-
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[var(--primary-color)] transition-colors">
-                                    <i class="fas fa-phone-alt"></i>
-                                </div>
-                                <input type="text" name="username" id="signup_phone" required 
-                                    placeholder="رقم الهاتف (77xxxxxxx)"
-                                    class="block w-full pr-11 pl-4 py-4 bg-white border border-gray-100 rounded-2xl text-gray-900 shadow-sm focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
-                            </div>
-
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[var(--primary-color)] transition-colors">
-                                    <i class="fas fa-key"></i>
-                                </div>
-                                <input type="password" name="password" id="signup_password" required 
-                                    placeholder="كلمة المرور الجديدة"
-                                    class="block w-full pr-11 pl-4 py-4 bg-white border border-gray-100 rounded-2xl text-gray-900 shadow-sm focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400">
-                            </div>
-
+                        <form id="unifiedAuthForm" class="space-y-6">
+                            <!-- Google Login -->
                             <div class="pt-2 text-center">
                                 <a href="{% provider_login_url 'google' %}" class="w-full text-xs font-bold text-gray-700 hover:bg-gray-50 bg-white py-3 rounded-2xl transition-all flex items-center justify-center gap-2 border border-gray-100">
                                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google Logo">
-                                    <span>التسجيل باستخدام Google</span>
+                                    <span>المتابعة باستخدام Google</span>
                                 </a>
-                                <p class="text-[10px] text-gray-400 mt-2">أو قم بإنشاء حساب بالبيانات أعلاه</p>
                             </div>
+
+                            <!-- Divider -->
+                            <div class="relative flex py-1 items-center">
+                                <div class="flex-grow border-t border-gray-100"></div>
+                                <span class="flex-shrink-0 mx-4 text-gray-300 text-[10px]">أو باستخدام رقم الهاتف</span>
+                                <div class="flex-grow border-t border-gray-100"></div>
+                            </div>
+
+                            <!-- Phone Field -->
+                            <div class="relative group" dir="ltr">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500 font-bold tracking-wider text-sm border-r border-gray-100 pr-3 my-2 bg-gray-50 rounded-l-lg" style="z-index: 10;">
+                                    +967
+                                </div>
+                                <input type="tel" name="phone" id="auth_phone" required 
+                                    placeholder="77xxxxxxx"
+                                    maxlength="9"
+                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, ''); handlePhoneValidation(this);"
+                                    class="block w-full pl-20 pr-4 py-4 bg-white border border-gray-100 rounded-2xl text-gray-900 text-left shadow-sm focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-300 font-medium tracking-wide">
+                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[var(--primary-color)] transition-colors">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                            </div>
+                            <p id="phone-validation-msg" class="text-[10px] text-red-500 mt-1 hidden text-right"></p>
                         </form>
 
                         <div id="loginError" class="bg-red-50 text-red-600 text-sm py-3 px-4 rounded-xl mt-4 hidden flex items-center gap-2">
@@ -348,7 +304,7 @@
                     <div class="flex flex-col sm:flex-row-reverse gap-3 mb-6">
                         <button type="button" id="authSubmitBtn" onclick="handleAuthSubmit()" 
                             class="w-full sm:flex-1 py-3.5 px-6 btn-brand text-white font-bold rounded-xl shadow-md transform active:scale-[0.98]">
-                            دخول
+                            متابعة
                         </button>
                         <button type="button" onclick="closeLoginModal()" 
                             class="w-full sm:flex-1 py-3.5 px-6 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all">
@@ -446,13 +402,9 @@
                                     <p class="text-xs text-gray-400">مرحباً بك زائرنا</p>
                                     <p class="font-bold text-sm">يرجى تسجيل الدخول</p>
                                 </div>
-                                <a href="{% url 'login' %}" class="block px-6 py-2 hover:bg-gray-50 transition-all flex items-center text-brand-primary">
+                                <a href="#" onclick="openLoginModal()" class="block px-6 py-2 hover:bg-gray-50 transition-all flex items-center text-brand-primary">
                                     <i class="fas fa-sign-in-alt ml-3"></i>
-                                    <span class="text-sm font-bold">تسجيل الدخول</span>
-                                </a>
-                                <a href="{% url 'signup' %}" class="block px-6 py-2 hover:bg-gray-50 transition-all flex items-center text-gray-700">
-                                    <i class="fas fa-user-plus ml-3"></i>
-                                    <span class="text-sm font-bold">إنشاء حساب جديد</span>
+                                    <span class="text-sm font-bold">تسجيل الدخول / إنشاء حساب</span>
                                 </a>
                             </div>
                         </div>
@@ -650,13 +602,7 @@
             <!-- Bottom Footer: Rights & Payments -->
             <div class="mt-6 pt-4 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center text-xs">
                 <p class="text-gray-400 mb-2 md:mb-0">© {% now "Y" %} {{ system_settings.site_name|default:"متجرك الرقمي" }}. جميع الحقوق محفوظة.</p>
-                
-                <div class="flex items-center space-x-2 space-x-reverse">
-                    <i class="fab fa-cc-visa text-xl text-gray-300"></i>
-                    <i class="fab fa-cc-mastercard text-xl text-gray-300"></i>
-                    <i class="fab fa-apple-pay text-xl text-gray-300"></i>
-                    <span class="text-xs font-bold text-gray-300 border border-gray-200 px-2 py-1 rounded">Mada</span>
-                </div>
+         
             </div>
         </div>
     </footer>
@@ -798,151 +744,38 @@
             document.getElementById('loginError').classList.add('hidden');
         }
 
-        function sendWhatsAppLink() {
-            const phone = document.getElementById('modal_username').value;
-            const errorDiv = document.getElementById('loginError');
-            const btn = document.getElementById('waLoginBtn');
-            const originalContent = btn.innerHTML;
-            
-            if (!phone) {
-                errorDiv.querySelector('.error-text').textContent = 'الرجاء إدخال رقم الهاتف أولاً';
-                errorDiv.classList.remove('hidden');
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i> جاري الإرسال...';
-            errorDiv.classList.add('hidden');
-
-            const formData = new FormData();
-            formData.append('phone', phone);
-            // Capture current URL to redirect back after login
-            formData.append('next', window.location.pathname + window.location.search);
-
-            fetch('/api/whatsapp-login-link/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification(data.message, 'success');
-                    // Show a success message in the modal too
-                    errorDiv.querySelector('.error-text').textContent = data.message;
-                    errorDiv.classList.remove('hidden');
-                    errorDiv.classList.replace('bg-red-50', 'bg-green-50');
-                    errorDiv.classList.replace('text-red-600', 'text-green-600');
-                } else {
-                    errorDiv.querySelector('.error-text').textContent = data.message || 'فشل إرسال الرابط';
-                    errorDiv.classList.remove('hidden');
-                    errorDiv.classList.replace('bg-green-50', 'bg-red-50');
-                    errorDiv.classList.replace('text-green-600', 'text-red-600');
-                }
-            })
-            .catch(error => {
-                console.error(error);
-                showNotification('حدث خطأ في الاتصال', 'error');
-            })
-            .finally(() => {
-                btn.disabled = false;
-                btn.innerHTML = originalContent;
-            });
-        }
-        
-        let currentAuthTab = 'login';
-
-        function switchAuthTab(tab) {
-            currentAuthTab = tab;
-            const loginForm = document.getElementById('ajaxLoginForm');
-            const signupForm = document.getElementById('ajaxSignupForm');
-            const loginBtn = document.getElementById('login-tab-btn');
-            const signupBtn = document.getElementById('signup-tab-btn');
-            const submitBtn = document.getElementById('authSubmitBtn');
-            const modalTitle = document.getElementById('modal-title');
-            const modalDesc = document.getElementById('modal-desc');
-            const authIconContainer = document.getElementById('auth-icon-container');
-            const authIcon = document.getElementById('auth-icon');
-            const errorDiv = document.getElementById('loginError');
-
-            errorDiv.classList.add('hidden');
-
-            if (tab === 'login') {
-                loginForm.classList.remove('hidden');
-                signupForm.classList.add('hidden');
-                loginBtn.classList.add('text-blue-600', 'border-blue-600');
-                loginBtn.classList.remove('text-gray-400', 'border-transparent');
-                signupBtn.classList.add('text-gray-400', 'border-transparent');
-                signupBtn.classList.remove('text-blue-600', 'border-blue-600');
-                submitBtn.textContent = 'دخول';
-                modalTitle.textContent = 'تسجيل الدخول مطلوب';
-                modalDesc.textContent = 'الرجاء إدخال بياناتك للمتابعة وإضافة المنتجات للسلة.';
-                if (authIcon) authIcon.className = 'fas fa-lock text-white text-3xl';
-            } else {
-                loginForm.classList.add('hidden');
-                signupForm.classList.remove('hidden');
-                signupBtn.classList.add('text-blue-600', 'border-blue-600');
-                signupBtn.classList.remove('text-gray-400', 'border-transparent');
-                loginBtn.classList.add('text-gray-400', 'border-transparent');
-                loginBtn.classList.remove('text-blue-600', 'border-blue-600');
-                submitBtn.textContent = 'إنشاء حساب وتدشين الطلب';
-                modalTitle.textContent = 'إنشاء حساب جديد';
-                modalDesc.textContent = 'انضم إلينا الآن لتتمكن من الطلب وتتبع مشترياتك بكل سهولة.';
-                if (authIcon) authIcon.className = 'fas fa-user-plus text-white text-3xl';
-            }
-        }
-
         function handleAuthSubmit() {
-            if (currentAuthTab === 'login') {
-                submitLogin();
-            } else {
-                submitSignup();
-            }
-        }
-
-        function submitSignup() {
-            const fullName = document.getElementById('signup_fullname').value;
-            const phone = document.getElementById('signup_phone').value;
-            const password = document.getElementById('signup_password').value;
+            const phone = document.getElementById('auth_phone').value;
             const errorDiv = document.getElementById('loginError');
             const submitBtn = document.getElementById('authSubmitBtn');
+            const csrftoken = getCookie('csrftoken');
 
-            if (!fullName || !phone || !password) {
-                errorDiv.querySelector('.error-text').textContent = 'جميع الحقول مطلوبة';
+            if (!phone) {
+                errorDiv.querySelector('.error-text').textContent = 'رقم الهاتف مطلوب';
                 errorDiv.classList.remove('hidden');
                 return;
             }
 
             const originalText = submitBtn.textContent;
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i> جاري الإنشاء...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i> جاري المعالجة...';
+            errorDiv.classList.add('hidden');
 
-            fetch('/api/signup/', {
+            fetch('/api/unified-auth/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
+                    'X-CSRFToken': csrftoken
                 },
-                body: JSON.stringify({ 
-                    first_name: fullName,
-                    username: phone, 
-                    password: password 
-                })
+                body: JSON.stringify({ phone })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showNotification('تم إنشاء الحساب بنجاح!', 'success');
+                    showNotification(data.message, 'success');
                     handlePostAuth(data);
                 } else {
-                    let msg = data.message || 'فشل إنشاء الحساب';
-                    if (data.errors) {
-                        const firstError = Object.values(data.errors)[0];
-                        msg = firstError;
-                    }
-                    errorDiv.querySelector('.error-text').textContent = msg;
+                    errorDiv.querySelector('.error-text').textContent = data.message || 'حدث خطأ غير متوقع';
                     errorDiv.classList.remove('hidden');
                 }
             })
@@ -974,45 +807,6 @@
             } else {
                 window.location.reload(); 
             }
-        }
-
-        function submitLogin() {
-            const username = document.getElementById('modal_username').value;
-            const password = document.getElementById('modal_password').value;
-            const errorDiv = document.getElementById('loginError');
-            const submitBtn = document.getElementById('authSubmitBtn');
-            const csrftoken = getCookie('csrftoken');
-
-            const originalText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i> جاري الدخول...';
-
-            fetch('/api/login/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({ username, password })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    handlePostAuth(data);
-                } else {
-                    errorDiv.querySelector('.error-text').textContent = data.message || 'فشل تسجيل الدخول';
-                    errorDiv.classList.remove('hidden');
-                }
-            })
-            .catch(error => {
-                console.error(error);
-                errorDiv.querySelector('.error-text').textContent = 'حدث خطأ في الاتصال';
-                errorDiv.classList.remove('hidden');
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            });
         }
         
         waitForJQuery(function() {
@@ -1189,6 +983,60 @@
             }
         });
         
+        // Helper to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function handlePhoneValidation(input) {
+            const errorMsg = document.getElementById('phone-validation-msg');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            const val = input.value;
+            
+            // Yemeni mobile prefixes: 70, 71, 73, 77, 78
+            // Total length excluding country code is 9 digits
+            const yemeniMobileRegex = /^(70|71|73|77|78)[0-9]{7}$/;
+            
+            if (val.length === 0) {
+                errorMsg.classList.add('hidden');
+                input.classList.remove('border-red-500', 'text-red-900', 'focus:ring-red-500');
+                input.classList.add('border-gray-100', 'focus:ring-[var(--primary-color)]');
+                submitBtn.disabled = false; return;
+            }
+
+            if (val.length === 9) {
+                if (!yemeniMobileRegex.test(val)) {
+                    errorMsg.textContent = 'رقم غير صحيح. يرجى التأكد من أن الرقم يبدأ بـ 77, 73, 71, 70 او 78';
+                    errorMsg.classList.remove('hidden');
+                    input.classList.add('border-red-500', 'text-red-900', 'focus:ring-red-500');
+                    input.classList.remove('border-gray-100', 'focus:ring-[var(--primary-color)]');
+                    submitBtn.disabled = true;
+                } else {
+                    errorMsg.classList.add('hidden');
+                    input.classList.remove('border-red-500', 'text-red-900', 'focus:ring-red-500');
+                    input.classList.add('border-green-500', 'focus:ring-green-500'); // Green for valid
+                    submitBtn.disabled = false;
+                }
+            } else {
+                // Formatting while typing
+                errorMsg.classList.add('hidden');
+                input.classList.remove('border-red-500', 'text-red-900', 'focus:ring-red-500', 'border-green-500', 'focus:ring-green-500');
+                input.classList.add('border-gray-100', 'focus:ring-[var(--primary-color)]');
+                submitBtn.disabled = false;
+            }
+        }
+
         function showNotification(message, type = 'info') {
             // Define colors based on type using CSS variables
             const config = {

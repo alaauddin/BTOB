@@ -5,15 +5,17 @@ from accounts.forms import UserLoginForm
 
 urlpatterns = [
 
-    path('signup/',views.signup, name ='signup'),
-    path('logout/',views.logout, name='logout'),
-    path('login/', auth_views.LoginView.as_view(template_name='login.html', authentication_form=UserLoginForm),name='login'),
+    # Redirect standalone pages to home (using modal instead)
+    path('signup/', lambda request: redirect('/'), name='signup'),
+    path('login/', lambda request: redirect('/'), name='login'),
     path('settings/change_password/', auth_views.PasswordChangeView.as_view(template_name='change_password.html'),name='password_change'),
     path('settings/change_password/done',auth_views.PasswordChangeDoneView.as_view(template_name='change_password_done.html'),name='password_change_done'),
     path('account/', views.UserUpdateView.as_view(), name ='my_account'),
     path('api/login/', views.ajax_login_view, name='api_login'),
     path('api/signup/', views.ajax_signup_view, name='api_signup'),
+    path('api/unified-auth/', views.ajax_unified_auth_view, name='api_unified_auth'),
     # path('create_or_update_contact/',views.create_or_update_contact,name='create_or_update_contact'),
+    path('logout/',views.logout, name='logout'),
 
 
 ]
