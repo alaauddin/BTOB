@@ -132,10 +132,12 @@ def merchant_marketing(request):
         return redirect('suppliers_list')
     
     ads = SupplierAds.objects.filter(supplier=supplier)
+    products = Product.objects.filter(supplier=supplier)
     
     context = {
         'supplier': supplier,
         'ads': ads,
+        'products': products,
         'total_ads_count': ads.count(),
         'active_ads_count': ads.filter(is_active=True).count(),
         'inactive_ads_count': ads.filter(is_active=False).count(),

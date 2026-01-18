@@ -1,19 +1,26 @@
 <!-- Ad Management Modal -->
 <div id="ad-modal" class="fixed inset-0 hidden" style="z-index: 99999;">
     <!-- Backdrop -->
-    <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeAdModal()"></div>
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" onclick="closeAdModal()"></div>
     
-    <!-- Modal scroll container -->
+    <!-- Modal container -->
     <div class="fixed inset-0 overflow-y-auto" style="z-index: 100000;">
-        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+        <div class="flex min-h-full items-center justify-center p-3 text-center sm:p-0">
             <!-- Modal Box -->
-            <div class="relative transform overflow-hidden rounded-2xl bg-white text-right shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-4xl border border-white/20" onclick="event.stopPropagation()">
+            <div class="relative transform overflow-hidden rounded-[2rem] bg-white text-right shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-white" onclick="event.stopPropagation()">
                 
                 <!-- Modal Header -->
-                <div class="flex items-center justify-between border-b border-slate-100 p-4 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-                    <h2 class="text-xl font-bold text-gradient" id="ad-modal-title">إضافة إعلان جديد</h2>
-                    <button onclick="closeAdModal()" class="rounded-full p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors">
-                        <i class="fas fa-times text-lg"></i>
+                <div class="flex items-center justify-between border-b border-slate-50 p-5 bg-white sticky top-0 z-10">
+                    <div class="flex flex-col">
+                        <h2 class="text-lg font-black text-slate-800 flex items-center gap-2.5" id="ad-modal-title">
+                            <span class="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-500">
+                                <i class="fas fa-bullhorn text-lg"></i>
+                            </span>
+                            إضافة إعلان جديد
+                        </h2>
+                    </div>
+                    <button onclick="closeAdModal()" class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
 
@@ -22,105 +29,95 @@
                         {% csrf_token %}
                         <input type="hidden" name="ad_id" id="edit-ad-id">
                         <input type="hidden" name="supplier_id" value="{{ supplier.id }}">
+                        <input type="hidden" name="is_active" id="id_is_active_hidden" value="on">
                         
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <!-- Form Inputs -->
-                            <div class="space-y-6">
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-600 mb-2">عنوان الإعلان</label>
-                                    <input type="text" name="title" id="ad_title" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all text-sm" placeholder="عنوان جذاب لإعلانك" required>
-                                    <p class="hidden text-red-500 text-xs mt-1 error-message" id="title-error"></p>
-                                </div>
+                        <!-- Compact Grid -->
+                        <div class="modal-compact-grid">
+                            <!-- Title -->
+                            <div class="sm:col-span-2 premium-input-wrapper">
+                                <label class="premium-label">
+                                    <i class="fas fa-heading"></i>
+                                    عنوان الإعلان
+                                </label>
+                                <input type="text" name="title" id="id_title" class="premium-input" placeholder="مثلاً: خصم 50% على جميع المنتجات" required>
+                                <p class="hidden text-red-500 text-[10px] mt-1 font-bold error-message" id="title-error"></p>
+                            </div>
 
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-600 mb-2">وصف الإعلان</label>
-                                    <textarea name="description" id="ad_description" rows="4" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all resize-none text-sm" placeholder="اكتب تفاصيل الإعلان هنا..." required></textarea>
-                                    <p class="hidden text-red-500 text-xs mt-1 error-message" id="description-error"></p>
-                                </div>
+                            <!-- Description -->
+                            <div class="sm:col-span-2 premium-input-wrapper">
+                                <label class="premium-label">
+                                    <i class="fas fa-align-right"></i>
+                                    وصف الإعلان
+                                </label>
+                                <textarea name="description" id="id_description" rows="3" class="premium-input resize-none" placeholder="اكتب تفاصيل الإعلان هنا..." required></textarea>
+                                <p class="hidden text-red-500 text-[10px] mt-1 font-bold error-message" id="description-error"></p>
+                            </div>
 
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-600 mb-2">المنتج المرتبط (اختياري)</label>
-                                    <select name="product" id="ad_product" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all text-sm">
+                            <!-- Linked Product -->
+                            <div class="sm:col-span-2 premium-input-wrapper">
+                                <label class="premium-label">
+                                    <i class="fas fa-link"></i>
+                                    المنتج المرتبط (اختياري)
+                                </label>
+                                <div class="premium-select-wrapper">
+                                    <select name="product" id="id_product" class="premium-input premium-select appearance-none bg-none">
                                         <option value="">بدون منتج</option>
                                         {% for product in products %}
                                         <option value="{{ product.id }}">{{ product.name }}</option>
                                         {% endfor %}
                                     </select>
-                                    <p class="hidden text-red-500 text-xs mt-1 error-message" id="product-error"></p>
+                                    <i class="fas fa-chevron-down"></i>
                                 </div>
-
-                                <!-- Image Upload -->
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-600 mb-2">صورة الإعلان</label>
-                                    <div class="relative">
-                                        <input type="file" name="image" id="ad_image" class="hidden" accept="image/*">
-                                        <label for="ad_image" class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-all" id="ad-upload-area">
-                                            <div class="flex flex-col items-center justify-center pt-5 pb-6" id="ad-upload-content">
-                                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
-                                                <p class="text-sm text-gray-500">انقر لرفع صورة أو اسحبها هنا</p>
-                                                <p class="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB</p>
-                                            </div>
-                                            <div class="hidden w-full h-full relative p-2" id="ad-preview-container">
-                                                <img src="" id="ad-image-preview" class="w-full h-full object-cover rounded-lg">
-                                                <button type="button" id="clearAdImage" class="absolute top-4 left-4 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-all">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-                                        </label>
-                                    </div>
-                                    <p class="hidden text-red-500 text-xs mt-1 error-message" id="image-error"></p>
-                                </div>
-
-                                <div class="flex items-center gap-2">
-                                    <input type="checkbox" name="is_active" id="ad_is_active" class="w-5 h-5 text-orange-600 rounded focus:ring-2 focus:ring-orange-200" checked>
-                                    <label for="ad_is_active" class="text-sm font-semibold text-gray-700">إعلان نشط</label>
-                                </div>
+                                <p class="hidden text-red-500 text-[10px] mt-1 font-bold error-message" id="product-error"></p>
                             </div>
 
-                            <!-- Live Preview -->
-                            <div class="hidden lg:block">
-                                <div class="sticky top-6">
-                                    <h3 class="text-lg font-bold text-gray-700 mb-4 text-center">معاينة الإعلان</h3>
-                                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 max-w-sm mx-auto">
-                                        <div class="relative aspect-video bg-gray-100">
-                                            <img id="live-ad-image" src="" class="w-full h-full object-cover opacity-0 transition-opacity duration-300" loading="lazy">
-                                            <div id="live-ad-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-                                                <i class="fas fa-image text-4xl mb-2"></i>
-                                                <span class="text-xs">صورة الإعلان</span>
+
+                            <!-- Image Upload -->
+                            <div class="sm:col-span-2 premium-input-wrapper">
+                                <label class="premium-label">
+                                    <i class="fas fa-image"></i>
+                                    صورة الإعلان
+                                </label>
+                                <div class="relative">
+                                    <input type="file" name="image" id="id_image" class="hidden" accept="image/*" onchange="previewAdImage(this)">
+                                    <label for="id_image" class="upload-card-premium block w-full">
+                                        <div id="ad-upload-content" class="flex flex-col items-center justify-center py-8">
+                                            <div class="upload-icon-box">
+                                                <i class="fas fa-cloud-upload-alt text-xl"></i>
                                             </div>
-                                            <div class="absolute top-4 right-4 bg-orange-600 text-white px-3 py-1 rounded-full text-[10px] font-bold shadow-lg">
-                                                إعلان
+                                            <p class="text-[11px] font-black text-slate-700">انقر لرفع صورة الإعلان</p>
+                                            <p class="text-[9px] font-bold text-slate-400 mt-1">PNG, JPG up to 5MB</p>
+                                        </div>
+                                        
+                                        <!-- Preview Container -->
+                                        <div id="ad-preview-container" class="hidden absolute inset-0 bg-white">
+                                            <img id="ad-image-preview" src="" class="w-full h-full object-cover">
+                                            <div class="premium-preview-overlay">
+                                                <div class="w-11 h-11 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/30 shadow-xl">
+                                                    <i class="fas fa-sync-alt text-sm"></i>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="p-6 text-right">
-                                            <h4 id="live-ad-title" class="text-xl font-bold text-gray-800 mb-2">عنوان الإعلان</h4>
-                                            <p id="live-ad-description" class="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">هنا سيظهر وصف إعلانك الجذاب...</p>
-                                            <div id="live-ad-link" class="hidden items-center text-orange-600 font-bold text-sm">
-                                                <span id="live-ad-product-name">اسم المنتج</span>
-                                                <i class="fas fa-external-link-alt mr-2 text-xs"></i>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    </label>
+                                    
+                                    <!-- Clear Action -->
+                                    <button type="button" id="clearAdImage" onclick="removeAdImage()" class="hidden absolute top-2.5 left-2.5 w-8 h-8 bg-red-500/90 backdrop-blur shadow-lg shadow-red-500/20 text-white rounded-xl flex items-center justify-center hover:bg-red-600 transition-all z-20">
+                                        <i class="fas fa-trash-alt text-[10px]"></i>
+                                    </button>
                                 </div>
+                                <p class="hidden text-red-500 text-[10px] mt-1 font-bold error-message" id="image-error"></p>
                             </div>
                         </div>
 
                         <!-- Footer Actions -->
-            <div class="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-gray-100">
-                <button type="submit" id="adSubmitBtn" class="flex-[2] bg-gradient-to-r from-orange-500 via-orange-600 to-red-600 text-dark font-bold py-4 border-2 rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
-                    <div class="loading-spinner hidden w-5 h-5 border-2 border-orange-600 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span id="adSubmitBtnText">إضافة الإعلان</span>
-                </button>
-                <div class="flex flex-1 gap-2">
-                    <button type="button" id="adModalStatusBtn" class="hidden flex-1 px-4 py-2 rounded-xl border-2 font-bold transition-all flex items-center justify-center hover:scale-[1.02] active:scale-[0.98]">
-                        <!-- Content via JS -->
-                    </button>
-                    <button type="button" onclick="closeAdModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 border-2 rounded-xl hover:bg-slate-200 hover:text-slate-800 transition-all flex items-center justify-center gap-2">
-                        <i class="fas fa-times"></i>
-                        إلغاء
-                    </button>
-                </div>
-            </div>
+                        <div class="flex gap-3 mt-8 pt-5 border-t border-slate-50">
+                            <button type="submit" id="adSubmitBtn" class="flex-[3] btn-premium btn-premium-primary">
+                                <div class="loading-spinner hidden w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                <span id="adSubmitBtnText">حفظ الإعلان</span>
+                            </button>
+                            <button type="button" onclick="closeAdModal()" class="flex-[1] btn-premium btn-premium-secondary">
+                                إلغاء
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -128,3 +125,120 @@
         </div>
     </div>
 </div>
+
+
+<script>
+    function closeAdModal() {
+        document.getElementById('ad-modal').classList.add('hidden');
+        resetAdModal();
+    }
+
+    function resetAdModal() {
+        document.getElementById('adForm').reset();
+        document.getElementById('edit-ad-id').value = '';
+        document.getElementById('id_is_active_hidden').value = 'on';
+        removeAdImage();
+        
+        // Reset errors if any
+        document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
+    }
+
+    function previewAdImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('ad-image-preview');
+                const container = document.getElementById('ad-preview-container');
+                const content = document.getElementById('ad-upload-content');
+                const closeBtn = document.getElementById('clearAdImage');
+                
+                preview.src = e.target.result;
+                container.classList.remove('hidden');
+                content.classList.add('hidden');
+                closeBtn.classList.remove('hidden');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeAdImage() {
+        const input = document.getElementById('id_image');
+        const preview = document.getElementById('ad-image-preview');
+        const container = document.getElementById('ad-preview-container');
+        const content = document.getElementById('ad-upload-content');
+        const closeBtn = document.getElementById('clearAdImage');
+        
+        input.value = '';
+        preview.src = '';
+        container.classList.add('hidden');
+        content.classList.remove('hidden');
+        closeBtn.classList.add('hidden');
+    }
+
+    // AJAX Form Submission
+    document.getElementById('adForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('adSubmitBtn');
+        const spinner = btn.querySelector('.loading-spinner');
+        const text = document.getElementById('adSubmitBtnText');
+        const formData = new FormData(this);
+        const adId = document.getElementById('edit-ad-id').value;
+        
+        // Determine URL
+        const url = adId ? `/edit-ad/${adId}/` : '/add-ad/';
+        
+        // UI Feedback
+        spinner.classList.remove('hidden');
+        text.textContent = 'جاري الحفظ...';
+        btn.disabled = true;
+
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showNotification === 'function') {
+                    showNotification(data.message, 'success');
+                } else {
+                    alert(data.message);
+                }
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                if (typeof showNotification === 'function') {
+                    showNotification(data.message || 'حدث خطأ ما', 'error');
+                } else {
+                    alert(data.message || 'حدث خطأ ما');
+                }
+                
+                // Show errors if any
+                if (data.errors) {
+                    Object.keys(data.errors).forEach(key => {
+                        const errorEl = document.getElementById(`${key}-error`);
+                        if (errorEl) {
+                            errorEl.textContent = data.errors[key];
+                            errorEl.classList.remove('hidden');
+                        }
+                    });
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            if (typeof showNotification === 'function') {
+                showNotification('حدث خطأ في الاتصال بالخادم', 'error');
+            }
+        })
+        .finally(() => {
+            spinner.classList.add('hidden');
+            text.textContent = adId ? 'حفظ التعديلات' : 'حفظ الإعلان';
+            btn.disabled = false;
+        });
+    });
+</script>

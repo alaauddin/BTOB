@@ -18,7 +18,7 @@ def upload_to_path(instance, filename):
         return os.path.join('images/supplier_images/', new_filename)
     elif model_name == 'product':
         return os.path.join('images/product_images/', new_filename)
-    elif model_name == 'suppierads':
+    elif model_name == 'supplierads':
         return os.path.join('ads_image/', new_filename)
     elif model_name == 'systemsettings':
         return os.path.join('system/', new_filename)
