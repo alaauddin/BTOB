@@ -474,6 +474,7 @@
         {% block content %}{% endblock %}
     </main>
 
+    {% block footer %}
     <!-- Footer -->
     <footer class="footer-main py-6 border-t border-gray-100 bg-white">
         <div class="container mx-auto px-6">
@@ -606,6 +607,7 @@
             </div>
         </div>
     </footer>
+    {% endblock footer %}
 
     <!-- JavaScript Libraries -->
     <!-- Load non-blocking: defer external libs so parsing isn't blocked. Keep execution order (jQuery before code that expects it). -->

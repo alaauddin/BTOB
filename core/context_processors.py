@@ -11,5 +11,5 @@ def system_settings(request):
         
     return {
         'system_settings': settings,
-        'css_version': '5.5.3'  # Update this to bust cache
+        'css_version': '9.3.6'  # Update this to bust cache
     }

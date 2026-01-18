@@ -4,311 +4,12 @@
 {% block title %}إدارة الطلبات - {{ supplier.name }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/merchant_orders.css' %}">
 <style>
     :root {
         --primary-color: {{ supplier.primary_color|default:'#ef7d2d' }};
         --secondary-color: {{ supplier.secondary_color|default:'#ffffff' }};
         --accent-color: {{ supplier.accent_color|default:'#9abfc4' }};
-    }
-
-    .orders-container {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 24px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2rem;
-    }
-    
-    .stat-card {
-        background: linear-gradient(135deg, rgba(239, 125, 45, 0.05), rgba(154, 191, 196, 0.05));
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        padding: 1.25rem;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-    
-    .stat-number {
-        font-size: 2rem;
-        font-weight: bold;
-        color: var(--primary-color);
-        margin-bottom: 0.25rem;
-    }
-    
-    .stat-label {
-        color: #666;
-        font-size: 0.875rem;
-    }
-    
-    .filters-section {
-        background: rgba(248, 250, 252, 0.8);
-        border-radius: 20px;
-        padding: 1.25rem;
-        margin-bottom: 2rem;
-    }
-    
-    .filter-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        align-items: end;
-    }
-
-    @media (max-width: 768px) {
-        .filter-row {
-            grid-template-columns: 1fr;
-        }
-        .orders-container {
-            padding: 1rem;
-            margin: 0.5rem 0;
-            border-radius: 16px;
-        }
-    }
-    
-    .filter-group label {
-        font-weight: 600;
-        margin-bottom: 0.4rem;
-        color: #475569;
-        font-size: 0.875rem;
-    }
-    
-    .filter-group input,
-    .filter-group select {
-        width: 100%;
-        padding: 0.625rem;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        font-size: 0.875rem;
-        transition: all 0.2s ease;
-    }
-    
-    .btn-filter {
-        background: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 12px;
-        font-weight: 700;
-        width: 100%;
-    }
-    
-    /* Table & Mobile Optimization */
-    .orders-table-wrapper {
-        background: white;
-        border-radius: 20px;
-        overflow: hidden;
-        border: 1px solid #f1f5f9;
-    }
-    
-    .table-header {
-        background: #f8fafc;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #f1f5f9;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .table {
-        margin-bottom: 0;
-    }
-    
-    .table th {
-        background: #f8fafc;
-        color: #64748b;
-        font-weight: 700;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.025em;
-        border-top: none;
-        padding: 1rem 1.5rem;
-    }
-    
-    .table td {
-        padding: 1rem 1.5rem;
-        vertical-align: middle;
-        color: #1e293b;
-        font-size: 0.875rem;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    /* Mobile Cards View (hidden on desktop) */
-    .order-mobile-card {
-        display: none;
-        background: white;
-        border-radius: 16px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border: 1px solid #f1f5f9;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .desktop-only { display: block; }
-    .mobile-only { display: none; }
-
-    @media (max-width: 991px) {
-        .desktop-only { display: none !important; }
-        .mobile-only { display: block !important; }
-        
-        .table-responsive-custom {
-            display: none;
-        }
-        
-        .order-mobile-card {
-            display: block;
-        }
-    }
-    
-    .btn-details {
-        background-color: var(--primary-color);
-        color: white !important;
-        padding: 0.5rem 1rem;
-        border-radius: 12px;
-        font-weight: 700;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75rem;
-        transition: all 0.2s ease;
-        border: none;
-    }
-    
-    .btn-details:hover {
-        opacity: 0.9;
-        transform: translateY(-1px);
-        color: white !important;
-    }
-    
-    .btn-whatsapp-mobile {
-        background-color: #f0fdf4;
-        color: #16a34a !important;
-        width: 38px;
-        height: 38px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .btn-whatsapp-mobile:hover {
-        background-color: #16a34a;
-        color: white !important;
-    }
-    
-    .status-badge {
-        padding: 0.35rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        display: inline-block;
-    }
-    
-    .status-pending {
-        background: #fef3c7;
-        color: #d97706;
-    }
-    
-    .status-confirmed, .status-processing, .status-shipped, .status-out_for_delivery {
-        background: #dbeafe;
-        color: #2563eb;
-    }
-    
-    .status-delivered, .status-completed {
-        background: #d1fae5;
-        color: #059669;
-    }
-
-    .status-canceled {
-        background: #fee2e2;
-        color: #dc2626;
-    }
-    
-    .btn-view {
-        background: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        text-decoration: none;
-        font-size: 0.875rem;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-view:hover {
-        background: var(--accent-color);
-        transform: translateY(-2px);
-    }
-    
-    .pagination-section {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        padding: 2rem 0;
-        border-top: 1px solid #f1f5f9;
-        margin-top: 2rem;
-    }
-    
-    .pagination-container {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .pagination-pages {
-        display: flex;
-        gap: 0.25rem;
-    }
-    
-    .pagination-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        border: 1px solid #e2e8f0;
-        color: #64748b !important;
-        text-decoration: none;
-        font-size: 0.875rem;
-        font-weight: 600;
-        transition: all 0.2s ease;
-        background: white;
-    }
-    
-    .pagination-btn:hover {
-        background-color: #f8fafc;
-        color: var(--primary-color) !important;
-        border-color: var(--primary-color);
-    }
-    
-    .pagination-btn.active {
-        background-color: var(--primary-color);
-        color: white !important;
-        border-color: var(--primary-color);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    
-    .pagination-info {
-        font-size: 0.75rem;
-        color: #94a3b8;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
     }
 </style>
 {% endblock %}
@@ -318,74 +19,132 @@
     <div class="row">
         <div class="col-12">
             <div class="orders-container">
-                <!-- Header -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2><i class="fas fa-shopping-cart me-2"></i>إدارة الطلبات</h2>
-                    <a href="{% url 'my_merchant' %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="btn btn-outline-primary">
-                        <i class="fas fa-arrow-right me-2"></i>العودة للوحة التحكم
-                    </a>
+                <!-- Breadcrumbs & Header -->
+                <div class="breadcrumb-container">
+                    <ul class="breadcrumb-custom">
+                        <li class="breadcrumb-item-custom">
+                            <a href="{% url 'my_merchant' %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}">لوحة التحكم</a>
+                        </li>
+                        <i class="fas fa-chevron-left breadcrumb-separator"></i>
+                        <li class="breadcrumb-item-custom active">إدارة الطلبات</li>
+                    </ul>
                 </div>
 
-                <!-- Statistics -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number">{{ total_orders }}</div>
-                        <div class="stat-label">إجمالي الطلبات</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">{{ pending_orders }}</div>
-                        <div class="stat-label">طلبات معلقة</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">{{ confirmed_orders }}</div>
-                        <div class="stat-label">طلبات مؤكدة</div>
-                    </div>
-                    {% if supplier.show_order_amounts %}
-                    <div class="stat-card">
-                        <div class="stat-number">${{ total_revenue|floatformat:2 }}</div>
-                        <div class="stat-label">إجمالي الإيرادات</div>
-                    </div>
-                    {% endif %}
+                <div class="page-title-row">
+                    <h2 class="page-title">
+                        <i class="fas fa-shopping-cart"></i>
+                        إدارة الطلبات
+                    </h2>
                 </div>
 
-                <!-- Filters -->
+                <!-- Statistics Summary Row -->
+                <div class="stats-summary-card">
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <span class="stat-number">{{ total_orders }}</span>
+                            <span class="stat-label">إجمالي الطلبات</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">{{ pending_orders }}</span>
+                            <span class="stat-label">طلبات معلقة</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">{{ confirmed_orders }}</span>
+                            <span class="stat-label">طلبات مؤكدة</span>
+                        </div>
+                        {% if supplier.show_order_amounts %}
+                        <div class="stat-item">
+                            <span class="stat-number">${{ total_revenue|floatformat:2 }}</span>
+                            <span class="stat-label">إجمالي الإيرادات</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Innovative Filters -->
                 <div class="filters-section">
-                    <form method="get" class="filter-form">
+                    <form method="get" id="filterForm" class="filter-form">
                         {% if request.GET.supplier_id %}
                             <input type="hidden" name="supplier_id" value="{{ request.GET.supplier_id }}">
                         {% endif %}
-                        <div class="filter-row">
-                            <div class="filter-group">
-                                <label for="status">حالة الطلب</label>
-                                <select name="status" id="status">
-                                    <option value="">جميع الحالات</option>
-                                    {% for step in workflow_steps %}
-                                        <option value="{{ step.status.slug }}" {% if status_filter == step.status.slug %}selected{% endif %}>
-                                            {{ step.status.name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
+                        <input type="hidden" name="status" id="status_input" value="{{ status_filter|default:'' }}">
+
+                        <!-- Status Tabs and Toggle -->
+                        <div class="status-row-wrapper mb-2">
+                            <div class="status-tabs-container">
+                                <a href="javascript:void(0)" class="status-tab {% if not status_filter %}active{% endif %}" onclick="submitWithStatus('')">جميع الحالات</a>
+                                {% for step in workflow_steps %}
+                                    <a href="javascript:void(0)" class="status-tab {% if status_filter == step.status.slug %}active{% endif %}" onclick="submitWithStatus('{{ step.status.slug }}')">
+                                        {{ step.status.name }}
+                                    </a>
+                                {% endfor %}
                             </div>
-                            <div class="filter-group">
-                                <label for="search">البحث</label>
-                                <input type="text" name="search" id="search" placeholder="رقم الطلب أو اسم العميل" value="{{ search_query }}">
-                            </div>
-                            <div class="filter-group">
-                                <label for="date_from">من تاريخ</label>
-                                <input type="date" name="date_from" id="date_from" value="{{ date_from }}">
-                            </div>
-                            <div class="filter-group">
-                                <label for="date_to">إلى تاريخ</label>
-                                <input type="date" name="date_to" id="date_to" value="{{ date_to }}">
-                            </div>
-                            <div class="filter-group">
-                                <button type="submit" class="btn-filter">
-                                    <i class="fas fa-search me-2"></i>تصفية
+                            <button type="button" class="btn-toggle-filter {% if search_query or date_from or date_to %}active{% endif %}" onclick="toggleFilters()" id="filterToggleBtn" title="بحث وتاريخ">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+
+                        <!-- Collapsible Search and Date Row -->
+                        <div id="collapsibleFilters" class="collapsible-filter-content {% if search_query or date_from or date_to %}show{% endif %}">
+                            <div class="compact-filter-row">
+                                <div class="filter-input-wrapper">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" name="search" placeholder="رقم الطلب أو اسم العميل" value="{{ search_query }}">
+                                </div>
+                                
+                                <div class="date-range-group">
+                                    <div class="date-input-wrapper">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <input type="date" name="date_from" value="{{ date_from }}" title="من تاريخ">
+                                    </div>
+                                    <span class="text-gray-400"> إلى </span>
+                                    <div class="date-input-wrapper">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <input type="date" name="date_to" value="{{ date_to }}" title="إلى تاريخ">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-filter-compact">
+                                    <i class="fas fa-filter"></i>
                                 </button>
                             </div>
                         </div>
                     </form>
                 </div>
+
+                <script>
+                function submitWithStatus(status) {
+                    document.getElementById('status_input').value = status;
+                    document.getElementById('filterForm').submit();
+                }
+
+                function toggleFilters() {
+                    const content = document.getElementById('collapsibleFilters');
+                    const btn = document.getElementById('filterToggleBtn');
+                    content.classList.toggle('show');
+                    btn.classList.toggle('active');
+                }
+
+                function showNotification(message, type = 'success') {
+                    const toast = document.createElement('div');
+                    toast.className = `custom-toast toast-${type}`;
+                    toast.innerHTML = `
+                        <div class="toast-content">
+                            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                            <span>${message}</span>
+                        </div>
+                    `;
+                    document.body.appendChild(toast);
+                    
+                    setTimeout(() => {
+                        toast.classList.add('show');
+                        setTimeout(() => {
+                            toast.classList.remove('show');
+                            setTimeout(() => toast.remove(), 400);
+                        }, 3000);
+                    }, 100);
+                }
+                </script>
 
                 <!-- Orders Table -->
                 <div class="orders-table-wrapper">
@@ -395,27 +154,26 @@
                     </div>
                     
                     {% if page_obj %}
-                        <!-- Desktop Table -->
-                        <div class="table-responsive-custom">
+                        <div class="table-responsive">
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>رقم الطلب</th>
+                                        <th class="col-id">رقم الطلب</th>
                                         <th>العميل</th>
                                         <th class="desktop-only">التاريخ</th>
                                         <th>المبلغ</th>
                                         <th>الحالة</th>
-                                        <th class="text-center">الإجراءات</th>
+                                        <th class="col-actions">الإجراءات</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for order in page_obj %}
                                     <tr>
-                                        <td><span class="font-bold">#{{ order.id }}</span></td>
+                                        <td class="col-id"><span class="font-bold">#{{ order.id }}</span></td>
                                         <td>
-                                            <div class="flex flex-col">
-                                                <span class="font-medium">{{ order.user.get_full_name|default:order.user.username }}</span>
-                                                <span class="text-xs text-gray-400 mobile-only">{{ order.created_at|date:"Y/m/d H:i" }}</span>
+                                            <div class="d-flex flex-column">
+                                                <span class="font-medium client-name-wrapper" title="{{ order.user.get_full_name|default:order.user.username }}">{{ order.user.get_full_name|default:order.user.username }}</span>
+                                                <span class="text-xs text-gray-400 mobile-only" style="margin-top: 0.15rem; font-size: 0.65rem;">{{ order.created_at|date:"Y/m/d H:i" }}</span>
                                             </div>
                                         </td>
                                         <td class="desktop-only text-gray-500">{{ order.created_at|date:"Y/m/d H:i" }}</td>
@@ -425,8 +183,8 @@
                                                 {{ order.pipeline_status.name }}
                                             </span>
                                         </td>
-                                        <td>
-                                            <div class="d-flex gap-2 justify-content-center">
+                                        <td class="col-actions">
+                                            <div class="d-flex gap-1 justify-content-center">
                                                 {% with address=order.shippingaddress_set.first %}
                                                     {% if address %}
                                                         <a href="https://wa.me/{{ address.phone|default:order.user.username }}?text=مرحباً {{ order.user.get_full_name|default:'عزيزي' }}، معك {{ supplier.name }}. بخصوص طلبك رقم {{ order.id }}..." target="_blank" class="btn-whatsapp-mobile" title="مراسلة العميل">
@@ -435,57 +193,15 @@
                                                     {% endif %}
                                                 {% endwith %}
                                                 
-                                                <a href="{% url 'merchant_order_detail' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="btn-details">
-                                                    <i class="fas fa-eye me-1"></i> التفاصيل
-                                                </a>
+                                                <button type="button" onclick="openOrderQuickView({{ order.id }})" class="btn-details" title="عرض سريع">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
-                        </div>
-
-                        <!-- Mobile Cards -->
-                        <div class="mobile-only">
-                            {% for order in page_obj %}
-                            <div class="order-mobile-card">
-                                <div class="flex justify-between items-start mb-3" style="display: flex; justify-content: space-between;">
-                                    <div>
-                                        <span class="text-xs text-gray-400 block mb-1" style="display:block; font-size: 0.75rem; color: #94a3b8;">رقم الطلب</span>
-                                        <span class="font-bold">#{{ order.id }}</span>
-                                    </div>
-                                    <span class="status-badge status-{{ order.pipeline_status.slug }}">
-                                        {{ order.pipeline_status.name }}
-                                    </span>
-                                </div>
-                                <div class="mb-3">
-                                    <span class="text-xs text-gray-400 block mb-1" style="display:block; font-size: 0.75rem; color: #94a3b8;">العميل</span>
-                                    <span class="font-medium text-sm">{{ order.user.get_full_name|default:order.user.username }}</span>
-                                </div>
-                                <div class="flex justify-between items-end" style="display: flex; justify-content: space-between; align-items: flex-end;">
-                                    <div>
-                                        <span class="text-xs text-gray-400 block mb-1" style="display:block; font-size: 0.75rem; color: #94a3b8;">المبلغ الإجمالي</span>
-                                        <span class="font-bold" style="color: var(--primary-color);">{{ order.total_amount|floatformat:2 }} {{ supplier.currency }}</span>
-                                    </div>
-                                    <div class="flex gap-2" style="display: flex; gap: 0.5rem;">
-                                        {% with address=order.shippingaddress_set.first %}
-                                            {% if address %}
-                                                <a href="https://wa.me/{{ address.phone|default:order.user.username }}?text=مرحباً {{ order.user.get_full_name|default:'عزيزي' }}..." target="_blank" class="btn-whatsapp-mobile">
-                                                    <i class="fab fa-whatsapp"></i>
-                                                </a>
-                                            {% endif %}
-                                        {% endwith %}
-                                        <a href="{% url 'merchant_order_detail' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="btn-details">
-                                            التفاصيل
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="mt-3 pt-3 border-t border-gray-50 flex justify-between items-center text-[10px] text-gray-400" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #f8fafc; font-size: 10px; display: flex; justify-content: space-between;">
-                                    <span>{{ order.created_at|date:"Y/m/d H:i" }}</span>
-                                </div>
-                            </div>
-                            {% endfor %}
                         </div>
 
                         <!-- Pagination -->
@@ -542,4 +258,305 @@
         </div>
     </div>
 </div>
+
+<!-- Quick View Modal -->
+<div id="quickViewModal" class="modal-overlay hidden" onclick="closeOrderQuickView(event)">
+    <div class="quick-view-modal" onclick="event.stopPropagation()">
+        <div class="modal-header-premium">
+            <div class="header-info">
+                <span id="modalOrderId" class="order-number">#---</span>
+                <h3 id="modalCustomerName" class="customer-name">جاري التحميل...</h3>
+                <p id="modalCustomerAddress" class="customer-address"></p>
+            </div>
+            <button type="button" class="btn-close-modal" onclick="closeOrderQuickView()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <!-- Mini Stepper Container -->
+            <div id="modalOrderStepper" class="mini-pipeline-wrapper hidden">
+                <div class="mini-pipeline-stepper" id="stepperItems">
+                    <!-- Steps injected here -->
+                </div>
+            </div>
+
+            <div class="order-items-scroll">
+                <table class="quick-items-table">
+                    <thead>
+                        <tr>
+                            <th>المنتج</th>
+                            <th class="text-center">الكمية</th>
+                            <th class="text-end">السعر</th>
+                            <th class="text-end">الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalOrderItems">
+                        <!-- Items injected here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="modal-summary">
+                <div class="summary-item">
+                    <span>المجموع:</span>
+                    <span id="modalSubtotal">0.00 {{ supplier.currency }}</span>
+                </div>
+                <div id="modalDiscountRow" class="summary-item text-success hidden">
+                    <span>الخصم:</span>
+                    <span id="modalDiscount">- 0.00 {{ supplier.currency }}</span>
+                </div>
+                <div id="modalDeliveryRow" class="summary-item hidden">
+                    <span>التوصيل:</span>
+                    <span id="modalDelivery">+ 0.00 {{ supplier.currency }}</span>
+                </div>
+                <div class="summary-total">
+                    <span>الإجمالي الكلي:</span>
+                    <span id="modalOrderTotal">0.00 {{ supplier.currency }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer-premium">
+            <div class="action-grid">
+                <a id="modalWhatsApp" href="#" target="_blank" class="action-btn btn-whatsapp">
+                    <div class="icon-circle"><i class="fab fa-whatsapp"></i></div>
+                    <span>واتساب</span>
+                </a>
+                <a id="modalCall" href="#" class="action-btn btn-call">
+                    <div class="icon-circle"><i class="fas fa-phone-alt"></i></div>
+                    <span>اتصال</span>
+                </a>
+                <a id="modalMap" href="#" target="_blank" class="action-btn btn-map">
+                    <div class="icon-circle"><i class="fas fa-map-marked-alt"></i></div>
+                    <span>الموقع</span>
+                </a>
+                <a id="modalDetails" href="#" class="action-btn btn-view-full">
+                    <div class="icon-circle"><i class="fas fa-external-link-alt"></i></div>
+                    <span>التفاصيل</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openOrderQuickView(orderId) {
+    const modal = document.getElementById('quickViewModal');
+    const itemsContainer = document.getElementById('modalOrderItems');
+    
+    // Reset modal state
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent scroll
+    itemsContainer.innerHTML = '<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin me-2"></i>جاري تحميل تفاصيل الطلب...</td></tr>';
+    document.getElementById('modalOrderStepper').classList.add('hidden');
+    
+    // Icon mapping helper
+    const getStatusIcon = (slug) => {
+        const icons = {
+            'pending': 'fa-clock',
+            'confirmed': 'fa-check',
+            'processing': 'fa-cog fa-spin',
+            'shipped': 'fa-truck',
+            'delivered': 'fa-box-open'
+        };
+        return icons[slug] || 'fa-flag-checkered';
+    };
+
+    // Fetch order data
+    fetch(`/merchant-order-quick-view/${orderId}/{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const order = data.order;
+                
+                // Update header
+                document.getElementById('modalOrderId').textContent = `#${order.id}`;
+                document.getElementById('modalCustomerName').textContent = order.customer_name;
+                document.getElementById('modalCustomerAddress').textContent = order.contact.address || 'العنوان غير متوفر';
+                
+                // Update Stepper
+                if (order.workflow_steps && order.workflow_steps.length > 0) {
+                    const stepperItems = document.getElementById('stepperItems');
+                    stepperItems.innerHTML = order.workflow_steps.map(step => {
+                        let statusClass = '';
+                        if (order.status.toLowerCase() === step.name.toLowerCase() || order.status.toLowerCase() === step.slug.toLowerCase()) {
+                            // Note: we might need a better way to check active status if names differ from slugs
+                            // Using the slug from backend is safer. 
+                        }
+                        
+                        // Using priority logic from backend
+                        if (order.current_priority === step.priority) statusClass = 'active';
+                        else if (step.priority < order.current_priority) statusClass = 'completed';
+                        
+                        return `
+                        <div class="mini-step-item ${statusClass}" onclick="changeOrderStepperStatus(${order.id}, '${step.slug}')" style="cursor: pointer;" title="تحويل إلى ${step.name}">
+                            <div class="mini-step-icon">
+                                <i class="fas ${getStatusIcon(step.slug)}"></i>
+                            </div>
+                            <span class="mini-step-label">${step.name}</span>
+                        </div>
+                        `;
+                    }).join('');
+                    document.getElementById('modalOrderStepper').classList.remove('hidden');
+                }
+
+                // Update items
+                itemsContainer.innerHTML = order.items.map(item => `
+                    <tr>
+                        <td><div class="item-name">${item.name}</div></td>
+                        <td class="text-center"><span class="item-qty">x${item.quantity}</span></td>
+                        <td class="text-end font-medium">${item.price.toFixed(2)}</td>
+                        <td class="text-end font-bold">${item.subtotal.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+                
+                // Update total
+                document.getElementById('modalSubtotal').textContent = `${order.subtotal.toFixed(2)} {{ supplier.currency }}`;
+                
+                const discountRow = document.getElementById('modalDiscountRow');
+                if (order.discount_amount > 0) {
+                    document.getElementById('modalDiscount').textContent = `- ${order.discount_amount.toFixed(2)} {{ supplier.currency }}`;
+                    discountRow.classList.remove('hidden');
+                } else {
+                    discountRow.classList.add('hidden');
+                }
+                
+                const deliveryRow = document.getElementById('modalDeliveryRow');
+                if (order.delivery_fee > 0) {
+                    document.getElementById('modalDelivery').textContent = `+ ${order.delivery_fee.toFixed(2)} {{ supplier.currency }}`;
+                    deliveryRow.classList.remove('hidden');
+                } else {
+                    deliveryRow.classList.add('hidden');
+                }
+                
+                document.getElementById('modalOrderTotal').textContent = `${order.total_amount.toFixed(2)} {{ supplier.currency }}`;
+                
+                // Update action buttons
+                const phone = order.contact.phone;
+                const whatsappMsg = `مرحباً ${order.customer_name}، معك {{ supplier.name }}. بخصوص طلبك رقم ${order.id}...`;
+                
+                const waBtn = document.getElementById('modalWhatsApp');
+                if (phone) {
+                    waBtn.href = `https://wa.me/${phone}?text=${encodeURIComponent(whatsappMsg)}`;
+                    waBtn.style.display = 'flex';
+                } else {
+                    waBtn.style.display = 'none';
+                }
+                
+                const callBtn = document.getElementById('modalCall');
+                if (phone) {
+                    callBtn.href = `tel:${phone}`;
+                    callBtn.style.display = 'flex';
+                } else {
+                    callBtn.style.display = 'none';
+                }
+                
+                const mapBtn = document.getElementById('modalMap');
+                if (order.contact.lat && order.contact.lng) {
+                    mapBtn.href = `https://www.google.com/maps/search/?api=1&query=${order.contact.lat},${order.contact.lng}`;
+                    mapBtn.style.display = 'flex';
+                } else {
+                    mapBtn.style.display = 'none';
+                }
+                
+                document.getElementById('modalDetails').href = order.details_url + '{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}';
+            } else {
+                showNotification(data.message || 'حدث خطأ أثناء تحميل تفاصيل الطلب', 'error');
+                closeOrderQuickView();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('حدث خطأ في الاتصال بالخادم', 'error');
+            closeOrderQuickView();
+        });
+}
+
+function closeOrderQuickView(event) {
+    if (event && event.target !== document.getElementById('quickViewModal')) return;
+    document.getElementById('quickViewModal').classList.add('hidden');
+    document.body.style.overflow = ''; // Restore scroll
+}
+
+function changeOrderStepperStatus(orderId, statusSlug) {
+    // Show confirmation or just proceed? Usually for quick view, simple confirmation or instant is fine.
+    // Instant update with loading state is better for premium feel.
+    
+    const stepperWrapper = document.getElementById('modalOrderStepper');
+    const originalContent = stepperWrapper.innerHTML;
+    
+    // Show minimal loading state on the stepper
+    stepperWrapper.style.opacity = '0.5';
+    stepperWrapper.style.pointerEvents = 'none';
+
+    const formData = new FormData();
+    formData.append('status', statusSlug);
+    {% if request.GET.supplier_id %}
+    formData.append('supplier_id', '{{ request.GET.supplier_id }}');
+    {% endif %}
+
+    fetch(`/update-order-status-ajax/${orderId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            // Refresh modal data to update UI
+            openOrderQuickView(orderId);
+            
+            // Refresh the main table row status badge without page reload
+            document.querySelectorAll('tr').forEach(row => {
+                const idCell = row.querySelector('.col-id');
+                if (idCell && idCell.textContent.trim() === `#${orderId}`) {
+                    const badge = row.querySelector('.status-badge');
+                    if (badge) {
+                        badge.textContent = data.new_status;
+                        badge.className = `status-badge status-${data.new_slug}`;
+                    }
+                }
+            });
+        } else {
+            showNotification(data.message || 'حدث خطأ في تحديث الحالة', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('حدث خطأ في الاتصال بالخادم', 'error');
+    })
+    .finally(() => {
+        stepperWrapper.style.opacity = '1';
+        stepperWrapper.style.pointerEvents = 'auto';
+    });
+}
+</script>
 {% endblock %}
+
+{% block footer %}
+<!-- Premium Compact Merchant Footer -->
+<footer class="merchant-footer">
+    <div class="container mx-auto px-6">
+        <div class="merchant-footer-content">
+            <div class="merchant-footer-links">
+                <a href="#">من نحن</a>
+                <a href="#">الشروط والأحكام</a>
+                <a href="#">سياسة الخصوصية</a>
+            </div>
+            
+            <div class="merchant-footer-info">
+                <span>© {% now "Y" %} {{ system_settings.site_name }}</span>
+                {% if supplier.profile_picture %}
+                    <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="merchant-footer-logo">
+                {% endif %}
+                <span>جميع الحقوق محفوظة</span>
+            </div>
+        </div>
+    </div>
+</footer>
+{% endblock %}
+

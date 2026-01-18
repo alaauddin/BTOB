@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}مركز المساعدة - {{ supplier.name }}{% block title_suffix %}{% endblock %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/merchant_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8" dir="rtl">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <div class="flex items-center gap-3 mb-2">
+                <a href="{% url 'my_merchant' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500 hover:text-primary-color transition-all">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <h1 class="text-3xl font-black text-slate-800">مركز المساعدة</h1>
+            </div>
+            <p class="text-slate-500 mr-13">تعلم كيف تزيد مبيعاتك وتدير متجرك باحتراف</p>
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-3xl font-black text-gradient mb-2">دليل النجاح</h2>
+        <p class="text-slate-500 font-medium">تعرف على كيفية تحقيق أقصى استفادة من متجرك على منصتنا</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Media Suite Tutorial -->
+        <div onclick="openTutorial('media')" class="tutorial-card bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-blue-500/5 transition-all group cursor-pointer overflow-hidden relative">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl group-hover:bg-blue-500/10 transition-colors"></div>
+            <div class="relative z-10">
+                <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-play-circle text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-3">الجناح الإعلامي المتقدم</h3>
+                <p class="text-sm text-slate-600 leading-relaxed mb-6">تعلم كيفية إضافة الفيديوهات والصور المتعددة لمنتجاتك لخلق تجربة تسوق غامرة تزيد من مبيعاتك بنسبة تصل إلى 40%.</p>
+                <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">
+                    <span>ابدأ التعلم الآن</span>
+                    <i class="fas fa-arrow-left text-xs group-hover:-translate-x-1 transition-transform"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Management Tutorial -->
+        <div onclick="openTutorial('orders')" class="tutorial-card bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-green-500/5 transition-all group cursor-pointer overflow-hidden relative">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-green-500/5 rounded-full blur-3xl group-hover:bg-green-500/10 transition-colors"></div>
+            <div class="relative z-10">
+                <div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-green-500 mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-truck-loading text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-3">احتراف إدارة الطلبات</h3>
+                <p class="text-sm text-slate-600 leading-relaxed mb-6">من الاستلام وحتى التسليم النهائي.. تعرف على أفضل الممارسات لتحديث حالات الطلبات والتواصل مع العملاء بشكل احترافي.</p>
+                <div class="flex items-center gap-2 text-green-600 font-bold text-sm">
+                    <span>اكتشف الدليل</span>
+                    <i class="fas fa-arrow-left text-xs group-hover:-translate-x-1 transition-transform"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics & Growth Tutorial -->
+        <div onclick="openTutorial('growth')" class="tutorial-card bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-purple-500/5 transition-all group cursor-pointer overflow-hidden relative">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/5 rounded-full blur-3xl group-hover:bg-purple-500/10 transition-colors"></div>
+            <div class="relative z-10">
+                <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-500 mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-chart-line text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-3">النمو والتحليلات</h3>
+                <p class="text-sm text-slate-600 leading-relaxed mb-6">فهم لغة الأرقام. تعلم كيفية قراءة تقارير مبيعاتك، تتبع زوار متجرك، وتطوير استراتيجيات ذكية لزيادة أرباحك.</p>
+                <div class="flex items-center gap-2 text-purple-600 font-bold text-sm">
+                    <span>اقرأ المزيد</span>
+                    <i class="fas fa-arrow-left text-xs group-hover:-translate-x-1 transition-transform"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Guide -->
+    <div class="mt-12 group">
+        <div class="relative rounded-[2.5rem] bg-slate-900 overflow-hidden shadow-2xl transition-all hover:shadow-blue-500/20">
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-transparent"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 items-center">
+                <div class="p-8 lg:p-14 relative z-10">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-500/20 text-blue-400 rounded-full text-xs font-black uppercase tracking-widest mb-6">
+                        <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+                        جديد وحصري
+                    </div>
+                    <h3 class="text-3xl lg:text-4xl font-black text-white mb-6 leading-tight">كيف تضاعف مبيعاتك في 30 يوم؟</h3>
+                    <p class="text-slate-400 text-lg mb-8 leading-relaxed">دليل شامل أعده خبراء التجارة الإلكترونية لدينا، يحتوي على أسرار ترتيب المنتجات، تقنيات التصوير الاحترافي، واستراتيجيات التسعير النفسي.</p>
+                    <button class="px-8 py-4 bg-white text-slate-900 rounded-2xl font-black text-sm hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/10 flex items-center gap-3">
+                        تحميل الدليل الكامل (PDF)
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+                <div class="hidden lg:block relative h-full">
+                    <div class="absolute inset-0 bg-gradient-to-l from-slate-900 to-transparent z-10"></div>
+                    <div class="w-full h-full flex items-center justify-center p-10">
+                        <div class="relative w-full aspect-video rounded-3xl overflow-hidden shadow-2xl rotate-3 group-hover:rotate-0 transition-transform duration-700">
+                            <div class="absolute inset-0 bg-blue-600/20 mix-blend-overlay"></div>
+                            <div class="flex items-center justify-center h-full bg-slate-800">
+                                <i class="fas fa-rocket text-8xl text-blue-500/20"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tutorial Viewer Modal -->
+<div id="tutorial-viewer" class="fixed inset-0 z-[99999] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onclick="closeTutorial()"></div>
+    <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] relative z-[100000] overflow-hidden flex flex-col scale-95 opacity-0 transition-all duration-300 border border-slate-200" id="viewer-container">
+        <!-- Header -->
+        <div class="p-6 lg:p-8 flex flex-row-reverse justify-between items-center border-b border-slate-50" dir="rtl">
+            <div class="flex items-center gap-4 text-right">
+                <div id="viewer-icon" class="w-12 h-12 rounded-2xl flex-shrink-0 flex items-center justify-center text-white shadow-lg"></div>
+                <div>
+                    <h3 id="viewer-title" class="text-2xl font-black text-slate-800"></h3>
+                    <p id="viewer-subtitle" class="text-slate-500 text-sm font-medium"></p>
+                </div>
+            </div>
+            <button onclick="closeTutorial()" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-grow overflow-y-auto p-6 lg:p-10" id="viewer-body" dir="rtl">
+            <!-- Content injected via JS -->
+        </div>
+
+        <!-- Footer -->
+        <div class="p-6 bg-slate-50/50 flex flex-row-reverse justify-between items-center border-t border-slate-50" dir="rtl">
+            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Success Center Guide</p>
+            <div class="flex gap-3">
+                <button onclick="closeTutorial()" class="px-8 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-lg active:shadow-none">فهمت، شكراً</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const tutorials = {
+        media: {
+            title: "الجناح الإعلامي المتقدم",
+            subtitle: "اجعل منتجاتك تنبض بالحياة",
+            icon: "fas fa-play-circle",
+            color: "bg-blue-500",
+            content: `
+                <div class="space-y-8 text-right">
+                    <div class="bg-blue-50 p-6 rounded-3xl border border-blue-100">
+                        <h4 class="font-bold text-blue-900 mb-2">لماذا الفيديو؟</h4>
+                        <p class="text-blue-800/70 text-sm">المنتجات التي تحتوي على فيديو توضيحي تحصل على نسبة تحويل (Conversion Rate) أعلى بـ 3 مرات من المنتجات التي تكتفي بالصور فقط.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="tutorial-step p-6 rounded-3xl">
+                            <h5 class="font-bold text-slate-800 mb-2">الإضافة الصحيحة</h5>
+                            <p class="text-sm text-slate-600">عند إضافة منتج، ستجد قسماً خاصاً بالصور الإضافية وقسم الفيديو. تأكد من أن الصور واضحة وبخلفية بيضاء للحصول على مظهر احترافي.</p>
+                        </div>
+                        <div class="tutorial-step p-6 rounded-3xl">
+                            <h5 class="font-bold text-slate-800 mb-2">ترتيب المحتوى</h5>
+                            <p class="text-sm text-slate-600">اجعل الصورة الرئيسية هي الأكثر جاذبية. استخدم الصور الإضافية لعرض تفاصيل المنتج من زوايا مختلفة.</p>
+                        </div>
+                    </div>
+                </div>
+            `
+        },
+        orders: {
+            title: "احتراف إدارة الطلبات",
+            subtitle: "من نقرة العميل إلى عتبة الباب",
+            icon: "fas fa-truck-loading",
+            color: "bg-green-500",
+            content: `
+                <div class="space-y-8 text-right">
+                    <div class="bg-green-50/50 p-6 rounded-3xl border border-green-100">
+                        <h4 class="font-bold text-green-900 mb-2">السر في المتابعة</h4>
+                        <p class="text-green-800/70 text-sm">العملاء يحبون الشفافية. تحديث حالة الطلب في كل مرحلة يقلل من تساؤلات العميل ويزيد من ولائه لعلامتك التجارية.</p>
+                    </div>
+                </div>
+            `
+        },
+        growth: {
+            title: "النمو والتحليلات",
+            subtitle: "حوّل البيانات إلى قرارات تجارية ذكية",
+            icon: "fas fa-chart-line",
+            color: "bg-purple-500",
+            content: `
+                <div class="space-y-8 text-right">
+                    <div class="bg-purple-900 text-white p-8 rounded-[2rem] shadow-xl overflow-hidden relative">
+                        <h4 class="text-xl font-bold mb-4">قاعدة الـ 80/20</h4>
+                        <p class="text-purple-200 text-sm leading-relaxed">غالباً ما تأتي 80% من أرباحك من 20% فقط من منتجاتك. استخدم التحليلات لتحديد هذه المنتجات الذهبية وركز جهودك التسويقية عليها.</p>
+                    </div>
+                </div>
+            `
+        }
+    };
+
+    function openTutorial(id) {
+        const tutorial = tutorials[id];
+        if (!tutorial) return;
+        const viewer = document.getElementById('tutorial-viewer');
+        const container = document.getElementById('viewer-container');
+        document.getElementById('viewer-icon').className = `w-12 h-12 rounded-2xl flex items-center justify-center text-white ${tutorial.color}`;
+        document.getElementById('viewer-icon').innerHTML = `<i class="${tutorial.icon} text-2xl"></i>`;
+        document.getElementById('viewer-title').textContent = tutorial.title;
+        document.getElementById('viewer-subtitle').textContent = tutorial.subtitle;
+        document.getElementById('viewer-body').innerHTML = tutorial.content;
+        viewer.classList.remove('hidden');
+        setTimeout(() => {
+            container.classList.remove('scale-95', 'opacity-0');
+            container.classList.add('scale-100', 'opacity-100');
+        }, 10);
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeTutorial() {
+        const viewer = document.getElementById('tutorial-viewer');
+        const container = document.getElementById('viewer-container');
+        container.classList.add('scale-95', 'opacity-0');
+        container.classList.remove('scale-100', 'opacity-100');
+        setTimeout(() => {
+            viewer.classList.add('hidden');
+            document.body.style.overflow = '';
+        }, 300);
+    }
+</script>
+{% endblock %}

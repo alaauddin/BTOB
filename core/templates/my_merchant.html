@@ -205,1865 +205,185 @@
         </div>
     </div>
 
-    <!-- Tabs Navigation -->
-    <div class="tab-container">
-        <div class="flex flex-wrap justify-center">
-            <button class="tab-btn tab-products active" onclick="showTab('products')">
-                <i class="fas fa-box ml-2"></i>
-                المنتجات
-            </button>
-            <button class="tab-btn tab-orders" onclick="showTab('orders')">
-                <i class="fas fa-shopping-cart ml-2"></i>
-                الطلبات
+    <!-- Router Navigation Hub -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <!-- Orders Tile -->
+        <a href="{% url 'merchant_orders' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" class="router-tile group">
+            <div class="tile-icon bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="tile-content">
+                <h3 class="tile-title">إدارة الطلبات</h3>
+                <p class="tile-desc">متابعة الطلبات، تحديث الحالات، وإدارة الفواتير</p>
                 {% if pending_orders > 0 %}
-                <span class="notification-badge">{{ pending_orders }}</span>
+                <span class="tile-badge bg-orange-500">{{ pending_orders }} طلب معلق</span>
                 {% endif %}
-            </button>
-            <button class="tab-btn tab-offers" onclick="showTab('offers')">
-                <i class="fas fa-tags ml-2"></i>
-                العروض
-                {% if active_offers_count > 0 %}
-                <span class="notification-badge">{{ active_offers_count }}</span>
-                {% endif %}
-            </button>
-            <button class="tab-btn tab-promotions" onclick="showTab('promotions')">
-                <i class="fas fa-bullhorn ml-2"></i>
-                الترويجات
-            </button>
-            <button class="tab-btn tab-ads" onclick="showTab('ads')">
-                <i class="fas fa-ad ml-2"></i>
-                الإعلانات
-            </button>
-            <button class="tab-btn tab-analytics" onclick="showTab('analytics')">
-                <i class="fas fa-chart-bar ml-2"></i>
-                التحليلات
-            </button>
-            <button class="tab-btn tab-tutorial" onclick="showTab('tutorial')">
-                <i class="fas fa-graduation-cap ml-2"></i>
-                مركز المساعدة
-            </button>
-        </div>
+            </div>
+            <i class="fas fa-chevron-left tile-arrow"></i>
+        </a>
+
+        <!-- Products Tile -->
+        <a href="{% url 'merchant_products' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" class="router-tile group">
+            <div class="tile-icon bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white">
+                <i class="fas fa-box"></i>
+            </div>
+            <div class="tile-content">
+                <h3 class="tile-title">المنتجات والمخزون</h3>
+                <p class="tile-desc">إضافة منتجات، تعديل الأسعار، وإدارة العروض</p>
+                <span class="tile-badge bg-emerald-500">{{ total_products }} منتج</span>
+            </div>
+            <i class="fas fa-chevron-left tile-arrow"></i>
+        </a>
+
+        <!-- Marketing Tile -->
+        <a href="{% url 'merchant_marketing' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" class="router-tile group">
+            <div class="tile-icon bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white">
+                <i class="fas fa-bullhorn"></i>
+            </div>
+            <div class="tile-content">
+                <h3 class="tile-title">التسويق والإعلانات</h3>
+                <p class="tile-desc">إدارة الإعلانات، الترويجات، والوصول للعملاء</p>
+            </div>
+            <i class="fas fa-chevron-left tile-arrow"></i>
+        </a>
+
+        <!-- Help Center Tile -->
+        <a href="{% url 'merchant_tutorial' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" class="router-tile group">
+            <div class="tile-icon bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="tile-content">
+                <h3 class="tile-title">مركز المساعدة</h3>
+                <p class="tile-desc">تعلم كيف تزيد مبيعاتك وتدير متجرك باحتراف</p>
+            </div>
+            <i class="fas fa-chevron-left tile-arrow"></i>
+        </a>
     </div>
 
-    <!-- Products Tab -->
-    <div id="products-tab" class="tab-content">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-3xl font-bold text-gradient">منتجاتي</h2>
-            <div class="flex gap-4">
-                <button class="action-btn" onclick="openAddProductModal()">
-                    <i class="fas fa-plus"></i>
-                    إضافة منتج جديد
-                </button>
+    <!-- Summary Widgets Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+        <!-- Recent Orders Widget -->
+        <div class="summary-widget">
+            <div class="widget-header">
+                <h3 class="widget-title">آخر الطلبات</h3>
+                <a href="{% url 'merchant_orders' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" class="widget-link">عرض الكل</a>
+            </div>
+            <div class="widget-body">
+                {% if recent_orders_list %}
+                    <div class="space-y-4">
+                        {% for order in recent_orders_list %}
+                        <div class="activity-item">
+                            <div class="activity-icon bg-blue-50 text-blue-500">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                            <div class="activity-content">
+                                <span class="activity-label">طلب #{{ order.id }} - {{ order.user.username }}</span>
+                                <span class="activity-time">{{ order.created_at|date:"Y-m-d H:i" }}</span>
+                            </div>
+                            <div class="activity-value">{{ order.total_amount }} {{ supplier.currency }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-widget">
+                        <i class="fas fa-history"></i>
+                        <p>لا توجد طلبات حديثة</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
 
-        {% if products %}
-            <div class="product-grid">
-                {% for product in products %}
-                <div class="product-card">
-                    <div class="product-image Relative {% if not product.is_active %}opacity-50 grayscale{% endif %}" style="background-image: url('{{ product.image.url }}');">
-                        {% if product.is_new %}
-                            <div class="absolute top-4 right-4 bg-gradient-to-r from-green-400 to-green-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-                                جديد
-                            </div>
-                        {% endif %}
-                        
-                        <!-- Media Badges -->
-                        <div class="absolute top-4 left-4 flex flex-col gap-1">
-                            <div class="bg-black/50 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm mb-1">
-                                {{ product.category.name }}
-                            </div>
-                            <div class="flex gap-1">
-                                {% if product.video %}
-                                    <div class="bg-blue-600/90 text-white p-1.5 rounded-lg backdrop-blur-md shadow-lg" title="يحتوي على فيديو">
-                                        <i class="fas fa-video text-xs"></i>
-                                    </div>
-                                {% endif %}
-                                {% if product.additional_images.exists %}
-                                    <div class="bg-slate-800/80 text-white p-1.5 rounded-lg backdrop-blur-md shadow-lg" title="يحتوي على صور إضافية">
-                                        <i class="fas fa-images text-xs"></i>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% if not product.is_active %}
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span class="bg-red-500 text-white px-4 py-2 rounded-full font-bold shadow-lg">غير نشط</span>
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="p-4 text-right">
-                        <h3 class="text-lg font-bold text-gray-800 mb-2">{{ product.name }}</h3>
-                        <p class="text-gray-600 mb-4 line-clamp-2">{{ product.description }}</p>
-                        
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="text-xl font-bold text-gradient">{{ product.price }} {{ supplier.currency }}</div>
-                            <div class="flex items-center text-yellow-500">
+        <!-- Top Products Widget -->
+        <div class="summary-widget">
+            <div class="widget-header">
+                <h3 class="widget-title">الأكثر مبيعاً</h3>
+                <a href="{% url 'merchant_analytics' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" class="widget-link">عرض التحليلات</a>
+            </div>
+            <div class="widget-body">
+                {% if top_selling_products %}
+                    <div class="space-y-4">
+                        {% for product in top_selling_products %}
+                        <div class="activity-item">
+                            <div class="activity-icon bg-green-50 text-green-500">
                                 <i class="fas fa-star"></i>
-                                <span class="mr-1 text-gray-600">{{ product.get_average_rating }}</span>
                             </div>
+                            <div class="activity-content">
+                                <span class="activity-label">{{ product.name }}</span>
+                                <span class="activity-time">{{ product.category.name }}</span>
+                            </div>
+                            <div class="product-sold-badge">{{ product.total_sold }} طلب</div>
                         </div>
-                        
-                        <div class="flex gap-2">
-                            <button class="flex-1 action-btn text-sm" onclick="editProduct({{ product.id }})">
-                                <i class="fas fa-edit"></i>
-                                تعديل
-                            </button>
-                            <button class="flex-1 {% if product.is_active %}bg-gradient-to-r from-orange-500 to-red-600{% else %}bg-gradient-to-r from-green-500 to-green-600{% endif %} text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all" 
-                                    onclick="confirmToggleProductStatus({{ product.id }}, {{ product.is_active|yesno:'true,false' }})">
-                                <i class="fas {% if product.is_active %}fa-eye-slash{% else %}fa-eye{% endif %}"></i>
-                                {% if product.is_active %}تعطيل{% else %}تنشيط{% endif %}
-                            </button>
-                        </div>
+                        {% endfor %}
                     </div>
-                </div>
-                {% endfor %}
+                {% else %}
+                    <div class="empty-widget">
+                        <i class="fas fa-chart-line"></i>
+                        <p>لا توجد بيانات مبيعات كافية</p>
+                    </div>
+                {% endif %}
             </div>
-        {% else %}
-            <div class="empty-state">
-                <i class="fas fa-box-open"></i>
-                <h3 class="text-2xl font-bold text-gray-600 mb-4">لا توجد منتجات بعد</h3>
-                <p class="text-gray-500 mb-6">ابدأ بإضافة منتجاتك الأولى لتنمية متجرك</p>
-                <button class="action-btn" onclick="openAddProductModal()">
-                    <i class="fas fa-plus"></i>
-                    إضافة منتج الآن
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeSettingsModal()"></div>
+        <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl relative z-10 overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="text-xl font-bold">إعدادات المتجر</h3>
+                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
-        {% endif %}
-    </div>
-
-    <!-- Offers Tab -->
-    <div id="offers-tab" class="tab-content hidden">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-3xl font-bold text-gradient">العروض والخصومات</h2>
-            <button class="action-btn" onclick="openAddOfferModal()">
-                <i class="fas fa-plus"></i>
-                إضافة عرض جديد
-            </button>
-        </div>
-
-        {% if active_offers %}
-            <div class="product-grid">
-                {% for offer in active_offers %}
-                <div class="product-card">
-                    <div class="product-image" style="background-image: url('{{ offer.product.image.url }}');">
-                        <div class="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded-full text-sm font-bold">
-                            خصم {{ offer.get_discount_percentage_offer|floatformat:0 }}%
-                        </div>
+            <form id="settingsForm" action="{% url 'update_merchant_settings' %}" method="POST" class="p-6 space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="supplier_id" value="{{ supplier.id }}">
+                
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                    <div>
+                        <h4 class="font-bold text-slate-800">تطبيق الجوال</h4>
+                        <p class="text-xs text-slate-500">من يرى منتجاتك على التطبيق</p>
                     </div>
-                    
-                    <div class="p-4 text-right">
-                        <h3 class="text-lg font-bold text-gray-800 mb-2">{{ offer.product.name }}</h3>
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="flex flex-col">
-                                <div class="text-lg text-gray-500 line-through">{{ offer.product.price }} {{ supplier.currency }}</div>
-                                <div class="text-xl font-bold text-gradient">{{ offer.get_price_with_discount|floatformat:2 }} {{ supplier.currency }}</div>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button class="flex-1 action-btn text-sm" onclick="editOffer({{ offer.id }})">
-                                <i class="fas fa-edit"></i>
-                                تعديل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <i class="fas fa-tag"></i>
-                <h3 class="text-2xl font-bold text-gray-600 mb-4">لا توجد عروض نشطة</h3>
-            </div>
-        {% endif %}
-    </div>
-
-
-    <!-- Promotions Tab -->
-    <div id="promotions-tab" class="tab-content hidden">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <div>
-                <h2 class="text-2xl font-black text-slate-800 mb-1">طلبات الترويج</h2>
-                <p class="text-slate-500 text-sm">إدارة طلبات ظهور منتجاتك في قسم العروض الرئيسية للمنصة.</p>
-            </div>
-            <button onclick="openPromotionModal()" class="w-full sm:w-auto px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                <i class="fas fa-plus-circle"></i>
-                طلب ترويج جديد
-            </button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {% for promo in platform_promotions %}
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-lg transition-all group">
-                <div class="flex items-start justify-between mb-4">
-                    <div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
-                        <i class="fas fa-bullhorn text-xl"></i>
-                    </div>
-                    {% if promo.is_approved %}
-                    <span class="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-black rounded-full border border-green-100 uppercase tracking-wider">مقبول</span>
-                    {% else %}
-                    <span class="px-3 py-1 bg-orange-50 text-orange-600 text-[10px] font-black rounded-full border border-orange-100 uppercase tracking-wider">قيد المعالجة</span>
-                    {% endif %}
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="show_in_mobile_app" class="sr-only peer" {% if supplier.show_in_mobile_app %}checked{% endif %}>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
                 </div>
                 
-                <h3 class="text-lg font-black text-slate-800 mb-2">{{ promo.product.name }}</h3>
-                <p class="text-slate-500 text-xs leading-relaxed mb-6 line-clamp-2">{{ promo.description }}</p>
-                
-                <div class="pt-4 border-t border-slate-50 flex items-center justify-between text-[10px] font-bold text-slate-400">
-                    <div class="flex items-center gap-2">
-                        <i class="far fa-calendar-alt"></i>
-                        <span>{{ promo.start_date|date:"Y/m/d" }} - {{ promo.end_date|date:"Y/m/d" }}</span>
-                    </div>
-                </div>
-            </div>
-            {% empty %}
-            <div class="col-span-full py-20 bg-slate-50/50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
-                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm mb-6">
-                    <i class="fas fa-bullhorn text-4xl text-slate-200"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-2">لا يوجد طلبات ترويج</h3>
-                <p class="text-slate-500 max-w-sm">لم تقم بإرسال أي طلبات ترويج حتى الآن. ابدأ بالترويج لمنتجاتك لزيادة مبيعاتك!</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- Orders Tab -->
-    <div id="orders-tab" class="tab-content hidden">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-3xl font-bold text-gradient">إدارة الطلبات</h2>
-            <div class="flex gap-4">
-                <a href="
-                {% url 'merchant_orders' %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}
-                " class="action-btn">
-                    <i class="fas fa-list"></i>
-                    عرض جميع الطلبات
-                </a>
-            </div>
-        </div>
-
-        <div class="merchant-card p-6">
-            <h3 class="text-2xl font-bold text-gray-800 mb-6">الطلبات الأخيرة</h3>
-            {% if recent_orders_list %}
-                <div class="space-y-4">
-                    {% for order in recent_orders_list %}
-                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                        <div class="flex items-center space-x-4 space-x-reverse">
-                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                                #{{ order.id }}
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">{{ order.user.username }}</h4>
-                                <p class="text-sm text-gray-600">{{ order.created_at|date:"Y-m-d H:i" }}</p>
-                            </div>
-                        </div>
-                        <div class="text-left">
-                            <div class="font-bold text-gray-800">{{ order.total_amount }} {{ supplier.currency }}</div>
-                            <span class="px-3 py-1 rounded-full text-xs font-bold {% if order.pipeline_status.slug == 'pending' %}bg-orange-100 text-orange-800{% elif order.pipeline_status.slug == 'canceled' %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
-                                {{ order.pipeline_status.name }}
-                            </span>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-shopping-bag"></i>
-                    <h3 class="text-2xl font-bold text-gray-600 mb-4">لا توجد طلبات بعد</h3>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Ads Tab -->
-    <div id="ads-tab" class="tab-content hidden">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-3xl font-bold text-gradient">إعلانات المتجر</h2>
-            <button class="action-btn" onclick="openAddAdModal()">
-                <i class="fas fa-plus"></i>
-                إضافة إعلان جديد
-            </button>
-        </div>
-
-        {% if ads %}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {% for ad in ads %}
-                <div class="bg-white rounded-[2rem] p-3 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                    <!-- Image Area -->
-                    <div class="relative aspect-[4/3] rounded-[1.5rem] overflow-hidden mb-4 bg-slate-50 border border-slate-100/50">
-                        {% if ad.image %}
-                        <img src="{{ ad.image.url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="{{ ad.title }}">
-                        {% else %}
-                        <div class="w-full h-full flex items-center justify-center text-slate-300 bg-slate-50">
-                            <i class="fas fa-image text-4xl"></i>
-                        </div>
-                        {% endif %}
-                        
-                        <!-- Overlay Gradient -->
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        
-                        <!-- Status Badge -->
-                        <div class="absolute top-3 right-3 z-10">
-                            {% if ad.is_active %}
-                                <div class="px-3 py-1.5 bg-white/90 backdrop-blur-md text-emerald-600 text-[11px] font-black rounded-full shadow-sm flex items-center gap-1.5 border border-white/50">
-                                    <span class="relative flex h-2 w-2">
-                                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                    </span>
-                                    نشط
-                                </div>
-                            {% else %}
-                                <div class="px-3 py-1.5 bg-white/90 backdrop-blur-md text-slate-500 text-[11px] font-black rounded-full shadow-sm flex items-center gap-1.5 border border-white/50">
-                                    <i class="fas fa-eye-slash text-xs"></i>
-                                    مخفي
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Edit Button (Floating) -->
-                        <button onclick="editAd({{ ad.id }}, this)" class="absolute bottom-3 left-3 w-10 h-10 bg-white text-slate-700 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all transform translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 duration-300 z-20" title="تعديل">
-                            <i class="fas fa-pen text-sm"></i>
-                        </button>
-                    </div>
-                    
-                    <!-- Content -->
-                    <div class="px-3 pb-2">
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="text-lg font-black text-slate-800 leading-snug line-clamp-1 flex-1 ml-2" title="{{ ad.title }}">{{ ad.title }}</h3>
-                        </div>
-                        
-                        <p class="text-slate-500 text-xs leading-relaxed mb-4 line-clamp-2 min-h-[2.5em]">{{ ad.description }}</p>
-                        
-                        {% if ad.product %}
-                        <div class="flex items-center gap-2 mb-4 p-2.5 rounded-xl bg-blue-50/50 border border-blue-100/50 group-hover:border-blue-200 transition-colors">
-                            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-xs">
-                                <i class="fas fa-cube"></i>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-[10px] text-blue-400 font-bold mb-0.5">المنتج المرتبط</div>
-                                <div class="text-xs font-bold text-slate-700 truncate">{{ ad.product.name }}</div>
-                            </div>
-                        </div>
-                        {% else %}
-                        <div class="flex items-center gap-2 mb-4 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                             <div class="w-8 h-8 rounded-lg bg-slate-200 text-slate-400 flex items-center justify-center text-xs">
-                                <i class="fas fa-unlink"></i>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-xs font-bold text-slate-400">غير مرتبط بمنتج</div>
-                            </div>
-                        </div>
-                        {% endif %}
-                        
-                        <!-- Toggle Action -->
-                        <button onclick="confirmToggleAdStatus({{ ad.id }}, {{ ad.is_active|yesno:'true,false' }})" 
-                            class="w-full py-3 rounded-xl font-bold text-xs shadow-lg shadow-blue-500/5 active:scale-[0.98] transition-all flex items-center justify-center gap-2 relative overflow-hidden
-                            {% if ad.is_active %}
-                                bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500
-                            {% else %}
-                                bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-blue-500/30
-                            {% endif %}">
-                            {% if ad.is_active %}
-                                <i class="fas fa-pause"></i> تعطيل الإعلان
-                            {% else %}
-                                <i class="fas fa-play"></i> تنشيط الإعلان
-                            {% endif %}
-                        </button>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <i class="fas fa-ad"></i>
-                <h3 class="text-2xl font-bold text-gray-600 mb-4">لا توجد إعلانات بعد</h3>
-                <p class="text-gray-500 mb-6">أضف إعلانات لتظهر لعملائك في أعلى الصفحة الرئيسية</p>
-                <button class="action-btn" onclick="openAddAdModal()">
-                    <i class="fas fa-plus"></i>
-                    إضافة إعلان الآن
-                </button>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- Analytics Tab -->
-    <div id="analytics-tab" class="tab-content hidden">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-3xl font-bold text-gradient">التحليلات والتقارير</h2>
-            <button class="action-btn" onclick="exportAnalytics()">
-                <i class="fas fa-download"></i>
-                تصدير البيانات
-            </button>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="merchant-card p-6">
-                <h3 class="text-xl font-bold mb-4 text-center">أداء الأصناف</h3>
-                <div class="space-y-4">
-                    {% for cat in category_performance %}
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
                     <div>
-                        <div class="flex justify-between text-sm font-bold text-slate-700 mb-2">
-                            <span>{{ cat.category__name }}</span>
-                            <span>{{ cat.product_count }} منتج</span>
-                        </div>
-                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                            <div class="bg-blue-500 h-full rounded-full" style="width: {% widthratio cat.product_count total_products 100 %}%"></div>
-                        </div>
+                        <h4 class="font-bold text-slate-800">عرض الأسعار</h4>
+                        <p class="text-xs text-slate-500">إظهار المبالغ المالية في لوحة التحكم</p>
                     </div>
-                    {% endfor %}
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="show_order_amounts" class="sr-only peer" {% if supplier.show_order_amounts %}checked{% endif %}>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
                 </div>
-            </div>
-            <div class="merchant-card p-6 text-right">
-                <h3 class="text-xl font-bold mb-4">آراء العملاء</h3>
-                <div class="flex items-center gap-4 mb-4 justify-end">
-                    <div class="text-4xl font-black text-yellow-500">{{ avg_rating|floatformat:1 }}</div>
-                    <div>
-                        <div class="text-[10px] text-slate-400">إجمالي {{ total_reviews }} تقييم</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Tutorial Tab -->
-    <div id="tutorial-tab" class="tab-content hidden">
-        <div class="mb-8">
-            <h2 class="text-3xl font-black text-gradient mb-2">دليل النجاح</h2>
-            <p class="text-slate-500 font-medium">تعرف على كيفية تحقيق أقصى استفادة من متجرك على منصتنا</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Media Suite Tutorial -->
-            <div onclick="openTutorial('media')" class="tutorial-card bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-blue-500/5 transition-all group cursor-pointer overflow-hidden relative">
-                <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl group-hover:bg-blue-500/10 transition-colors"></div>
-                <div class="relative z-10">
-                    <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 mb-6 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-play-circle text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-3">الجناح الإعلامي المتقدم</h3>
-                    <p class="text-sm text-slate-600 leading-relaxed mb-6">تعلم كيفية إضافة الفيديوهات والصور المتعددة لمنتجاتك لخلق تجربة تسوق غامرة تزيد من مبيعاتك بنسبة تصل إلى 40%.</p>
-                    <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">
-                        <span>ابدأ التعلم الآن</span>
-                        <i class="fas fa-arrow-left text-xs group-hover:-translate-x-1 transition-transform"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Order Management Tutorial -->
-            <div onclick="openTutorial('orders')" class="tutorial-card bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-green-500/5 transition-all group cursor-pointer overflow-hidden relative">
-                <div class="absolute -top-10 -right-10 w-32 h-32 bg-green-500/5 rounded-full blur-3xl group-hover:bg-green-500/10 transition-colors"></div>
-                <div class="relative z-10">
-                    <div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-green-500 mb-6 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-truck-loading text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-3">احتراف إدارة الطلبات</h3>
-                    <p class="text-sm text-slate-600 leading-relaxed mb-6">من الاستلام وحتى التسليم النهائي.. تعرف على أفضل الممارسات لتحديث حالات الطلبات والتواصل مع العملاء بشكل احترافي.</p>
-                    <div class="flex items-center gap-2 text-green-600 font-bold text-sm">
-                        <span>اكتشف الدليل</span>
-                        <i class="fas fa-arrow-left text-xs group-hover:-translate-x-1 transition-transform"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Analytics & Growth Tutorial -->
-            <div onclick="openTutorial('growth')" class="tutorial-card bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-purple-500/5 transition-all group cursor-pointer overflow-hidden relative">
-                <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/5 rounded-full blur-3xl group-hover:bg-purple-500/10 transition-colors"></div>
-                <div class="relative z-10">
-                    <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-500 mb-6 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-chart-line text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-3">النمو والتحليلات</h3>
-                    <p class="text-sm text-slate-600 leading-relaxed mb-6">فهم لغة الأرقام. تعلم كيفية قراءة تقارير مبيعاتك، تتبع زوار متجرك، وتطوير استراتيجيات ذكية لزيادة أرباحك.</p>
-                    <div class="flex items-center gap-2 text-purple-600 font-bold text-sm">
-                        <span>اقرأ المزيد</span>
-                        <i class="fas fa-arrow-left text-xs group-hover:-translate-x-1 transition-transform"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Featured Guide (Full-width) -->
-        <div class="mt-12 group">
-            <div class="relative rounded-[2.5rem] bg-slate-900 overflow-hidden shadow-2xl transition-all hover:shadow-blue-500/20">
-                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-transparent"></div>
-                <div class="grid grid-cols-1 lg:grid-cols-2 items-center">
-                    <div class="p-8 lg:p-14 relative z-10">
-                        <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-500/20 text-blue-400 rounded-full text-xs font-black uppercase tracking-widest mb-6">
-                            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-                            جديد وحصري
-                        </div>
-                        <h3 class="text-3xl lg:text-4xl font-black text-white mb-6 leading-tight">كيف تضاعف مبيعاتك في 30 يوم؟</h3>
-                        <p class="text-slate-400 text-lg mb-8 leading-relaxed">دليل شامل أعده خبراء التجارة الإلكترونية لدينا، يحتوي على أسرار ترتيب المنتجات، تقنيات التصوير الاحترافي، واستراتيجيات التسعير النفسي.</p>
-                        <button class="px-8 py-4 bg-white text-slate-900 rounded-2xl font-black text-sm hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/10 flex items-center gap-3">
-                            تحميل الدليل الكامل (PDF)
-                            <i class="fas fa-download"></i>
-                        </button>
-                    </div>
-                    <div class="hidden lg:block relative h-full">
-                        <div class="absolute inset-0 bg-gradient-to-l from-slate-900 to-transparent z-10"></div>
-                        <div class="w-full h-full flex items-center justify-center p-10">
-                            <div class="relative w-full aspect-video rounded-3xl overflow-hidden shadow-2xl rotate-3 group-hover:rotate-0 transition-transform duration-700">
-                                <div class="absolute inset-0 bg-blue-600/20 mix-blend-overlay"></div>
-                                <div class="flex items-center justify-center h-full bg-slate-800">
-                                    <i class="fas fa-rocket text-8xl text-blue-500/20"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <button type="submit" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all">حفظ الإعدادات</button>
+            </form>
         </div>
     </div>
 </div>
 
-    </div>
-</div>
-
-<!-- Tutorial Viewer Modal -->
-<div id="tutorial-viewer" class="fixed inset-0 z-[99999] hidden flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onclick="closeTutorial()"></div>
-    <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] relative z-[100000] overflow-hidden flex flex-col scale-95 opacity-0 transition-all duration-300 border border-slate-200" 
-         id="viewer-container" 
-         style="background: white !important; opacity: 1 !important;">
-        <!-- Header -->
-        <div class="p-6 lg:p-8 flex flex-row-reverse justify-between items-center border-b border-slate-50" dir="rtl">
-            <div class="flex items-center gap-4 text-right">
-                <div id="viewer-icon" class="w-12 h-12 rounded-2xl flex-shrink-0 flex items-center justify-center text-white shadow-lg"></div>
-                <div>
-                    <h3 id="viewer-title" class="text-2xl font-black text-slate-800"></h3>
-                    <p id="viewer-subtitle" class="text-slate-500 text-sm font-medium"></p>
-                </div>
-            </div>
-            <button onclick="closeTutorial()" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
-        <!-- Content -->
-        <div class="flex-grow overflow-y-auto p-6 lg:p-10" id="viewer-body" dir="rtl">
-            <!-- Content injected via JS -->
-        </div>
-
-        <!-- Footer -->
-        <div class="p-6 bg-slate-50/50 flex flex-row-reverse justify-between items-center border-t border-slate-50" dir="rtl">
-            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Success Center Guide</p>
-            <div class="flex gap-3">
-                <button onclick="closeTutorial()" class="px-8 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-lg active:shadow-none">فهمت، شكراً</button>
-                <button onclick="closeTutorial()" class="px-6 py-2.5 text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors">إغلاق</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Floating Action Button -->
-<button class="floating-add-btn" onclick="showQuickActions()">
-    <i class="fas fa-plus"></i>
-</button>
-
-<div id="quick-actions-menu" class="fixed bottom-24 right-8 hidden z-50">
-    <div class="flex flex-col gap-3">
-        <button class="w-12 h-12 bg-blue-500 text-white rounded-full shadow-lg hover:scale-110 transition-all" onclick="window.location.href='/add-product/{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}'" title="إضافة منتج">
-            <i class="fas fa-box"></i>
-        </button>
-        <button class="w-12 h-12 bg-green-500 text-white rounded-full shadow-lg hover:scale-110 transition-all" onclick="window.location.href='/add-offer/{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}'" title="إضافة عرض">
-            <i class="fas fa-tag"></i>
-        </button>
-    </div>
-</div>
-
-{% include 'product_modal_snippet.html' %}
-{% include 'ad_modal_snippet.html' %}
-{% include 'promotion_modal_snippet.html' %}
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    /**
-     * Compresses an image file to be under maxSizeKB while maintaining quality.
-     */
-    async function compressImage(file, maxSizeKB = 150) {
-        if (!file.type.startsWith('image/') || file.size <= maxSizeKB * 1024) {
-            return file;
-        }
-
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-
-                    // Max dimensions to avoid huge canvas and keep file size low
-                    const MAX_WIDTH = 1600;
-                    const MAX_HEIGHT = 1600;
-
-                    if (width > height) {
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
-                    } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
-                        }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // Iterative compression
-                    let quality = 0.9;
-                    const minQuality = 0.3;
-                    
-                    const processBlob = (blob) => {
-                        if (blob.size <= maxSizeKB * 1024 || quality <= minQuality) {
-                            const compressedFile = new File([blob], file.name, {
-                                type: 'image/jpeg',
-                                lastModified: Date.now()
-                            });
-                            console.log(`Compressed ${file.name}: ${(file.size/1024).toFixed(2)}KB -> ${(compressedFile.size/1024).toFixed(2)}KB`);
-                            resolve(compressedFile);
-                        } else {
-                            quality -= 0.1;
-                            canvas.toBlob(processBlob, 'image/jpeg', quality);
-                        }
-                    };
-
-                    canvas.toBlob(processBlob, 'image/jpeg', quality);
-                };
-            };
-        });
-    }
-
-    /**
-     * Helper to handle image input change, compress, and update file input.
-     */
-    async function handleImageUpload(inputElement, maxSizeKB = 150) {
-        const files = Array.from(inputElement.files);
-        if (files.length === 0) return;
-
-        const dataTransfer = new DataTransfer();
-        
-        for (const file of files) {
-            if (file.type.startsWith('image/')) {
-                const compressed = await compressImage(file, maxSizeKB);
-                dataTransfer.items.add(compressed);
-            } else {
-                dataTransfer.items.add(file);
-            }
-        }
-        
-        // Replace files in the input element
-        inputElement.files = dataTransfer.files;
-        
-        // Dispatch change event again so previews update with the NEW file
-        // We use a flag to prevent infinite loops
-        if (!inputElement._isCompressing) {
-            inputElement._isCompressing = true;
-            inputElement.dispatchEvent(new Event('change', { bubbles: true }));
-            setTimeout(() => inputElement._isCompressing = false, 100);
-        }
-    }
-
-    function updateModalStatusBtn(productId, isActive) {
-        const btn = document.getElementById('modalDeleteBtn');
-        if (!btn) return;
-
-        if (productId) {
-            btn.classList.remove('hidden');
-            btn.onclick = () => confirmToggleProductStatus(productId, isActive);
-            
-            // Clear status-specific classes but keep layout
-            btn.classList.remove('bg-orange-50', 'text-orange-500', 'hover:bg-orange-100', 'bg-green-50', 'text-green-500', 'hover:bg-green-100', 'bg-red-50', 'text-red-500', 'hover:bg-red-100');
-            
-            if (isActive) {
-                btn.classList.add('bg-orange-50', 'text-orange-500', 'hover:bg-orange-100');
-                btn.innerHTML = '<i class="fas fa-eye-slash ml-1"></i> تعطيل';
-            } else {
-                btn.classList.add('bg-green-50', 'text-green-500', 'hover:bg-green-100');
-                btn.innerHTML = '<i class="fas fa-eye ml-1"></i> تنشيط';
-            }
-        } else {
-            btn.classList.add('hidden');
-            btn.onclick = null;
-        }
-    }
-
-    function confirmToggleProductStatus(productId, isActive) {
-        Swal.fire({
-            title: isActive ? 'تعطيل المنتج؟' : 'تنشيط المنتج؟',
-            text: isActive ? "لن يظهر هذا المنتج للعملاء بعد التعطيل." : "سيظهر هذا المنتج للعملاء مرة أخرى.",
-            icon: isActive ? 'warning' : 'info',
-            showCancelButton: true,
-            confirmButtonColor: isActive ? '#ef4444' : '#10b981',
-            cancelButtonColor: '#cbd5e1',
-            confirmButtonText: isActive ? 'نعم، تعطيل' : 'نعم، تنشيط',
-            cancelButtonText: 'إلغاء'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                toggleProductStatus(productId);
-            }
-        });
-    }
-
-    function toggleProductStatus(productId) {
-        const modalBtn = document.getElementById('modalDeleteBtn');
-        const originalContent = modalBtn ? modalBtn.innerHTML : '';
-        if (modalBtn) {
-            modalBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التنفيذ...';
-            modalBtn.disabled = true;
-        }
-
-        fetch(`/toggle-product-status/${productId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().catch(() => {
-                    throw new Error('حدث خطأ في الخادم');
-                }).then(errData => {
-                    throw new Error(errData.message || 'حدث خطأ غير متوقع');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                Swal.fire('تم العمالية نجاح', data.message, 'success').then(() => location.reload());
-            } else {
-                Swal.fire('خطأ', data.message || 'فشل في تحديث الحالة', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error toggling product status:', error);
-            Swal.fire('خطأ', error.message || 'حدث خطأ أثناء الاتصال بالخادم', 'error');
-        })
-        .finally(() => {
-            if (modalBtn) {
-                modalBtn.innerHTML = originalContent;
-                modalBtn.disabled = false;
-            }
-        });
-    }
-
-
-    // --- Modal Management ---
-    function openAddProductModal() {
-        resetModal();
-        updateModalStatusBtn(null); 
-        document.getElementById('modal-title').textContent = 'إضافة منتج جديد';
-        document.getElementById('submitBtnText').textContent = 'إضافة المنتج';
-        document.getElementById('productForm').action = "{% url 'add_product' %}";
-        document.getElementById('product-modal').classList.remove('hidden');
-    }
-
-    function editProduct(productId) {
-        resetModal();
-        // Fallback for button if event is not available
-        const btn = (typeof event !== 'undefined' && event.currentTarget) ? event.currentTarget : null;
-        if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        
-        // Fetch product details
-        fetch(`/edit-product/${productId}/`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const p = data.product;
-                
-                // Populate Form
-                document.getElementById('edit-product-id').value = p.id;
-                document.getElementById('id_name').value = p.name;
-                document.getElementById('id_description').value = p.description;
-                document.getElementById('id_price').value = p.price;
-                if (p.category_id) document.getElementById('id_category').value = p.category_id;
-                document.getElementById('id_is_new').checked = p.is_new;
-                
-                // Handle Image
-                if (p.image_url) {
-                    document.getElementById('modalPreviewImage').src = p.image_url;
-                    document.getElementById('modalFileName').textContent = 'الصورة الحالية';
-                    document.getElementById('modalFilePreview').classList.remove('hidden');
-                    document.getElementById('modalFileUploadContent').classList.add('hidden');
-                }
-
-                // Handle Video
-                if (p.video_url) {
-                    document.getElementById('modalVideoName').textContent = 'الفيديو الحالي';
-                    document.getElementById('modalVideoPreview').classList.remove('hidden');
-                    document.getElementById('modalVideoUploadContent').classList.add('hidden');
-                }
-
-                // Handle Additional Images
-                if (p.additional_images && p.additional_images.length > 0) {
-                    const previewContainer = document.getElementById('additional-images-preview');
-                    previewContainer.innerHTML = '';
-                    p.additional_images.forEach(url => {
-                        const img = document.createElement('img');
-                        img.src = url;
-                        img.className = 'w-10 h-10 rounded-lg object-cover ring-2 ring-slate-100';
-                        previewContainer.appendChild(img);
-                    });
-                }
-
-                // Update UI state
-                document.getElementById('modal-title').textContent = 'تعديل المنتج';
-                document.getElementById('submitBtnText').textContent = 'حفظ التغييرات';
-                document.getElementById('productForm').action = `/edit-product/${productId}/`;
-                
-                // Show status toggle button
-                updateModalStatusBtn(productId, p.is_active);
-                
-                // Trigger preview updates
-                document.getElementById('id_name').dispatchEvent(new Event('input'));
-                document.getElementById('id_price').dispatchEvent(new Event('input'));
-                document.getElementById('id_category').dispatchEvent(new Event('change'));
-
-                document.getElementById('product-modal').classList.remove('hidden');
-            } else {
-                Swal.fire('خطأ', data.message || 'حدث خطأ أثناء جلب بيانات المنتج', 'error');
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            Swal.fire('خطأ', 'حدث خطأ في الاتصال', 'error');
-        })
-        .finally(() => {
-            if (btn) btn.innerHTML = '<i class="fas fa-edit"></i> تعديل';
-        });
-    }
-
-    function closeProductModal() {
-        document.getElementById('product-modal').classList.add('hidden');
-    }
-
-    // --- Category Management ---
-    function openCategoryModal() {
-        document.getElementById('category-modal').classList.remove('hidden');
-    }
-
-    function closeCategoryModal() {
-        document.getElementById('category-modal').classList.add('hidden');
-        document.getElementById('addCategoryForm').reset();
-        document.getElementById('new-parent-container').classList.add('hidden');
-    }
-
-    function toggleNewParentInput(value) {
-        const container = document.getElementById('new-parent-container');
-        if (value === 'new') {
-            container.classList.remove('hidden');
-        } else {
-            container.classList.add('hidden');
-        }
-    }
-
-    function submitCategory() {
-        const parentId = document.getElementById('parent-category-select').value;
-        const newParentName = document.getElementById('new-parent-name').value;
-        const subcategoryName = document.getElementById('subcategory-name').value;
-        const btn = document.getElementById('submitCategoryBtn');
-        const spinner = btn.querySelector('.loading-spinner');
-        
-        if (!subcategoryName) {
-            Swal.fire('خطأ', 'يرجى إدخال اسم الفئة الفرعية', 'error');
-            return;
-        }
-
-        if (!parentId) {
-            Swal.fire('خطأ', 'يرجى اختيار فئة رئيسية', 'error');
-            return;
-        }
-
-        btn.disabled = true;
-        spinner.classList.remove('hidden');
-
-        const formData = new FormData();
-        formData.append('parent_id', parentId);
-        formData.append('new_parent_name', newParentName);
-        formData.append('subcategory_name', subcategoryName);
-        formData.append('supplier_id', document.querySelector('[name="supplier_id"]').value);
-
-        fetch('{% url "add_category_ajax" %}', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Add to product category select
-                const select = document.getElementById('id_category');
-                const option = new Option(data.category.name, data.category.id, true, true);
-                select.add(option);
-                
-                // Also add to parent category select if it was a new parent
-                if (parentId === 'new') {
-                   // This is a bit more complex since we'd need the parent ID too, 
-                   // for now let's just refresh or rely on the user choosing from existing next time.
-                   // Actually, we can just reload the page or show a success message.
-                   Swal.fire('تم', data.message, 'success').then(() => {
-                       closeCategoryModal();
-                   });
-                } else {
-                   Swal.fire('تم', data.message, 'success').then(() => {
-                       closeCategoryModal();
-                   });
-                }
-            } else {
-                Swal.fire('خطأ', data.message, 'error');
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            Swal.fire('خطأ', 'حدث خطأ في الاتصال بالخادم', 'error');
-        })
-        .finally(() => {
-            btn.disabled = false;
-            spinner.classList.add('hidden');
-        });
-    }
-
-    function resetModal() {
-        document.getElementById('productForm').reset();
-        document.getElementById('edit-product-id').value = '';
-        document.getElementById('modalFilePreview').classList.add('hidden');
-        document.getElementById('modalFileUploadContent').classList.remove('hidden');
-        
-        // Reset Video
-        document.getElementById('modalVideoPreview').classList.add('hidden');
-        document.getElementById('modalVideoUploadContent').classList.remove('hidden');
-        
-        // Reset Additional Images
-        document.getElementById('additional-images-preview').innerHTML = '';
-        
-        updateModalStatusBtn(null);
-        
-        // Reset previews
-        document.getElementById('preview-display-name').textContent = 'اسم المنتج';
-        document.getElementById('preview-display-price').textContent = '0.00';
-        document.getElementById('preview-display-category').textContent = 'الفئة';
-        
-        // Clear errors
-        document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
-    }
-
-    // --- Form Submission ---
-    document.getElementById('productForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('modalSubmitBtn');
-        const spinner = btn.querySelector('.loading-spinner');
-        const text = document.getElementById('submitBtnText');
-        
-        btn.disabled = true;
-        spinner.classList.remove('hidden');
-        text.classList.add('opacity-0');
-        
-        const formData = new FormData(this);
-        
-        fetch(this.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showNotification(data.message, 'success');
-                setTimeout(() => window.location.reload(), 1000); // Reload to show changes
-            } else {
-                if (data.errors) {
-                    for (const [field, msg] of Object.entries(data.errors)) {
-                        const err = document.getElementById(`${field}-error`);
-                        if (err) {
-                            err.textContent = msg;
-                            err.classList.remove('hidden');
-                        }
-                    }
-                } else {
-                    showNotification(data.message, 'error');
-                }
-            }
-            btn.disabled = false;
-        })
-        .catch(err => {
-            console.error(err);
-            showNotification('حدث خطأ في الاتصال', 'error');
-            btn.disabled = false;
-        })
-        .finally(() => {
-            spinner.classList.add('hidden');
-            text.classList.remove('opacity-0');
-        });
-    });
-
-    // --- Real-time Preview ---
-    const pName = document.getElementById('id_name');
-    const pPrice = document.getElementById('id_price');
-    const pCat = document.getElementById('id_category');
-    
-    if(pName) pName.addEventListener('input', e => document.getElementById('preview-display-name').textContent = e.target.value || 'اسم المنتج');
-    if(pPrice) pPrice.addEventListener('input', e => document.getElementById('preview-display-price').textContent = e.target.value || '0.00');
-    if(pCat) pCat.addEventListener('change', e => {
-        const opt = e.target.options[e.target.selectedIndex];
-        document.getElementById('preview-display-category').textContent = opt ? opt.text : 'الفئة';
-    });
-
-    // --- File Handling ---
-    const fileInput = document.getElementById('id_image');
-    if(fileInput) {
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('modalPreviewImage').src = e.target.result;
-
-                    document.getElementById('modalFileName').textContent = file.name;
-                    document.getElementById('modalFilePreview').classList.remove('hidden');
-                    document.getElementById('modalFileUploadContent').classList.add('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-
-    document.getElementById('clearFileBtn').addEventListener('click', function() {
-        fileInput.value = '';
-        document.getElementById('modalFilePreview').classList.add('hidden');
-        document.getElementById('modalFileUploadContent').classList.remove('hidden');
-
-    });
-
-    // --- Category Modal Logic ---
-    window.toggleNewParentInput = (val) => {
-        const container = document.getElementById('new-parent-container');
-        container.classList.toggle('hidden', val !== 'new');
-    };
-
-    window.openCategoryModal = () => document.getElementById('category-modal').classList.remove('hidden');
-    window.closeCategoryModal = () => document.getElementById('category-modal').classList.add('hidden');
-
-    window.submitCategory = () => {
-        const parentId = document.getElementById('parent-category-select').value;
-        const newParentName = document.getElementById('new-parent-name').value;
-        const subName = document.getElementById('subcategory-name').value;
-        const btn = document.getElementById('submitCategoryBtn');
-
-        if ((parentId === 'new' && !newParentName) || !subName) {
-            showNotification('يرجى ملء جميع الحقول', 'error');
-            return;
-        }
-
-        btn.disabled = true;
-        const spinner = btn.querySelector('.loading-spinner');
-        spinner.classList.remove('hidden');
-
-        const formData = new FormData();
-        formData.append('parent_id', parentId);
-        formData.append('new_parent_name', newParentName);
-        formData.append('subcategory_name', subName);
-        formData.append('supplier_id', '{{ supplier.id }}');
-
-        fetch("{% url 'add_category_ajax' %}", {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const select = document.getElementById('id_category');
-                const opt = new Option(data.category.name, data.category.id, true, true);
-                select.add(opt);
-                showNotification(data.message, 'success');
-                closeCategoryModal();
-                // Reset form
-                document.getElementById('addCategoryForm').reset();
-                document.getElementById('new-parent-container').classList.add('hidden');
-                // Trigger preview update
-                select.dispatchEvent(new Event('change'));
-            } else {
-                showNotification(data.message, 'error');
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            showNotification('حدث خطأ في الاتصال', 'error');
-        })
-        .finally(() => {
-            btn.disabled = false;
-            spinner.classList.add('hidden');
-        });
-    };
-    
-    // Additional Helper for notifications if not exists
-    window.showNotification = window.showNotification || function(msg, type) {
-        // Simple fallback
-        alert(msg);
-    };
-
-    function showTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        
-        const tab = document.getElementById(tabId + '-tab');
-        if (tab) {
-            tab.classList.remove('hidden');
-            // Update URL hash without jumping
-            history.replaceState(null, null, '#' + tabId);
-        }
-        
-        // Find and activate the correct button
-        const btn = document.querySelector(`[onclick="showTab('${tabId}')"]`);
-        if (btn) btn.classList.add('active');
-    }
-
-    // Restore tab from hash on load
-    window.addEventListener('load', () => {
-        const hash = window.location.hash.replace('#', '');
-        if (hash) {
-            showTab(hash);
-        } else {
-            // Default to products tab if no hash
-            showTab('products');
-        }
-    });
-
-    // Offer Actions
-    function editOffer(offerId) {
-        let url = `/edit-offer/${offerId}/`;
-        {% if request.GET.supplier_id %}
-        url += `?supplier_id={{ supplier.id }}`;
-        {% endif %}
-        window.location.href = url;
-    }
-
-    function openAddOfferModal() {
-        let url = "{% url 'add_product_offer' %}";
-        {% if request.GET.supplier_id %}
-        url += `?supplier_id={{ supplier.id }}`;
-        {% endif %}
-        window.location.href = url;
-    }
-
-    // Analytics Export
-    function exportAnalytics() {
-        // Implement export functionality or redirect
-        alert('سيتم تفعيل هذه الميزة قريباً');
-    }
-
-    function showQuickActions() {
-        document.getElementById('quick-actions-menu').classList.toggle('hidden');
-    }
-
-    // Close menu when clicking outside
-    document.addEventListener('click', (e) => {
-        const menu = document.getElementById('quick-actions-menu');
-        const fab = document.querySelector('.floating-add-btn');
-        if (menu && !menu.contains(e.target) && !fab.contains(e.target)) {
-            menu.classList.add('hidden');
-        }
-    });
-
-    // --- Ad Management JS ---
-    function openAddAdModal() {
-        resetAdModal();
-        updateAdModalStatusBtn(null);
-        document.getElementById('ad-modal-title').textContent = 'إضافة إعلان جديد';
-        document.getElementById('adSubmitBtnText').textContent = 'إضافة الإعلان';
-        document.getElementById('adForm').action = "{% url 'add_ads' %}";
-        document.getElementById('ad-modal').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function editAd(adId, btn) {
-        resetAdModal();
-        if (!btn && typeof event !== 'undefined') btn = event.currentTarget || event.target;
-        const originalHtml = btn ? btn.innerHTML : '<i class="fas fa-edit"></i> تعديل';
-        if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        
-        fetch(`/edit-ads/${adId}/`, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const ad = data.ad;
-                document.getElementById('edit-ad-id').value = ad.id;
-                document.getElementById('ad_title').value = ad.title;
-                document.getElementById('ad_description').value = ad.description;
-                if (ad.product_id) document.getElementById('ad_product').value = ad.product_id;
-                document.getElementById('ad_is_active').checked = ad.is_active;
-
-                if (ad.image_url) {
-                    document.getElementById('ad-image-preview').src = ad.image_url;
-                    document.getElementById('ad-preview-container').classList.remove('hidden');
-                    document.getElementById('ad-upload-content').classList.add('hidden');
-                    
-                    const liveImg = document.getElementById('live-ad-image');
-                    liveImg.src = ad.image_url;
-                    liveImg.classList.remove('opacity-0');
-                    document.getElementById('live-ad-placeholder').classList.add('opacity-0');
-                }
-
-                document.getElementById('ad-modal-title').textContent = 'تعديل الإعلان';
-                document.getElementById('adSubmitBtnText').textContent = 'حفظ التغييرات';
-                document.getElementById('adForm').action = `/edit-ads/${adId}/`;
-                
-                updateAdModalStatusBtn(adId, ad.is_active);
-                
-                // Trigger live preview
-                document.getElementById('ad_title').dispatchEvent(new Event('input'));
-                document.getElementById('ad_description').dispatchEvent(new Event('input'));
-                document.getElementById('ad_product').dispatchEvent(new Event('change'));
-
-                document.getElementById('ad-modal').classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            }
-        })
-        .finally(() => btn.innerHTML = originalHtml);
-    }
-
-    function closeAdModal() {
-        document.getElementById('ad-modal').classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-
-    function resetAdModal() {
-        document.getElementById('adForm').reset();
-        document.getElementById('edit-ad-id').value = '';
-        document.getElementById('ad-preview-container').classList.add('hidden');
-        document.getElementById('ad-upload-content').classList.remove('hidden');
-        document.getElementById('ad-image-preview').src = '';
-        
-        // Reset live preview
-        document.getElementById('live-ad-title').textContent = 'عنوان الإعلان';
-        document.getElementById('live-ad-description').textContent = 'هنا سيظهر وصف إعلانك الجذاب...';
-        document.getElementById('live-ad-image').src = '';
-        document.getElementById('live-ad-image').classList.add('opacity-0');
-        document.getElementById('live-ad-placeholder').classList.remove('opacity-0');
-        document.getElementById('live-ad-link').classList.add('hidden');
-        
-        updateAdModalStatusBtn(null);
-    }
-
-    function updateAdModalStatusBtn(adId, isActive) {
-        const btn = document.getElementById('adModalStatusBtn');
-        if (!btn) return;
-
-        if (adId) {
-            btn.classList.remove('hidden');
-            btn.onclick = () => confirmToggleAdStatus(adId, isActive);
-            btn.classList.remove('bg-orange-50', 'text-orange-500', 'bg-green-50', 'text-green-500');
-            
-            if (isActive) {
-                btn.classList.add('bg-orange-50', 'text-orange-500');
-                btn.innerHTML = '<i class="fas fa-eye-slash ml-1"></i> تعطيل';
-            } else {
-                btn.classList.add('bg-green-50', 'text-green-500');
-                btn.innerHTML = '<i class="fas fa-eye ml-1"></i> تنشيط';
-            }
-        } else {
-            btn.classList.add('hidden');
-        }
-    }
-
-    function confirmToggleAdStatus(adId, isActive) {
-        Swal.fire({
-            title: isActive ? 'تعطيل الإعلان؟' : 'تنشيط الإعلان؟',
-            text: isActive ? "لن يظهر هذا الإعلان للعملاء بعد التعطيل." : "سيظهر هذا الإعلان للعملاء مرة أخرى.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: isActive ? 'نعم، تعطيل' : 'نعم، تنشيط',
-            cancelButtonText: 'إلغاء'
-        }).then((result) => {
-            if (result.isConfirmed) toggleAdStatus(adId);
-        });
-    }
-
-    function toggleAdStatus(adId) {
-        fetch(`/toggle-ad-status/${adId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().catch(() => {
-                    throw new Error('حدث خطأ في الخادم');
-                }).then(errData => {
-                    throw new Error(errData.message || 'حدث خطأ غير متوقع');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                Swal.fire('تمت العملية بنجاح', data.message, 'success').then(() => location.reload());
-            } else {
-                Swal.fire('خطأ', data.message || 'فشل في تحديث الحالة', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error toggling ad status:', error);
-            Swal.fire('خطأ', error.message || 'حدث خطأ أثناء الاتصال بالخادم', 'error');
-        });
-    }
-
-    // Ad Preview Logic
-    document.getElementById('ad_title')?.addEventListener('input', e => {
-        document.getElementById('live-ad-title').textContent = e.target.value || 'عنوان الإعلان';
-    });
-    document.getElementById('ad_description')?.addEventListener('input', e => {
-        document.getElementById('live-ad-description').textContent = e.target.value || 'هنا سيظهر وصف إعلانك الجذاب...';
-    });
-    document.getElementById('ad_product')?.addEventListener('change', e => {
-        const link = document.getElementById('live-ad-link');
-        const name = document.getElementById('live-ad-product-name');
-        if (e.target.value) {
-            link.classList.remove('hidden');
-            link.classList.add('flex');
-            name.textContent = e.target.options[e.target.selectedIndex].text;
-        } else {
-            link.classList.add('hidden');
-            link.classList.remove('flex');
-        }
-    });
-
-    document.getElementById('ad_image')?.addEventListener('change', async function(e) {
-        if (this._isCompressing) return;
-        await handleImageUpload(this);
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('ad-image-preview').src = e.target.result;
-                document.getElementById('ad-preview-container').classList.remove('hidden');
-                document.getElementById('ad-upload-content').classList.add('hidden');
-                
-                const liveImg = document.getElementById('live-ad-image');
-                liveImg.src = e.target.result;
-                liveImg.classList.remove('opacity-0');
-                document.getElementById('live-ad-placeholder').classList.add('opacity-0');
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    document.getElementById('clearAdImage')?.addEventListener('click', () => {
-        document.getElementById('ad_image').value = '';
-        document.getElementById('ad-preview-container').classList.add('hidden');
-        document.getElementById('ad-upload-content').classList.remove('hidden');
-        document.getElementById('live-ad-image').classList.add('opacity-0');
-        document.getElementById('live-ad-placeholder').classList.remove('opacity-0');
-    });
-
-    document.getElementById('adForm')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('adSubmitBtn');
-        const spinner = btn.querySelector('.loading-spinner');
-        const text = document.getElementById('adSubmitBtnText');
-        
-        btn.disabled = true;
-        spinner.classList.remove('hidden');
-        text.classList.add('hidden');
-        
-        fetch(this.action, {
-            method: 'POST',
-            body: new FormData(this),
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showNotification(data.message, 'success');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                if (data.errors) {
-                    Object.entries(data.errors).forEach(([field, msg]) => {
-                        const err = document.getElementById(`${field}-error`);
-                        if (err) { err.textContent = msg; err.classList.remove('hidden'); }
-                    });
-                } else {
-                    showNotification(data.message, 'error');
-                }
-                btn.disabled = false;
-                spinner.classList.add('hidden');
-                text.classList.remove('hidden');
-            }
-        })
-        .catch(() => {
-            btn.disabled = false;
-            spinner.classList.add('hidden');
-            text.classList.remove('hidden');
-        });
-    });
-</script>
-
-
-
-<!-- Settings Modal -->
-<div id="settings-modal" class="settings-modal" onclick="closeSettingsModalOnOutsideClick(event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gradient">إعدادات المتجر</h2>
-            <button onclick="closeSettingsModal()" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
-
-        <form action="{% url 'update_merchant_settings' %}" method="POST" enctype="multipart/form-data" id="merchant-settings-form">
-            {% csrf_token %}
-            <input type="hidden" name="supplier_id" value="{{ supplier.id }}">
-            
-            <div class="space-y-6">
-                <!-- Name & Contact -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-2">{{ settings_form.name.label }}</label>
-                        {{ settings_form.name }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-2">{{ settings_form.phone.label }}</label>
-                        {{ settings_form.phone }}
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-2">{{ settings_form.address.label }}</label>
-                    {{ settings_form.address }}
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-2">{{ settings_form.city.label }}</label>
-                        {{ settings_form.city }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-2">{{ settings_form.country.label }}</label>
-                        {{ settings_form.country }}
-                    </div>
-                </div>
-
-                <!-- Logo -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-2">{{ settings_form.profile_picture.label }}</label>
-                    <div class="flex items-center gap-4">
-                        {% if supplier.profile_picture %}
-                        <img src="{{ supplier.profile_picture.url }}" class="w-12 h-12 rounded-full object-cover" id="logo-preview">
-                        {% endif %}
-                        {{ settings_form.profile_picture }}
-                    </div>
-                </div>
-
-                <!-- Location Selection Map -->
-                <div class="space-y-4 pt-4 border-t">
-                    <h3 class="font-bold text-gray-700">موقع المتجر على الخريطة</h3>
-                    
-                    {{ settings_form.latitude }}
-                    {{ settings_form.longitude }}
-                    
-                    <div class="map-preview-btn" onclick="toggleMap()">
-                        <i class="fas fa-map-marked-alt text-blue-500 text-xl"></i>
-                        <div class="text-right">
-                            <div class="font-bold text-sm">حدد الموقع على الخريطة</div>
-                            <div class="text-xs text-gray-500" id="coords-status">
-                                {% if supplier.latitude and supplier.longitude %}
-                                    الإحداثيات محددة: {{ supplier.latitude|floatformat:4 }}, {{ supplier.longitude|floatformat:4 }}
-                                {% else %}
-                                    الموقع غير محدد حالياً
-                                {% endif %}
-                            </div>
-                        </div>
-                        <i class="fas fa-chevron-down mr-auto" id="map-toggle-icon"></i>
-                    </div>
-                    
-                    <div id="selection-map" style="display: none;"></div>
-                    <p class="text-[10px] text-gray-400">انقر على الخريطة ليتم تحديد موقع متجرك بدقة ليتمكن العملاء من الوصول إليك بسهولة.</p>
-                </div>
-
-                <!-- Colors -->
-                <div class="space-y-4 pt-4 border-t">
-                    <h3 class="font-bold text-gray-700">ألوان الهوية</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Primary Color -->
-                        <div class="space-y-2">
-                            <label class="text-xs font-semibold text-gray-500">{{ settings_form.primary_color.label }}</label>
-                            <div class="color-input-container">
-                                <input type="color" name="primary_color" id="primary-color-picker" 
-                                       value="{{ supplier.primary_color|default:'#ef7d2d' }}" 
-                                       class="w-full h-10 rounded cursor-pointer" 
-                                       oninput="updateHexInput('primary')">
-                                <input type="text" id="primary-hex-input" 
-                                       class="w-full mt-1 text-center font-mono text-sm border rounded p-1" 
-                                       value="{{ supplier.primary_color|default:'#ef7d2d' }}" 
-                                       oninput="updatePickerInput('primary')">
-                            </div>
-                        </div>
-
-                        <!-- Secondary Color -->
-                        <div class="space-y-2">
-                            <label class="text-xs font-semibold text-gray-500">{{ settings_form.secondary_color.label }}</label>
-                            <div class="color-input-container">
-                                <input type="color" name="secondary_color" id="secondary-color-picker" 
-                                       value="{{ supplier.secondary_color|default:'#ffffff' }}" 
-                                       class="w-full h-10 rounded border cursor-pointer" 
-                                       oninput="updateHexInput('secondary')">
-                                <input type="text" id="secondary-hex-input" 
-                                       class="w-full mt-1 text-center font-mono text-sm border rounded p-1" 
-                                       value="{{ supplier.secondary_color|default:'#ffffff' }}" 
-                                       oninput="updatePickerInput('secondary')">
-                            </div>
-                        </div>
-
-                        <!-- Accent Color -->
-                        <div class="space-y-2">
-                            <label class="text-xs font-semibold text-gray-500">{{ settings_form.accent_color.label }}</label>
-                            <div class="color-input-container">
-                                <input type="color" name="accent_color" id="accent-color-picker" 
-                                       value="{{ supplier.accent_color|default:'#9abfc4' }}" 
-                                       class="w-full h-10 rounded cursor-pointer" 
-                                       oninput="updateHexInput('accent')">
-                                <input type="text" id="accent-hex-input" 
-                                       class="w-full mt-1 text-center font-mono text-sm border rounded p-1" 
-                                       value="{{ supplier.accent_color|default:'#9abfc4' }}" 
-                                       oninput="updatePickerInput('accent')">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex gap-4 pt-6">
-                    <button type="submit" class="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all">
-                        حفظ التغييرات
-                    </button>
-                    <button type="button" onclick="closeSettingsModal()" class="flex-1 bg-gray-100 text-gray-600 font-bold py-3 rounded-xl hover:bg-gray-200 transition-all">
-                        إلغاء
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script>
-    let map = null;
-    let marker = null;
-    let mapInitialized = false;
-
-    function initMap() {
-        if (mapInitialized) return;
-        
-        const defaultLat = {{ supplier.latitude|default:15.3694 }};
-        const defaultLng = {{ supplier.longitude|default:44.1910 }}; // Default to Sana'a if not set
-        
-        map = L.map('selection-map').setView([defaultLat, defaultLng], 13);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        {% if supplier.latitude and supplier.longitude %}
-            marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
-        {% endif %}
-
-        map.on('click', function(e) {
-            const lat = e.latlng.lat;
-            const lng = e.latlng.lng;
-            updateLocation(lat, lng);
-        });
-
-        mapInitialized = true;
-    }
-
-    function updateLocation(lat, lng) {
-        if (marker) {
-            marker.setLatLng([lat, lng]);
-        } else {
-            marker = L.marker([lat, lng], {draggable: true}).addTo(map);
-        }
-
-        // Add dragend listener to marker
-        marker.on('dragend', function(event) {
-            const position = marker.getLatLng();
-            updateFormInputs(position.lat, position.lng);
-        });
-
-        updateFormInputs(lat, lng);
-    }
-
-    function updateFormInputs(lat, lng) {
-        document.querySelector('[name="latitude"]').value = lat;
-        document.querySelector('[name="longitude"]').value = lng;
-        document.getElementById('coords-status').textContent = `الإحداثيات محددة: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-    }
-
-    function toggleMap() {
-        const mapDiv = document.getElementById('selection-map');
-        const icon = document.getElementById('map-toggle-icon');
-        
-        if (mapDiv.style.display === 'none') {
-            mapDiv.style.display = 'block';
-            icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
-            
-            // Re-initialize or invalidate size to ensure map renders correctly
-            if (!mapInitialized) {
-                initMap();
-            } else {
-                map.invalidateSize();
-            }
-        } else {
-            mapDiv.style.display = 'none';
-            icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
-        }
-    }
-
     function openSettingsModal() {
-        document.getElementById('settings-modal').style.display = 'block';
+        document.getElementById('settings-modal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
 
     function closeSettingsModal() {
-        document.getElementById('settings-modal').style.display = 'none';
-        document.body.style.overflow = 'auto';
-        // Hide map on close so it resets
-        document.getElementById('selection-map').style.display = 'none';
-        document.getElementById('map-toggle-icon').classList.replace('fa-chevron-up', 'fa-chevron-down');
-    }
-
-    function closeSettingsModalOnOutsideClick(e) {
-        if (e.target.id === 'settings-modal') {
-            closeSettingsModal();
-        }
-    }
-
-    function updateHexInput(prefix) {
-        const picker = document.getElementById(prefix + '-color-picker');
-        const hex = document.getElementById(prefix + '-hex-input');
-        hex.value = picker.value.toUpperCase();
-    }
-
-    function updatePickerInput(prefix) {
-        const picker = document.getElementById(prefix + '-color-picker');
-        const hex = document.getElementById(prefix + '-hex-input');
-        let val = hex.value;
-        if (!val.startsWith('#')) val = '#' + val;
-        if (/^#[0-9A-F]{6}$/i.test(val)) {
-            picker.value = val;
-        }
-    }
-
-    // Preview logo before upload
-    document.querySelector('input[name="profile_picture"]').addEventListener('change', async function(e) {
-        if (this._isCompressing) return;
-        await handleImageUpload(this);
-        if (this.files && this.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                let preview = document.getElementById('logo-preview');
-                if (!preview) {
-                    preview = document.createElement('img');
-                    preview.id = 'logo-preview';
-                    preview.className = 'w-12 h-12 rounded-full object-cover';
-                    document.querySelector('input[name="profile_picture"]').parentElement.prepend(preview);
-                }
-                preview.src = e.target.result;
-            }
-            reader.readAsDataURL(this.files[0]);
-        }
-    });
-
-    // --- Tutorial Management ---
-    const tutorials = {
-        media: {
-            title: "الجناح الإعلامي المتقدم",
-            subtitle: "كيفية تحويل متجرك إلى تجربة فنية غامرة",
-            icon: "fas fa-play-circle",
-            color: "bg-blue-500",
-            content: `
-                <div class="space-y-8 text-right">
-                    <div class="bg-blue-50/50 p-6 rounded-3xl border border-blue-100">
-                        <h4 class="font-bold text-blue-900 mb-2">لماذا الميديا المتعددة؟</h4>
-                        <p class="text-blue-800/70 text-sm">الإحصائيات تؤكد أن المنتجات التي تحتوي على فيديو وصور تفصيلية تحقق مبيعات أعلى بنسبة 40%. الفيديو يمنح العميل ثقة فورية في جودة المنتج.</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="tutorial-step p-6 rounded-3xl space-y-4">
-                            <h5 class="font-black text-slate-800 flex items-center gap-2">
-                                <span class="w-6 h-6 bg-blue-500 text-white text-[10px] rounded-full flex items-center justify-center">1</span>
-                                إضافة الفيديو الترويجي
-                            </h5>
-                            <p class="text-sm text-slate-600">من نافذة إضافة منتج، ستجد حفلاً مخصصاً للفيديو. يفضل أن يكون الفيديو قصيراً (15-30 ثانية) ويركز على تفاصيل المنتج وطريقة استخدامه.</p>
-                        </div>
-                        <div class="tutorial-step p-6 rounded-3xl space-y-4">
-                            <h5 class="font-black text-slate-800 flex items-center gap-2">
-                                <span class="w-6 h-6 bg-blue-500 text-white text-[10px] rounded-full flex items-center justify-center">2</span>
-                                الصور المتعددة (المعرض)
-                            </h5>
-                            <p class="text-sm text-slate-600">يمكنك الآن اختيار عدة صور دفعة واحدة. سيقوم النظام تلقائياً بإنشاء معرض صور احترافي للعميل مع خاصية التبديل السهل.</p>
-                        </div>
-                    </div>
-                </div>
-            `
-        },
-        orders: {
-            title: "احتراف إدارة الطلبات",
-            subtitle: "رحلة الطلب من الضغطة الأولى وحتى باب العميل",
-            icon: "fas fa-truck-loading",
-            color: "bg-green-500",
-            content: `
-                <div class="space-y-8 text-right">
-                    <div class="bg-green-50/50 p-6 rounded-3xl border border-green-100">
-                        <h4 class="font-bold text-green-900 mb-2">السر في المتابعة</h4>
-                        <p class="text-green-800/70 text-sm">العملاء يحبون الشفافية. تحديث حالة الطلب في كل مرحلة يقلل من تساؤلات العميل ويزيد من ولائه لعلامتك التجارية.</p>
-                    </div>
-
-                    <div class="space-y-6">
-                        <div class="flex gap-6 items-start">
-                            <div class="w-12 h-12 bg-slate-100 rounded-2xl flex-shrink-0 flex items-center justify-center text-slate-400 font-bold">1</div>
-                            <div>
-                                <h5 class="font-black text-slate-800 mb-1">الاستلام والمراجعة</h5>
-                                <p class="text-sm text-slate-600">بمجرد وصول طلب جديد، سيظهر لك إشعار في لوحة التحكم. تأكد من توفر المنتج ثم قم بتغيير الحالة إلى "قيد التحضير".</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `
-        },
-        growth: {
-            title: "النمو والتحليلات",
-            subtitle: "حوّل البيانات إلى قرارات تجارية ذكية",
-            icon: "fas fa-chart-line",
-            color: "bg-purple-500",
-            content: `
-                <div class="space-y-8 text-right">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="tutorial-step p-6 rounded-3xl flex flex-col justify-between">
-                            <div>
-                                <h5 class="font-bold text-slate-800 mb-3">مؤشر أداء مبيعاتك</h5>
-                                <p class="text-sm text-slate-600 mb-4">راقب الرسوم البيانية في لوحة التحكم بشكل يومي. ارتفاع المنحنى يعني أن استراتيجيتك صحيحة، ثباته يحتاج إلى تدخل.</p>
-                            </div>
-                            <i class="fas fa-trending-up text-4xl text-purple-200 self-end"></i>
-                        </div>
-                        <div class="tutorial-step p-6 rounded-3xl flex flex-col justify-between">
-                            <div>
-                                <h5 class="font-bold text-slate-800 mb-3">أكثر المنتجات طلباً</h5>
-                                <p class="text-sm text-slate-600 mb-4">تعرف على المنتجات التي تجذب الزوار. يمكنك عمل عروض (Buy 1 Get 1) على هذه المنتجات لزيادة حجم السلة الشرائية.</p>
-                            </div>
-                            <i class="fas fa-shopping-bag text-4xl text-purple-200 self-end"></i>
-                        </div>
-                    </div>
-
-                    <div class="bg-purple-900 text-white p-8 rounded-[2rem] shadow-xl overflow-hidden relative">
-                        <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
-                        <h4 class="text-xl font-bold mb-4 relative z-10">قاعدة الـ 80/20</h4>
-                        <p class="text-purple-200 text-sm leading-relaxed relative z-10">غالباً ما تأتي 80% من أرباحك من 20% فقط من منتجاتك. استخدم التحليلات لتحديد هذه المنتجات الذهبية وركز جهودك التسويقية عليها.</p>
-                    </div>
-                </div>
-            `
-        }
-    };
-
-    function openTutorial(id) {
-        const tutorial = tutorials[id];
-        if (!tutorial) return;
-
-        const viewer = document.getElementById('tutorial-viewer');
-        const container = document.getElementById('viewer-container');
-        
-        // Populate content
-        document.getElementById('viewer-icon').className = `w-12 h-12 rounded-2xl flex items-center justify-center text-white ${tutorial.color}`;
-        document.getElementById('viewer-icon').innerHTML = `<i class="${tutorial.icon} text-2xl"></i>`;
-        document.getElementById('viewer-title').textContent = tutorial.title;
-        document.getElementById('viewer-subtitle').textContent = tutorial.subtitle;
-        document.getElementById('viewer-body').innerHTML = tutorial.content;
-
-        // Show modal
-        viewer.classList.remove('hidden');
-        setTimeout(() => {
-            container.classList.remove('scale-95', 'opacity-0');
-            container.classList.add('scale-100', 'opacity-100');
-        }, 10);
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeTutorial() {
-        const viewer = document.getElementById('tutorial-viewer');
-        const container = document.getElementById('viewer-container');
-        
-        container.classList.add('scale-95', 'opacity-0');
-        container.classList.remove('scale-100', 'opacity-100');
-        
-        setTimeout(() => {
-            viewer.classList.add('hidden');
-            document.body.style.overflow = '';
-        }, 300);
-    }
-    function openPromotionModal() {
-        document.getElementById('promotion-modal').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closePromotionModal() {
-        document.getElementById('promotion-modal').classList.add('hidden');
+        document.getElementById('settings-modal').classList.add('hidden');
         document.body.style.overflow = '';
-        document.getElementById('promotionForm').reset();
     }
 
-    function handlePromotionProductChange(productId) {
-        if (!productId) {
-            document.getElementById('id_promotion_description').value = '';
-            return;
-        }
-        
-        const select = document.getElementById('id_promotion_product');
-        const option = select.options[select.selectedIndex];
-        const description = option.getAttribute('data-description');
-        
-        if (description) {
-            document.getElementById('id_promotion_description').value = description;
-        }
-    }
-
-    document.getElementById('promotionForm').addEventListener('submit', function(e) {
+    // Handle settings form
+    document.getElementById('settingsForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        const form = this;
-        const formData = new FormData(form);
-        const submitBtn = document.getElementById('promotionSubmitBtn');
-        const submitBtnText = submitBtn.querySelector('span');
-        const spinner = submitBtn.querySelector('.loading-spinner');
-        
-        // Disable UI
-        submitBtn.disabled = true;
-        submitBtnText.classList.add('opacity-0');
-        spinner.classList.remove('hidden');
-        
-        fetch("{% url 'request_promotion' %}", {
+        const formData = new FormData(this);
+        fetch(this.action, {
             method: 'POST',
             body: formData,
             headers: {
@@ -2071,46 +391,23 @@
                 'X-CSRFToken': formData.get('csrfmiddlewaretoken')
             }
         })
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
             if (data.success) {
                 Swal.fire({
                     icon: 'success',
-                    title: 'تم الإرسال!',
-                    text: data.message,
-                    confirmButtonText: 'حسناً',
-                    customClass: {
-                        popup: 'rounded-3xl',
-                        confirmButton: 'bg-blue-600 rounded-xl px-8 py-3'
-                    }
-                }).then(() => {
-                    location.reload(); // Reload to see the new promotion
-                });
+                    title: 'تم التحديث',
+                    text: 'تم حفظ إعدادات المتجر بنجاح',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => location.reload());
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'خطأ في الإرسال',
-                    text: data.message || 'حدث خطأ غير متوقع',
-                    confirmButtonText: 'حسناً',
-                    customClass: {
-                        popup: 'rounded-3xl'
-                    }
-                });
+                Swal.fire('خطأ', 'فشل تحديث الإعدادات', 'error');
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'خطأ في الاتصال',
-                text: 'فشل الاتصال بالخادم. يرجى المحاولة مرة أخرى.',
-                confirmButtonText: 'حسناً'
-            });
-        })
-        .finally(() => {
-            submitBtn.disabled = false;
-            submitBtnText.classList.remove('opacity-0');
-            spinner.classList.add('hidden');
+        .catch(err => {
+            console.error(err);
+            Swal.fire('خطأ', 'حدث خطأ في الاتصال', 'error');
         });
     });
 </script>

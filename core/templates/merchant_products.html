@@ -1,0 +1,902 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}إدارة المنتجات - {{ supplier.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/merchant_dashboard.css' %}?v={{ css_version }}">
+<link rel="stylesheet" href="{% static 'css/merchant_products.css' %}?v={{ css_version }}">
+<style>
+    :root {
+        --primary-color: {{ supplier.primary_color|default:'#ef7d2d' }};
+        --secondary-color: {{ supplier.secondary_color|default:'#ffffff' }};
+        --accent-color: {{ supplier.accent_color|default:'#9abfc4' }};
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" dir="rtl">
+    <div class="products-container">
+        <!-- Breadcrumbs & Header -->
+        <div class="breadcrumb-container">
+            <ul class="breadcrumb-custom">
+                <li class="breadcrumb-item-custom">
+                    <a href="{% url 'my_merchant' %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}">لوحة التحكم</a>
+                </li>
+                <i class="fas fa-chevron-left breadcrumb-separator"></i>
+                <li class="breadcrumb-item-custom active">إدارة المنتجات والمخزون</li>
+            </ul>
+        </div>
+
+        <div class="page-title-row">
+            <h2 class="page-title">
+                <i class="fas fa-box"></i>
+                إدارة المنتجات
+            </h2>
+            <button class="action-btn" onclick="openAddProductModal()">
+                <i class="fas fa-plus"></i>
+                <span>إضافة منتج جديد</span>
+            </button>
+        </div>
+
+        <!-- Statistics Summary Row -->
+        <div class="stats-summary-card">
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="stat-number">{{ products.count }}</span>
+                    <span class="stat-label">إجمالي المنتجات</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number text-emerald-600">{{ active_products_count }}</span>
+                    <span class="stat-label">منتجات نشطة</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number text-slate-400">{{ inactive_products_count }}</span>
+                    <span class="stat-label">منتجات مخفية</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number text-orange-500">{{ active_offers_count }}</span>
+                    <span class="stat-label">عروض نشطة</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Innovative Filters -->
+        <div class="filters-section">
+            <div class="status-row-wrapper">
+                <div class="status-tabs-container">
+                    <div class="status-tab active" data-status="all" onclick="filterByStatus('all')">جميع المنتجات</div>
+                    <div class="status-tab" data-status="active" onclick="filterByStatus('active')">نشط ({{ active_products_count }})</div>
+                    <div class="status-tab" data-status="inactive" onclick="filterByStatus('inactive')">مخفي ({{ inactive_products_count }})</div>
+                    <div class="status-tab" data-status="new" onclick="filterByStatus('new')">جديد</div>
+                    <div class="status-tab" data-status="offered" onclick="filterByStatus('offered')">عليه عرض ({{ active_offers_count }})</div>
+                </div>
+                <button type="button" class="btn-toggle-filter" onclick="toggleFilters()" id="filterToggleBtn" title="بحث وتصنيف">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+            <!-- Collapsible Search and Category Row -->
+            <div id="collapsibleFilters" class="collapsible-filter-content">
+                <div class="compact-filter-row">
+                    <div class="filter-input-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="productSearch" placeholder="بحث باسم المنتج..." oninput="filterProducts()">
+                    </div>
+                    
+                    <div class="filter-input-wrapper">
+                        <i class="fas fa-filter"></i>
+                        <select id="categoryFilter" onchange="filterProducts()">
+                            <option value="">جميع الأقسام</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.name }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub-Tabs Navigation (Hidden or Minimized in V2) -->
+        <div class="tab-container hidden">
+            <div class="flex flex-wrap justify-center border-b border-gray-100">
+                <button class="tab-btn active" onclick="showSubTab('products')">المنتجات</button>
+                <button class="tab-btn" onclick="showSubTab('offers')">العروض</button>
+                <button class="tab-btn" onclick="showSubTab('promotions')">طلبات الترويج</button>
+            </div>
+        </div>
+
+    <!-- Products Sub-Tab -->
+    <div id="products-subtab" class="subtab-content">
+        {% if products %}
+            <div class="products-table-wrapper">
+                <table class="products-table" id="mainProductsTable">
+                    <thead>
+                        <tr>
+                            <th>المنتج</th>
+                            <th>الفئة</th>
+                            <th>التقييم</th>
+                            <th>السعر</th>
+                            <th>الحالة</th>
+                            <th class="text-left">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mainProductGrid">
+                        {% for product in products %}
+                        <tr class="product-row animate-row" 
+                            data-name="{{ product.name|lower }}" 
+                            data-category="{{ product.category.name }}"
+                            data-is-active="{{ product.is_active|yesno:'true,false' }}"
+                            data-is-new="{{ product.is_new|yesno:'true,false' }}"
+                            data-has-offer="{{ product.has_discount|yesno:'true,false' }}">
+                            
+                            <!-- Product Cell -->
+                            <td>
+                                <div class="product-cell-main">
+                                    <img src="{{ product.image.url }}" class="thumbnail-sm" alt="{{ product.name }}">
+                                    <div class="product-info-mini">
+                                        <span class="product-row-name">{{ product.name }}</span>
+                                        {% if product.is_new %}
+                                        <span class="product-badge-new">جديد</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Category -->
+                            <td class="product-row-cat">{{ product.category.name }}</td>
+
+                            <!-- Rating -->
+                            <td>
+                                <div class="flex items-center gap-1 text-yellow-500">
+                                    <i class="fas fa-star text-[10px]"></i>
+                                    <span class="text-xs font-black">{{ product.get_average_rating|floatformat:1 }}</span>
+                                </div>
+                            </td>
+
+                            <!-- Price -->
+                            <td>
+                                <div class="price-container-row">
+                                    <div class="price-now">
+                                        {% if product.has_discount %}
+                                            <span class="price-old text-gray-300 line-through text-[10px] ml-1">{{ product.price }}</span>
+                                            {{ product.get_price_with_offer }}
+                                        {% else %}
+                                            {{ product.price }}
+                                        {% endif %}
+                                        <small class="text-[10px] text-gray-400 font-bold ml-1">{{ supplier.currency.symbol }}</small>
+                                    </div>
+                                    {% if product.has_discount %}
+                                    <span class="price-badge-discount">خصم {{ product.get_discount_precentage }}%</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+
+                            <!-- Status Toggle -->
+                            <td>
+                                <div class="status-toggle-wrapper">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" {% if product.is_active %}checked{% endif %} 
+                                               onchange="confirmToggleProductStatus({{ product.id }}, {{ product.is_active|yesno:'true,false' }})">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="status-text {% if product.is_active %}status-active{% else %}status-hidden{% endif %}">
+                                        {{ product.is_active|yesno:'نشط,مخفي' }}
+                                    </span>
+                                </div>
+                            </td>
+
+                            <!-- Actions -->
+                            <td>
+                                <div class="row-actions">
+                                    <button onclick="editProduct({{ product.id }})" class="btn-row-action" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="openAddOfferModal({{ product.id }})" class="btn-row-action" title="إضافة عرض">
+                                        <i class="fas fa-tag"></i>
+                                    </button>
+                                    <button onclick="deleteProduct({{ product.id }})" class="btn-row-action btn-delete" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                <!-- Mobile Action Dropdown -->
+                                <div class="mobile-actions-dropdown">
+                                    <button onclick="toggleRowDropdown(event)" class="btn-row-action">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu-row">
+                                        <button onclick="editProduct({{ product.id }})" class="dropdown-item-row">
+                                            <i class="fas fa-edit"></i> تعديل
+                                        </button>
+                                        <button onclick="openAddOfferModal({{ product.id }})" class="dropdown-item-row">
+                                            <i class="fas fa-tag"></i> إضافة عرض
+                                        </button>
+                                        <button onclick="deleteProduct({{ product.id }})" class="dropdown-item-row text-red-500">
+                                            <i class="fas fa-trash"></i> حذف
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- No Results State -->
+            <div id="noResults" class="hidden py-20 text-center">
+                <div class="w-24 h-24 bg-slate-50 text-slate-200 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3 class="text-2xl font-black text-slate-800 mb-2">لا توجد نتائج</h3>
+                <p class="text-slate-500">جرب البحث بكلمة مختلفة أو تغيير القسم</p>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <h3 class="text-2xl font-bold text-gray-600 mb-4">لا توجد منتجات بعد</h3>
+                <button class="action-btn" onclick="openAddProductModal()">
+                    <i class="fas fa-plus"></i>
+                    إضافة منتج الآن
+                </button>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Offers Sub-Tab (V3 Management List) -->
+    <div id="offers-subtab" class="subtab-content hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-slate-800">العروض والخصومات</h2>
+        </div>
+
+        {% if active_offers %}
+            <div class="products-table-wrapper">
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>المنتج</th>
+                            <th>السعر الحالي</th>
+                            <th>الخصم</th>
+                            <th>السعر بعد الخصم</th>
+                            <th>الحالة</th>
+                            <th class="text-left">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for offer in active_offers %}
+                        <tr class="product-row animate-row">
+                            <td>
+                                <div class="product-cell-main">
+                                    <img src="{{ offer.product.image.url }}" class="thumbnail-sm" alt="{{ offer.product.name }}">
+                                    <div class="product-info-mini">
+                                        <span class="product-row-name">{{ offer.product.name }}</span>
+                                        <span class="product-row-cat text-[10px]">{{ offer.from_date|date:"Y/m/d" }} - {{ offer.to_date|date:"Y/m/d" }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="font-bold text-slate-500">{{ offer.product.price }}</td>
+                            <td>
+                                <span class="bg-red-50 text-red-500 px-2 py-1 rounded-lg font-black text-xs border border-red-100">
+                                    {{ offer.get_discount_percentage_offer|floatformat:0 }}%
+                                </span>
+                            </td>
+                            <td class="font-black text-slate-800">{{ offer.get_price_with_discount|floatformat:2 }}</td>
+                            <td>
+                                <span class="status-text {% if offer.is_active %}status-active{% else %}status-hidden{% endif %}">
+                                    {{ offer.is_active|yesno:'نشط,معطل' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="row-actions">
+                                    <button onclick="editOffer({{ offer.id }})" class="btn-row-action" title="تعديل">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                                <!-- Mobile Action Dropdown -->
+                                <div class="mobile-actions-dropdown">
+                                    <button onclick="toggleRowDropdown(event)" class="btn-row-action">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu-row">
+                                        <button onclick="editOffer({{ offer.id }})" class="dropdown-item-row">
+                                            <i class="fas fa-edit"></i> تعديل
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-tag"></i>
+                <h3 class="text-2xl font-bold text-gray-600 mb-4">لا توجد عروض نشطة</h3>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Promotions Sub-Tab (V3 Management List) -->
+    <div id="promotions-subtab" class="subtab-content hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <div>
+                <h2 class="text-xl font-black text-slate-800 mb-1">طلبات الترويج</h2>
+                <p class="text-slate-500 text-sm">إدارة مبيعاتك في قسم العروض الرئيسية.</p>
+            </div>
+            <button onclick="openPromotionModal()" class="w-full sm:w-auto px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl font-bold flex items-center justify-center gap-2">
+                <i class="fas fa-plus-circle"></i>
+                طلب ترويج جديد
+            </button>
+        </div>
+
+        {% if platform_promotions %}
+            <div class="products-table-wrapper">
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>المنتج</th>
+                            <th>التاريخ</th>
+                            <th>الحالة</th>
+                            <th class="text-left">الوصف</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for promo in platform_promotions %}
+                        <tr class="product-row animate-row">
+                            <td>
+                                <div class="product-cell-main">
+                                    <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
+                                        <i class="fas fa-bullhorn"></i>
+                                    </div>
+                                    <div class="product-info-mini">
+                                        <span class="product-row-name">{{ promo.product.name }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-xs text-slate-500 font-bold">
+                                {{ promo.start_date|date:"Y/m/d" }} - {{ promo.end_date|date:"Y/m/d" }}
+                            </td>
+                            <td>
+                                {% if promo.is_approved %}
+                                <span class="px-2 py-1 bg-green-50 text-green-600 text-[10px] font-black rounded-lg border border-green-100">مقبول</span>
+                                {% else %}
+                                <span class="px-2 py-1 bg-orange-50 text-orange-600 text-[10px] font-black rounded-lg border border-orange-100">قيد المعالجة</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-xs text-slate-500 max-w-xs truncate">{{ promo.description }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-bullhorn"></i>
+                <h3 class="text-2xl font-bold text-gray-600 mb-4">لا توجد طلبات ترويج</h3>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include 'product_modal_snippet.html' %}
+{% include 'promotion_modal_snippet.html' %}
+
+<script>
+    function showSubTab(tabId) {
+        document.querySelectorAll('.subtab-content').forEach(tab => tab.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        
+        document.getElementById(tabId + '-subtab').classList.remove('hidden');
+        event.currentTarget.classList.add('active');
+        
+        // Update hash
+        history.replaceState(null, null, '#' + tabId);
+    }
+
+    // Restore tab from hash
+    window.addEventListener('load', () => {
+        const hash = window.location.hash.replace('#', '');
+        if (hash && document.getElementById(hash + '-subtab')) {
+            showSubTab(hash);
+        }
+    });
+
+    /**
+     * Compresses an image file to be under maxSizeKB while maintaining quality.
+     */
+    async function compressImage(file, maxSizeKB = 150) {
+        if (!file.type.startsWith('image/') || file.size <= maxSizeKB * 1024) {
+            return file;
+        }
+
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Max dimensions to avoid huge canvas and keep file size low
+                    const MAX_WIDTH = 1600;
+                    const MAX_HEIGHT = 1600;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Iterative compression
+                    let quality = 0.9;
+                    const minQuality = 0.3;
+                    
+                    const processBlob = (blob) => {
+                        if (blob.size <= maxSizeKB * 1024 || quality <= minQuality) {
+                            const compressedFile = new File([blob], file.name, {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            });
+                            console.log(`Compressed ${file.name}: ${(file.size/1024).toFixed(2)}KB -> ${(compressedFile.size/1024).toFixed(2)}KB`);
+                            resolve(compressedFile);
+                        } else {
+                            quality -= 0.1;
+                            canvas.toBlob(processBlob, 'image/jpeg', quality);
+                        }
+                    };
+
+                    canvas.toBlob(processBlob, 'image/jpeg', quality);
+                };
+            };
+        });
+    }
+
+    async function handleImageUpload(inputElement, maxSizeKB = 150) {
+        const files = Array.from(inputElement.files);
+        if (files.length === 0) return;
+
+        const dataTransfer = new DataTransfer();
+        
+        for (const file of files) {
+            if (file.type.startsWith('image/')) {
+                const compressed = await compressImage(file, maxSizeKB);
+                dataTransfer.items.add(compressed);
+            } else {
+                dataTransfer.items.add(file);
+            }
+        }
+        
+        inputElement.files = dataTransfer.files;
+        
+        if (!inputElement._isCompressing) {
+            inputElement._isCompressing = true;
+            inputElement.dispatchEvent(new Event('change', { bubbles: true }));
+            setTimeout(() => inputElement._isCompressing = false, 100);
+        }
+    }
+
+    function updateModalStatusBtn(productId, isActive) {
+        const btn = document.getElementById('modalDeleteBtn');
+        if (!btn) return;
+
+        if (productId) {
+            btn.classList.remove('hidden');
+            btn.onclick = () => confirmToggleProductStatus(productId, isActive);
+            
+            btn.classList.remove('bg-orange-50', 'text-orange-500', 'hover:bg-orange-100', 'bg-green-50', 'text-green-500', 'hover:bg-green-100', 'bg-red-50', 'text-red-500', 'hover:bg-red-100');
+            
+            if (isActive) {
+                btn.classList.add('bg-orange-50', 'text-orange-500', 'hover:bg-orange-100');
+                btn.innerHTML = '<i class="fas fa-eye-slash ml-1"></i> تعطيل';
+            } else {
+                btn.classList.add('bg-green-50', 'text-green-500', 'hover:bg-green-100');
+                btn.innerHTML = '<i class="fas fa-eye ml-1"></i> تنشيط';
+            }
+        } else {
+            btn.classList.add('hidden');
+            btn.onclick = null;
+        }
+    }
+
+    function confirmToggleProductStatus(productId, isActive) {
+        Swal.fire({
+            title: isActive ? 'تعطيل المنتج؟' : 'تنشيط المنتج؟',
+            text: isActive ? "لن يظهر هذا المنتج للعملاء بعد التعطيل." : "سيظهر هذا المنتج للعملاء مرة أخرى.",
+            icon: isActive ? 'warning' : 'info',
+            showCancelButton: true,
+            confirmButtonColor: isActive ? '#ef4444' : '#10b981',
+            cancelButtonColor: '#cbd5e1',
+            confirmButtonText: isActive ? 'نعم، تعطيل' : 'نعم، تنشيط',
+            cancelButtonText: 'إلغاء'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                toggleProductStatus(productId);
+            }
+        });
+    }
+
+    function toggleProductStatus(productId) {
+        fetch(`/toggle-product-status/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                // Update specific row UI instead of reload if possible, but reload for consistency
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification(data.message || 'فشل في تحديث الحالة', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error toggling product status:', error);
+            showNotification('حدث خطأ أثناء الاتصال بالخادم', 'error');
+        });
+    }
+
+    function deleteProduct(productId) {
+        Swal.fire({
+            title: 'هل أنت متأكد؟',
+            text: "لن تتمكن من التراجع عن هذا الإجراء!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#cbd5e1',
+            confirmButtonText: 'نعم، احذف',
+            cancelButtonText: 'إلغاء'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/delete-product/${productId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('تم حذف المنتج بنجاح', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showNotification(data.message, 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    function openAddOfferModal(productId) {
+        // Redirect to add offer page with product context
+        window.location.href = `/add-offer/?product_id=${productId}`;
+    }
+
+    function editOffer(offerId) {
+        // Redirect to edit offer page
+        window.location.href = `/edit-offer/${offerId}/`;
+    }
+
+    function openPromotionModal() {
+        // If snippet exists, show it
+        const modal = document.getElementById('promotion-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        } else {
+            window.location.href = '/request-promotion/';
+        }
+    }
+
+    function openAddProductModal() {
+        resetModal();
+        updateModalStatusBtn(null); 
+        document.getElementById('modal-title').textContent = 'إضافة منتج جديد';
+        document.getElementById('submitBtnText').textContent = 'إضافة المنتج';
+        document.getElementById('productForm').action = "{% url 'add_product' %}";
+        document.getElementById('product-modal').classList.remove('hidden');
+    }
+
+    function editProduct(productId) {
+        resetModal();
+        const btn = (typeof event !== 'undefined' && event.currentTarget) ? event.currentTarget : null;
+        if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        fetch(`/edit-product/${productId}/`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const p = data.product;
+                document.getElementById('edit-product-id').value = p.id;
+                document.getElementById('id_name').value = p.name;
+                document.getElementById('id_description').value = p.description;
+                document.getElementById('id_price').value = p.price;
+                if (p.category_id) document.getElementById('id_category').value = p.category_id;
+                document.getElementById('id_is_new').checked = p.is_new;
+                
+                if (p.image_url) {
+                    document.getElementById('modalPreviewImage').src = p.image_url;
+                    document.getElementById('modalFilePreview').classList.remove('hidden');
+                    document.getElementById('modalFileUploadContent').classList.add('hidden');
+                }
+
+                document.getElementById('modal-title').textContent = 'تعديل المنتج';
+                document.getElementById('submitBtnText').textContent = 'حفظ التغييرات';
+                document.getElementById('productForm').action = `/edit-product/${productId}/`;
+                updateModalStatusBtn(productId, p.is_active);
+                
+                document.getElementById('product-modal').classList.remove('hidden');
+            }
+        })
+        .finally(() => {
+            if (btn) btn.innerHTML = '<i class="fas fa-edit"></i> تعديل';
+        });
+    }
+
+    function closeProductModal() {
+        document.getElementById('product-modal').classList.add('hidden');
+    }
+
+    function resetModal() {
+        document.getElementById('productForm').reset();
+        document.getElementById('edit-product-id').value = '';
+        document.getElementById('modalFilePreview').classList.add('hidden');
+        document.getElementById('modalFileUploadContent').classList.remove('hidden');
+        document.getElementById('modalVideoPreview').classList.add('hidden');
+        document.getElementById('modalVideoUploadContent').classList.remove('hidden');
+        
+        const countBadge = document.getElementById('additional-images-count');
+        if (countBadge) countBadge.classList.add('hidden');
+
+        updateModalStatusBtn(null);
+        document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
+    }
+
+    document.getElementById('productForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('modalSubmitBtn');
+        const spinner = btn.querySelector('.loading-spinner');
+        const text = document.getElementById('submitBtnText');
+        
+        btn.disabled = true;
+        spinner.classList.remove('hidden');
+        text.classList.add('opacity-0');
+        
+        const formData = new FormData(this);
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                if (data.errors) {
+                    for (const [field, msg] of Object.entries(data.errors)) {
+                        const err = document.getElementById(`${field}-error`);
+                        if (err) {
+                            err.textContent = msg;
+                            err.classList.remove('hidden');
+                        }
+                    }
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showNotification('حدث خطأ في الاتصال', 'error');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            spinner.classList.add('hidden');
+            text.classList.remove('opacity-0');
+        });
+    });
+
+    window.openCategoryModal = () => document.getElementById('category-modal').classList.remove('hidden');
+    window.closeCategoryModal = () => document.getElementById('category-modal').classList.add('hidden');
+    window.toggleNewParentInput = (val) => {
+        document.getElementById('new-parent-container').classList.toggle('hidden', val !== 'new');
+    };
+
+    window.submitCategory = () => {
+        const parentId = document.getElementById('parent-category-select').value;
+        const newParentName = document.getElementById('new-parent-name').value;
+        const subName = document.getElementById('subcategory-name').value;
+        const btn = document.getElementById('submitCategoryBtn');
+
+        if ((parentId === 'new' && !newParentName) || !subName) {
+            showNotification('يرجى ملء جميع الحقول', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        const formData = new FormData();
+        formData.append('parent_id', parentId);
+        formData.append('new_parent_name', newParentName);
+        formData.append('subcategory_name', subName);
+        formData.append('supplier_id', '{{ supplier.id }}');
+
+        fetch("{% url 'add_category_ajax' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const select = document.getElementById('id_category');
+                const opt = new Option(data.category.name, data.category.id, true, true);
+                select.add(opt);
+                closeCategoryModal();
+                showNotification('تمت إضافة الفئة بنجاح', 'success');
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .finally(() => btn.disabled = false);
+    };
+
+    // --- Real-time Filtering V2 ---
+    const productSearch = document.getElementById('productSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const productGrid = document.getElementById('mainProductGrid');
+    const noResults = document.getElementById('noResults');
+    let currentStatusFilter = 'all';
+
+    function toggleFilters() {
+        const content = document.getElementById('collapsibleFilters');
+        const btn = document.getElementById('filterToggleBtn');
+        content.classList.toggle('show');
+        btn.classList.toggle('active');
+    }
+
+    function filterByStatus(status) {
+        currentStatusFilter = status;
+        
+        // Update Tabs UI
+        document.querySelectorAll('.status-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.status === status);
+        });
+
+        filterProducts();
+    }
+
+    function filterProducts() {
+        const searchTerm = productSearch.value.toLowerCase();
+        const selectedCat = categoryFilter.value;
+        const products = document.querySelectorAll('.product-row');
+        let visibleCount = 0;
+
+        products.forEach(p => {
+            const name = p.getAttribute('data-name');
+            const category = p.getAttribute('data-category');
+            const isActive = p.getAttribute('data-is-active') === 'true';
+            const isNew = p.getAttribute('data-is-new') === 'true';
+            const hasOffer = p.getAttribute('data-has-offer') === 'true';
+            
+            const matchesSearch = name.includes(searchTerm);
+            const matchesCategory = selectedCat === '' || category === selectedCat;
+            
+            let matchesStatus = true;
+            if (currentStatusFilter === 'active') matchesStatus = isActive;
+            else if (currentStatusFilter === 'inactive') matchesStatus = !isActive;
+            else if (currentStatusFilter === 'new') matchesStatus = isNew;
+            else if (currentStatusFilter === 'offered') matchesStatus = hasOffer;
+
+            if (matchesSearch && matchesCategory && matchesStatus) {
+                p.classList.remove('hidden');
+                p.classList.add('animate-row');
+                visibleCount++;
+            } else {
+                p.classList.add('hidden');
+                p.classList.remove('animate-row');
+            }
+        });
+
+        if (visibleCount === 0 && productGrid) {
+            noResults.classList.remove('hidden');
+        } else if (noResults) {
+            noResults.classList.add('hidden');
+        }
+    }
+
+    function toggleRowDropdown(e) {
+        e.stopPropagation();
+        const dropdown = e.currentTarget.nextElementSibling;
+        
+        // Close other open dropdowns
+        document.querySelectorAll('.dropdown-menu-row.show').forEach(el => {
+            if (el !== dropdown) el.classList.remove('show');
+        });
+        
+        dropdown.classList.toggle('show');
+    }
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.dropdown-menu-row.show').forEach(el => {
+            el.classList.remove('show');
+        });
+    });
+
+    function showNotification(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `custom-toast toast-${type}`;
+        toast.innerHTML = `
+            <div class="toast-content">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }, 100);
+    }
+</script>
+
+<!-- Note: We should ideally move common product management scripts to a separate file, 
+     but for now, I will ensure they are available in this template. -->
+{% endblock %}
+
+{% block footer %}
+<!-- Premium Compact Merchant Footer -->
+<footer class="merchant-footer">
+    <div class="container mx-auto px-6">
+        <div class="merchant-footer-content">
+            <div class="merchant-footer-links">
+                <a href="#">من نحن</a>
+                <a href="#">الشروط والأحكام</a>
+                <a href="#">سياسة الخصوصية</a>
+            </div>
+            
+            <div class="merchant-footer-info">
+                <span>© {% now "Y" %} {{ system_settings.site_name }}</span>
+                {% if supplier.profile_picture %}
+                    <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="merchant-footer-logo">
+                {% endif %}
+                <span>جميع الحقوق محفوظة</span>
+            </div>
+        </div>
+    </div>
+</footer>
+{% endblock %}

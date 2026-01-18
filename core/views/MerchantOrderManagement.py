@@ -1,6 +1,7 @@
 import math
 import logging
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Sum, Count
@@ -299,3 +300,119 @@ def update_order_status(request, order_id):
                 messages.error(request, 'الحالة المختارة غير صالحة.')
     
     return redirect('merchant_order_detail', order_id=order_id)
+
+@login_required
+def merchant_order_quick_view(request, order_id):
+    """Ajax view to fetch order details for quick view modal"""
+    # Get the supplier for the current user or via supplier_id for superuser
+    if request.user.is_superuser and request.GET.get('supplier_id'):
+        supplier_id = request.GET.get('supplier_id')
+        supplier = get_object_or_404(Supplier, id=supplier_id)
+    else:
+        supplier = Supplier.objects.filter(user=request.user).first()
+    
+    if not supplier:
+        return JsonResponse({'success': False, 'message': 'You are not registered as a supplier.'}, status=403)
+    
+    # Get the order and verify it belongs to this supplier
+    order = get_object_or_404(Order, id=order_id)
+    
+    # Check if this order contains products from the supplier
+    order_items = order.order_items.filter(product__supplier=supplier)
+    if not order_items.exists():
+        return JsonResponse({'success': False, 'message': 'This order does not contain any of your products.'}, status=403)
+    
+    shipping_address = order.shippingaddress_set.first()
+    
+    # Get workflow steps
+    workflow_steps = []
+    current_priority = 0
+    if supplier.workflow:
+        steps = supplier.workflow.steps.all().select_related('status').order_by('priority')
+        for step in steps:
+            workflow_steps.append({
+                'name': step.status.name,
+                'slug': step.status.slug,
+                'priority': step.priority
+            })
+            if order.pipeline_status and order.pipeline_status.slug == step.status.slug:
+                current_priority = step.priority
+
+    # Financial breakdown
+    items_gross = sum([item.get_subtotal() for item in order_items])
+    items_net = sum([item.get_subtotal_with_discount() for item in order_items])
+    discount_amount = items_gross - items_net
+    delivery_fee = order.get_expected_delivery_fee()
+    final_total = float(items_net + delivery_fee)
+
+    return JsonResponse({
+        'success': True,
+        'order': {
+            'id': order.id,
+            'customer_name': f"{order.user.first_name} {order.user.last_name}" if order.user.first_name else order.user.username,
+            'total_amount': final_total,
+            'subtotal': float(items_gross),
+            'discount_amount': float(discount_amount),
+            'delivery_fee': float(delivery_fee),
+            'status': order.pipeline_status.name if order.pipeline_status else 'Pending',
+            'created_at': order.created_at.strftime("%Y-%m-%d %H:%M"),
+            'current_priority': current_priority,
+            'workflow_steps': workflow_steps,
+            'items': [
+                {
+                    'name': item.product.name,
+                    'quantity': item.quantity,
+                    'price': float(item.product.get_price_with_offer()),
+                    'subtotal': float(item.get_subtotal_with_discount())
+                } for item in order_items
+            ],
+            'contact': {
+                'phone': str(shipping_address.phone) if shipping_address else '',
+                'address': f"{shipping_address.address_line1}, {shipping_address.city}, {shipping_address.country}" if shipping_address else 'العنوان غير متوفر',
+                'lat': float(shipping_address.latitude) if shipping_address and shipping_address.latitude else None,
+                'lng': float(shipping_address.longitude) if shipping_address and shipping_address.longitude else None,
+            },
+            'details_url': f"/merchant-order/{order.id}/"
+        }
+    })
+
+@login_required
+def update_order_status_ajax(request, order_id):
+    """AJAX view to update order status by clicking steps"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid method.'}, status=405)
+    
+    order = get_object_or_404(Order, id=order_id)
+    
+    # Verify supplier
+    if request.user.is_superuser and request.POST.get('supplier_id'):
+        supplier_id = request.POST.get('supplier_id')
+        supplier = get_object_or_404(Supplier, id=supplier_id)
+    else:
+        supplier = Supplier.objects.filter(user=request.user).first()
+    
+    if not supplier:
+        return JsonResponse({'success': False, 'message': 'Access denied.'}, status=403)
+    
+    # Check if this order contains products from the supplier
+    if not order.order_items.filter(product__supplier=supplier).exists():
+        return JsonResponse({'success': False, 'message': 'Order not owned by you.'}, status=403)
+    
+    status_slug = request.POST.get('status')
+    if not status_slug:
+        return JsonResponse({'success': False, 'message': 'Missing status.'}, status=400)
+    
+    new_status = OrderStatus.objects.filter(slug=status_slug).first()
+    if not new_status:
+        return JsonResponse({'success': False, 'message': 'Invalid status.'}, status=400)
+    
+    # Update status
+    order.pipeline_status = new_status
+    order.save()
+    
+    return JsonResponse({
+        'success': True,
+        'message': f'تم تحديث حالة الطلب إلى: {new_status.name}',
+        'new_status': new_status.name,
+        'new_slug': new_status.slug
+    })

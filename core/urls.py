@@ -17,14 +17,14 @@ from core.views.ProductListView import product_list
 from core.views.ConvertCartToOrder import checkout_select_address_or_custom_address
 from core.views.SuppliersListView import SuppliersListView
 from core.views.add_to_wish_list import toggle_wishlist, get_wishlist_status
-from core.views.MyMerchant import my_merchant, update_merchant_settings
+from core.views.MyMerchant import my_merchant, update_merchant_settings, merchant_products, merchant_marketing, merchant_analytics, merchant_tutorial
 from core.views.add_product import add_product
 from core.views.edit_product import edit_product
 from core.views.add_product_offer import add_product_offer
 from core.views.edit_product_offer import edit_product_offer
 from core.views.add_ads import add_ads
 from core.views.edit_ads import edit_ads
-from core.views.MerchantOrderManagement import merchant_orders, merchant_order_detail, update_order_status, add_order_note, add_payment_reference
+from core.views.MerchantOrderManagement import merchant_orders, merchant_order_detail, update_order_status, add_order_note, add_payment_reference, merchant_order_quick_view, update_order_status_ajax
 from core.views.category_views import add_category_ajax
 from core.views.delete_product import toggle_product_status
 from core.views.toggle_ad_status import toggle_ad_status
@@ -67,6 +67,10 @@ urlpatterns = [
     
     # Merchant Dashboard
     path('my-merchant/', my_merchant, name='my_merchant'),
+    path('merchant-products/', merchant_products, name='merchant_products'),
+    path('merchant-marketing/', merchant_marketing, name='merchant_marketing'),
+    path('merchant-analytics/', merchant_analytics, name='merchant_analytics'),
+    path('merchant-tutorial/', merchant_tutorial, name='merchant_tutorial'),
     path('update-merchant-settings/', update_merchant_settings, name='update_merchant_settings'),
     path('add-product/', add_product, name='add_product'),
     path('edit-product/<int:product_id>/', edit_product, name='edit_product'),
@@ -85,6 +89,8 @@ urlpatterns = [
     path('update-order-status/<int:order_id>/', update_order_status, name='update_order_status'),
     path('add-order-note/<int:order_id>/', add_order_note, name='add_order_note'),
     path('add-payment-reference/<int:order_id>/', add_payment_reference, name='add_payment_reference'),
+    path('merchant-order-quick-view/<int:order_id>/', merchant_order_quick_view, name='merchant_order_quick_view'),
+    path('update-order-status-ajax/<int:order_id>/', update_order_status_ajax, name='update_order_status_ajax'),
 
 ]
 

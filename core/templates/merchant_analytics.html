@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}التحليلات والتقارير - {{ supplier.name }}{% block title_suffix %}{% endblock %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/merchant_dashboard.css' %}">
+<style>
+    .analytics-card {
+        background: white;
+        border-radius: 24px;
+        padding: 2rem;
+        border: 1px solid #f1f5f9;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .chart-label {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+    }
+    .chart-bar-bg {
+        width: 100%;
+        background: #f1f5f9;
+        height: 10px;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    .chart-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        border-radius: 999px;
+        transition: width 1s ease-out;
+    }
+    .rating-big {
+        font-size: 4rem;
+        font-weight: 900;
+        color: #f59e0b;
+        line-height: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8" dir="rtl">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <div class="flex items-center gap-3 mb-2">
+                <a href="{% url 'my_merchant' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500 hover:text-primary-color transition-all">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <h1 class="text-3xl font-black text-slate-800">التحليلات والتقارير</h1>
+            </div>
+            <p class="text-slate-500 mr-13">فهم أداء متجرك وتحليل سلوك العملاء</p>
+        </div>
+        <button class="action-btn" onclick="window.print()">
+            <i class="fas fa-print"></i>
+            <span>طباعة التقرير</span>
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Category Performance -->
+        <div class="analytics-card">
+            <h3 class="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
+                <i class="fas fa-chart-pie text-blue-500"></i>
+                أداء الأصناف
+            </h3>
+            <div class="space-y-6">
+                {% for cat in category_performance %}
+                <div>
+                    <div class="chart-label">
+                        <span>{{ cat.category__name }}</span>
+                        <span class="text-slate-400">{{ cat.product_count }} منتج</span>
+                    </div>
+                    <div class="chart-bar-bg">
+                        <div class="chart-bar-fill" style="width: {% widthratio cat.product_count total_products 100 %}%"></div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-10 text-slate-400">
+                    <i class="fas fa-folder-open text-4xl mb-3 block opacity-20"></i>
+                    لا توجد بيانات أصناف لعرضها
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Customer Feedback -->
+        <div class="analytics-card">
+            <h3 class="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
+                <i class="fas fa-star text-yellow-500"></i>
+                آراء العملاء
+            </h3>
+            <div class="flex flex-col items-center justify-center py-6">
+                <div class="rating-big mb-2">{{ avg_rating|floatformat:1 }}</div>
+                <div class="flex gap-1 text-yellow-400 text-xl mb-4">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="{% if avg_rating >= 4.5 %}fas fa-star{% else %}fas fa-star-half-alt{% endif %}"></i>
+                </div>
+                <div class="text-slate-500 font-bold">بناءً على {{ total_reviews }} تقييم عملاء</div>
+            </div>
+            
+            <div class="mt-8 p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                <div class="flex gap-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-blue-900 mb-1">نصيحة ذكية</h4>
+                        <p class="text-sm text-blue-800/70">المنتجات الحاصلة على تقييم أعلى من 4 نجوم تزيد احتمالية شرائها بنسبة 70%. ركز على تحسين جودة الصور والوصف لزيادة رضا العملاء.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

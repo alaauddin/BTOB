@@ -310,9 +310,9 @@
                             {% endif %}
                         </div>
                     </div>
-                    <a href="{% url 'existing_address' supplier.store_id %}" class="btn btn-primary w-100 py-3 rounded-3 fw-bold">
+                    <button type="button" onclick="confirmExistingAddress('{{ supplier.store_id }}')" id="confirmSavedBtn" class="btn btn-primary w-100 py-3 rounded-3 fw-bold">
                         تأكيد وإتمام الطلب
-                    </a>
+                    </button>
                     {% else %}
                     <div class="text-center py-4 text-muted">
                         <i class="fas fa-map-marker-alt fa-3x mb-3 text-secondary"></i>
@@ -323,7 +323,7 @@
 
                 <!-- New Address Form -->
                 <div id="newAddressSection" style="display: none;">
-                    <form method="post" action="">
+                    <form method="post" action="" id="newAddressForm">
                         {% csrf_token %}
                         <!-- Map Container -->
                         <div class="mb-3">
@@ -418,6 +418,33 @@
 <div class="toast-notification" id="toastNotification">
     <i class="fas fa-check-circle"></i>
     <span id="toastMessage">تم تحديث السلة بنجاح</span>
+</div>
+
+<!-- Order Success Modal -->
+<div class="modal fade" id="orderSuccessModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-body p-5 text-center">
+                <div class="mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                </div>
+                <h3 class="fw-bold mb-3" id="successModalTitle">تم استلام طلبك!</h3>
+                <p class="text-muted mb-4" id="successModalMessage">شكراً لطلبك. سيتواصل معك فريقنا قريباً.</p>
+                
+                <div class="d-grid gap-3">
+                    <a href="#" id="callSupplierBtn" class="btn btn-success py-3 rounded-3 fw-bold">
+                        <i class="fas fa-phone-alt me-2"></i> التواصل بالمتجر
+                    </a>
+                    <a href="#" id="whatsappSupplierBtn" target="_blank" class="btn btn-outline-success py-3 rounded-3 fw-bold">
+                        <i class="fab fa-whatsapp me-2"></i> تواصل عبر واتساب
+                    </a>
+                    <button type="button" class="btn btn-light py-2" onclick="window.location.href='{% url 'product-list' supplier.store_id %}'">
+                        العودة للمتجر
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -831,6 +858,114 @@
                 initMap();
                 map.invalidateSize();
             }, 500); // Slightly longer delay on load
+        }
+
+        // --- Ajax Checkout Logic ---
+        
+        const successModal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
+        
+        function handleCheckoutSuccess(data) {
+            const checkoutModalEl = document.getElementById('checkoutModal');
+            let checkoutModalInstance = bootstrap.Modal.getInstance(checkoutModalEl);
+            if (!checkoutModalInstance) {
+                checkoutModalInstance = new bootstrap.Modal(checkoutModalEl);
+            }
+            checkoutModalInstance.hide();
+            
+            // Update Success Modal Content
+            document.getElementById('successModalMessage').textContent = data.message;
+            document.getElementById('callSupplierBtn').href = `tel:${data.supplier_phone}`;
+            document.getElementById('whatsappSupplierBtn').href = data.wa_url;
+            
+            // Show Success Modal
+            successModal.show();
+        }
+
+        // 1. Existing Address Checkout
+        window.confirmExistingAddress = function(storeId) {
+            const btn = document.getElementById('confirmSavedBtn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التنفيذ...';
+            btn.disabled = true;
+
+            const csrftoken = getCookie('csrftoken');
+            
+            $.ajax({
+                url: `{% url 'existing_address' supplier.store_id %}`,
+                type: "POST",
+                headers: { "X-CSRFToken": csrftoken },
+                success: function(data) {
+                    if (data.success) {
+                        handleCheckoutSuccess(data);
+                    } else {
+                        showToast(data.message || 'حدث خطأ ما');
+                        btn.innerHTML = originalContent;
+                        btn.disabled = false;
+                    }
+                },
+                error: function(xhr) {
+                    const data = xhr.responseJSON;
+                    showToast(data && data.message ? data.message : 'حدث خطأ في الاتصال بالسيرفر');
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                }
+            });
+        };
+
+        // 2. New Address Checkout
+        const newAddressForm = document.getElementById('newAddressForm');
+        if (newAddressForm) {
+            newAddressForm.onsubmit = function(e) {
+                e.preventDefault();
+                
+                const btn = newAddressForm.querySelector('button[type="submit"]');
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+                btn.disabled = true;
+                
+                const formData = new FormData(newAddressForm);
+                const csrftoken = getCookie('csrftoken');
+                
+                // Clear previous errors
+                newAddressForm.querySelectorAll('.text-danger.small').forEach(el => el.textContent = '');
+                
+                $.ajax({
+                    url: window.location.href, // Current page handles POST for new address
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: { "X-CSRFToken": csrftoken },
+                    success: function(data) {
+                        if (data.success) {
+                            handleCheckoutSuccess(data);
+                        } else {
+                            showToast(data.message || 'يرجى التأكد من البيانات المدخلة');
+                            btn.innerHTML = originalContent;
+                            btn.disabled = false;
+                        }
+                    },
+                    error: function(xhr) {
+                        const data = xhr.responseJSON;
+                        if (data && data.errors) {
+                            // Show specific form errors if available
+                            try {
+                                const errors = typeof data.errors === 'string' ? JSON.parse(data.errors) : data.errors;
+                                for (const field in errors) {
+                                    const errorMsg = Array.isArray(errors[field]) ? errors[field][0] : errors[field];
+                                    const errorDiv = newAddressForm.querySelector(`[name="${field}"]`)?.closest('.col-12')?.querySelector('.text-danger.small');
+                                    if (errorDiv) errorDiv.textContent = errorMsg;
+                                }
+                            } catch (e) {
+                                console.error('Error parsing form errors:', e);
+                            }
+                        }
+                        showToast(data && data.message ? data.message : 'حدث خطأ في الاتصال بالسيرفر');
+                        btn.innerHTML = originalContent;
+                        btn.disabled = false;
+                    }
+                });
+            };
         }
     });
 </script>
