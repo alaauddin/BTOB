@@ -2,7 +2,7 @@
 
 
 from django.shortcuts import render, redirect
-from core.models import Cart, Supplier, SupplierCategory, PlatformOfferAd
+from core.models import Cart, Supplier, SupplierCategory, PlatformOfferAd, SupplierAdPlatfrom
 from core.models import Order
 from django.utils import timezone
 from datetime import timedelta
@@ -49,6 +49,14 @@ def SuppliersListView(request):
 
     # Fetch active platform ads
     today = timezone.now().date()
+    
+    # Supplier Ads (Full Width Top)
+    supplier_ads = SupplierAdPlatfrom.objects.filter(
+        is_active=True,
+        approved=True
+    ).select_related('supplier')
+
+    # Platform Offer Ads (Horizontal Scroll)
     platform_ads = PlatformOfferAd.objects.filter(
         start_date__lte=today,
         end_date__gte=today,
@@ -86,15 +94,8 @@ def SuppliersListView(request):
         )
     ).distinct().order_by('-max_offer_discount', '-priority')
 
-    # Handle Business Request Form
-    if request.method == 'POST':
-        form = BusinessRequestForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'تم إرسال طلبك بنجاح! سنتواصل معك قريباً.')
-            return redirect('suppliers_list')
-    else:
-        form = BusinessRequestForm()
+    # Handle Business Request Form - Moved to separate view (join_business)
+    # Form logic removed from here
 
     return render(
         request,
@@ -105,8 +106,9 @@ def SuppliersListView(request):
             'pending_orders': pending_orders,
             'supplier': supplier,
             'q': q,
+            'supplier_ads': supplier_ads,
             'platform_ads': platform_ads,
             'producing_family_suppliers': producing_family_suppliers,
-            'business_form': form,
+            # 'business_form': form, # Removed
         },
     )

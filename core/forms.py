@@ -424,3 +424,34 @@ class SupplierSettingsForm(forms.ModelForm):
             'accent_color': 'لون التمييز',
             'profile_picture': 'شعار المتجر'
         }
+
+
+class SupplierAdPlatfromForm(forms.ModelForm):
+    class Meta:
+        model = SupplierAdPlatfrom
+        fields = ['image']
+        widgets = {
+            'image': forms.FileInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 focus:border-purple-500 transition-all',
+                'accept': 'image/*'
+            })
+        }
+        labels = {
+            'image': 'صورة الإعلان (بانر)'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.instance.pk:
+            self.fields['image'].required = True
+        else:
+            self.fields['image'].required = False
+            
+    def clean_image(self):
+        image = self.cleaned_data.get('image')
+        if image:
+            if image.size > 10 * 1024 * 1024:
+                raise forms.ValidationError('حجم الصورة يجب أن يكون أقل من 10 ميجابايت')
+            if not image.name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+                raise forms.ValidationError('صيغة الملف غير مدعومة')
+        return image

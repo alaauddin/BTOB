@@ -26,9 +26,16 @@
             <i class="fas fa-bullhorn"></i>
             التسويق والإعلانات
         </h2>
-        <button class="action-btn" onclick="openAddAdModal()" title="إضافة إعلان جديد">
-            <i class="fas fa-plus"></i>
-        </button>
+        <div class="flex gap-2">
+            <button class="action-btn" onclick="openAddPlatformAdModal()" title="إضافة إعلان منصة (بانر)">
+                <i class="fas fa-desktop"></i>
+                <span class="text-sm font-bold mr-2 hidden sm:inline">إعلان منصة</span>
+            </button>
+            <button class="action-btn" onclick="openAddAdModal()" title="إضافة إعلان منتج">
+                <i class="fas fa-plus"></i>
+                <span class="text-sm font-bold mr-2 hidden sm:inline">إعلان منتج</span>
+            </button>
+        </div>
     </div>
 
     <!-- Stats Summary Row -->
@@ -49,10 +56,85 @@
         </div>
     </div>
 
-    <!-- Filters Section -->
+    <!-- Platform Ads Section -->
+    {% if platform_ads %}
+    <div class="mb-8">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <i class="fas fa-desktop text-purple-600"></i>
+            إعلانات المنصة (البانر)
+        </h3>
+        <div class="ads-table-wrapper">
+            <table class="ads-table">
+                <thead>
+                    <tr>
+                        <th>الإعلان</th>
+                        <th>الحالة</th>
+                        <th class="text-left">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ad in platform_ads %}
+                    <tr class="ad-row animate-row">
+                        <!-- Ad Info -->
+                        <td>
+                            <div class="ad-cell-main">
+                                <img src="{{ ad.image.url }}" class="ad-thumbnail" alt="Platform Ad">
+                                <div class="ad-info">
+                                    <span class="ad-title text-sm text-gray-500">بانر إعلاني</span>
+                                    {% if ad.approved %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            معتمد
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            بانتظار الموافقة
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Status Toggle -->
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" {% if ad.is_active %}checked{% endif %} 
+                                           onchange="confirmTogglePlatformAdStatus({{ ad.id }}, {{ ad.is_active|yesno:'true,false' }})">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </td>
+
+                        <!-- Actions -->
+                        <td>
+                            <div class="row-actions">
+                                <button onclick="editPlatformAd({{ ad.id }}, this)" class="btn-row-action" title="تعديل">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Divider if both exist -->
+    {% if platform_ads and ads %}
+    <div class="border-t border-gray-200 my-8"></div>
+    {% endif %}
+
+    <!-- Filters Section (For Product Ads) -->
     <div class="status-row-wrapper">
+        <h3 class="text-lg font-bold text-gray-800 mb-0 flex items-center gap-2">
+            <i class="fas fa-tag text-orange-500"></i>
+            إعلانات المنتجات
+        </h3>
+        <!-- ... existing filters ... -->
         <div class="status-tabs-container">
-            <div class="status-tab active" data-status="all" onclick="filterByStatus('all')">جميع الإعلانات</div>
+            <div class="status-tab active" data-status="all" onclick="filterByStatus('all')">الكل</div>
             <div class="status-tab" data-status="active" onclick="filterByStatus('active')">النشطة</div>
             <div class="status-tab" data-status="inactive" onclick="filterByStatus('inactive')">المخفية</div>
             <div class="status-tab" data-status="linked" onclick="filterByStatus('linked')">مرتبطة بمنتج</div>
@@ -60,7 +142,7 @@
         
         <div class="search-wrapper">
             <i class="fas fa-search"></i>
-            <input type="text" id="adSearch" placeholder="بحث في الإعلانات..." oninput="filterAds()">
+            <input type="text" id="adSearch" placeholder="بحث..." oninput="filterAds()">
         </div>
     </div>
 
@@ -97,12 +179,6 @@
                                 <div class="ad-info">
                                     <span class="ad-title">{{ ad.title }}</span>
                                     <span class="ad-desc truncate">{{ ad.description }}</span>
-                                    {% if ad.product %}
-                                    <div class="linked-product-mobile">
-                                        <i class="fas fa-cube"></i>
-                                        <span>{{ ad.product.name }}</span>
-                                    </div>
-                                    {% endif %}
                                 </div>
                             </div>
                         </td>
@@ -153,21 +229,31 @@
             <p class="text-slate-500 text-sm">جرب البحث بكلمات أخرى أو تغيير الفلتر</p>
         </div>
     {% else %}
+        <!-- Show empty state only if NO ads at all (platform or product) -->
+        {% if not platform_ads %}
         <div class="py-20 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
             <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300 text-3xl shadow-sm">
                 <i class="fas fa-ad"></i>
             </div>
             <h3 class="text-2xl font-black text-slate-800 mb-2">لا توجد إعلانات بعد</h3>
             <p class="text-slate-500 mb-8 max-w-sm mx-auto">أضف إعلانات مميزة لتظهر لعملائك في واجهة التطبيق الرئيسية</p>
-            <button class="action-btn mx-auto" onclick="openAddAdModal()">
-                <i class="fas fa-plus"></i>
-                <span>إضافة إعلانك الأول</span>
-            </button>
+            <div class="flex justify-center gap-3">
+                 <button class="action-btn" onclick="openAddPlatformAdModal()">
+                    <i class="fas fa-desktop"></i>
+                    <span>إضافة إعلان منصة</span>
+                </button>
+                <button class="action-btn" onclick="openAddAdModal()">
+                    <i class="fas fa-plus"></i>
+                    <span>إضافة إعلان منتج</span>
+                </button>
+            </div>
         </div>
+        {% endif %}
     {% endif %}
 </div>
 
 {% include 'ad_modal_snippet.html' %}
+{% include 'platform_ad_modal_snippet.html' %}
 
 {% block footer %}
 <!-- Premium Compact Merchant Footer -->

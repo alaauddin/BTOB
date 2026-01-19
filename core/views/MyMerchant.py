@@ -1,15 +1,17 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from core.decorators import merchant_required
 from core.models import Supplier, Product, ProductOffer, Promotion, SupplierAds, Order, Category, PlatformOfferAd
 from core.forms import SupplierSettingsForm, ProductForm
 from django.db.models import Count, Sum, Avg
 from django.utils import timezone
+from core.models import SupplierAdPlatfrom
 
 
 
 
 
-@login_required
+@merchant_required
 def my_merchant(request):
     template_name = 'my_merchant.html'
 
@@ -18,12 +20,14 @@ def my_merchant(request):
         supplier_id = request.GET.get('supplier_id')
         supplier = Supplier.objects.filter(id=supplier_id).first()
     else:
-        supplier = Supplier.objects.filter(user=request.user).first()
+        # accessing related object safely
+        supplier = getattr(request.user, 'supplier', None)
     
     if not supplier:
-        if request.user.is_superuser and request.GET.get('supplier_id'):
+        if request.user.is_superuser:
              return redirect('suppliers_list')
-        return redirect('suppliers_list')
+        # Should be caught by decorator, but as fallback
+        return redirect('join_business')
     
     # Simple Router Stats
     orders = Order.objects.filter(order_items__product__supplier=supplier).distinct()
@@ -58,7 +62,7 @@ def my_merchant(request):
     return render(request, template_name, context)
 
 
-@login_required
+@merchant_required
 def merchant_products(request):
     template_name = 'merchant_products.html'
 
@@ -66,7 +70,7 @@ def merchant_products(request):
         supplier_id = request.GET.get('supplier_id')
         supplier = Supplier.objects.filter(id=supplier_id).first()
     else:
-        supplier = Supplier.objects.filter(user=request.user).first()
+        supplier = getattr(request.user, 'supplier', None)
     
     if not supplier:
         return redirect('suppliers_list')
@@ -91,7 +95,7 @@ def merchant_products(request):
     return render(request, template_name, context)
 
 
-@login_required
+@merchant_required
 def update_merchant_settings(request):
     supplier = None
     if request.user.is_superuser:
@@ -101,7 +105,7 @@ def update_merchant_settings(request):
             supplier = Supplier.objects.filter(id=request.GET.get('supplier_id')).first()
 
     if not supplier:
-        supplier = Supplier.objects.filter(user=request.user).first()
+        supplier = getattr(request.user, 'supplier', None)
         
     if not supplier:
         return redirect('suppliers_list')
@@ -118,7 +122,7 @@ def update_merchant_settings(request):
             return redirect('my_merchant')
 
 
-@login_required
+@merchant_required
 def merchant_marketing(request):
     template_name = 'merchant_marketing.html'
 
@@ -126,7 +130,7 @@ def merchant_marketing(request):
         supplier_id = request.GET.get('supplier_id')
         supplier = Supplier.objects.filter(id=supplier_id).first()
     else:
-        supplier = Supplier.objects.filter(user=request.user).first()
+        supplier = getattr(request.user, 'supplier', None)
     
     if not supplier:
         return redirect('suppliers_list')
@@ -134,19 +138,23 @@ def merchant_marketing(request):
     ads = SupplierAds.objects.filter(supplier=supplier)
     products = Product.objects.filter(supplier=supplier)
     
+    # Platform Ads (SupplierAdPlatfrom)
+    platform_ads = SupplierAdPlatfrom.objects.filter(supplier=supplier)
+    
     context = {
         'supplier': supplier,
         'ads': ads,
+        'platform_ads': platform_ads,
         'products': products,
-        'total_ads_count': ads.count(),
-        'active_ads_count': ads.filter(is_active=True).count(),
-        'inactive_ads_count': ads.filter(is_active=False).count(),
+        'total_ads_count': ads.count() + platform_ads.count(),
+        'active_ads_count': ads.filter(is_active=True).count() + platform_ads.filter(is_active=True).count(),
+        'inactive_ads_count': ads.filter(is_active=False).count() + platform_ads.filter(is_active=False).count(),
     }
     
     return render(request, template_name, context)
 
 
-@login_required
+@merchant_required
 def merchant_analytics(request):
     template_name = 'merchant_analytics.html'
 
@@ -154,7 +162,7 @@ def merchant_analytics(request):
         supplier_id = request.GET.get('supplier_id')
         supplier = Supplier.objects.filter(id=supplier_id).first()
     else:
-        supplier = Supplier.objects.filter(user=request.user).first()
+        supplier = getattr(request.user, 'supplier', None)
     
     if not supplier:
         return redirect('suppliers_list')
@@ -179,7 +187,7 @@ def merchant_analytics(request):
     return render(request, template_name, context)
 
 
-@login_required
+@merchant_required
 def merchant_tutorial(request):
     template_name = 'merchant_tutorial.html'
 

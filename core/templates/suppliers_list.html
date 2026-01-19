@@ -5,7 +5,109 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/suppliers.css' %}?v={{ css_version }}">
-<style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <style>
+        /* Swiper Custom Styles */
+        /* Swiper Custom Styles */
+        .main-ads-swiper {
+            width: calc(100% - 32px); /* Card look on all screens */
+            max-width: 1400px; /* Limit max width on large screens */
+            height: 300px; /* Fixed height desktop */
+            margin: 16px auto; /* Center with spacing */
+            border-radius: 20px; /* Rounded corners everywhere */
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06); /* Soft shadow */
+        }
+        
+        .main-ads-swiper .swiper-slide {
+            height: 100%;
+        }
+        
+        /* Banner Overlay Styles */
+        .supplier-badge {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(4px);
+            padding: 6px 16px 6px 6px;
+            border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .supplier-badge img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .supplier-badge span {
+            color: #333;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-ads-swiper {
+                height: 200px; /* Adjusted height for mobile */
+                width: calc(100% - 24px); /* Slightly tighter on mobile */
+                margin: 12px auto;
+            }
+            
+            .supplier-badge {
+                padding: 4px 12px 4px 4px !important;
+                backdrop-filter: blur(12px) !important;
+            }
+            .supplier-badge img {
+                width: 32px !important;
+                height: 32px !important;
+            }
+            .supplier-badge span {
+                font-size: 0.85rem !important;
+            }
+        }
+
+        .ad-banner {
+            width: 100%;
+            height: 100% !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff; /* White bg for cleaner look with contain */
+        }
+
+        .ad-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Back to cover for better mobile filling, or contain if strict */
+            /* User complained about "not well organized", cover usually looks more organized/premium. 
+               But previous request was "whole image". 
+               I will stick to 'contain' but with white background it looks like a native card. 
+               Actually, let's use a smart object-fit: cover for mobile if they want "fitting", 
+               but 'contain' is safer for text-heavy banners provided by users.
+               I'll use 'contain' but ensures the white background makes it seamless.
+            */
+            object-fit: cover; 
+            object-position: center;
+        }
+
+        .main-ads-swiper .swiper-pagination-bullet {
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 1;
+            width: 8px;
+            height: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .main-ads-swiper .swiper-pagination-bullet-active {
+            background: #fff;
+            width: 20px;
+            border-radius: 4px;
+        }
+    
     /* Advanced Spotlight Tour Styles */
     .spotlight-overlay {
         position: fixed;
@@ -83,13 +185,56 @@
 
 
 <div>
+    <!-- Supplier Ads Section (Full Width) -->
+    {% if supplier_ads %}
+    <div class="supplier-ads-section mb-6">
+        <h2 class="section-title mb-3">متاجر مميزة</h2>
+        <div class="ads-scroll-container">
+            {% for ad in supplier_ads %}
+            <a href="{% if ad.link %}{{ ad.link }}{% elif ad.supplier %}{% url 'product-list' ad.supplier.store_id %}{% else %}#{% endif %}" class="ad-card-link-scroll" {% if ad.link %}target="_blank"{% endif %}>
+                <div class="ad-card">
+                    <div class="ad-badge-hot" style="background: linear-gradient(135deg, #FFD700, #FFA500); color: #000;">
+                        <i class="fas fa-star"></i> <span>{{ ad.tag_text|default:'ممول' }}</span>
+                    </div>
+                    <div class="ad-image">
+                        <img src="{{ ad.image.url }}" alt="{{ ad.supplier.name|default:'Ad' }}" loading="lazy" style="object-fit: cover;">
+                    </div>
+                    <div class="ad-info">
+                        {% if ad.supplier %}
+                        <div class="ad-supplier-name">
+                            <img src="{% if ad.supplier.profile_picture %}{{ ad.supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ ad.supplier.name }}" class="supplier-inline-logo" loading="lazy">
+                            <span>{{ ad.supplier.name }}</span>
+                        </div>
+                        {% else %}
+                        <div style="height: 10px;"></div>
+                        {% endif %}
+                        
+                        <h4 class="ad-product-name" style="margin-top: 4px;">
+                            {% if ad.title %}
+                                {{ ad.title }}
+                            {% elif ad.supplier %}
+                                تصفح المتجر
+                            {% else %}
+                                عرض مميز
+                            {% endif %}
+                        </h4>
+                        
+                        <p class="ad-description text-gray-500 text-sm">عروض ومنتجات مميزة</p>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Platform Offers Ads Section -->
     {% if platform_ads %}
     <div class="platform-ads-section">
         <h2 class="section-title mb-3">عروض عرطات</h2>
         <div class="ads-scroll-container">
             {% for ad in platform_ads %}
-            <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="ad-card-link">
+            <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="ad-card-link-scroll">
                 <div class="ad-card">
                     {% if ad.product.has_discount %}
                     <div class="ad-badge-discount">
@@ -249,48 +394,16 @@
     </div>
     {% endif %}
 
-    <!-- Join as Business Section -->
-    <section class="business-join-wrapper">
-        <div class="container">
-            <div class="business-join-card">
-                <div class="business-join-header">
-                    <h2>انضم إلينا كشريك نجاح</h2>
-                    <p>هل تمتلك نشاطاً تجارياً وترغب في زيادة مبيعاتك؟ انضم إلى منصتنا اليوم واعرض منتجاتك لآلاف العملاء.</p>
-                </div>
-
-                <form method="POST" class="business-request-form">
-                    {% csrf_token %}
-                    <div class="business-form-grid">
-                        <div class="form-group">
-                            <label class="business-form-label">{{ business_form.name.label }}</label>
-                            {{ business_form.name }}
-                        </div>
-                        <div class="form-group">
-                            <label class="business-form-label">{{ business_form.owner_name.label }}</label>
-                            {{ business_form.owner_name }}
-                        </div>
-                        <div class="form-group">
-                            <label class="business-form-label">{{ business_form.email.label }}</label>
-                            {{ business_form.email }}
-                        </div>
-                        <div class="form-group">
-                            <label class="business-form-label">{{ business_form.phone.label }}</label>
-                            {{ business_form.phone }}
-                        </div>
-                        <div class="form-group-full">
-                            <label class="business-form-label">{{ business_form.business_type.label }}</label>
-                            {{ business_form.business_type }}
-                        </div>
-                        <div class="form-group-full">
-                            <label class="business-form-label">{{ business_form.message.label }}</label>
-                            {{ business_form.message }}
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-submit-business">
-                        <span>إرسال طلب الانضمام</span>
-                        <i class="fas fa-paper-plane me-2"></i>
-                    </button>
-                </form>
+    <!-- Join as Business Call to Action -->
+    <section class="business-join-cta py-8 bg-gradient-to-r from-gray-50 to-white border-t border-gray-100">
+        <div class="container mx-auto px-4 text-center">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-2xl font-bold mb-3 text-gray-800">هل تمتلك نشاطاً تجارياً؟</h2>
+                <p class="text-gray-600 mb-6">انضم إلى منصتنا اليوم واعرض منتجاتك لآلاف العملاء لزيادة مبيعاتك وتوسيع نطاق عملك.</p>
+                <a href="{% url 'join_business' %}" class="inline-flex items-center gap-2 bg-gray-900 text-white font-bold py-3 px-8 rounded-xl hover:bg-black transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    <span>انضم إلينا كشريك نجاح</span>
+                    <i class="fas fa-arrow-left"></i>
+                </a>
             </div>
         </div>
     </section>
@@ -528,5 +641,28 @@ function applyFilters() {
     }
 
     document.addEventListener('DOMContentLoaded', startTour);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Main Ads Swiper
+        const mainAdsSwiper = new Swiper('.main-ads-swiper', {
+            loop: true,
+            autoplay: {
+                delay: 4000,
+                disableOnInteraction: false,
+            },
+            speed: 800,
+            effect: 'fade', // Smooth crossfade transition
+            fadeEffect: {
+                crossFade: true
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+        });
+    });
 </script>
 {% endblock %}

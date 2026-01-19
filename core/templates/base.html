@@ -338,14 +338,18 @@
                     <!-- Supplier Logo -->
                     {% if supplier.profile_picture %}
                         <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-16 w-auto ml-3 object-contain rounded-full shadow-sm border border-gray-100">
+                        {% if not supplier or supplier.show_system_logo %}
                         <div class="h-8 w-px bg-gray-200 ml-3"></div>
+                        {% endif %}
                     {% endif %}
 
                     <!-- System Logo -->
-                    {% if system_settings.logo %}
-                        <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-16 w-auto object-contain">
-                    {% else %}
-                        <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-16 w-auto object-contain">
+                    {% if not supplier or supplier.show_system_logo %}
+                        {% if system_settings.logo %}
+                            <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-16 w-auto object-contain">
+                        {% else %}
+                            <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-16 w-auto object-contain">
+                        {% endif %}
                     {% endif %}
                 </a>
 
@@ -405,6 +409,10 @@
                                 <a href="#" onclick="openLoginModal()" class="block px-6 py-2 hover:bg-gray-50 transition-all flex items-center text-brand-primary">
                                     <i class="fas fa-sign-in-alt ml-3"></i>
                                     <span class="text-sm font-bold">تسجيل الدخول / إنشاء حساب</span>
+                                </a>
+                                <a href="{% url 'merchant_login' %}" class="block px-6 py-2 hover:bg-gray-50 transition-all flex items-center text-gray-600">
+                                    <i class="fas fa-store-alt ml-3 text-gray-400"></i>
+                                    <span class="text-sm font-medium">تسجيل الدخول كمتجر</span>
                                 </a>
                             </div>
                         </div>

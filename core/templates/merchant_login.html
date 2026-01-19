@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
+        <div class="text-center">
+            <!-- Optional: Use System Logo if desired, or a specific Merchant Icon -->
+            <div class="mx-auto h-16 w-16 bg-gray-900 rounded-full flex items-center justify-center text-white text-2xl shadow-lg mb-4" style="background: linear-gradient(135deg, var(--primary-color, #ef7d2d), var(--primary-dark, #d6621b));">
+                <i class="fas fa-store"></i>
+            </div>
+            <h2 class="mt-2 text-center text-3xl font-extrabold text-gray-900">
+                تسجيل دخول التاجر
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                يرجى إدخال بيانات حسابك للدخول إلى لوحة التحكم
+            </p>
+        </div>
+        
+        <form class="mt-8 space-y-6" method="POST">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700">
+                            {{ form.non_field_errors|join:", " }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div class="mb-4">
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">اسم المستخدم</label>
+                    <input id="username" name="username" type="text" autocomplete="username" required 
+                        class="appearance-none rounded-xl relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm transition-colors" 
+                        placeholder="اسم المستخدم">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">كلمة المرور</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required 
+                        class="appearance-none rounded-xl relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm transition-colors" 
+                        placeholder="كلمة المرور">
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <i class="fas fa-lock group-hover:text-gray-300 transition-colors"></i>
+                    </span>
+                    دخول
+                </button>
+            </div>
+            
+            <div class="flex items-center justify-between mt-4">
+                <div class="text-sm">
+                    <a href="{% url 'join_business' %}" class="font-medium hover:text-orange-700" style="color: var(--primary-color, #ef7d2d);">
+                        ليس لديك حساب؟ انضم إلينا
+                    </a>
+                </div>
+                <div class="text-sm">
+                    <a href="#" class="font-medium text-gray-600 hover:text-gray-900">
+                        نسيت كلمة المرور؟
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

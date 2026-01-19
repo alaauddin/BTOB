@@ -108,6 +108,8 @@ class Supplier(models.Model):
     views_count = models.PositiveIntegerField(default=0, verbose_name="عدد المشاهدات")
     can_add_categories = models.BooleanField(default=False, verbose_name="إضافة فئات")
     can_add_product_categories = models.BooleanField(default=False, verbose_name="إضافة فئات المنتجات")
+    can_add_products = models.BooleanField(default=False, verbose_name="إضافة منتجات")
+    show_system_logo = models.BooleanField(default=True, verbose_name="عرض شعار المنصة في الشريط العلوي")
     is_active = models.BooleanField(default=True, verbose_name="نشط")
     
     def __str__(self):
@@ -141,6 +143,19 @@ class Supplier(models.Model):
         from django.db.models import Avg
         avg_rating = Review.objects.filter(product__supplier=self).aggregate(Avg('rating'))['rating__avg']
         return round(float(avg_rating), 1) if avg_rating is not None else 0.0
+
+class SupplierAdPlatfrom(models.Model):
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, null=True, blank=True)
+    title = models.CharField(max_length=200, null=True, blank=True, verbose_name="العنوان")
+    tag_text = models.CharField(max_length=50, null=True, blank=True, verbose_name="نص الشارة")
+    image = models.ImageField(upload_to=upload_to_path)
+    link = models.URLField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    approved = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return self.title if self.title else (self.supplier.name if self.supplier else f"Platform Ad {self.id}")
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100)

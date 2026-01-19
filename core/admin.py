@@ -122,7 +122,7 @@ class SupplierAdmin(admin.ModelAdmin):
             'description': 'استخدم منتقي الألوان لتحديد ألوان متناسقة لمتجرك.'
         }),
         ('اعدادات الفئات', {
-            'fields': ('can_add_categories', 'can_add_product_categories')
+            'fields': ('can_add_categories', 'can_add_product_categories','show_system_logo')
         }),
     )
 
@@ -187,6 +187,7 @@ admin.site.register(ProductOffer)
 admin.site.register(SupplierAds)
 admin.site.register(Currency)
 admin.site.register(PlatformOfferAd)
+admin.site.register(SupplierAdPlatfrom)
 
 @admin.register(SystemSettings)
 class SystemSettingsAdmin(admin.ModelAdmin):

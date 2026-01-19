@@ -536,15 +536,13 @@
     border-radius: 2px;
 }
 
+/* Platform Offers (Horizontal Scroll) */
 .ads-scroll-container {
     display: flex;
-    gap: 30px;
+    gap: 20px;
     overflow-x: auto;
-    overflow-y: hidden;
-    /* Fix vertical scrolling bounce */
-    padding: 20px 20px 30px;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    padding: 10px 4px 20px;
+    scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -562,11 +560,98 @@
     border-radius: 10px;
 }
 
-.ad-card-link {
+.ad-card-link-scroll {
     text-decoration: none;
     color: inherit;
     flex: 0 0 auto;
     width: 300px;
+}
+
+
+/* Supplier Ads (Full Width Stack) */
+.supplier-ads-section {
+    position: relative;
+    z-index: 10;
+    margin-bottom: 0px;
+    margin-top: -10px;
+    /* Slight negative margin if needed to pull it up to navbar, or just 0 */
+}
+
+.ads-stack-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.ad-banner-link {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+}
+
+.ad-banner {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    /* Banner height */
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ad-banner:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(239, 125, 45, 0.15);
+}
+
+.ad-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ad-banner-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    display: flex;
+    align-items: flex-end;
+}
+
+.supplier-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    padding: 6px 14px 6px 6px;
+    /* RTL padding adjustment */
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.supplier-badge img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.supplier-badge span {
+    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 768px) {
+    .ad-banner {
+        height: 160px;
+    }
 }
 
 /* Continuous "Always Hot" Firing Effect Animations */

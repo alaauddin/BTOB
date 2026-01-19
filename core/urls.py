@@ -29,6 +29,9 @@ from core.views.category_views import add_category_ajax
 from core.views.delete_product import toggle_product_status
 from core.views.toggle_ad_status import toggle_ad_status
 from core.views.request_promotion import request_promotion
+from core.views.manage_platform_ads import add_platform_ad, edit_platform_ad, toggle_platform_ad_status
+from core.views.join_business import join_business
+from core.views.merchant_auth import MerchantLoginView
 
 urlpatterns = [
     # path('products/', ProductListView.as_view(), name='product-list'),
@@ -37,6 +40,8 @@ urlpatterns = [
     path('products/category/product_list_subcategory/<int:subcategory_id>/<str:store_id>/', product_list, name='product_list_subcategory'),
     path('<str:store_id>/details/<int:pk>/', product_detail, name='product_detail'),
     path('', SuppliersListView, name='suppliers_list'),
+    path('join-business/', join_business, name='join_business'),
+    path('merchant/login/', MerchantLoginView.as_view(), name='merchant_login'),
 
 
 
@@ -82,6 +87,11 @@ urlpatterns = [
     path('toggle-ad-status/<int:ad_id>/', toggle_ad_status, name='toggle_ad_status'),
     path('request-promotion/', request_promotion, name='request_promotion'),
     path('add-category-ajax/', add_category_ajax, name='add_category_ajax'),
+    
+    # Platform Ads Management
+    path('add-platform-ad/', add_platform_ad, name='add_platform_ad'),
+    path('edit-platform-ad/<int:ad_id>/', edit_platform_ad, name='edit_platform_ad'),
+    path('toggle-platform-ad-status/<int:ad_id>/', toggle_platform_ad_status, name='toggle_platform_ad_status'),
     
     # Merchant Order Management
     path('merchant-orders/', merchant_orders, name='merchant_orders'),

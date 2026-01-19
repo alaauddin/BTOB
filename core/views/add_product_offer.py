@@ -1,16 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from core.decorators import merchant_required
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
 
 from core.forms import ProductOfferForm
-from core.models import Supplier, Product, ProductOffer
+from core.models import Supplier, Product, ProductOffer, PlatformOfferAd
 
 
-@login_required
+@merchant_required
 @require_http_methods(["GET", "POST"])
 def add_product_offer(request):
     # Support superuser visiting via supplier_id query param
@@ -19,16 +20,15 @@ def add_product_offer(request):
         supplier = get_object_or_404(Supplier, id=supplier_id)
     else:
         # Get the supplier for the current user
-        try:
-            supplier = Supplier.objects.get(user=request.user)
-        except Supplier.DoesNotExist:
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': False, 
-                    'message': 'يجب أن تكون مورداً مسجلاً لإضافة عروض المنتجات'
-                }, status=403)
-            messages.error(request, 'يجب أن تكون مورداً مسجلاً لإضافة عروض المنتجات')
-            return redirect('suppliers_list')
+        supplier = getattr(request.user, 'supplier', None)
+        
+    if not supplier:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False, 
+                'message': 'Supplier context missing'
+            }, status=403)
+        return redirect('suppliers_list')
     
     if request.method == 'POST':
         # Handle AJAX form submission
@@ -40,13 +40,22 @@ def add_product_offer(request):
                     offer.created_by = request.user
                     offer.save()
                     
+                    # Automatically create PlatformOfferAd
+                    PlatformOfferAd.objects.create(
+                        product=offer.product,
+                        description=f"عرض خاص: {offer.product.name} بسعر مخفض لفترة محدودة!",
+                        start_date=offer.from_date,
+                        end_date=offer.to_date,
+                        is_approved=False
+                    )
+                    
                     return JsonResponse({
                         'success': True,
-                        'message': 'تم إضافة العرض بنجاح!',
+                        'message': 'تم إضافة العرض بنجاح! وتم إنشاء إعلان للمنصة بانتظار الموافقة.',
                         'offer': {
                             'id': offer.id,
                             'product_name': offer.product.name,
-                            'discount_percentage': f"{offer.get_discount_percentage_offer():.0f}%",
+                            'discount_percentage': f"{offer.get_discount_percentage_offer():.0f}%" if hasattr(offer, 'get_discount_percentage_offer') else f"{offer.discount_precentage}%",
                             'price_after_discount': str(offer.get_price_with_discount()),
                             'from_date': offer.from_date.strftime('%Y-%m-%d'),
                             'to_date': offer.to_date.strftime('%Y-%m-%d')
@@ -80,7 +89,17 @@ def add_product_offer(request):
                 offer = form.save(commit=False)
                 offer.created_by = request.user
                 offer.save()
-                messages.success(request, 'تم إضافة العرض بنجاح!')
+                
+                # Automatically create PlatformOfferAd
+                PlatformOfferAd.objects.create(
+                    product=offer.product,
+                    description=f"عرض خاص: {offer.product.name} بسعر مخفض لفترة محدودة!",
+                    start_date=offer.from_date,
+                    end_date=offer.to_date,
+                    is_approved=False
+                )
+
+                messages.success(request, 'تم إضافة العرض وإعلان المنصة بنجاح! (بانتظار الموافقة)')
                 if request.user.is_superuser:
                     return redirect(f'/my-merchant/?supplier_id={supplier.id}')
                 return redirect('my_merchant')

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="business-join-wrapper py-12 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="max-w-2xl mx-auto business-join-card bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="business-join-header p-8 bg-gray-900 text-white text-center" style="background: linear-gradient(135deg, var(--primary-color, #ef7d2d), var(--primary-dark, #d6621b));">
+                <h2 class="text-3xl font-bold mb-4">انضم إلينا كشريك نجاح</h2>
+                <p class="opacity-90 leading-relaxed">هل تمتلك نشاطاً تجارياً وترغب في زيادة مبيعاتك؟ انضم إلى منصتنا اليوم واعرض منتجاتك لآلاف العملاء.</p>
+            </div>
+
+            <div class="p-8">
+                <form method="POST" class="business-request-form space-y-6">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">{{ business_form.name.label }}</label>
+                            {{ business_form.name }}
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">{{ business_form.owner_name.label }}</label>
+                            {{ business_form.owner_name }}
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">{{ business_form.email.label }}</label>
+                            {{ business_form.email }}
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">{{ business_form.phone.label }}</label>
+                            {{ business_form.phone }}
+                        </div>
+                        <div class="col-span-1 md:col-span-2">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">{{ business_form.business_type.label }}</label>
+                            {{ business_form.business_type }}
+                        </div>
+                        <div class="col-span-1 md:col-span-2">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">{{ business_form.message.label }}</label>
+                            {{ business_form.message }}
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-gray-900 text-white font-bold py-4 rounded-xl hover:bg-black transition-all shadow-lg transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <span>إرسال طلب الانضمام</span>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
