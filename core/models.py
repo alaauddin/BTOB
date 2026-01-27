@@ -150,6 +150,8 @@ class SupplierAdPlatfrom(models.Model):
     tag_text = models.CharField(max_length=50, null=True, blank=True, verbose_name="نص الشارة")
     image = models.ImageField(upload_to=upload_to_path)
     link = models.URLField(null=True, blank=True)
+    start_datetime = models.DateTimeField(null=True, blank=True, verbose_name="تاريخ ووقت البدء")
+    end_datetime = models.DateTimeField(null=True, blank=True, verbose_name="تاريخ ووقت الانتهاء")
     is_active = models.BooleanField(default=True)
     approved = models.BooleanField(default=False)
     

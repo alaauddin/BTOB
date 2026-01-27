@@ -177,6 +177,371 @@
         width: 12px;
         border-radius: 3px;
     }
+
+    /* --- Polished Ad Card Styles --- */
+    .ad-card {
+        background: #fff;
+        border-radius: 12px; /* Slightly smaller radius for compact look */
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(241, 245, 249, 1);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+        /* Mobile optimization: smaller min-width if needed, or let grid handle it */
+    }
+
+    .ad-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+    }
+
+    .ad-image {
+        position: relative;
+        width: 100%;
+        padding-top: 80%; /* 4:5 Aspect Ratio (slightly shorter than square for mobile efficiency) */
+        overflow: hidden;
+        background-color: #f8fafc;
+    }
+
+    .ad-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 8px; /* Reduced padding */
+        transition: transform 0.5s ease;
+    }
+    
+    .ad-card:hover .ad-image img {
+        transform: scale(1.05);
+    }
+
+    /* Badges - Smaller and better positioned */
+    .ad-badge-discount {
+        position: absolute;
+        top: 8px;
+        background: #ef4444;
+        color: white;
+        font-weight: 700;
+        font-size: 0.7rem;
+        padding: 4px 8px;
+        border-radius: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+    }
+
+    .ad-badge-hot {
+        position: absolute;
+        top: 8px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(8px);
+        color: #f59e0b;
+        font-weight: 700;
+        font-size: 0.7rem;
+        padding: 4px 8px;
+        border-radius: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid rgba(245, 158, 11, 0.1);
+    }
+
+    .ad-info {
+        padding: 10px; /* Reduced padding */
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .ad-supplier-name {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 4px;
+    }
+    
+    .supplier-inline-logo {
+        width: 16px; /* Smaller logo */
+        height: 16px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .ad-supplier-name span {
+        font-size: 0.7rem; /* Smaller text */
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .ad-product-name {
+        font-size: 0.85rem; /* Smaller title */
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 3px;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .ad-description {
+        font-size: 0.7rem; /* Smaller desc */
+        color: #94a3b8;
+        margin-bottom: 6px;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .ad-price {
+        display: flex;
+        align-items: center; /* Align items center instead of baseline for icon alignment */
+        gap: 4px;
+        margin-top: auto;
+    }
+
+    .final-price {
+        font-size: 1rem; /* Adjusted price size */
+        font-weight: 800;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 4px; /* Space between price and icon if any */
+    }
+
+    .original-price {
+        font-size: 0.75rem;
+        text-decoration: line-through;
+        color: #cbd5e1;
+    }
+
+    /* Mobile Media Query for specific ad card adjustments */
+    @media (max-width: 640px) {
+        .ads-scroll-container .ad-card {
+            width: 140px; /* Force a smaller width for horizontal scrolling cards on mobile */
+            min-width: 140px;
+        }
+        
+        .ad-image {
+            padding-top: 100%; /* Square on mobile usually looks best */
+        }
+        
+        .ad-info {
+            padding: 8px;
+        }
+        
+        .ad-product-name {
+            font-size: 0.8rem;
+        }
+        
+        .final-price {
+            font-size: 0.9rem;
+        }
+    }
+
+    /* --- New Promo Section Styles --- */
+    .promo-section {
+        padding: 2rem 0;
+        background: linear-gradient(to bottom, #f8fafc, #ffffff);
+    }
+    
+    .promo-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        position: relative;
+    }
+    
+    .promo-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .promo-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        border-radius: 2px;
+    }
+    
+    .promo-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 1rem auto 0;
+    }
+    
+    .promo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 0 1rem;
+    }
+    
+    @media (min-width: 1024px) {
+        .promo-grid {
+            grid-template-columns: repeat(3, 1fr); 
+            /* Or repeat(4, 1fr) if you want 4 cols, dependent on content density */
+        }
+    }
+    
+    .promo-card {
+        background: white;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        border: 1px solid rgba(226, 232, 240, 0.6);
+        text-decoration: none;
+    }
+    
+    .promo-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px -12px rgba(59, 130, 246, 0.2);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    .promo-image-wrapper {
+        position: relative;
+        width: 100%;
+        padding-top: 60%; /* Aspect Ratio */
+        overflow: hidden;
+    }
+    
+    .promo-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+    
+    .promo-card:hover .promo-image {
+        transform: scale(1.08);
+    }
+    
+    .promo-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%);
+        opacity: 0.8;
+    }
+    
+    .promo-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(4px);
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #0f172a;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        z-index: 10;
+    }
+    
+    .promo-content {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        position: relative;
+    }
+    
+    .promo-supplier-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .promo-supplier-logo {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #f1f5f9;
+    }
+    
+    .promo-supplier-name {
+        font-weight: 600;
+        color: #475569;
+        font-size: 0.9rem;
+    }
+    
+    .promo-card-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+    }
+    
+    .promo-card-desc {
+        color: #64748b;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .promo-footer {
+        margin-top: auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .promo-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #2563eb;
+        font-weight: 700;
+        font-size: 0.95rem;
+        transition: gap 0.2s ease;
+    }
+    
+    .promo-card:hover .promo-cta {
+        gap: 0.75rem;
+    }
 </style>
 {% endblock %}
 
@@ -186,84 +551,78 @@
 
 <div>
     <!-- Supplier Ads Section (Full Width) -->
+    <!-- Promo / Featured Ads Section -->
     {% if supplier_ads %}
-    <div class="supplier-ads-section mb-6">
-        <h2 class="section-title mb-3">متاجر مميزة</h2>
-        <div class="ads-scroll-container">
+    <!-- Hero Banner Swiper Section -->
+    {% if supplier_ads %}
+    <div class="swiper main-ads-swiper mb-6">
+        <div class="swiper-wrapper" style="padding: 10px; margin: -10px;">
             {% for ad in supplier_ads %}
-            <a href="{% if ad.link %}{{ ad.link }}{% elif ad.supplier %}{% url 'product-list' ad.supplier.store_id %}{% else %}#{% endif %}" class="ad-card-link-scroll" {% if ad.link %}target="_blank"{% endif %}>
-                <div class="ad-card">
-                    <div class="ad-badge-hot" style="background: linear-gradient(135deg, #FFD700, #FFA500); color: #000;">
-                        <i class="fas fa-star"></i> <span>{{ ad.tag_text|default:'ممول' }}</span>
+            <div class="swiper-slide">
+                <a href="{% if ad.link %}{{ ad.link }}{% elif ad.supplier %}{% url 'product-list' ad.supplier.store_id %}{% else %}#{% endif %}" 
+                   class="ad-banner" 
+                   {% if ad.link %}target="_blank"{% endif %}>
+                    
+                    <img src="{{ ad.image.url }}" alt="{{ ad.title|default:'Ad' }}" loading="lazy">
+                    
+                    {% if ad.supplier %}
+                    <div class="supplier-badge absolute top-4 left-4 z-10">
+                        <img src="{% if ad.supplier.profile_picture %}{{ ad.supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ ad.supplier.name }}">
+                        <span>{{ ad.supplier.name }}</span>
                     </div>
-                    <div class="ad-image">
-                        <img src="{{ ad.image.url }}" alt="{{ ad.supplier.name|default:'Ad' }}" loading="lazy" style="object-fit: cover;">
-                    </div>
-                    <div class="ad-info">
-                        {% if ad.supplier %}
-                        <div class="ad-supplier-name">
-                            <img src="{% if ad.supplier.profile_picture %}{{ ad.supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ ad.supplier.name }}" class="supplier-inline-logo" loading="lazy">
-                            <span>{{ ad.supplier.name }}</span>
-                        </div>
-                        {% else %}
-                        <div style="height: 10px;"></div>
-                        {% endif %}
-                        
-                        <h4 class="ad-product-name" style="margin-top: 4px;">
-                            {% if ad.title %}
-                                {{ ad.title }}
-                            {% elif ad.supplier %}
-                                تصفح المتجر
-                            {% else %}
-                                عرض مميز
-                            {% endif %}
-                        </h4>
-                        
-                        <p class="ad-description text-gray-500 text-sm">عروض ومنتجات مميزة</p>
-                    </div>
-                </div>
-            </a>
+                    {% endif %}
+                </a>
+            </div>
             {% endfor %}
         </div>
+        <div class="swiper-pagination"></div>
     </div>
+    {% endif %}
     {% endif %}
 
     <!-- Platform Offers Ads Section -->
     {% if platform_ads %}
-    <div class="platform-ads-section">
+    <div class="platform-ads-section mb-6">
         <h2 class="section-title mb-3">عروض عرطات</h2>
-        <div class="ads-scroll-container">
-            {% for ad in platform_ads %}
-            <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="ad-card-link-scroll">
-                <div class="ad-card">
-                    {% if ad.product.has_discount %}
-                    <div class="ad-badge-discount">
-                        -{{ ad.product.get_discount_precentage }}%
-                    </div>
-                    {% endif %}
-                    <div class="ad-badge-hot">
-                        <i class="fas fa-fire"></i> <span>عرض حصري</span>
-                    </div>
-                    <div class="ad-image">
-                        <img src="{{ ad.product.image.url }}" alt="{{ ad.product.name }}" loading="lazy">
-                    </div>
-                    <div class="ad-info">
-                        <div class="ad-supplier-name">
-                            <img src="{% if ad.product.supplier.profile_picture %}{{ ad.product.supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ ad.product.supplier.name }}" class="supplier-inline-logo" loading="lazy">
-                            <span>{{ ad.product.supplier.name }}</span>
-                        </div>
-                        <h4 class="ad-product-name">{{ ad.product.name }}</h4>
-                        <p class="ad-description">{{ ad.description|truncatewords:10 }}</p>
-                        <div class="ad-price">
-                            <span class="final-price">{{ ad.product.get_price_with_offer|floatformat:0 }} {{ ad.product.supplier.currency }}</span>
+        <!-- Swiper Container for Platform Ads -->
+        <div class="swiper platform-offers-swiper" style="padding: 10px; margin: -10px;">
+            <div class="swiper-wrapper">
+                {% for ad in platform_ads %}
+                <div class="swiper-slide" style="width: auto; height: auto;">
+                    <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="ad-card-link-block h-full block">
+                        <div class="ad-card h-full">
                             {% if ad.product.has_discount %}
-                            <span class="original-price" style="text-decoration: line-through; color: #94a3b8; font-size: 0.9rem; margin-right: 8px;">{{ ad.product.price|floatformat:0 }}</span>
+                            <div class="ad-badge-discount">
+                                -{{ ad.product.get_discount_precentage }}%
+                            </div>
                             {% endif %}
+                            <div class="ad-badge-hot">
+                                <i class="fas fa-fire"></i> <span>عرض حصري</span>
+                            </div>
+                            <div class="ad-image">
+                                <img src="{{ ad.product.image.url }}" alt="{{ ad.product.name }}" loading="lazy">
+                            </div>
+                            <div class="ad-info">
+                                <div class="ad-supplier-name">
+                                    <img src="{% if ad.product.supplier.profile_picture %}{{ ad.product.supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ ad.product.supplier.name }}" class="supplier-inline-logo" loading="lazy">
+                                    <span>{{ ad.product.supplier.name }}</span>
+                                </div>
+                                <h4 class="ad-product-name">{{ ad.product.name }}</h4>
+                                <p class="ad-description">{{ ad.description|truncatewords:10 }}</p>
+                                <div class="ad-price">
+                                    <span class="final-price">{{ ad.product.get_price_with_offer|floatformat:0 }} {{ ad.product.supplier.currency }}</span>
+                                    {% if ad.product.has_discount %}
+                                    <span class="original-price" style="text-decoration: line-through; color: #94a3b8; font-size: 0.9rem; margin-right: 8px;">{{ ad.product.price|floatformat:0 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
-            </a>
-            {% endfor %}
+                {% endfor %}
+            </div>
+            <!-- Scrollbar for user feedback -->
+            <div class="swiper-scrollbar" style="margin-top: 10px;"></div>
         </div>
     </div>
     {% endif %}
@@ -299,66 +658,121 @@
     </div>
 </div>
 
-    <!-- Suppliers Grid -->
-    <div class="supplier-grid">
-        <div class="supplier-horizontal-scroll" id="supplierGrid">
-            {% for supplier in suppliers %}
-            <div class="supplier-card-container" 
-                 data-name="{{ supplier.name|lower }}" 
-                 data-categories="{% for cat in supplier.category.all %}{{ cat.id }},{% endfor %}"
-                 data-category-names="{% for cat in supplier.category.all %}{{ cat.name|lower }},{% endfor %}">
-                <div class="supplier-card relative group" style="cursor: pointer;" onclick="if (!event.target.closest('a')) window.location='{% url 'product-list' supplier.store_id %}'">
-                    {% if request.user.is_superuser %}
-                    <a href="{% url 'my_merchant' %}?supplier_id={{ supplier.id }}" class="absolute top-2 left-2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm text-gray-700 rounded-full shadow-sm hover:bg-red-500 hover:text-white transition-all transform hover:scale-110" title="إدارة المتجر">
-                        <i class="fas fa-cog text-sm"></i>
-                    </a>
-                    {% endif %}
-                    <div class="supplier-cover" style="{% if supplier.panal_picture %}background-image: url('{{ supplier.panal_picture.url }}'); background-size: cover; background-position: center;{% else %}background-color: {{ supplier.primary_color }}22;{% endif %}"></div>
-                    <div class="supplier-logo-wrapper">
-                        <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}" loading="lazy">
-                    </div>
-                    
-                    <div class="supplier-content">
-                        <h3 class="supplier-name">{{ supplier.name }}</h3>
-                        
-                        <div class="supplier-meta">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>{{ supplier.city }}, {{ supplier.country }}</span>
-                        </div>
-                        
-                        <div class="supplier-tags">
-                            {% for category in supplier.category.all %}
-                                <span class="supplier-tag">{{ category.name }}</span>
-                            {% endfor %}
-                        </div>
-
-                       
-
-                        <div class="supplier-footer">
-                            <div class="rating-box">
-                                <i class="fas fa-star text-warning"></i>
-                                <span class="fw-bold ms-1">{{ supplier.get_average_rating|default:"5.0" }}</span>
+    <!-- Suppliers Marquee Section -->
+    <div class="supplier-marquee-section" style="overflow: hidden; padding: 20px 0;">
+        
+        <!-- Row 1: Left Direction -->
+        <div class="swiper supplier-marquee-left mb-6"> <!-- Removed dir="ltr" for RTL support -->
+            <div class="swiper-wrapper">
+                {% for supplier in suppliers %}
+                    {% if forloop.counter|divisibleby:2 %}
+                    <div class="swiper-slide" style="width: auto;">
+                        <div class="supplier-card-container" 
+                             data-name="{{ supplier.name|lower }}" 
+                             data-categories="{% for cat in supplier.category.all %}{{ cat.id }},{% endfor %}"
+                             data-category-names="{% for cat in supplier.category.all %}{{ cat.name|lower }},{% endfor %}">
+                            <div class="supplier-card relative group" style="cursor: pointer;" onclick="if (!event.target.closest('a')) window.location='{% url 'product-list' supplier.store_id %}'">
+                                {% if request.user.is_superuser %}
+                                <a href="{% url 'my_merchant' %}?supplier_id={{ supplier.id }}" class="absolute top-2 left-2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm text-gray-700 rounded-full shadow-sm hover:bg-red-500 hover:text-white transition-all transform hover:scale-110" title="إدارة المتجر">
+                                    <i class="fas fa-cog text-sm"></i>
+                                </a>
+                                {% endif %}
+                                <div class="supplier-cover" style="{% if supplier.panal_picture %}background-image: url('{{ supplier.panal_picture.url }}'); background-size: cover; background-position: center;{% else %}background-color: {{ supplier.primary_color }}22;{% endif %}"></div>
+                                <div class="supplier-logo-wrapper">
+                                    <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}" loading="lazy">
+                                </div>
+                                
+                                <div class="supplier-content">
+                                    <h3 class="supplier-name">{{ supplier.name }}</h3>
+                                    <div class="supplier-meta">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>{{ supplier.city }}, {{ supplier.country }}</span>
+                                    </div>
+                                    <div class="supplier-tags">
+                                        {% for category in supplier.category.all %}
+                                            <span class="supplier-tag">{{ category.name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="supplier-footer">
+                                        <div class="rating-box">
+                                            <i class="fas fa-star text-warning"></i>
+                                            <span class="fw-bold ms-1">{{ supplier.get_average_rating|default:"5.0" }}</span>
+                                        </div>
+                                        <button class="btn-visit" onclick="window.location='{% url 'product-list' supplier.store_id %}'">
+                                            <span>زيارة المتجر</span>
+                                            <i class="fas fa-arrow-left me-2"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <button class="btn-visit" onclick="window.location='{% url 'product-list' supplier.store_id %}'">
-                                <span>زيارة المتجر</span>
-                                <i class="fas fa-arrow-left me-2"></i>
-                            </button>
                         </div>
                     </div>
-                </div>
+                    {% endif %}
+                {% endfor %}
             </div>
-            {% empty %}
-            <div class="col-12 w-full">
-                <div class="no-suppliers">
-                    <i class="fas fa-store-slash"></i>
-                    <h3>لا توجد متاجر متاحة حالياً</h3>
-                    <p class="text-muted">لم يتم العثور على أي متاجر تتوافق مع بحثك</p>
-                </div>
-            </div>
-            {% endfor %}
         </div>
+
+        <!-- Row 2: Right Direction -->
+        <div class="swiper supplier-marquee-right">
+            <div class="swiper-wrapper">
+                {% for supplier in suppliers %}
+                    {% if not forloop.counter|divisibleby:2 %}
+                    <div class="swiper-slide" style="width: auto;">
+                        <div class="supplier-card-container" 
+                             data-name="{{ supplier.name|lower }}" 
+                             data-categories="{% for cat in supplier.category.all %}{{ cat.id }},{% endfor %}"
+                             data-category-names="{% for cat in supplier.category.all %}{{ cat.name|lower }},{% endfor %}">
+                            <div class="supplier-card relative group" style="cursor: pointer;" onclick="if (!event.target.closest('a')) window.location='{% url 'product-list' supplier.store_id %}'">
+                                {% if request.user.is_superuser %}
+                                <a href="{% url 'my_merchant' %}?supplier_id={{ supplier.id }}" class="absolute top-2 left-2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm text-gray-700 rounded-full shadow-sm hover:bg-red-500 hover:text-white transition-all transform hover:scale-110" title="إدارة المتجر">
+                                    <i class="fas fa-cog text-sm"></i>
+                                </a>
+                                {% endif %}
+                                <div class="supplier-cover" style="{% if supplier.panal_picture %}background-image: url('{{ supplier.panal_picture.url }}'); background-size: cover; background-position: center;{% else %}background-color: {{ supplier.primary_color }}22;{% endif %}"></div>
+                                <div class="supplier-logo-wrapper">
+                                    <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}" loading="lazy">
+                                </div>
+                                
+                                <div class="supplier-content">
+                                    <h3 class="supplier-name">{{ supplier.name }}</h3>
+                                    <div class="supplier-meta">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>{{ supplier.city }}, {{ supplier.country }}</span>
+                                    </div>
+                                    <div class="supplier-tags">
+                                        {% for category in supplier.category.all %}
+                                            <span class="supplier-tag">{{ category.name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="supplier-footer">
+                                        <div class="rating-box">
+                                            <i class="fas fa-star text-warning"></i>
+                                            <span class="fw-bold ms-1">{{ supplier.get_average_rating|default:"5.0" }}</span>
+                                        </div>
+                                        <button class="btn-visit" onclick="window.location='{% url 'product-list' supplier.store_id %}'">
+                                            <span>زيارة المتجر</span>
+                                            <i class="fas fa-arrow-left me-2"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if not suppliers %}
+        <div class="col-12 w-full text-center">
+            <div class="no-suppliers">
+                <i class="fas fa-store-slash"></i>
+                <h3>لا توجد متاجر متاحة حالياً</h3>
+                <p class="text-muted">لم يتم العثور على أي متاجر تتوافق مع بحثك</p>
+            </div>
+        </div>
+        {% endif %}
     </div>
-</div>
 
     {% if producing_family_suppliers %}
     <div class="producing-families-wrapper">
@@ -661,6 +1075,66 @@ function applyFilters() {
             pagination: {
                 el: '.swiper-pagination',
                 clickable: true,
+            },
+        });
+
+        // Initialize Platform Offers Swiper
+        const platformOffersSwiper = new Swiper('.platform-offers-swiper', {
+            slidesPerView: 2.2, // Smaller cards on mobile (was 1.5)
+            spaceBetween: 14,
+            loop: true, // Enable infinite loop
+            autoplay: {
+                delay: 2000,
+                disableOnInteraction: false, 
+            },
+            scrollbar: {
+                el: '.swiper-scrollbar',
+                draggable: true,
+                hide: false,
+            },
+            breakpoints: {
+                640: {
+                    slidesPerView: 3.2, // Was 2.5
+                },
+                768: {
+                    slidesPerView: 4.2, // Was 3.5
+                },
+                1024: {
+                    slidesPerView: 5.5, // Was 4.5
+                },
+                1280: {
+                    slidesPerView: 6.5, // Was 5.5
+                },
+                1536: {
+                    slidesPerView: 7.5, // Extra large screens
+                },
+            }
+        });
+
+        // Initialize Supplier Marquee Left
+        const supplierMarqueeLeft = new Swiper('.supplier-marquee-left', {
+            slidesPerView: 'auto',
+            spaceBetween: 20,
+            loop: true,
+            speed: 1000, // Match standard slide speed
+            allowTouchMove: true,
+            autoplay: {
+                delay: 2000, // Match Platform Offers delay
+                disableOnInteraction: false,
+            },
+        });
+
+        // Initialize Supplier Marquee Right
+        const supplierMarqueeRight = new Swiper('.supplier-marquee-right', {
+            slidesPerView: 'auto',
+            spaceBetween: 20,
+            loop: true,
+            speed: 1000, 
+            allowTouchMove: true,
+            autoplay: {
+                delay: 2000, // Match Platform Offers delay
+                disableOnInteraction: false,
+                reverseDirection: true,
             },
         });
     });

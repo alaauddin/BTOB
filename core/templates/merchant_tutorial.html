@@ -5,109 +5,278 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/merchant_dashboard.css' %}">
+<style>
+    /* Custom Scrollbar for Modal */
+    #viewer-body::-webkit-scrollbar {
+        width: 8px;
+    }
+    #viewer-body::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+    #viewer-body::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    #viewer-body::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+    /* FAQ Accordion Transition */
+    details > summary {
+        list-style: none;
+    }
+    details > summary::-webkit-details-marker {
+        display: none;
+    }
+    details[open] summary ~ * {
+        animation: slideDown 0.3s ease-in-out;
+    }
+    @keyframes slideDown {
+        0% { opacity: 0; transform: translateY(-10px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8" dir="rtl">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+<div class="container mx-auto px-4 py-8 max-w-7xl" dir="rtl">
+    
+    <!-- 1. Global Search Section -->
+    <div class="bg-white rounded-[2.5rem] p-8 lg:p-12 shadow-sm border border-slate-100 mb-12 text-center relative overflow-hidden group">
+        <div class="absolute -top-24 -right-24 w-64 h-64 bg-primary-color/5 rounded-full blur-3xl group-hover:bg-primary-color/10 transition-colors duration-700"></div>
+        <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl group-hover:bg-blue-500/10 transition-colors duration-700"></div>
+        
+        <div class="relative z-10 max-w-3xl mx-auto">
+            <h1 class="text-3xl lg:text-4xl font-black text-slate-800 mb-3 tracking-tight">كيف يمكننا مساعدتك اليوم؟</h1>
+            <p class="text-slate-500 font-medium mb-8 text-lg">ابحث في قاعدة المعرفة، الشروحات، أو تواصل مع الدعم الفني</p>
+            
+            <div class="relative group/search">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-6 pointer-events-none">
+                    <i class="fas fa-search text-slate-400 text-xl group-focus-within/search:text-primary-color transition-colors"></i>
+                </div>
+                <input type="text" id="searchInput" onkeyup="filterTutorials()"
+                       class="w-full h-16 pr-20 pl-6 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:border-primary-color/30 focus:bg-white focus:ring-4 focus:ring-primary-color/10 transition-all outline-none font-bold text-slate-700 placeholder-slate-400 shadow-sm text-right"
+                       placeholder="ابحث عن مقالات، شروحات، أو أسئلة شائعة...">
+            </div>
+
+            <!-- Quick Links -->
+            <div class="flex flex-wrap justify-center items-center gap-3 mt-6 text-sm font-bold text-slate-500">
+                <span class="ml-2"><i class="fas fa-fire text-orange-500 ml-1"></i>الأكثر بحثاً:</span>
+                <button class="px-4 py-2 bg-slate-50 rounded-xl hover:bg-white hover:shadow-md hover:text-primary-color transition-all border border-transparent hover:border-slate-100">إضافة منتج</button>
+                <button class="px-4 py-2 bg-slate-50 rounded-xl hover:bg-white hover:shadow-md hover:text-primary-color transition-all border border-transparent hover:border-slate-100">طرق الدفع</button>
+                <button class="px-4 py-2 bg-slate-50 rounded-xl hover:bg-white hover:shadow-md hover:text-primary-color transition-all border border-transparent hover:border-slate-100">توصيل الطلبات</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Support Categorization (The Grid) -->
+    <div class="mb-8 flex items-center justify-between">
         <div>
-            <div class="flex items-center gap-3 mb-2">
-                <a href="{% url 'my_merchant' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500 hover:text-primary-color transition-all">
-                    <i class="fas fa-arrow-right"></i>
-                </a>
-                <h1 class="text-3xl font-black text-slate-800">مركز المساعدة</h1>
-            </div>
-            <p class="text-slate-500 mr-13">تعلم كيف تزيد مبيعاتك وتدير متجرك باحتراف</p>
+            <h2 class="text-2xl font-black text-slate-800 mb-1">تصفح حسب القسم</h2>
+            <p class="text-slate-500 text-sm font-bold">كل ما تحتاجه لإدارة متجرك بنجاح</p>
         </div>
     </div>
 
-    <div class="mb-8">
-        <h2 class="text-3xl font-black text-gradient mb-2">دليل النجاح</h2>
-        <p class="text-slate-500 font-medium">تعرف على كيفية تحقيق أقصى استفادة من متجرك على منصتنا</p>
+    <div id="no-results-message" class="hidden text-center py-10 bg-slate-50 rounded-3xl mb-8">
+        <i class="fas fa-search text-4xl text-slate-300 mb-4"></i>
+        <p class="text-slate-500 font-bold">لم نتمكن من العثور على نتائج تطابق بحثك</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Media Suite Tutorial -->
-        <div onclick="openTutorial('media')" class="tutorial-card bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-blue-500/5 transition-all group cursor-pointer overflow-hidden relative">
-            <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl group-hover:bg-blue-500/10 transition-colors"></div>
-            <div class="relative z-10">
-                <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 mb-6 group-hover:scale-110 transition-transform">
-                    <i class="fas fa-play-circle text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-3">الجناح الإعلامي المتقدم</h3>
-                <p class="text-sm text-slate-600 leading-relaxed mb-6">تعلم كيفية إضافة الفيديوهات والصور المتعددة لمنتجاتك لخلق تجربة تسوق غامرة تزيد من مبيعاتك بنسبة تصل إلى 40%.</p>
-                <div class="flex items-center gap-2 text-blue-600 font-bold text-sm">
-                    <span>ابدأ التعلم الآن</span>
-                    <i class="fas fa-arrow-left text-xs group-hover:-translate-x-1 transition-transform"></i>
-                </div>
+    <div id="supportGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <!-- 1. Media Suite -->
+        <div onclick="openTutorial('media')" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden h-full flex flex-col">
+            <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                <i class="fas fa-photo-video text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-3">الجناح الإعلامي</h3>
+            <p class="text-sm text-slate-500 leading-relaxed mb-6 flex-grow">تعلم كيفية إضافة صور وفيديوهات احترافية لمنتجاتك لزيادة المبيعات والجاذبية.</p>
+            <div class="flex items-center text-blue-600 font-bold text-sm mt-auto group-hover:translate-x-1 transition-transform rtl:group-hover:-translate-x-1">
+                <span>اكتشف الدليل</span>
+                <i class="fas fa-arrow-left mr-2"></i>
             </div>
         </div>
 
-        <!-- Order Management Tutorial -->
-        <div onclick="openTutorial('orders')" class="tutorial-card bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-green-500/5 transition-all group cursor-pointer overflow-hidden relative">
-            <div class="absolute -top-10 -right-10 w-32 h-32 bg-green-500/5 rounded-full blur-3xl group-hover:bg-green-500/10 transition-colors"></div>
-            <div class="relative z-10">
-                <div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-green-500 mb-6 group-hover:scale-110 transition-transform">
-                    <i class="fas fa-truck-loading text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-3">احتراف إدارة الطلبات</h3>
-                <p class="text-sm text-slate-600 leading-relaxed mb-6">من الاستلام وحتى التسليم النهائي.. تعرف على أفضل الممارسات لتحديث حالات الطلبات والتواصل مع العملاء بشكل احترافي.</p>
-                <div class="flex items-center gap-2 text-green-600 font-bold text-sm">
-                    <span>اكتشف الدليل</span>
-                    <i class="fas fa-arrow-left text-xs group-hover:-translate-x-1 transition-transform"></i>
-                </div>
+        <!-- 2. Orders -->
+        <div onclick="openTutorial('orders')" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-amber-500/5 hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden h-full flex flex-col">
+            <div class="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                <i class="fas fa-box-open text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-3">إدارة الطلبات</h3>
+            <p class="text-sm text-slate-500 leading-relaxed mb-6 flex-grow">دليلك الشامل لمتابعة الطلبات، تحديث الحالات، وضمان توصيل سريع للعملاء.</p>
+            <div class="flex items-center text-amber-600 font-bold text-sm mt-auto group-hover:translate-x-1 transition-transform rtl:group-hover:-translate-x-1">
+                <span>اكتشف الدليل</span>
+                <i class="fas fa-arrow-left mr-2"></i>
             </div>
         </div>
 
-        <!-- Analytics & Growth Tutorial -->
-        <div onclick="openTutorial('growth')" class="tutorial-card bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-purple-500/5 transition-all group cursor-pointer overflow-hidden relative">
-            <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/5 rounded-full blur-3xl group-hover:bg-purple-500/10 transition-colors"></div>
-            <div class="relative z-10">
-                <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-500 mb-6 group-hover:scale-110 transition-transform">
-                    <i class="fas fa-chart-line text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-3">النمو والتحليلات</h3>
-                <p class="text-sm text-slate-600 leading-relaxed mb-6">فهم لغة الأرقام. تعلم كيفية قراءة تقارير مبيعاتك، تتبع زوار متجرك، وتطوير استراتيجيات ذكية لزيادة أرباحك.</p>
-                <div class="flex items-center gap-2 text-purple-600 font-bold text-sm">
-                    <span>اقرأ المزيد</span>
-                    <i class="fas fa-arrow-left text-xs group-hover:-translate-x-1 transition-transform"></i>
-                </div>
+        <!-- 3. Growth -- Analytics is Cyan in CSS -->
+        <div onclick="openTutorial('growth')" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-cyan-500/5 hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden h-full flex flex-col">
+            <div class="w-14 h-14 bg-cyan-50 rounded-2xl flex items-center justify-center text-cyan-500 mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                <i class="fas fa-chart-pie text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-3">النمو والتحليلات</h3>
+            <p class="text-sm text-slate-500 leading-relaxed mb-6 flex-grow">كيف تقرأ الأرقام وتستخدم البيانات لتطوير استراتيجيات تسويقية تضاعف أرباحك.</p>
+            <div class="flex items-center text-cyan-600 font-bold text-sm mt-auto group-hover:translate-x-1 transition-transform rtl:group-hover:-translate-x-1">
+                <span>اكتشف الدليل</span>
+                <i class="fas fa-arrow-left mr-2"></i>
+            </div>
+        </div>
+
+        <!-- 4. Account Management (New) -->
+        <div onclick="openTutorial('account')" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden h-full flex flex-col">
+            <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                <i class="fas fa-user-shield text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-3">إدارة الحساب</h3>
+            <p class="text-sm text-slate-500 leading-relaxed mb-6 flex-grow">تحديث بيانات المتجر، إدارة الصلاحيات، وتوثيق الحساب لزيادة موثوقية متجرك.</p>
+            <div class="flex items-center text-blue-600 font-bold text-sm mt-auto group-hover:translate-x-1 transition-transform rtl:group-hover:-translate-x-1">
+                <span>اكتشف الدليل</span>
+                <i class="fas fa-arrow-left mr-2"></i>
+            </div>
+        </div>
+
+        <!-- 5. Payments (New) -->
+        <div onclick="openTutorial('payments')" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-emerald-500/5 hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden h-full flex flex-col">
+            <div class="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500 mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                <i class="fas fa-wallet text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-3">المدفوعات</h3>
+            <p class="text-sm text-slate-500 leading-relaxed mb-6 flex-grow">كل ما يخص الفواتير، طرق الدفع الإلكتروني، وتسوية المستحقات المالية.</p>
+            <div class="flex items-center text-emerald-600 font-bold text-sm mt-auto group-hover:translate-x-1 transition-transform rtl:group-hover:-translate-x-1">
+                <span>اكتشف الدليل</span>
+                <i class="fas fa-arrow-left mr-2"></i>
+            </div>
+        </div>
+
+        <!-- 6. Technical Support (New) -->
+        <div onclick="openTutorial('technical')" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-red-500/5 hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden h-full flex flex-col">
+            <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                <i class="fas fa-tools text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-3">الدعم الفني</h3>
+            <p class="text-sm text-slate-500 leading-relaxed mb-6 flex-grow">حلول المشاكل التقنية الشائعة، الإبلاغ عن الأخطاء، وحالة النظام.</p>
+            <div class="flex items-center text-red-600 font-bold text-sm mt-auto group-hover:translate-x-1 transition-transform rtl:group-hover:-translate-x-1">
+                <span>اكتشف الدليل</span>
+                <i class="fas fa-arrow-left mr-2"></i>
             </div>
         </div>
     </div>
 
-    <!-- Featured Guide -->
-    <div class="mt-12 group">
-        <div class="relative rounded-[2.5rem] bg-slate-900 overflow-hidden shadow-2xl transition-all hover:shadow-blue-500/20">
-            <div class="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-transparent"></div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 items-center">
-                <div class="p-8 lg:p-14 relative z-10">
-                    <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-500/20 text-blue-400 rounded-full text-xs font-black uppercase tracking-widest mb-6">
-                        <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-                        جديد وحصري
-                    </div>
-                    <h3 class="text-3xl lg:text-4xl font-black text-white mb-6 leading-tight">كيف تضاعف مبيعاتك في 30 يوم؟</h3>
-                    <p class="text-slate-400 text-lg mb-8 leading-relaxed">دليل شامل أعده خبراء التجارة الإلكترونية لدينا، يحتوي على أسرار ترتيب المنتجات، تقنيات التصوير الاحترافي، واستراتيجيات التسعير النفسي.</p>
-                    <button class="px-8 py-4 bg-white text-slate-900 rounded-2xl font-black text-sm hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/10 flex items-center gap-3">
-                        تحميل الدليل الكامل (PDF)
-                        <i class="fas fa-download"></i>
+    <!-- 3. Lead Magnet (Design Revised) -->
+    <div class="mb-20">
+        <div class="relative bg-slate-900 rounded-[3rem] overflow-hidden shadow-2xl p-8 lg:p-14 flex flex-col lg:flex-row items-center gap-12 group" style="background-color: #0f172a;">
+            <!-- Background Glows -->
+            <div class="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-primary-color/20 to-transparent opacity-30"></div>
+            <div class="absolute -bottom-32 -left-32 w-80 h-80 bg-blue-600/30 rounded-full blur-[100px]"></div>
+            
+            <!-- Content -->
+            <div class="relative z-10 flex-1 text-center lg:text-right">
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-white/90 text-xs font-bold mb-6 border border-white/10 shadow-lg" style="color: #cbd5e1;">
+                    <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    انضم لـ 500+ تاجر هذا الشهر
+                </div>
+                
+                <h2 class="text-3xl lg:text-5xl font-black text-white mb-6 leading-tight">كيف تضاعف مبيعاتك<br><span class="text-transparent bg-clip-text bg-gradient-to-l from-primary-color to-orange-300">في 30 يوم فقط؟</span></h2>
+                <p class="text-slate-300 text-lg leading-relaxed mb-8 max-w-2xl mx-auto lg:mx-0" style="color: #cbd5e1;">دليل حصري وعملي يحتوي على استراتيجيات مجربة لزيادة المبيعات، تحسين ظهور منتجاتك، وكسب ولاء العملاء بذكاء.</p>
+                
+                <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                    <button class="w-full sm:w-auto px-8 py-4 bg-primary-color hover:bg-orange-600 text-white rounded-2xl font-black shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-1 transition-all flex items-center justify-center gap-3" style="background-color: var(--primary-color); color: white;">
+                        <i class="fas fa-file-pdf"></i>
+                        تحميل الدليل مجاناً
+                    </button>
+                    <button class="w-full sm:w-auto px-8 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-2xl font-bold backdrop-blur-sm transition-all" style="background-color: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                        عرض مقتطفات
                     </button>
                 </div>
-                <div class="hidden lg:block relative h-full">
-                    <div class="absolute inset-0 bg-gradient-to-l from-slate-900 to-transparent z-10"></div>
-                    <div class="w-full h-full flex items-center justify-center p-10">
-                        <div class="relative w-full aspect-video rounded-3xl overflow-hidden shadow-2xl rotate-3 group-hover:rotate-0 transition-transform duration-700">
-                            <div class="absolute inset-0 bg-blue-600/20 mix-blend-overlay"></div>
-                            <div class="flex items-center justify-center h-full bg-slate-800">
-                                <i class="fas fa-rocket text-8xl text-blue-500/20"></i>
-                            </div>
+            </div>
+
+            <!-- Visual (Rotated Card) -->
+            <div class="relative z-10 w-full max-w-sm lg:w-1/3 perspective-1000 flex justify-center">
+                <div class="bg-white rounded-3xl shadow-2xl transform rotate-3 hover:rotate-0 transition-all duration-500 p-2 border-4 border-white/10" style="width: 280px; height: 380px;">
+                    <div class="w-full h-full bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 relative">
+                        <!-- Pseudo Book Cover Content -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-6 text-center">
+                            <i class="fas fa-rocket text-6xl text-primary-color/20 mb-6"></i>
+                            <h3 class="text-2xl font-black text-slate-800 mb-2">الدليل الشامل</h3>
+                            <p class="text-slate-400 font-bold text-sm tracking-widest">للنجاح التجاري</p>
+                            <div class="mt-8 w-24 h-1 bg-primary-color/20 rounded-full"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- 4. FAQ Section -->
+    <div class="max-w-4xl mx-auto mb-20">
+        <div class="text-center mb-10">
+            <h2 class="text-2xl font-black text-slate-800 mb-2">الأسئلة الشائعة</h2>
+            <p class="text-slate-500">إجابات سريعة على تساؤلاتك المتكررة</p>
+        </div>
+
+        <div class="space-y-4">
+            <details class="group bg-white rounded-2xl border border-slate-100 open:border-primary-color/20 open:shadow-lg transition-all duration-300">
+                <summary class="flex justify-between items-center p-6 cursor-pointer font-bold text-slate-800 list-none">
+                    <span>كيف يمكنني إضافة منتج جديد؟</span>
+                    <span class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-open:bg-primary-color group-open:text-white transition-all">
+                        <i class="fas fa-plus text-sm group-open:rotate-45 transition-transform duration-300"></i>
+                    </span>
+                </summary>
+                <div class="p-6 pt-0 text-slate-600 leading-relaxed border-t border-transparent group-open:border-slate-50">
+                    يمكنك إضافة منتج جديد بسهولة عبر لوحة التحكم، اختر "المنتجات" من القائمة الجانبية ثم اضغط على زر "إضافة منتج". تأكد من ملء جميع الحقول المطلوبة وإضافة صور عالية الجودة.
+                </div>
+            </details>
+
+            <details class="group bg-white rounded-2xl border border-slate-100 open:border-primary-color/20 open:shadow-lg transition-all duration-300">
+                <summary class="flex justify-between items-center p-6 cursor-pointer font-bold text-slate-800 list-none">
+                    <span>كيف يتم تحويل أرباحي؟</span>
+                    <span class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-open:bg-primary-color group-open:text-white transition-all">
+                        <i class="fas fa-plus text-sm group-open:rotate-45 transition-transform duration-300"></i>
+                    </span>
+                </summary>
+                <div class="p-6 pt-0 text-slate-600 leading-relaxed border-t border-transparent group-open:border-slate-50">
+                    يتم تحويل الأرباح بشكل دوري (أسبوعي أو شهري) حسب إعدادات حسابك. يتم التحويل إلى الحساب البنكي المسجل أو عبر المحافظ الإلكترونية المتاحة في اليمن.
+                </div>
+            </details>
+
+            <details class="group bg-white rounded-2xl border border-slate-100 open:border-primary-color/20 open:shadow-lg transition-all duration-300">
+                <summary class="flex justify-between items-center p-6 cursor-pointer font-bold text-slate-800 list-none">
+                    <span>هل يمكنني تعديل تفاصيل المتجر لاحقاً؟</span>
+                    <span class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-open:bg-primary-color group-open:text-white transition-all">
+                        <i class="fas fa-plus text-sm group-open:rotate-45 transition-transform duration-300"></i>
+                    </span>
+                </summary>
+                <div class="p-6 pt-0 text-slate-600 leading-relaxed border-t border-transparent group-open:border-slate-50">
+                    نعم، يمكنك تعديل كافة تفاصيل متجرك، بما في ذلك الاسم، الشعار، وصور الغلاف في أي وقت من خلال صفحة "إعدادات المتجر".
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <!-- 5. Contact Options Footer -->
+    <div class="bg-gradient-to-br from-slate-50 to-white rounded-[2.5rem] p-10 text-center border border-slate-100">
+        <h2 class="text-2xl font-black text-slate-800 mb-2">هل ما زلت بحاجة للمساعدة؟</h2>
+        <p class="text-slate-500 mb-8 max-w-xl mx-auto">فريق الدعم لدينا متواجد على مدار الساعة لمساعدتك في حل أي مشكلة قد تواجهها.</p>
+        
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="https://wa.me/{% if system_settings.whatsapp_number %}{{ system_settings.whatsapp_number }}{% else %}967780888200{% endif %}" target="_blank" class="flex items-center justify-center gap-3 px-8 py-4 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl font-bold shadow-lg shadow-green-500/20 hover:-translate-y-1 transition-all" style="background-color: #25D366; color: white;">
+                <i class="fab fa-whatsapp text-xl"></i>
+                <div class="text-right">
+                    <span class="block text-xs font-medium opacity-90">تحدث معنا عبر</span>
+                    <span class="block text-sm">واتساب (مباشر)</span>
+                </div>
+            </a>
+            
+            <a href="#" class="flex items-center justify-center gap-3 px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white border border-slate-800 hover:border-slate-700 rounded-xl font-bold transition-all" style="background-color: #1e293b; color: white;">
+                <i class="fas fa-ticket-alt text-slate-400"></i>
+                <div class="text-right">
+                    <span class="block text-xs font-medium text-slate-300">مشكلة تقنية؟</span>
+                    <span class="block text-sm">فتح تذكرة دعم</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
 </div>
 
 <!-- Tutorial Viewer Modal -->
@@ -115,7 +284,7 @@
     <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onclick="closeTutorial()"></div>
     <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] relative z-[100000] overflow-hidden flex flex-col scale-95 opacity-0 transition-all duration-300 border border-slate-200" id="viewer-container">
         <!-- Header -->
-        <div class="p-6 lg:p-8 flex flex-row-reverse justify-between items-center border-b border-slate-50" dir="rtl">
+        <div class="p-6 lg:p-8 flex justify-between items-center border-b border-slate-50" dir="rtl">
             <div class="flex items-center gap-4 text-right">
                 <div id="viewer-icon" class="w-12 h-12 rounded-2xl flex-shrink-0 flex items-center justify-center text-white shadow-lg"></div>
                 <div>
@@ -137,19 +306,50 @@
         <div class="p-6 bg-slate-50/50 flex flex-row-reverse justify-between items-center border-t border-slate-50" dir="rtl">
             <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Success Center Guide</p>
             <div class="flex gap-3">
-                <button onclick="closeTutorial()" class="px-8 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-lg active:shadow-none">فهمت، شكراً</button>
+                <button onclick="closeTutorial()" class="px-8 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-lg active:shadow-none" style="background-color: #0f172a; color: white;">فهمت، شكراً</button>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // Search Functionality
+    function filterTutorials() {
+        const input = document.getElementById('searchInput');
+        const filter = input.value.toLowerCase();
+        const grid = document.getElementById('supportGrid');
+        // Select direct children divs of the grid (the cards)
+        const cards = grid.querySelectorAll(':scope > div');
+        let hasVisibleCards = false;
+
+        cards.forEach(card => {
+            const title = card.querySelector('h3').textContent.toLowerCase();
+            const desc = card.querySelector('p').textContent.toLowerCase();
+            
+            if (title.includes(filter) || desc.includes(filter)) {
+                card.style.display = ""; // Show
+                hasVisibleCards = true;
+            } else {
+                card.style.display = "none"; // Hide
+            }
+        });
+
+        // Toggle No Results Message
+        const noResults = document.getElementById('no-results-message');
+        if (noResults) {
+            if (!hasVisibleCards) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+        }
+    }
+
     const tutorials = {
         media: {
             title: "الجناح الإعلامي المتقدم",
             subtitle: "اجعل منتجاتك تنبض بالحياة",
-            icon: "fas fa-play-circle",
+            icon: "fas fa-photo-video",
             color: "bg-blue-500",
             content: `
                 <div class="space-y-8 text-right">
@@ -158,13 +358,13 @@
                         <p class="text-blue-800/70 text-sm">المنتجات التي تحتوي على فيديو توضيحي تحصل على نسبة تحويل (Conversion Rate) أعلى بـ 3 مرات من المنتجات التي تكتفي بالصور فقط.</p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="tutorial-step p-6 rounded-3xl">
+                        <div class="tutorial-step p-6 rounded-3xl border border-slate-100 bg-white shadow-sm">
                             <h5 class="font-bold text-slate-800 mb-2">الإضافة الصحيحة</h5>
-                            <p class="text-sm text-slate-600">عند إضافة منتج، ستجد قسماً خاصاً بالصور الإضافية وقسم الفيديو. تأكد من أن الصور واضحة وبخلفية بيضاء للحصول على مظهر احترافي.</p>
+                            <p class="text-sm text-slate-600 leading-relaxed">عند إضافة منتج، ستجد قسماً خاصاً بالصور الإضافية وقسم الفيديو. تأكد من أن الصور واضحة وبخلفية بيضاء للحصول على مظهر احترافي.</p>
                         </div>
-                        <div class="tutorial-step p-6 rounded-3xl">
+                        <div class="tutorial-step p-6 rounded-3xl border border-slate-100 bg-white shadow-sm">
                             <h5 class="font-bold text-slate-800 mb-2">ترتيب المحتوى</h5>
-                            <p class="text-sm text-slate-600">اجعل الصورة الرئيسية هي الأكثر جاذبية. استخدم الصور الإضافية لعرض تفاصيل المنتج من زوايا مختلفة.</p>
+                            <p class="text-sm text-slate-600 leading-relaxed">اجعل الصورة الرئيسية هي الأكثر جاذبية. استخدم الصور الإضافية لعرض تفاصيل المنتج من زوايا مختلفة.</p>
                         </div>
                     </div>
                 </div>
@@ -173,13 +373,13 @@
         orders: {
             title: "احتراف إدارة الطلبات",
             subtitle: "من نقرة العميل إلى عتبة الباب",
-            icon: "fas fa-truck-loading",
-            color: "bg-green-500",
+            icon: "fas fa-box-open",
+            color: "bg-amber-500",
             content: `
                 <div class="space-y-8 text-right">
-                    <div class="bg-green-50/50 p-6 rounded-3xl border border-green-100">
-                        <h4 class="font-bold text-green-900 mb-2">السر في المتابعة</h4>
-                        <p class="text-green-800/70 text-sm">العملاء يحبون الشفافية. تحديث حالة الطلب في كل مرحلة يقلل من تساؤلات العميل ويزيد من ولائه لعلامتك التجارية.</p>
+                    <div class="bg-amber-50/50 p-6 rounded-3xl border border-amber-100">
+                        <h4 class="font-bold text-amber-900 mb-2">السر في المتابعة</h4>
+                        <p class="text-amber-800/70 text-sm">العملاء يحبون الشفافية. تحديث حالة الطلب في كل مرحلة يقلل من تساؤلات العميل ويزيد من ولائه لعلامتك التجارية.</p>
                     </div>
                 </div>
             `
@@ -187,14 +387,52 @@
         growth: {
             title: "النمو والتحليلات",
             subtitle: "حوّل البيانات إلى قرارات تجارية ذكية",
-            icon: "fas fa-chart-line",
-            color: "bg-purple-500",
+            icon: "fas fa-chart-pie",
+            color: "bg-cyan-500",
             content: `
                 <div class="space-y-8 text-right">
-                    <div class="bg-purple-900 text-white p-8 rounded-[2rem] shadow-xl overflow-hidden relative">
-                        <h4 class="text-xl font-bold mb-4">قاعدة الـ 80/20</h4>
-                        <p class="text-purple-200 text-sm leading-relaxed">غالباً ما تأتي 80% من أرباحك من 20% فقط من منتجاتك. استخدم التحليلات لتحديد هذه المنتجات الذهبية وركز جهودك التسويقية عليها.</p>
+                    <div class="bg-cyan-50 p-6 rounded-[2rem] border border-cyan-100">
+                        <h4 class="text-lg font-bold text-cyan-900 mb-2">قاعدة الـ 80/20</h4>
+                        <p class="text-cyan-800/80 text-sm leading-relaxed">غالباً ما تأتي 80% من أرباحك من 20% فقط من منتجاتك. استخدم التحليلات لتحديد هذه المنتجات الذهبية وركز جهودك التسويقية عليها.</p>
                     </div>
+                </div>
+            `
+        },
+        account: {
+            title: "إدارة الحساب",
+            subtitle: "تحكم كامل في إعدادات متجرك",
+            icon: "fas fa-user-shield",
+            color: "bg-blue-500",
+            content: `
+                 <div class="space-y-6 text-right">
+                    <p class="text-slate-600 leading-relaxed">يمكنك تحديث بياناتك الشخصية، شعار المتجر، وألوان العلامة التجارية من خلال لوحة التحكم الخاصة بك.</p>
+                    <ul class="list-disc list-inside text-slate-600 space-y-2">
+                        <li>اذهب إلى الإعدادات</li>
+                        <li>اختر تخصيص المتجر</li>
+                        <li>قم برفع الشعار الجديد وحفظ التغييرات</li>
+                    </ul>
+                </div>
+            `
+        },
+        payments: {
+            title: "المدفوعات والاشتراكات",
+            subtitle: "إدارة مالية شفافة",
+            icon: "fas fa-wallet",
+            color: "bg-emerald-500",
+            content: `
+                 <div class="space-y-6 text-right">
+                    <p class="text-slate-600 leading-relaxed">نظامنا يضمن لك متابعة دقيقة لجميع العمليات المالية. يمكنك استعراض سجل الفواتير وطلب سحب الرصيد في أي وقت.</p>
+                </div>
+            `
+        },
+        technical: {
+            title: "الدعم الفني",
+            subtitle: "نحن هنا لمساعدتك",
+            icon: "fas fa-tools",
+            color: "bg-red-500",
+            content: `
+                 <div class="space-y-6 text-right">
+                    <p class="text-slate-600 leading-relaxed">إذا واجهت أي مشكلة تقنية، لا تتردد في فتح تذكرة دعم أو التواصل معنا مباشرة عبر واتساب.</p>
                 </div>
             `
         }

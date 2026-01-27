@@ -53,8 +53,11 @@ def SuppliersListView(request):
     # Supplier Ads (Full Width Top)
     supplier_ads = SupplierAdPlatfrom.objects.filter(
         is_active=True,
-        approved=True
+        approved=True,
+        start_datetime__lte=timezone.now(),
+        end_datetime__gte=timezone.now()
     ).select_related('supplier')
+    
 
     # Platform Offer Ads (Horizontal Scroll)
     platform_ads = PlatformOfferAd.objects.filter(
