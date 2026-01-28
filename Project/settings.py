@@ -125,7 +125,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('DB_NAME','aratfbjj_aratat_db'),
-        'USER': os.getenv('DB_USER','aratat_db_user'),
+        'USER': os.getenv('DB_USER','aratfbjj_aratat_db_user'),
         'PASSWORD': os.getenv('DB_PASSWORD','wr94$43URhE4'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '3306'),
