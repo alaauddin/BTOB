@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='supplier',
             name='currency',
-            field=models.CharField(default='ر.س', max_length=10),
+            field=models.CharField(default='SAR', max_length=10),
         ),
     ]
