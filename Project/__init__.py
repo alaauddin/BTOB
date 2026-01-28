@@ -1,5 +1,9 @@
 import pymysql
+import sys
 
-# This line is crucial for Django compatibility
-pymysql.version_info = (1, 4, 6, "final", 0) 
+# Fake the mysqlclient version
+pymysql.version_info = (2, 2, 7, "final", 0)
 pymysql.install_as_MySQLdb()
+
+# Ensure the module is properly registered in sys.modules
+sys.modules["MySQLdb"] = sys.modules["pymysql"]
