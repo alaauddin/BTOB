@@ -17,12 +17,13 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
             return
 
         # 2. Check if we have an email
-        if not sociallogin.email_address:
+        email = sociallogin.user.email
+        if not email:
             return
 
         # 3. Try to find a user with this email
         try:
-            user = User.objects.get(email=sociallogin.email_address)
+            user = User.objects.get(email=email)
             # 4. Link the social account to this user
             sociallogin.connect(request, user)
         except User.DoesNotExist:
