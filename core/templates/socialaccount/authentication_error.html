@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Social Network Login Failure" %} | {{ system_settings.site_name }}{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper min-h-screen flex items-center justify-center p-6 lg:p-12">
+    <!-- Immersive Background System -->
+    <div class="bg-system">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="glass-overlay"></div>
+    </div>
+
+    <!-- Main Auth Card -->
+    <div class="auth-card-premium relative z-10 w-full max-w-lg">
+        <div class="auth-card-inner p-8 lg:p-12 text-center">
+            
+            <div class="header-section mb-10">
+                <div class="error-icon-box mb-8 mx-auto w-24 h-24 flex items-center justify-center rounded-3xl bg-red-500/10 border border-red-500/20">
+                    <i class="fas fa-exclamation-circle text-5xl text-red-500"></i>
+                </div>
+                
+                <h1 class="welcome-text">{% trans "Login Error" %}</h1>
+                <p class="subtitle-text">
+                    {% trans "An error occurred while attempting to log in via your social network account." %}
+                </p>
+            </div>
+
+            <div class="action-section pt-4">
+                <a href="{% url 'account_login' %}" class="btn-submit-premium no-underline">
+                    <span class="btn-text">{% trans "Return to Login" %}</span>
+                    <div class="btn-icon"><i class="fas fa-arrow-left"></i></div>
+                </a>
+            </div>
+
+            <div class="auth-footer-premium mt-12 pt-8 border-t border-white/10">
+                <p class="signup-prompt">
+                    {% trans "If this persists, please contact our support team." %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --glass-blur: 40px;
+    }
+
+    .auth-wrapper {
+        background: #020617;
+        font-family: 'Cairo', sans-serif;
+        overflow-x: hidden;
+    }
+
+    .bg-system {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+    }
+
+    .glass-overlay {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, transparent 0%, rgba(2, 6, 23, 0.8) 100%);
+        backdrop-filter: blur(10px);
+    }
+
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.4;
+        animation: orbRotate 20s infinite linear;
+    }
+
+    .orb-1 { width: 600px; height: 600px; background: var(--primary-color, #3b82f6); top: -10%; left: -10%; }
+    .orb-2 { width: 500px; height: 500px; background: var(--accent-color, #a855f7); bottom: -5%; right: -5%; animation-delay: -5s; }
+    .orb-3 { width: 400px; height: 400px; background: #f43f5e; top: 40%; left: 30%; opacity: 0.15; animation-delay: -10s; }
+
+    @keyframes orbRotate {
+        0% { transform: translate(0, 0) scale(1); }
+        33% { transform: translate(50px, 80px) scale(1.1); }
+        66% { transform: translate(-30px, 20px) scale(0.9); }
+        100% { transform: translate(0, 0) scale(1); }
+    }
+
+    .auth-card-inner {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(var(--glass-blur));
+        border: 1px solid var(--glass-border);
+        border-radius: 40px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .welcome-text { color: #fff; font-size: 2.25rem; font-weight: 900; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+    .subtitle-text { color: rgba(255,255,255,0.4); font-size: 0.875rem; font-weight: 500; line-height: 1.6; }
+
+    .btn-submit-premium {
+        position: relative;
+        width: 100%;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, var(--primary-color, #3b82f6), var(--accent-color, #a855f7));
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 800;
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        transition: all 0.4s ease;
+        box-shadow: 0 15px 35px -5px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-submit-premium:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 25px 45px -10px rgba(59, 130, 246, 0.5);
+        filter: brightness(1.1);
+    }
+
+    .signup-prompt { color: rgba(255,255,255,0.4); font-size: 0.95rem; }
+
+    [dir="rtl"] .btn-icon { order: -1; }
+</style>
+{% endblock %}

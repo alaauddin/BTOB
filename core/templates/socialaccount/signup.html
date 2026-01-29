@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{% trans "Sign Up" %} | {{ system_settings.site_name }}{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper min-h-screen flex items-center justify-center p-6 lg:p-12">
+    <!-- Immersive Background System -->
+    <div class="bg-system">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="glass-overlay"></div>
+    </div>
+
+    <!-- Main Auth Card -->
+    <div class="auth-card-premium relative z-10 w-full max-w-lg">
+        <div class="auth-card-inner p-8 lg:p-12">
+            
+            <!-- Dual Logo Presentation -->
+            <div class="header-section text-center mb-10">
+                <div class="logo-stack flex items-center justify-center gap-6 mb-8">
+                    {% if supplier.profile_picture %}
+                    <div class="supplier-logo-box">
+                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-16 w-auto object-contain">
+                    </div>
+                    <div class="divider-line"></div>
+                    {% endif %}
+                    
+                    <div class="system-logo-box">
+                        {% if system_settings.logo %}
+                        <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-16 w-auto object-contain">
+                        {% else %}
+                        <img src="{% static 'logo.png' %}" alt="Logo" class="h-16 w-auto object-contain">
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <h1 class="welcome-text">{% trans "Welcome" %}</h1>
+                <p class="subtitle-text">
+                    {% blocktrans with provider_name=account.get_social_connection.provider.name site_name=site.name %}You are about to use your {{provider_name}} account to login to {{site_name}}. As a final step, please complete the following form:{% endblocktrans %}
+                </p>
+            </div>
+
+            <!-- Enhanced Form -->
+            <form id="signup_form" method="post" action="{% url 'socialaccount_signup' %}" class="auth-form space-y-6">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="error-toast-premium animate-fade-in">
+                    {% for error in form.non_field_errors %}
+                    <p><i class="fas fa-exclamation-triangle"></i> {{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="form-fields-container space-y-6">
+                    {% for field in form %}
+                    <div class="form-group-premium">
+                        <label class="premium-label">
+                            <span class="ar">{{ field.label }}</span>
+                            <span class="en">{{ field.name|upper }}</span>
+                        </label>
+                        <div class="input-wrapper">
+                            {% render_field field class="form-control-premium" placeholder=field.label %}
+                            <div class="input-glow"></div>
+                        </div>
+                        {% if field.errors %}
+                        <span class="error-hint">{% for error in field.errors %}{{ error }}{% endfor %}</span>
+                        {% endif %}
+                        {% if field.help_text %}
+                        <p class="usage-tip"><i class="fas fa-info-circle"></i> {{ field.help_text }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+
+                <div class="action-section pt-4">
+                    <button type="submit" class="btn-submit-premium">
+                        <span class="btn-text">{% trans "Sign Up" %}</span>
+                        <div class="btn-icon"><i class="fas fa-check"></i></div>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Bottom Utilities -->
+            <div class="auth-footer-premium mt-12 pt-8 border-t border-white/10 text-center">
+                <p class="signup-prompt">
+                    {% trans "Already have an account?" %} 
+                    <a href="{% url 'account_login' %}" class="link-highlight">{% trans "Log In" %}</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --glass-blur: 40px;
+    }
+
+    .auth-wrapper {
+        background: #020617;
+        font-family: 'Cairo', sans-serif;
+        overflow-x: hidden;
+    }
+
+    .bg-system {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+    }
+
+    .glass-overlay {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, transparent 0%, rgba(2, 6, 23, 0.8) 100%);
+        backdrop-filter: blur(10px);
+    }
+
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.4;
+        animation: orbRotate 20s infinite linear;
+    }
+
+    .orb-1 { width: 600px; height: 600px; background: var(--primary-color, #3b82f6); top: -10%; left: -10%; }
+    .orb-2 { width: 500px; height: 500px; background: var(--accent-color, #a855f7); bottom: -5%; right: -5%; animation-delay: -5s; }
+    .orb-3 { width: 400px; height: 400px; background: #f43f5e; top: 40%; left: 30%; opacity: 0.15; animation-delay: -10s; }
+
+    @keyframes orbRotate {
+        0% { transform: translate(0, 0) scale(1); }
+        33% { transform: translate(50px, 80px) scale(1.1); }
+        66% { transform: translate(-30px, 20px) scale(0.9); }
+        100% { transform: translate(0, 0) scale(1); }
+    }
+
+    .auth-card-inner {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(var(--glass-blur));
+        border: 1px solid var(--glass-border);
+        border-radius: 40px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .welcome-text { color: #fff; font-size: 2.25rem; font-weight: 900; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+    .subtitle-text { color: rgba(255,255,255,0.4); font-size: 0.875rem; font-weight: 500; line-height: 1.6; }
+
+    .premium-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .premium-label .ar { color: rgba(255,255,255,0.7); font-size: 0.85rem; font-weight: 700; }
+    .premium-label .en { color: rgba(255,255,255,0.2); font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; }
+
+    .input-wrapper { position: relative; }
+
+    .form-control-premium {
+        width: 100%;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 18px;
+        padding: 1.1rem 1.5rem;
+        color: #fff;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+
+    .form-control-premium:focus {
+        background: rgba(255,255,255,0.07);
+        border-color: var(--primary-color);
+        box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.2);
+    }
+
+    .input-glow {
+        position: absolute;
+        inset: -2px;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        border-radius: 20px;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        filter: blur(10px);
+    }
+
+    .form-control-premium:focus + .input-glow { opacity: 0.2; }
+
+    .error-toast-premium {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        padding: 1rem;
+        border-radius: 16px;
+        color: #fca5a5;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+    }
+
+    .error-hint { color: #fca5a5; font-size: 0.75rem; font-weight: 700; margin-top: 0.5rem; display: block; }
+    .usage-tip { color: rgba(255,255,255,0.25); font-size: 0.75rem; margin-top: 0.6rem; display: flex; align-items: center; gap: 0.5rem; }
+
+    .btn-submit-premium {
+        position: relative;
+        width: 100%;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, var(--primary-color, #3b82f6), var(--accent-color, #a855f7));
+        border: none;
+        border-radius: 20px;
+        color: white;
+        font-weight: 800;
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        transition: all 0.4s ease;
+        box-shadow: 0 15px 35px -5px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-submit-premium:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 25px 45px -10px rgba(59, 130, 246, 0.5);
+        filter: brightness(1.1);
+    }
+
+    .signup-prompt { color: rgba(255,255,255,0.4); font-size: 0.95rem; }
+    .link-highlight { color: #fff; font-weight: 800; text-decoration: none; border-bottom: 2.5px solid var(--primary-color); padding-bottom: 2px; }
+
+    .divider-line { width: 1px; height: 30px; background: rgba(255,255,255,0.2); }
+
+    [dir="rtl"] .btn-icon { order: -1; }
+</style>
+{% endblock %}
