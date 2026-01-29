@@ -17,7 +17,7 @@ from core.views.ProductListView import product_list
 from core.views.ConvertCartToOrder import checkout_select_address_or_custom_address
 from core.views.SuppliersListView import SuppliersListView
 from core.views.add_to_wish_list import toggle_wishlist, get_wishlist_status
-from core.views.MyMerchant import my_merchant, update_merchant_settings, merchant_products, merchant_marketing, merchant_analytics, merchant_tutorial
+from core.views.MyMerchant import my_merchant, update_merchant_settings, merchant_products, merchant_marketing, merchant_analytics, merchant_tutorial, quick_update_stock
 from core.views.add_product import add_product
 from core.views.edit_product import edit_product
 from core.views.add_product_offer import add_product_offer
@@ -77,6 +77,7 @@ urlpatterns = [
     path('merchant-analytics/', merchant_analytics, name='merchant_analytics'),
     path('merchant-tutorial/', merchant_tutorial, name='merchant_tutorial'),
     path('update-merchant-settings/', update_merchant_settings, name='update_merchant_settings'),
+    path('quick-update-stock/<int:product_id>/', quick_update_stock, name='quick_update_stock'),
     path('add-product/', add_product, name='add_product'),
     path('edit-product/<int:product_id>/', edit_product, name='edit_product'),
     path('add-offer/', add_product_offer, name='add_product_offer'),

@@ -53,6 +53,7 @@ class WorkflowStep(models.Model):
     status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
     priority = models.PositiveIntegerField()
     requires_payment = models.BooleanField(default=False, verbose_name="يتطلب سداد كامل")
+    decrease_stock = models.BooleanField(default=False, verbose_name="تقليل المخزون")
 
     class Meta:
         ordering = ['priority']
@@ -182,6 +183,7 @@ class Product(models.Model):
     is_new = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     views_count = models.PositiveIntegerField(default=0, verbose_name="عدد المشاهدات")
+    stock = models.PositiveIntegerField(default=0, verbose_name="المخزون")
     
     def __str__(self):
         return self.name
@@ -358,6 +360,7 @@ class Order(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     pipeline_status = models.ForeignKey(OrderStatus, on_delete=models.PROTECT, null=True, blank=True)
+    is_stock_decreased = models.BooleanField(default=False, verbose_name="تم تقليل المخزون")
     
     def __str__(self):
         return f"Order {self.id} by {self.user.username}"
@@ -376,16 +379,18 @@ class Order(models.Model):
             return None
         return WorkflowStep.objects.filter(workflow=supplier.workflow, status=self.pipeline_status).first()
 
-    def get_next_status(self):
+    def get_next_step(self):
         current_step = self.get_current_workflow_step()
         if not current_step:
             return None
         
-        next_step = WorkflowStep.objects.filter(
+        return WorkflowStep.objects.filter(
             workflow=current_step.workflow,
             priority__gt=current_step.priority
         ).order_by('priority').first()
-        
+
+    def get_next_status(self):
+        next_step = self.get_next_step()
         return next_step.status if next_step else None
 
     def save(self, *args, **kwargs):
@@ -394,21 +399,51 @@ class Order(models.Model):
             self.pipeline_status = OrderStatus.objects.filter(slug='pending').first()
         super().save(*args, **kwargs)
 
-    def move_to_next_status(self):
-        current_step = self.get_current_workflow_step()
-        if not current_step:
-            return False, "لا يمكن العثور على الخطوة الحالية في سير العمل."
-            
-        # Check conditions for CURRENT status before moving
-        if current_step.requires_payment and not self.is_fully_paid():
-            return False, f"لا يمكن الانتقال: يتوجب سداد كامل المبلغ ({self.total_amount}) لهذا الطلب أولاً."
+    def update_status(self, new_status):
+        """Update status and handle workflow logic (payment, stock)"""
+        if not new_status:
+            return False, "حالة غير صالحة."
 
-        next_status = self.get_next_status()
-        if next_status:
-            self.pipeline_status = next_status
+        supplier = self.get_supplier()
+        if not supplier or not supplier.workflow:
+            self.pipeline_status = new_status
             self.save()
-            return True, f"تم تحديث حالة الطلب إلى: {next_status.name}"
-        return False, "تم الوصول لآخر مرحلة في سير العمل."
+            return True, f"تم تحديث الحالة إلى {new_status.name}"
+
+        # Get relevant workflow steps
+        current_step = self.get_current_workflow_step()
+        next_step = WorkflowStep.objects.filter(workflow=supplier.workflow, status=new_status).first()
+
+        # Check conditions if moving forward in priority
+        if current_step and next_step and next_step.priority > current_step.priority:
+            # Check payment requirement on CURRENT step before moving
+            if current_step.requires_payment and not self.is_fully_paid():
+                return False, f"لا يمكن الانتقال: يتوجب سداد كامل المبلغ ({self.total_amount}) للطلب أولاً."
+
+        # Handle stock reduction on NEW step if moving to a step that requires it
+        if next_step and next_step.decrease_stock and not self.is_stock_decreased:
+            # 1. Check if we have enough stock for all items
+            for item in self.order_items.all():
+                if item.product.stock < item.quantity:
+                    return False, f"لا يوجد مخزون كافٍ للمنتج: {item.product.name} (المتوفر: {item.product.stock})"
+
+            # 2. Perform reduction
+            for item in self.order_items.all():
+                item.product.stock -= item.quantity
+                item.product.save()
+            
+            self.is_stock_decreased = True
+
+        self.pipeline_status = new_status
+        self.save()
+        return True, f"تم تحديث حالة الطلب إلى: {new_status.name}"
+
+    def move_to_next_status(self):
+        next_status = self.get_next_status()
+        if not next_status:
+            return False, "تم الوصول لآخر مرحلة في سير العمل."
+        
+        return self.update_status(next_status)
     
     def set_total_amount(self):
         items_total = sum([item.get_subtotal_with_discount() for item in self.order_items.all()])

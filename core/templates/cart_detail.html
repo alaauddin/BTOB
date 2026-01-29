@@ -526,12 +526,13 @@
                     showToast('تم زيادة الكمية بنجاح');
                 } else {
                     console.error("Failed to increase quantity");
-                    showToast('حدث خطأ أثناء زيادة الكمية');
+                    showToast(data.message || 'حدث خطأ أثناء زيادة الكمية');
                 }
             },
-            error: function (error) {
+            error: function (xhr) {
                 console.error("An error occurred while increasing the quantity.");
-                showToast('حدث خطأ أثناء زيادة الكمية');
+                const message = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'حدث خطأ أثناء زيادة الكمية';
+                showToast(message);
             }
         });
     }

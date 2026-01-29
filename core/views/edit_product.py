@@ -37,6 +37,7 @@ def edit_product(request, product_id):
                 'name': product.name,
                 'description': product.description,
                 'price': str(product.price),
+                'stock': product.stock,
                 'category_id': product.category.id if product.category else None,
                 'is_new': product.is_new,
                 'is_active': product.is_active,

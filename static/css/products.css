@@ -450,6 +450,26 @@
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+.modern-product-badge.out-of-stock {
+    background: rgba(148, 163, 184, 0.9);
+    filter: saturate(0.5);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.modern-product-badge.low-stock {
+    background: rgba(245, 158, 11, 0.9);
+    color: white;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.out-of-stock-btn {
+    background: #94a3b8 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
 /* Wislist & Quick Add Overhaul */
 .wishlist-btn {
     position: absolute;

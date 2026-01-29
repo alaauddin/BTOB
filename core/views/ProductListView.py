@@ -4,7 +4,7 @@ import math
 from decimal import Decimal
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView
-from core.models import Product, Category, ProductCategory, Cart, Order, SupplierAds, Supplier, Address, ProductOffer
+from core.models import Product, Category, ProductCategory, Cart, Order, SupplierAds, Supplier, Address, ProductOffer, CartItem
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Exists, OuterRef, Subquery
@@ -41,11 +41,19 @@ def product_list(request, store_id, category_id=None, subcategory_id=None):
         to_date__gte=today
     )
     
+    # Subquery for cart quantity
+    cart_qty = CartItem.objects.filter(
+        cart__user=request.user if request.user.is_authenticated else None,
+        cart__supplier=supplier,
+        product=OuterRef('pk')
+    ).values('quantity')[:1]
+    
     queryset = Product.objects.filter(supplier=supplier, is_active=True).annotate(
         has_active_offer=Exists(active_offers),
         max_discount=Subquery(
             active_offers.order_by('-discount_precentage').values('discount_precentage')[:1]
-        )
+        ),
+        quantity_in_cart=Subquery(cart_qty)
     ).prefetch_related('additional_images')
 
     # Filter by category or subcategory

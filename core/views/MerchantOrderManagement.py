@@ -293,9 +293,11 @@ def update_order_status(request, order_id):
         else:
             status_obj = OrderStatus.objects.filter(slug=new_status).first()
             if status_obj:
-                order.pipeline_status = status_obj
-                order.save()
-                messages.success(request, f'تم تحديث حالة الطلب إلى {status_obj.name}')
+                success, message = order.update_status(status_obj)
+                if success:
+                    messages.success(request, message)
+                else:
+                    messages.error(request, message)
             else:
                 messages.error(request, 'الحالة المختارة غير صالحة.')
     
@@ -407,12 +409,14 @@ def update_order_status_ajax(request, order_id):
         return JsonResponse({'success': False, 'message': 'Invalid status.'}, status=400)
     
     # Update status
-    order.pipeline_status = new_status
-    order.save()
+    success, message = order.update_status(new_status)
     
+    if not success:
+        return JsonResponse({'success': False, 'message': message}, status=400)
+
     return JsonResponse({
         'success': True,
-        'message': f'تم تحديث حالة الطلب إلى: {new_status.name}',
+        'message': message,
         'new_status': new_status.name,
         'new_slug': new_status.slug
     })

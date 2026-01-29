@@ -117,6 +117,7 @@
                             <th>المنتج</th>
                             <th>الفئة</th>
                             <th>التقييم</th>
+                            <th>المخزون</th>
                             <th>السعر</th>
                             <th>الحالة</th>
                             <th class="text-left">إجراءات</th>
@@ -152,6 +153,18 @@
                                 <div class="flex items-center gap-1 text-yellow-500">
                                     <i class="fas fa-star text-[10px]"></i>
                                     <span class="text-xs font-black">{{ product.get_average_rating|floatformat:1 }}</span>
+                                </div>
+                            </td>
+
+                            <!-- Stock -->
+                            <td>
+                                <div class="flex flex-col items-center">
+                                    <span class="text-xs font-bold {% if product.stock < 5 %}text-red-500{% else %}text-slate-600{% endif %}">
+                                        {{ product.stock }}
+                                    </span>
+                                    {% if product.stock < 5 %}
+                                    <span class="text-[8px] px-1 bg-red-50 text-red-500 rounded font-black">منخفض</span>
+                                    {% endif %}
                                 </div>
                             </td>
 
@@ -633,6 +646,7 @@
                 document.getElementById('id_description').value = p.description;
                 document.getElementById('id_price').value = p.price;
                 if (p.category_id) document.getElementById('id_category').value = p.category_id;
+                document.getElementById('id_stock').value = p.stock || 0;
                 document.getElementById('id_is_new').checked = p.is_new;
                 
                 if (p.image_url) {

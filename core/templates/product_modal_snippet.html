@@ -114,6 +114,16 @@
                                 <div class="error-message text-red-500 text-[10px] mt-1 hidden" id="price-error"></div>
                             </div>
 
+                            <!-- Stock -->
+                            <div class="form-group">
+                                <label class="form-label block">
+                                    <i class="fas fa-cubes text-blue-500 ml-1"></i>
+                                    {{ product_form.stock.label }}
+                                </label>
+                                {{ product_form.stock }}
+                                <div class="error-message text-red-500 text-[10px] mt-1 hidden" id="stock-error"></div>
+                            </div>
+
                             <!-- Description -->
                             <div class="form-group col-span-1 sm:col-span-2">
                                 <label class="form-label block">

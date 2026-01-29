@@ -39,7 +39,7 @@ class ShippingAddressForm(forms.ModelForm):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description', 'price', 'category', 'image', 'video', 'is_new']
+        fields = ['name', 'description', 'price', 'stock', 'category', 'image', 'video', 'is_new']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all',
@@ -54,6 +54,11 @@ class ProductForm(forms.ModelForm):
                 'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all',
                 'placeholder': '0.00',
                 'step': '0.01',
+                'min': '0'
+            }),
+            'stock': forms.NumberInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all',
+                'placeholder': '0',
                 'min': '0'
             }),
             'category': forms.Select(attrs={
@@ -75,6 +80,7 @@ class ProductForm(forms.ModelForm):
             'name': 'اسم المنتج',
             'description': 'وصف المنتج',
             'price': 'السعر',
+            'stock': 'المخزون المتوفر',
             'category': 'فئة المنتج',
             'image': 'صورة المنتج الرئيسية',
             'video': 'فيديو المنتج (اختياري)',

@@ -144,6 +144,11 @@ class CartView(DetailView):
 # @login_required
 def add_to_cart(request, product_id, store_id):
     product = get_object_or_404(Product, pk=product_id)
+    
+    # Stock Check
+    if product.stock <= 0:
+        return JsonResponse({'success': False, 'message': 'عذراً، هذا المنتج غير متوفر حالياً'}, status=400)
+        
     supplier = get_object_or_404(Supplier, store_id=store_id)
     user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
 
@@ -165,10 +170,24 @@ def add_to_cart(request, product_id, store_id):
     cart_item, item_created = CartItem.objects.get_or_create(cart=user_cart, product=product)
 
     if not item_created:
+        # Stock Check for total quantity
+        if cart_item.quantity + quantity_to_add > product.stock:
+            return JsonResponse({
+                'success': False, 
+                'message': f'عذراً، الكمية المطلوبة غير متوفرة. المتوفر فقط: {product.stock}'
+            }, status=400)
+            
         # If the item is already in the cart, update the quantity
         cart_item.quantity += quantity_to_add
         cart_item.save()
     else:
+        # Stock Check for first add
+        if quantity_to_add > product.stock:
+             return JsonResponse({
+                'success': False, 
+                'message': f'عذراً، الكمية المطلوبة غير متوفرة. المتوفر فقط: {product.stock}'
+            }, status=400)
+            
         # If the item is not in the cart, create a new cart item
         cart_item.quantity = quantity_to_add
         cart_item.save()
@@ -223,6 +242,12 @@ class IncreaseQuantityView(View):
         cart = get_object_or_404(Cart, user=request.user, supplier=supplier)
         cart_item = get_object_or_404(CartItem, pk=item_id, cart=cart)
         
+        # Stock Check
+        if cart_item.quantity + 1 > cart_item.product.stock:
+            return JsonResponse({
+                'success': False, 
+                'message': f'عذراً، لا يمكن إضافة المزيد. المتوفر فقط: {cart_item.product.stock}'
+            }, status=400)
 
         # Implement the logic to increase the quantity
         cart_item.quantity += 1

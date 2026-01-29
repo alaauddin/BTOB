@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from core.decorators import merchant_required
 from core.models import Supplier, Product, ProductOffer, Promotion, SupplierAds, Order, Category, PlatformOfferAd
@@ -120,6 +121,8 @@ def update_merchant_settings(request):
                 return redirect(f"/my-merchant/?supplier_id={supplier.id}")
                 
             return redirect('my_merchant')
+    
+    return render(request, 'my_merchant.html', {'settings_form': SupplierSettingsForm(instance=supplier), 'supplier': supplier})
 
 
 @merchant_required
@@ -205,8 +208,34 @@ def merchant_tutorial(request):
     }
     
     return render(request, template_name, context)
+
+
+@merchant_required
+def quick_update_stock(request, product_id):
+    if request.method == 'POST':
+        # Get the supplier
+        if request.user.is_superuser and (request.POST.get('supplier_id') or request.GET.get('supplier_id')):
+            supplier_id = request.POST.get('supplier_id') or request.GET.get('supplier_id')
+            supplier = get_object_or_404(Supplier, id=supplier_id)
+        else:
+            supplier = getattr(request.user, 'supplier', None)
+            
+        if not supplier:
+            return JsonResponse({'success': False, 'message': 'You are not registered as a supplier.'}, status=403)
+            
+        product = get_object_or_404(Product, id=product_id, supplier=supplier)
+        new_stock = request.POST.get('stock')
+        
+        if new_stock is not None:
+            try:
+                product.stock = int(new_stock)
+                product.save()
+                return JsonResponse({
+                    'success': True, 
+                    'message': 'تم تحديث المخزون بنجاح',
+                    'new_stock': product.stock
+                })
+            except ValueError:
+                return JsonResponse({'success': False, 'message': 'قيمة المخزون غير صالحة'}, status=400)
     
-    # Also handle the final redirect similarly
-    if request.user.is_superuser and supplier.user != request.user:
-        return redirect(f"/my-merchant/?supplier_id={supplier.id}")
-    return redirect('my_merchant')
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)

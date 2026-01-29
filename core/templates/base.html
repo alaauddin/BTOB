@@ -875,7 +875,7 @@
                         
                         showNotification('تمت إضافة المنتج إلى السلة بنجاح', 'success');
                     },
-                    error: function (error) {
+                    error: function (xhr) {
                         // --- Rollback ---
                         totalItemsEl.text(prevTotal);
                         totalItemsMobileEl.text(prevTotal);
@@ -892,7 +892,9 @@
                             $('#mobileCartBar').addClass('d-none');
                         }
                         // -----------------
-                        showNotification('حدث خطأ أثناء إضافة المنتج إلى السلة', 'error');
+                        
+                        const message = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'حدث خطأ أثناء إضافة المنتج إلى السلة';
+                        showNotification(message, 'error');
                     }
                 });
             };
@@ -974,7 +976,7 @@
                         
                         showNotification('تم تحديث الكمية في السلة', 'success');
                     },
-                    error: function (response) {
+                    error: function (xhr) {
                         // --- Rollback ---
                         totalItemsEl.text(prevTotal);
                         totalItemsMobileEl.text(prevTotal);
@@ -987,7 +989,8 @@
                         $('#add-btn-' + productId).addClass('d-none');
                         $('#mobileCartBar').removeClass('d-none');
                         // -----------------
-                        showNotification(response.message || 'حدث خطأ أثناء تحديث السلة', 'error');
+                        const message = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'حدث خطأ أثناء تحديث السلة';
+                        showNotification(message, 'error');
                     }
                 });
             }

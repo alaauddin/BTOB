@@ -28,12 +28,12 @@ class ProductImageInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'supplier', 'category', 'price', 'is_new', 'views_count')
+    list_display = ('name', 'supplier', 'category', 'price', 'stock', 'is_new', 'views_count')
     list_filter = ('supplier', 'category', 'is_new')
     search_fields = ('name', 'description')
     inlines = [ProductImageInline]
     
-    fields = ('supplier', 'category', 'name', 'description', 'price', 'image', 'video', 'is_new')
+    fields = ('supplier', 'category', 'name', 'description', 'price', 'stock', 'image', 'video', 'is_new', 'is_active')
 
 
 class OrderStatusAdmin(admin.ModelAdmin):
@@ -42,7 +42,7 @@ class OrderStatusAdmin(admin.ModelAdmin):
 
 class WorkflowStepInline(admin.TabularInline):
     model = WorkflowStep
-    fields = ('status', 'priority', 'requires_payment')
+    fields = ('status', 'priority', 'requires_payment', 'decrease_stock')
     extra = 1
 
 class OrderWorkflowAdmin(admin.ModelAdmin):
@@ -80,15 +80,17 @@ class SupplierAdmin(admin.ModelAdmin):
         html = '<div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">'
         html += '<table style="width:100%; border-collapse: collapse; text-align: right;">'
         html += '<thead style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">'
-        html += '<tr><th style="padding:12px; font-weight:600;">الحالة</th><th style="padding:12px; font-weight:600;">الأولوية</th><th style="padding:12px; font-weight:600;">يتطلب سداد</th><th style="padding:12px; font-weight:600;">الإجراءات</th></tr></thead><tbody>'
+        html += '<tr><th style="padding:12px; font-weight:600;">الحالة</th><th style="padding:12px; font-weight:600;">الأولوية</th><th style="padding:12px; font-weight:600;">يتطلب سداد</th><th style="padding:12px; font-weight:600;">تقليل المخزون</th><th style="padding:12px; font-weight:600;">الإجراءات</th></tr></thead><tbody>'
         
         for step in steps:
             edit_url = reverse('admin:core_workflowstep_change', args=[step.id])
             req_payment_icon = '✅' if step.requires_payment else '❌'
+            decrease_stock_icon = '✅' if step.decrease_stock else '❌'
             html += f'<tr style="border-bottom: 1px solid #f1f5f9;">'
             html += f'<td style="padding:12px;"><span style="background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">{step.status.name}</span></td>'
             html += f'<td style="padding:12px; font-weight: 600; color: #64748b;">{step.priority}</td>'
             html += f'<td style="padding:12px; text-align:center;">{req_payment_icon}</td>'
+            html += f'<td style="padding:12px; text-align:center;">{decrease_stock_icon}</td>'
             html += f'<td style="padding:12px;"><a href="{edit_url}" class="changelink">تعديل</a></td></tr>'
         
         add_url = reverse('admin:core_workflowstep_add') + f'?workflow={obj.workflow.id}'
