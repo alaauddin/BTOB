@@ -27,6 +27,12 @@
                 <p class="subtitle-text">
                     {% trans "An error occurred while attempting to log in via your social network account." %}
                 </p>
+                {% if auth_error %}
+                <div class="debug-error mt-4 p-4 bg-white/5 rounded-xl border border-white/10 text-xs text-white/40 font-mono">
+                    <p>Error Code: {{ auth_error.code }}</p>
+                    <p>Details: {{ auth_error.exception }}</p>
+                </div>
+                {% endif %}
             </div>
 
             <div class="action-section pt-4">
