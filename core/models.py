@@ -111,6 +111,7 @@ class Supplier(models.Model):
     can_add_product_categories = models.BooleanField(default=False, verbose_name="إضافة فئات المنتجات")
     can_add_products = models.BooleanField(default=False, verbose_name="إضافة منتجات")
     show_system_logo = models.BooleanField(default=True, verbose_name="عرض شعار المنصة في الشريط العلوي")
+    return_policy = models.TextField(blank=True, null=True, verbose_name="سياسة الاستبدال والاسترجاع")
     is_active = models.BooleanField(default=True, verbose_name="نشط")
     
     def __str__(self):

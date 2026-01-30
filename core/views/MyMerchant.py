@@ -116,11 +116,17 @@ def update_merchant_settings(request):
         if form.is_valid():
             form.save()
             
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
+
             # If superuser is editing another merchant, redirect back to that merchant's dashboard
             if request.user.is_superuser and supplier.user != request.user:
                 return redirect(f"/my-merchant/?supplier_id={supplier.id}")
                 
             return redirect('my_merchant')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     
     return render(request, 'my_merchant.html', {'settings_form': SupplierSettingsForm(instance=supplier), 'supplier': supplier})
 

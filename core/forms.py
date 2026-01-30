@@ -378,57 +378,72 @@ class SupplierSettingsForm(forms.ModelForm):
         model = Supplier
         fields = [
             'name', 'phone', 'address', 'city', 'country', 
-            'primary_color', 'secondary_color', 'accent_color',
-            'profile_picture', 'latitude', 'longitude'
+            'primary_color', 'secondary_color', 'navbar_color', 
+            'footer_color', 'text_color', 'accent_color',
+            'profile_picture', 'panal_picture', 'latitude', 'longitude', 
+            'show_order_amounts', 'show_platform_ads', 'show_system_logo',
+            'return_policy'
         ]
         widgets = {
             'name': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all',
+                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
                 'placeholder': 'اسم المتجر'
             }),
             'phone': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all',
+                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
                 'placeholder': 'رقم الهاتف'
             }),
             'address': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all',
-                'placeholder': 'العنوان'
+                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'placeholder': 'العنوان التفصيلي'
             }),
             'city': forms.Select(attrs={
-                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all'
+                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm cursor-pointer'
             }),
             'country': forms.Select(attrs={
-                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all'
+                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm cursor-pointer'
             }),
-            'primary_color': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all color-picker-input',
-                'type': 'color'
-            }),
-            'secondary_color': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all color-picker-input',
-                'type': 'color'
-            }),
-            'accent_color': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all color-picker-input',
-                'type': 'color'
-            }),
-            'profile_picture': forms.FileInput(attrs={
-                'class': 'w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 transition-all',
-                'accept': 'image/*'
-            }),
+            'primary_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
+            'secondary_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
+            'navbar_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
+            'footer_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
+            'text_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
+            'accent_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
+            
+            'profile_picture': forms.FileInput(attrs={'class': 'hidden', 'accept': 'image/*', 'id': 'profile_input'}),
+            'panal_picture': forms.FileInput(attrs={'class': 'hidden', 'accept': 'image/*', 'id': 'banner_input'}),
+            
             'latitude': forms.HiddenInput(),
             'longitude': forms.HiddenInput(),
+            
+            'show_order_amounts': forms.CheckboxInput(attrs={'class': 'sr-only peer'}),
+            'show_platform_ads': forms.CheckboxInput(attrs={'class': 'sr-only peer'}),
+            'show_system_logo': forms.CheckboxInput(attrs={'class': 'sr-only peer'}),
+            
+            'return_policy': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm resize-none',
+                'placeholder': 'اكتب هنا سياسة الاستبدال والاسترجاع التي ستظهر للعملاء في السلة...',
+                'rows': 4
+            }),
         }
         labels = {
             'name': 'اسم المتجر',
-            'phone': 'رقم الهاتف',
+            'phone': 'رقم الهاتف (واتساب)',
             'address': 'العنوان',
             'city': 'المدينة',
             'country': 'الدولة',
             'primary_color': 'اللون الأساسي',
             'secondary_color': 'اللون الثانوي',
-            'accent_color': 'لون التمييز',
-            'profile_picture': 'شعار المتجر'
+            'navbar_color': 'لون الشريط العلوي',
+            'footer_color': 'لون التذييل',
+            'text_color': 'لون النصوص',
+            'accent_color': 'لون التميز',
+            'profile_picture': 'شعار المتجر',
+            'panal_picture': 'صورة الغلاف',
+            'show_order_amounts': 'عرض مبالغ الطلبات',
+            'show_platform_ads': 'عرض إعلانات المنصة',
+            'show_system_logo': 'عرض شعار المنصة العام',
+            'return_policy': 'سياسة الاستبدال والاسترجاع'
         }
 
 
