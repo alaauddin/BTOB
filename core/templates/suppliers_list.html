@@ -281,6 +281,9 @@
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
             z-index: 10;
             border: 1px solid rgba(255,255,255,0.2);
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
         }
 
         .ad-badge-hot {
@@ -351,18 +354,13 @@
         }
 
         .ad-price {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            display: inline-flex;
-            align-items: center;
+            display: flex;
+            align-items: baseline;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            padding: 8px 14px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            z-index: 10;
+            margin-top: auto;
+            background: #f8fafc; /* Subtle pill bg for price */
+            padding: 8px 12px;
+            border-radius: 12px;
             width: fit-content;
         }
 
@@ -653,12 +651,6 @@
                             <div class="ad-badge-hot">
                                 <i class="fas fa-fire"></i> <span>عرض حصري</span>
                             </div>
-                            <div class="ad-price">
-                                <span class="final-price">{{ ad.product.get_price_with_offer|floatformat:0 }} {{ ad.product.supplier.currency }}</span>
-                                {% if ad.product.has_discount %}
-                                <span class="original-price" style="text-decoration: line-through; color: #94a3b8; font-size: 0.9rem; margin-right: 8px;">{{ ad.product.price|floatformat:0 }}</span>
-                                {% endif %}
-                            </div>
                             <div class="ad-image">
                                 <img src="{{ ad.product.image.url }}" alt="{{ ad.product.name }}" loading="lazy">
                             </div>
@@ -669,6 +661,12 @@
                                 </div>
                                 <h4 class="ad-product-name">{{ ad.product.name }}</h4>
                                 <p class="ad-description">{{ ad.description|truncatewords:10 }}</p>
+                                <div class="ad-price">
+                                    <span class="final-price">{{ ad.product.get_price_with_offer|floatformat:0 }} {{ ad.product.supplier.currency }}</span>
+                                    {% if ad.product.has_discount %}
+                                    <span class="original-price" style="text-decoration: line-through; color: #94a3b8; font-size: 0.9rem; margin-right: 8px;">{{ ad.product.price|floatformat:0 }}</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </a>
