@@ -552,6 +552,174 @@
             </div>
         </div>
     </div>
+
+    <!-- Terms Agreement Modal (Persistent) -->
+    {% if not supplier.agreed_to_terms %}
+    <div id="terms-modal" class="fixed inset-0 z-[9999999] flex items-center justify-center p-4 overflow-y-auto" style="z-index: 99999999 !important;">
+        <!-- Non-dismissible backdrop -->
+        <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md"></div>
+        
+        <div class="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl relative z-10 overflow-hidden flex flex-col my-8" style="max-height: calc(100vh - 4rem);">
+            <!-- Header -->
+            <div class="px-8 py-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                <div class="flex items-center gap-3 mb-2">
+                    <i class="fas fa-file-contract text-3xl"></i>
+                    <h2 class="text-2xl font-black">الشروط والأحكام</h2>
+                </div>
+                <p class="text-blue-100 text-sm">يرجى قراءة الشروط والأحكام والموافقة عليها للمتابعة</p>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-grow overflow-y-auto custom-scrollbar p-8 space-y-6 bg-gray-50">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-handshake text-blue-500"></i>
+                        عقد الاستخدام والتعاون
+                    </h3>
+                    <div class="space-y-4 text-gray-700 leading-relaxed text-sm">
+                        <p>
+                            باستخدام منصة عرطات دوتكوم، أنت توافق على الشروط والأحكام التالية:
+                        </p>
+                        
+                        <ul class="list-disc list-inside space-y-2 mr-4">
+                            <li>الالتزام بتقديم منتجات وخدمات عالية الجودة</li>
+                            <li>التعامل بنزاهة ومصداقية مع العملاء</li>
+                            <li>الالتزام بالأسعار المعلنة وعدم التلاعب بها</li>
+                            <li>احترام سياسات المنصة وشروطها</li>
+                            <li>توفير خدمة عملاء ممتازة ومعالجة الشكاوى بسرعة</li>
+                            <li>عدم نشر محتوى مخالف أو غير أخلاقي</li>
+                            <li>تقبل عمولات المنصة على كل عملية بيع</li>
+                            <li>تأكيد الطلبات وشحنها في الوقت المحدد</li>
+                        </ul>
+
+                        <div class="bg-yellow-50 border-r-4 border-yellow-400 p-4 rounded-lg mt-6">
+                            <p class="text-yellow-800 font-bold flex items-center gap-2">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                ملحوظة هامة
+                            </p>
+                            <p class="text-yellow-700 text-sm mt-2">
+                                مخالفة هذه الشروط قد يؤدي إلى تعليق أو إيقاف حسابك على المنصة.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-8 py-6 bg-white border-t border-gray-200 flex flex-col gap-3">
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <input type="checkbox" id="agree-checkbox" class="mt-1 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <span class="text-sm text-gray-700 group-hover:text-gray-900">
+                        أوافق على جميع الشروط والأحكام الموضحة أعلاه وألتزم بالعمل بها
+                    </span>
+                </label>
+                
+                <button id="agree-btn" disabled class="w-full py-4 bg-gray-300 text-gray-500 rounded-2xl font-black text-lg cursor-not-allowed transition-all">
+                    <i class="fas fa-check-circle ml-2"></i>
+                    قبول والمتابعة
+                </button>
+                
+                <p class="text-[10px] text-gray-400 text-center">
+                    بعد الموافقة، ستتمكن من الوصول إلى جميع ميزات لوحة التاجر
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Terms Agreement Modal Logic
+        (function() {
+            const checkbox = document.getElementById('agree-checkbox');
+            const agreeBtn = document.getElementById('agree-btn');
+            const termsModal = document.getElementById('terms-modal');
+            
+            if (!termsModal) return; // Only run if modal exists
+            
+            // Enable/disable button based on checkbox
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    agreeBtn.disabled = false;
+                    agreeBtn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+                    agreeBtn.classList.add('bg-gradient-to-r', 'from-blue-600', 'to-purple-600', 'text-white', 'hover:shadow-xl', 'hover:-translate-y-1', 'cursor-pointer');
+                } else {
+                    agreeBtn.disabled = true;
+                    agreeBtn.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+                    agreeBtn.classList.remove('bg-gradient-to-r', 'from-blue-600', 'to-purple-600', 'text-white', 'hover:shadow-xl', 'hover:-translate-y-1', 'cursor-pointer');
+                }
+            });
+            
+            // Handle agreement
+            agreeBtn.addEventListener('click', function() {
+                if (!checkbox.checked) return;
+                
+                // Show loading
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i> جاري الحفظ...';
+                this.disabled = true;
+                
+                // Get CSRF token
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const formData = new FormData();
+                {% if request.GET.supplier_id %}
+                formData.append('supplier_id', '{{ supplier.id }}');
+                {% endif %}
+                
+                fetch('{% url "agree_to_terms" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Hide modal with animation
+                        termsModal.style.opacity = '0';
+                        setTimeout(() => {
+                            termsModal.remove();
+                            // Show success message
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'مرحباً بك!',
+                                    text: 'تم قبول الشروط بنجاح. يمكنك الآن استخدام جميع ميزات المنصة',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            }
+                        }, 300);
+                    } else {
+                        // Restore button
+                        agreeBtn.innerHTML = originalText;
+                        agreeBtn.disabled = false;
+                        
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire('خطأ', data.message || 'فشل حفظ الموافقة', 'error');
+                        } else {
+                            alert(data.message || 'فشل حفظ الموافقة');
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    agreeBtn.innerHTML = originalText;
+                    agreeBtn.disabled = false;
+                    
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire('خطأ', 'حدث خطأ في الاتصال', 'error');
+                    } else {
+                        alert('حدث خطأ في الاتصال');
+                    }
+                });
+            });
+            
+            // Block all page interactions except the modal
+            document.body.style.overflow = 'hidden';
+        })();
+    </script>
+    {% endif %}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

@@ -124,7 +124,7 @@ class SupplierAdmin(admin.ModelAdmin):
             'description': 'استخدم منتقي الألوان لتحديد ألوان متناسقة لمتجرك.'
         }),
         ('اعدادات الفئات', {
-            'fields': ('can_add_categories', 'can_add_product_categories','show_system_logo')
+            'fields': ('can_add_categories', 'can_add_product_categories','show_system_logo', 'show_out_of_stock')
         }),
     )
 
@@ -189,7 +189,27 @@ admin.site.register(ProductOffer)
 admin.site.register(SupplierAds)
 admin.site.register(Currency)
 admin.site.register(PlatformOfferAd)
-admin.site.register(SupplierAdPlatfrom)
+@admin.register(SupplierAdPlatfrom)
+class SupplierAdPlatfromAdmin(admin.ModelAdmin):
+    list_display = ('title', 'supplier', 'start_datetime', 'end_datetime', 'is_active', 'approved')
+    list_filter = ('is_active', 'approved', 'start_datetime')
+    search_fields = ('title', 'supplier__name')
+    
+    from .widgets import ImageCroppingWidget
+    from .models import SupplierAdPlatfrom
+    from django.db import models
+    
+    formfield_overrides = {
+        models.ImageField: {'widget': ImageCroppingWidget},
+    }
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        # Desktop Image: 3.8 ratio
+        form.base_fields['image'].widget.attrs.update({'data_aspect_ratio': '3.8'})
+        # Mobile Image: 1:1 ratio (1.0)
+        form.base_fields['mobile_image'].widget.attrs.update({'data_aspect_ratio': '1.0'})
+        return form
 
 @admin.register(SystemSettings)
 class SystemSettingsAdmin(admin.ModelAdmin):

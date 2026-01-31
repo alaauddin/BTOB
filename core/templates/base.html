@@ -211,6 +211,16 @@
         .swal2-container {
             z-index: 2000000 !important;
         }
+
+        /* Amazing Curved Navbar */
+        .curved-navbar {
+            border-radius: 0 0 50% 50% / 0 0 35px 35px; /* Elliptical 'Smile' Curve */
+            box-shadow: 0 15px 45px -10px rgba(0,0,0,0.1) !important;
+            border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+            backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.92);
+            padding-bottom: 8px; /* Extra space for the curve */
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -330,51 +340,82 @@
     </div>
 
     <!-- Navigation Bar -->
-    <nav class="bg-white nav-shadow fixed inset-x-0 top-0 z-50 border-b border-gray-100 py-2">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center">
-                <!-- Right: Logo (standard for Arabic) -->
-                <a href="/" class="flex items-center group animate-logo">
-                    <!-- Supplier Logo -->
-                    {% if supplier.profile_picture %}
-                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-16 w-auto ml-3 object-contain rounded-full shadow-sm border border-gray-100">
-                        {% if not supplier or supplier.show_system_logo %}
-                        <div class="h-8 w-px bg-gray-200 ml-3"></div>
-                        {% endif %}
-                    {% endif %}
+    <nav class="curved-navbar fixed inset-x-0 top-0 z-50 py-3 transition-all duration-300">
+        <div class="container mx-auto px-4 relative h-16 flex items-center justify-between">
+            
+            <!-- Right: Cart & Menu -->
+            <div class="flex items-center w-24 space-x-4 space-x-reverse justify-start">
+                {% if user.is_authenticated and cart and supplier %}
+                    <a href="{% url 'cart-detail' supplier.store_id %}" class="relative group">
+                        <!-- Cart Circle Container -->
+                        <div class="w-12 h-12 rounded-full bg-white shadow-[0_4px_15px_rgba(0,0,0,0.08)] border border-gray-100/50 flex items-center justify-center transition-all duration-300 group-hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] group-hover:border-[var(--primary-color)]/30 group-hover:bg-gradient-to-br group-hover:from-white group-hover:to-gray-50">
+                            <i class="fas fa-shopping-basket text-xl text-gray-700 group-hover:text-[var(--primary-color)] transition-colors group-hover:scale-110 transform duration-300"></i>
+                        </div>
+                        
+                        <!-- Badge (Items Count) -->
+                        <span id="total-items" class="pt-2 absolute -top-1 -right-1 bg-gradient-to-br from-red-500 to-red-600 text-white text-[10px] font-bold rounded-full min-w-[20px] h-5 inline-flex items-center justify-center px-1 border-2 border-white shadow-[0_2px_8px_rgba(239,68,68,0.4)] transform group-hover:scale-125 transition-transform duration-300 leading-none" style="padding-top: 2px;">{{ cart.get_total_items }}</span>
+                    </a>
+                {% endif %}
+            </div>
 
-                    <!-- System Logo -->
-                    {% if not supplier or supplier.show_system_logo %}
-                        {% if system_settings.logo %}
-                            <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-16 w-auto object-contain">
-                        {% else %}
-                            <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-16 w-auto object-contain">
-                        {% endif %}
-                    {% endif %}
-                </a>
-
-                <!-- Left: Actions (Cart, User) -->
-                <div class="flex items-center space-x-4 space-x-reverse">
-                    <!-- Dynamic Greeting Tag -->
-                    <div id="greeting-tag" class="flex items-center bg-gray-50 px-2 lg:px-3 py-1 rounded-full border border-gray-100 ml-2 lg:ml-4">
-                        <i id="greeting-icon" class="fas fa-sun text-yellow-500 ml-1 lg:ml-2"></i>
-                        <span id="greeting-text" class="hidden sm:inline text-[10px] lg:text-xs font-bold text-gray-700"></span>
+            <!-- Center: Logo (The Star Show) -->
+            <a href="/" class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 group z-20">
+                
+                <!-- Scenario 1: Collaboration Mode (Handshake Design) -->
+                {% if supplier.profile_picture and system_settings.logo and not supplier.show_system_logo == False %}
+                    <div class="flex items-center gap-1 bg-white/95 backdrop-blur-md px-2 py-1.5 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/60 ring-1 ring-black/5 transition-all duration-300 group-hover:gap-2">
+                        <!-- Supplier Logo (Left Hand) -->
+                        <div class="w-11 h-11 rounded-full bg-white shadow-sm border-2 border-white flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:-rotate-6">
+                            <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="w-full h-full object-cover">
+                        </div>
+                        
+                        <!-- Handshake Icon (The Connection) -->
+                        <div class="flex items-center justify-center px-0.5">
+                            <svg class="w-4 h-4 text-gray-300 opacity-60 group-hover:text-[var(--primary-color)] group-hover:opacity-100 transition-all" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
+                            </svg>
+                        </div>
+                        
+                        <!-- System Logo (Right Hand) -->
+                        <div class="w-11 h-11 rounded-full bg-white shadow-sm border-2 border-white flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:rotate-6">
+                            <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="w-8 h-8 object-contain p-1">
+                        </div>
                     </div>
 
-                    {% if user.is_authenticated %}
-                        {% if cart and supplier %}
-                            <a href="{% url 'cart-detail' supplier.store_id %}" class="action-btn relative group">
-                                <i class="fas fa-shopping-basket text-lg"></i>
-                                <span id="total-items" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white">{{ cart.get_total_items }}</span>
-                            </a>
+                <!-- Scenario 2: Single Hero Logo (Supplier Only) -->
+                {% elif supplier.profile_picture %}
+                    <div class="relative flex flex-col items-center justify-center transition-transform duration-500 hover:scale-110">
+                        <div class="absolute inset-0 bg-white/50 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-20 w-20 object-contain rounded-full shadow-lg border-4 border-white z-10">
+                    </div>
+
+                <!-- Scenario 3: Single Hero Logo (System Only) -->
+                {% else %}
+                    <div class="relative flex flex-col items-center justify-center transition-transform duration-500 hover:scale-110">
+                         {% if system_settings.logo %}
+                            <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-16 w-auto object-contain z-10">
+                        {% else %}
+                            <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-16 w-auto object-contain z-10">
                         {% endif %}
-                        
-                        <div class="relative group">
-                            <button id="user-menu-button" class="action-btn flex items-center focus:outline-none">
-                                <i class="fas fa-user-circle text-xl"></i>
-                                {% comment %} <i class="fas fa-chevron-down text-[10px] mr-2 opacity-50"></i> {% endcomment %}
-                            </button>
-                            <div id="user-dropdown" class="absolute left-0 mt-3 w-56 bg-white rounded-2xl shadow-xl py-3 text-gray-800 hidden lg:group-hover:block z-[9999] border border-gray-100 transform origin-top-left transition-all duration-200">
+                    </div>
+                {% endif %}
+            </a>
+
+            <!-- Left: Actions (Cart, User) -->
+            <div class="flex items-center justify-end w-24 space-x-4 space-x-reverse">
+                <!-- Dynamic Greeting Tag -->
+                <div id="greeting-tag" class="hidden lg:flex items-center bg-gray-50/80 backdrop-blur-sm px-3 py-1 rounded-full border border-gray-100/50 absolute left-28 top-1/2 transform -translate-y-1/2">
+                    <i id="greeting-icon" class="fas fa-sun text-yellow-500 ml-2"></i>
+                    <span id="greeting-text" class="text-xs font-bold text-gray-700"></span>
+                </div>
+
+                {% if user.is_authenticated %}
+                    <div class="relative group">
+                        <button id="user-menu-button" class="action-btn flex items-center focus:outline-none bg-white/50 hover:bg-white p-1 rounded-full transition-all border border-transparent hover:border-gray-100 shadow-sm hover:shadow-md">
+                            <i class="fas fa-user-circle text-3xl text-gray-700 group-hover:text-[var(--primary-color)] transition-colors"></i>
+                        </button>
+                        <div id="user-dropdown" class="absolute left-0 mt-3 w-56 bg-white rounded-2xl shadow-xl py-3 text-gray-800 hidden lg:group-hover:block z-[9999] border border-gray-100 transform origin-top-left transition-all duration-200">
+                            <!-- Dropdown content same as before -->
                                 <div class="px-6 py-2 border-b border-gray-50 mb-2">
                                     <p class="text-xs text-gray-400">مرحباً بك</p>
                                     <p class="font-bold text-sm truncate">{{ user.get_full_name }}</p>
@@ -394,14 +435,14 @@
                                     <i class="fas fa-sign-out-alt ml-3"></i>
                                     <span class="text-sm">تسجيل الخروج</span>
                                 </a>
-                            </div>
                         </div>
-                    {% else %}
-                        <div class="relative group">
-                            <button id="guest-menu-button" class="action-btn flex items-center focus:outline-none">
-                                <i class="fas fa-user-circle text-xl text-gray-600"></i>
-                            </button>
-                            <div id="guest-dropdown" class="absolute left-0 mt-3 w-56 bg-white rounded-2xl shadow-xl py-3 text-gray-800 hidden lg:group-hover:block z-[9999] border border-gray-100 transform origin-top-left transition-all duration-200">
+                    </div>
+                {% else %}
+                    <div class="relative group">
+                        <button id="guest-menu-button" class="action-btn flex items-center focus:outline-none bg-white/50 hover:bg-white p-1 rounded-full transition-all border border-transparent hover:border-gray-100 shadow-sm hover:shadow-md">
+                            <i class="fas fa-user-circle text-3xl text-gray-600 group-hover:text-[var(--primary-color)] transition-colors"></i>
+                        </button>
+                        <div id="guest-dropdown" class="absolute left-0 mt-3 w-56 bg-white rounded-2xl shadow-xl py-3 text-gray-800 hidden lg:group-hover:block z-[9999] border border-gray-100 transform origin-top-left transition-all duration-200">
                                 <div class="px-6 py-2 border-b border-gray-50 mb-2">
                                     <p class="text-xs text-gray-400">مرحباً بك زائرنا</p>
                                     <p class="font-bold text-sm">يرجى تسجيل الدخول</p>
@@ -414,19 +455,17 @@
                                     <i class="fas fa-store-alt ml-3 text-gray-400"></i>
                                     <span class="text-sm font-medium">تسجيل الدخول كمتجر</span>
                                 </a>
-                            </div>
                         </div>
-                    {% endif %}
-                </div>    
-                    
-                </div>
+                    </div>
+                {% endif %}
+            </div>    
+                
             </div>
-            
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="main-content flex-grow w-full pt-24 lg:pt-28 overflow-x-hidden">
+    <main class="main-content flex-grow w-full pt-20 lg:pt-28 overflow-x-hidden">
         {% if messages %}
         <!-- Server-side Messages Wrapper -->
         <div class="fixed top-24 left-4 right-4 md:left-auto md:right-6 md:w-auto md:max-w-sm flex flex-col space-y-2 pointer-events-none" style="z-index: 99999;">

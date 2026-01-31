@@ -55,6 +55,10 @@ def product_list(request, store_id, category_id=None, subcategory_id=None):
         ),
         quantity_in_cart=Subquery(cart_qty)
     ).prefetch_related('additional_images')
+    
+    # Filter out out-of-stock products if supplier preference is set
+    if not supplier.show_out_of_stock:
+        queryset = queryset.filter(stock__gt=0)
 
     # Filter by category or subcategory
     if subcategory_id:

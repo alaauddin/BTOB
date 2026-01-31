@@ -1,0 +1,99 @@
+/* Mobile Optimizations for Supplier Cards - 2.5 Cards Per Row */
+@media (max-width: 768px) {
+
+    /* Very small cards to fit 2.5 in viewport */
+    .supplier-horizontal-scroll {
+        grid-auto-columns: 150px !important;
+        /* 2.5 cards visible on ~375px screen */
+        gap: 10px !important;
+        padding: 10px 15px 30px !important;
+    }
+
+    /* Minimal cover area */
+    .supplier-cover {
+        height: 60px !important;
+        /* Very compact */
+    }
+
+    /* Tiny logo */
+    .supplier-logo-wrapper {
+        width: 40px !important;
+        height: 40px !important;
+        top: 40px !important;
+        /* Adjusted for tiny cover */
+        right: 10px !important;
+        border-width: 2px !important;
+    }
+
+    /* Minimal content padding */
+    .supplier-content {
+        padding: 1.5rem 0.65rem 0.65rem !important;
+    }
+
+    /* Small name */
+    .supplier-name {
+        font-size: 0.85rem !important;
+        margin-bottom: 0.25rem !important;
+        font-weight: 700 !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Tiny meta */
+    .supplier-meta {
+        font-size: 0.7rem !important;
+        margin-bottom: 0.4rem !important;
+    }
+
+    .supplier-meta i {
+        width: 12px !important;
+        font-size: 0.65rem !important;
+        margin-left: 4px !important;
+    }
+
+    /* Tiny tags */
+    .supplier-tags {
+        gap: 3px !important;
+        margin-top: 0.3rem !important;
+    }
+
+    .supplier-tag {
+        font-size: 0.6rem !important;
+        padding: 2px 5px !important;
+    }
+
+    /* Minimal footer */
+    .supplier-footer {
+        padding-top: 0.85rem !important;
+        gap: 5px !important;
+    }
+
+    /* Tiny button */
+    .btn-visit {
+        min-height: 34px !important;
+        padding: 6px 10px !important;
+        font-size: 0.7rem !important;
+        min-width: 75px !important;
+        gap: 4px !important;
+        border-radius: 8px !important;
+    }
+
+    .btn-visit i {
+        font-size: 0.75rem !important;
+    }
+
+    /* Tiny rating */
+    .rating-box {
+        padding: 4px 6px !important;
+        font-size: 0.7rem !important;
+        border-radius: 6px !important;
+    }
+
+    .rating-box i {
+        font-size: 0.65rem !important;
+        margin-left: 3px !important;
+    }
+
+    .rating-box .fw-bold {
+        font-size: 0.7rem !important;
+    }
+}

@@ -4,7 +4,8 @@
 {% block title %}عرطات دوتكم{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/suppliers.css' %}?v={{ css_version }}">
+    <link rel="stylesheet" href="{% static 'css/suppliers.css' %}?v={{ css_version }}">
+    <link rel="stylesheet" href="{% static 'css/suppliers_mobile.css' %}?v={{ css_version }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
         /* Swiper Custom Styles */
@@ -178,151 +179,194 @@
         border-radius: 3px;
     }
 
-    /* --- Polished Ad Card Styles --- */
-    .ad-card {
-        background: #fff;
-        border-radius: 12px; /* Slightly smaller radius for compact look */
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border: 1px solid rgba(241, 245, 249, 1);
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        position: relative;
-        /* Mobile optimization: smaller min-width if needed, or let grid handle it */
-    }
+        /* --- Premium Curved UI Design --- */
+        
+        .main-ads-swiper {
+            width: 100%; /* Full width */
+            max-width: 100%; 
+            height: 260px; 
+            margin: -25px 0 24px 0; /* Negative top margin, no horizontal margin */
+            border-radius: 0 0 50px 50px; /* Distinctive bottom curve */
+            overflow: hidden;
+            box-shadow: 0 20px 40px -5px rgba(0,0,0,0.1); 
+            border: none;
+            position: relative;
+            z-index: 10; 
+        }
 
-    .ad-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 25px rgba(0,0,0,0.1);
-    }
+        .supplier-badge {
+            background: rgba(15, 23, 42, 0.85); /* Dark Glass */
+            backdrop-filter: blur(16px);
+            padding: 5px 16px 5px 5px; /* Refined padding */
+            border-radius: 100px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
 
-    .ad-image {
-        position: relative;
-        width: 100%;
-        padding-top: 80%; /* 4:5 Aspect Ratio (slightly shorter than square for mobile efficiency) */
-        overflow: hidden;
-        background-color: #f8fafc;
-    }
+        .supplier-badge img {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
 
-    .ad-image img {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        padding: 8px; /* Reduced padding */
-        transition: transform 0.5s ease;
-    }
-    
-    .ad-card:hover .ad-image img {
-        transform: scale(1.05);
-    }
+        .supplier-badge span {
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+        }
 
-    /* Badges - Smaller and better positioned */
-    .ad-badge-discount {
-        position: absolute;
-        top: 8px;
-        background: #ef4444;
-        color: white;
-        font-weight: 700;
-        font-size: 0.7rem;
-        padding: 4px 8px;
-        border-radius: 6px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 32px;
-    }
+        .ad-card {
+            background: #ffffff;
+            border-radius: 28px; /* Very rounded card */
+            overflow: hidden;
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(241, 245, 249, 0.8);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+        }
 
-    .ad-badge-hot {
-        position: absolute;
-        top: 8px;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(8px);
-        color: #f59e0b;
-        font-weight: 700;
-        font-size: 0.7rem;
-        padding: 4px 8px;
-        border-radius: 6px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        border: 1px solid rgba(245, 158, 11, 0.1);
-    }
+        .ad-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+            border-color: transparent;
+        }
 
-    .ad-info {
-        padding: 10px; /* Reduced padding */
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
+        .ad-image {
+            position: relative;
+            width: 100%;
+            padding-top: 85%; /* Slightly taller aspect for improved harmony */
+            overflow: hidden;
+            background-color: #f1f5f9;
+            /* Curved effect: Round the bottom corners of the image container to create the separation */
+            border-radius: 0 0 28px 28px; 
+            margin-bottom: 8px; /* Space for the curve to breathe */
+            mask-image: linear-gradient(to bottom, black 90%, transparent 100%); /* Subtle fade at very bottom if needed, or keeping it clean solid */
+        }
 
-    .ad-supplier-name {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        margin-bottom: 4px;
-    }
-    
-    .supplier-inline-logo {
-        width: 16px; /* Smaller logo */
-        height: 16px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 1px solid #e2e8f0;
-    }
-    
-    .ad-supplier-name span {
-        font-size: 0.7rem; /* Smaller text */
-        color: #64748b;
-        font-weight: 500;
-    }
+        .ad-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover is better for the "immersive" card look */
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .ad-card:hover .ad-image img {
+            transform: scale(1.1);
+        }
 
-    .ad-product-name {
-        font-size: 0.85rem; /* Smaller title */
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 3px;
-        line-height: 1.3;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
+        /* Modern Glass Badges on Cards */
+        .ad-badge-discount {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(239, 68, 68, 0.95);
+            color: white;
+            font-weight: 800;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            z-index: 10;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
 
-    .ad-description {
-        font-size: 0.7rem; /* Smaller desc */
-        color: #94a3b8;
-        margin-bottom: 6px;
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
+        .ad-badge-hot {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            color: #d97706;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            z-index: 10;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            width: fit-content;
+        }
 
-    .ad-price {
-        display: flex;
-        align-items: center; /* Align items center instead of baseline for icon alignment */
-        gap: 4px;
-        margin-top: auto;
-    }
+        .ad-info {
+            padding: 12px 18px 20px 18px; /* More breathing room */
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
 
-    .final-price {
-        font-size: 1rem; /* Adjusted price size */
-        font-weight: 800;
-        color: #0f172a;
-        display: flex;
-        align-items: center;
-        gap: 4px; /* Space between price and icon if any */
-    }
+        .ad-supplier-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .supplier-inline-logo {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .ad-supplier-name span {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ad-product-name {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 6px;
+            line-height: 1.4;
+            letter-spacing: -0.01em;
+        }
+
+        .ad-description {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .ad-price {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-top: auto;
+            background: #f8fafc; /* Subtle pill bg for price */
+            padding: 8px 12px;
+            border-radius: 12px;
+            width: fit-content;
+        }
+
+        .final-price {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+        }
 
     .original-price {
         font-size: 0.75rem;
@@ -556,14 +600,19 @@
     <!-- Hero Banner Swiper Section -->
     {% if supplier_ads %}
     <div class="swiper main-ads-swiper mb-6">
-        <div class="swiper-wrapper" style="padding: 10px; margin: -10px;">
+        <div class="swiper-wrapper">
             {% for ad in supplier_ads %}
             <div class="swiper-slide">
                 <a href="{% if ad.link %}{{ ad.link }}{% elif ad.supplier %}{% url 'product-list' ad.supplier.store_id %}{% else %}#{% endif %}" 
                    class="ad-banner" 
                    {% if ad.link %}target="_blank"{% endif %}>
                     
-                    <img src="{{ ad.image.url }}" alt="{{ ad.title|default:'Ad' }}" loading="lazy">
+                    <picture style="width: 100%; height: 100%; display: flex;">
+                        {% if ad.mobile_image %}
+                        <source media="(max-width: 768px)" srcset="{{ ad.mobile_image.url }}">
+                        {% endif %}
+                        <img src="{{ ad.image.url }}" alt="{{ ad.title|default:'Ad' }}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">
+                    </picture>
                     
                     {% if ad.supplier %}
                     <div class="supplier-badge absolute top-4 left-4 z-10">

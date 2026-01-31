@@ -1,0 +1,152 @@
+<div class="image-cropping-widget" data-field-name="{{ widget.name }}">
+    <div class="current-image mb-2">
+        {% if widget.value %}
+            <p>Currently: <a href="{{ widget.value.url }}">{{ widget.value }}</a></p>
+            <img src="{{ widget.value.url }}" style="max-height: 150px; border-radius: 4px; border: 1px solid #ddd;">
+        {% endif %}
+    </div>
+
+    <!-- Hidden file input for the cropped result -->
+    <input type="file" name="{{ widget.name }}" id="id_{{ widget.name }}" class="hidden-input" style="display:none;" accept="image/*">
+    
+    <!-- Custom Upload Button -->
+    <button type="button" class="btn btn-primary" id="btn-upload-{{ widget.name }}" style="margin-top: 10px;">
+        Choose Image
+    </button>
+    <span id="file-name-{{ widget.name }}" style="margin-left: 10px; color: #666;">No file chosen</span>
+
+    <!-- Modal for Cropping -->
+    <div id="modal-{{ widget.name }}" style="display:none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8);">
+        <div style="background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 800px; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">Crop Image</h3>
+                <span class="close-modal" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            </div>
+            
+            <div style="max-height: 500px; overflow: hidden; background: #333;">
+                <img id="image-to-crop-{{ widget.name }}" style="max-width: 100%; display: block;" data-aspect-ratio="{{ widget.attrs.data_aspect_ratio|default:'1.25' }}">
+            </div>
+            
+            <div style="margin-top: 20px; text-align: right;">
+                <button type="button" id="btn-cancel-{{ widget.name }}" class="btn" style="background: #ccc; border: none; padding: 10px 20px; margin-right: 10px; cursor: pointer; border-radius: 4px;">Cancel</button>
+                <button type="button" id="btn-crop-{{ widget.name }}" class="btn" style="background: #4caf50; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px;">Crop & Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Preview of cropped image to be uploaded -->
+    <div id="cropped-preview-container-{{ widget.name }}" style="display:none; margin-top: 15px;">
+        <p>New image to upload:</p>
+        <img id="cropped-preview-{{ widget.name }}" style="max-height: 200px; border: 2px solid #4caf50; border-radius: 4px;">
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fieldName = '{{ widget.name }}';
+    const uploadBtn = document.getElementById(`btn-upload-${fieldName}`);
+    const fileInput = document.getElementById(`id_${fieldName}`);
+    const fileNameDisplay = document.getElementById(`file-name-${fieldName}`);
+    const modal = document.getElementById(`modal-${fieldName}`);
+    const imageElement = document.getElementById(`image-to-crop-${fieldName}`);
+    const closeModal = modal.querySelector('.close-modal');
+    const cancelBtn = document.getElementById(`btn-cancel-${fieldName}`);
+    const cropBtn = document.getElementById(`btn-crop-${fieldName}`);
+    const previewContainer = document.getElementById(`cropped-preview-container-${fieldName}`);
+    const previewImage = document.getElementById(`cropped-preview-${fieldName}`);
+    
+    let cropper;
+    
+    // Trigger file input when custom button is clicked
+    uploadBtn.addEventListener('click', function() {
+        // Create a temporary input to select file, because clicking the actual input might trigger recursion if handled incorrectly
+        // or we can just reset the value of the actual input and click it.
+        // Let's create a temp input to avoid messing with value of the real form input until we have the cropped version.
+        const tempInput = document.createElement('input');
+        tempInput.type = 'file';
+        tempInput.accept = 'image/*';
+        tempInput.onchange = function(e) {
+            const files = e.target.files;
+            if (files && files.length > 0) {
+                const file = files[0];
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    imageElement.src = evt.target.result;
+                    modal.style.display = 'block';
+                    
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+                    const aspectRatio = imageElement.dataset.aspectRatio ? parseFloat(imageElement.dataset.aspectRatio) : 1.25;
+                    cropper = new Cropper(imageElement, {
+                        aspectRatio: aspectRatio,
+                        viewMode: 1,       // Restrict crop box to canvas
+                        dragMode: 'move',  // Move image behind crop box by default for easier positioning
+                        autoCropArea: 1,   // Select entire image by default
+                        restore: false,
+                        guides: false,
+                        center: false,
+                        highlight: false,
+                        cropBoxMovable: false, // Fix the crop box to center, move image instead (very easy to use pattern)
+                        cropBoxResizable: true, // Allow resizing if they really want, but 'move' mode encourages panning
+                        toggleDragModeOnDblclick: false,
+                        background: false,
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        tempInput.click();
+    });
+
+    // Close modal functions
+    function closeCropperModal() {
+        modal.style.display = 'none';
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+        imageElement.src = '';
+    }
+    
+    closeModal.onclick = closeCropperModal;
+    cancelBtn.onclick = closeCropperModal;
+    
+    // Crop action
+    cropBtn.addEventListener('click', function() {
+        if (!cropper) return;
+        
+        const canvas = cropper.getCroppedCanvas();
+        if (!canvas) return;
+        
+        canvas.toBlob(function(blob) {
+            // Create a new File object
+            const fileName = 'cropped_image.png';
+            const file = new File([blob], fileName, { type: 'image/png' });
+            
+            // Create a DataTransfer to set files on the input
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            
+            // Update UI
+            fileNameDisplay.textContent = fileName;
+            previewImage.src = URL.createObjectURL(blob);
+            previewContainer.style.display = 'block';
+            
+            closeCropperModal();
+            
+        }, 'image/png');
+    });
+    
+    // Close modal if clicked outside
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            closeCropperModal();
+        }
+    }
+});
+</script>

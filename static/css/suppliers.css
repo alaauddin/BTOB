@@ -319,32 +319,43 @@
 
 .supplier-footer {
     margin-top: auto;
-    padding-top: 1.5rem;
+    padding-top: 1.75rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
+    /* Add horizontal spacing between rating and button */
     border-top: 1px solid #f8fafc;
     /* Subtle separator */
 }
 
 .btn-visit {
-    background: #3a505e !important;
-    /* Brand Slate */
+    background: linear-gradient(135deg, #3a505e 0%, #2d3e4a 100%) !important;
     color: white !important;
-    border: none !important;
-    padding: 12px 28px !important;
-    border-radius: 16px !important;
-    font-weight: 800 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    /* Optimized touch target - balanced size */
+    min-height: 46px !important;
+    /* Compact but comfortable padding */
+    padding: 12px 24px !important;
+    min-width: 130px !important;
+    border-radius: 12px !important;
+    font-weight: 700 !important;
     font-size: 0.95rem !important;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    box-shadow: 0 4px 15px rgba(58, 80, 94, 0.2) !important;
-    display: flex !important;
+    letter-spacing: 0.02em !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    /* Multi-layer shadow for depth */
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 6px 16px rgba(58, 80, 94, 0.3),
+        0 2px 8px rgba(58, 80, 94, 0.2) !important;
+    display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+    gap: 8px !important;
     cursor: pointer !important;
     position: relative !important;
     overflow: hidden !important;
-    z-index: 1 !important;
+    white-space: nowrap !important;
+    outline-offset: 2px !important;
 }
 
 .btn-visit::before {
@@ -354,40 +365,57 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
     opacity: 0;
-    transition: opacity 0.4s ease;
+    transition: opacity 0.35s ease !important;
     z-index: -1;
 }
 
+/* Enhanced hover state with stronger visual feedback */
 .btn-visit:hover {
-    transform: translateY(-3px) scale(1.05) !important;
-    box-shadow: 0 10px 25px rgba(239, 125, 45, 0.4) !important;
+    /* More pronounced lift */
+    transform: translateY(-3px) scale(1.03) !important;
+    /* Vibrant brand-colored glow */
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 12px 32px rgba(239, 125, 45, 0.4),
+        0 6px 16px rgba(239, 125, 45, 0.3),
+        0 0 0 1px rgba(239, 125, 45, 0.2) !important;
     color: white !important;
+    border-color: rgba(239, 125, 45, 0.3) !important;
 }
 
 .btn-visit:hover::before {
     opacity: 1;
 }
 
+/* Active state for tactile feedback */
+.btn-visit:active {
+    transform: translateY(0px) scale(0.98) !important;
+    transition-duration: 0.1s !important;
+}
+
 .btn-visit i {
-    transition: transform 0.3s ease;
-    margin-right: 8px;
-    /* Correct spacing for Arabic RTL */
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-size: 1rem !important;
+    margin-right: 0px;
+    margin-left: 0px;
 }
 
 .btn-visit:hover i {
+    /* More pronounced arrow animation */
     transform: translateX(-5px);
 }
 
 .rating-box {
     background: rgba(255, 165, 2, 0.1);
     color: #ef7d2d;
-    padding: 6px 12px;
+    padding: 8px 14px;
     border-radius: 10px;
     font-size: 0.85rem;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+    /* Prevent shrinking */
 }
 
 .no-suppliers {
