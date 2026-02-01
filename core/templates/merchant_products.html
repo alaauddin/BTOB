@@ -12,6 +12,68 @@
         --secondary-color: {{ supplier.secondary_color|default:'#ffffff' }};
         --accent-color: {{ supplier.accent_color|default:'#9abfc4' }};
     }
+
+    /* Enhanced Table Responsiveness */
+    .products-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    @media (max-width: 991px) {
+        .products-table th:nth-child(2), /* Category */
+        .products-table td:nth-child(2),
+        .products-table th:nth-child(3), /* Rating */
+        .products-table td:nth-child(3) {
+            display: none !important;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .products-table th:nth-child(4), /* Stock */
+        .products-table td:nth-child(4) {
+            display: none !important;
+        }
+        
+        .product-row-name {
+            font-size: 0.85rem;
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .thumbnail-sm {
+            width: 36px;
+            height: 36px;
+        }
+
+        .price-now {
+            font-size: 0.9rem;
+        }
+        
+        .price-badge-discount {
+            font-size: 0.65rem;
+            padding: 1px 4px;
+        }
+
+        .status-text {
+            display: none;
+        }
+
+        .status-toggle-wrapper {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .products-table th, .products-table td {
+            padding: 0.75rem 0.5rem !important;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -900,7 +962,7 @@
             <div class="merchant-footer-links">
                 <a href="#">من نحن</a>
                 <a href="#">الشروط والأحكام</a>
-                <a href="#">سياسة الخصوصية</a>
+                <a href="{% url 'privacy_policy' %}">سياسة الخصوصية</a>
             </div>
             
             <div class="merchant-footer-info">

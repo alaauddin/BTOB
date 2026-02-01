@@ -11,6 +11,39 @@
         --secondary-color: {{ supplier.secondary_color|default:'#ffffff' }};
         --accent-color: {{ supplier.accent_color|default:'#9abfc4' }};
     }
+
+    .modal-cancellation-alert {
+        background: #fef2f2;
+        border: 1px solid #fee2e2;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: #991b1b;
+    }
+
+    .modal-cancellation-alert i {
+        font-size: 1.5rem;
+        opacity: 0.8;
+    }
+
+    .modal-cancellation-alert p {
+        margin: 0;
+        font-size: 0.875rem;
+        opacity: 0.9;
+    }
+
+    .modal-cancellation-alert strong {
+        display: block;
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .hidden {
+        display: none !important;
+    }
 </style>
 {% endblock %}
 
@@ -281,6 +314,15 @@
                 </div>
             </div>
 
+            <!-- Cancellation Reason Alert -->
+            <div id="modalCancellationAlert" class="modal-cancellation-alert hidden">
+                <i class="fas fa-exclamation-circle"></i>
+                <div>
+                    <strong>طلب ملغي</strong>
+                    <p id="modalCancellationReason"></p>
+                </div>
+            </div>
+
             <div class="order-items-scroll">
                 <table class="quick-items-table">
                     <thead>
@@ -380,11 +422,6 @@ function openOrderQuickView(orderId) {
                     const stepperItems = document.getElementById('stepperItems');
                     stepperItems.innerHTML = order.workflow_steps.map(step => {
                         let statusClass = '';
-                        if (order.status.toLowerCase() === step.name.toLowerCase() || order.status.toLowerCase() === step.slug.toLowerCase()) {
-                            // Note: we might need a better way to check active status if names differ from slugs
-                            // Using the slug from backend is safer. 
-                        }
-                        
                         // Using priority logic from backend
                         if (order.current_priority === step.priority) statusClass = 'active';
                         else if (step.priority < order.current_priority) statusClass = 'completed';
@@ -399,6 +436,15 @@ function openOrderQuickView(orderId) {
                         `;
                     }).join('');
                     document.getElementById('modalOrderStepper').classList.remove('hidden');
+                }
+
+                // Handle Cancellation Alert display
+                const cancelAlert = document.getElementById('modalCancellationAlert');
+                if (order.status_slug === 'cancelled') {
+                    document.getElementById('modalCancellationReason').textContent = order.cancellation_reason || 'لم يتم ذكر السبب';
+                    cancelAlert.classList.remove('hidden');
+                } else {
+                    cancelAlert.classList.add('hidden');
                 }
 
                 // Update items
@@ -479,10 +525,30 @@ function closeOrderQuickView(event) {
     document.body.style.overflow = ''; // Restore scroll
 }
 
-function changeOrderStepperStatus(orderId, statusSlug) {
-    // Show confirmation or just proceed? Usually for quick view, simple confirmation or instant is fine.
-    // Instant update with loading state is better for premium feel.
+async function changeOrderStepperStatus(orderId, statusSlug) {
+    let reason = null;
     
+    if (statusSlug === 'cancelled') {
+        const { value: typedReason } = await Swal.fire({
+            title: 'إلغاء الطلب',
+            text: 'يرجى إدخال سبب إلغاء الطلب لإبلاغ الإدارة:',
+            input: 'textarea',
+            inputPlaceholder: 'اكتب سبب الإلغاء هنا...',
+            showCancelButton: true,
+            confirmButtonText: 'تأكيد الإلغاء',
+            cancelButtonText: 'تراجع',
+            confirmButtonColor: '#ef4444',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'يجب إدخال سبب الإلغاء للمتابعة'
+                }
+            }
+        });
+
+        if (!typedReason) return; // User cancelled the prompt
+        reason = typedReason;
+    }
+
     const stepperWrapper = document.getElementById('modalOrderStepper');
     const originalContent = stepperWrapper.innerHTML;
     
@@ -492,6 +558,7 @@ function changeOrderStepperStatus(orderId, statusSlug) {
 
     const formData = new FormData();
     formData.append('status', statusSlug);
+    if (reason) formData.append('reason', reason);
     {% if request.GET.supplier_id %}
     formData.append('supplier_id', '{{ request.GET.supplier_id }}');
     {% endif %}

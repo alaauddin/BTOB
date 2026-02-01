@@ -293,7 +293,8 @@ def update_order_status(request, order_id):
         else:
             status_obj = OrderStatus.objects.filter(slug=new_status).first()
             if status_obj:
-                success, message = order.update_status(status_obj)
+                reason = request.POST.get('cancellation_reason')
+                success, message = order.update_status(status_obj, reason=reason, user=request.user)
                 if success:
                     messages.success(request, message)
                 else:
@@ -355,8 +356,9 @@ def merchant_order_quick_view(request, order_id):
             'total_amount': final_total,
             'subtotal': float(items_gross),
             'discount_amount': float(discount_amount),
-            'delivery_fee': float(delivery_fee),
             'status': order.pipeline_status.name if order.pipeline_status else 'Pending',
+            'status_slug': order.pipeline_status.slug if order.pipeline_status else 'pending',
+            'cancellation_reason': order.cancellation_reason,
             'created_at': order.created_at.strftime("%Y-%m-%d %H:%M"),
             'current_priority': current_priority,
             'workflow_steps': workflow_steps,
@@ -409,7 +411,8 @@ def update_order_status_ajax(request, order_id):
         return JsonResponse({'success': False, 'message': 'Invalid status.'}, status=400)
     
     # Update status
-    success, message = order.update_status(new_status)
+    reason = request.POST.get('reason')
+    success, message = order.update_status(new_status, reason=reason, user=request.user)
     
     if not success:
         return JsonResponse({'success': False, 'message': message}, status=400)

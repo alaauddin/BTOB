@@ -366,6 +366,8 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     pipeline_status = models.ForeignKey(OrderStatus, on_delete=models.PROTECT, null=True, blank=True)
     is_stock_decreased = models.BooleanField(default=False, verbose_name="تم تقليل المخزون")
+    cancellation_reason = models.TextField(blank=True, null=True, verbose_name="سبب الإلغاء")
+    updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return f"Order {self.id} by {self.user.username}"
@@ -404,12 +406,35 @@ class Order(models.Model):
             self.pipeline_status = OrderStatus.objects.filter(slug='pending').first()
         super().save(*args, **kwargs)
 
-    def update_status(self, new_status):
+    def update_status(self, new_status, reason=None, user=None):
         """Update status and handle workflow logic (payment, stock)"""
         if not new_status:
             return False, "حالة غير صالحة."
 
         supplier = self.get_supplier()
+        
+        # Handle Cancellation Logic
+        if new_status.slug == 'cancelled':
+            if not reason:
+                 return False, "يجب إدخال سبب الإلغاء."
+            self.cancellation_reason = reason
+            
+            # Notify Admin via WhatsApp
+            from core.utils.whatsapp_utils import send_whatsapp_message
+            from core.models import SystemSettings
+            settings = SystemSettings.objects.first()
+            if settings and settings.whatsapp_number:
+                performer_name = user.username if user else "المسؤول"
+                customer_name = self.user.get_full_name() or self.user.username
+                admin_msg = (
+                    f"⚠️ *تنبيه إلغاء طلب*\n\n"
+                    f"تم إلغاء الطلب: *#{self.id}*\n"
+                    f"من قبل: *{performer_name}*\n"
+                    f"العميل: {customer_name}\n"
+                    f"السبب: {reason}"
+                )
+                send_whatsapp_message(settings.whatsapp_number, admin_msg)
+
         if not supplier or not supplier.workflow:
             self.pipeline_status = new_status
             self.save()
@@ -419,14 +444,14 @@ class Order(models.Model):
         current_step = self.get_current_workflow_step()
         next_step = WorkflowStep.objects.filter(workflow=supplier.workflow, status=new_status).first()
 
-        # Check conditions if moving forward in priority
-        if current_step and next_step and next_step.priority > current_step.priority:
+        # Check conditions if moving forward in priority (AND NOT CANCELLING)
+        if new_status.slug != 'cancelled' and current_step and next_step and next_step.priority > current_step.priority:
             # Check payment requirement on CURRENT step before moving
             if current_step.requires_payment and not self.is_fully_paid():
                 return False, f"لا يمكن الانتقال: يتوجب سداد كامل المبلغ ({self.total_amount}) للطلب أولاً."
 
-        # Handle stock reduction on NEW step if moving to a step that requires it
-        if next_step and next_step.decrease_stock and not self.is_stock_decreased:
+        # Handle stock reduction on NEW step if moving to a step that requires it (AND NOT CANCELLING)
+        if new_status.slug != 'cancelled' and next_step and next_step.decrease_stock and not self.is_stock_decreased:
             # 1. Check if we have enough stock for all items
             for item in self.order_items.all():
                 if item.product.stock < item.quantity:
@@ -674,7 +699,7 @@ class SystemSettings(models.Model):
     description = models.TextField(default="منصة متكاملة توفر لك تجربة تسوق فريدة ومميزة.", verbose_name="وصف الموقع")
     
     # Contact Info
-    customer_service_number = models.CharField(max_length=20, default="+966 50 123 4567", verbose_name="رقم خدمة العملاء (موبايل)")
+    customer_service_number = models.CharField(max_length=20, default="+967 777 777 777", verbose_name="رقم خدمة العملاء (موبايل)")
     company_email = models.EmailField(default="support@store.com", verbose_name="البريد الإلكتروني للشركة")
     company_landline = models.CharField(max_length=20, null=True, blank=True, verbose_name="رقم الهاتف الأرضي")
     

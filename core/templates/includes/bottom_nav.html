@@ -1,33 +1,43 @@
 {% load static %}
-<!-- Premium Bottom Navigation -->
-<nav class="bottom-nav-container">
-    <div class="active-blob" id="navBlob"></div>
+<!-- Liquid Bottom Navigation -->
+<nav class="liquid-nav-wrapper">
+    <div class="liquid-nav">
+        <ul class="nav-items-list">
+            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'suppliers_list' or request.resolver_match.url_name == 'product-list' or request.resolver_match.url_name == 'product_list_category' or request.resolver_match.url_name == 'product_list_subcategory' %}active{% endif %}" data-index="0">
+                <a href="{% url 'suppliers_list' %}">
+                    <span class="nav-icon"><i class="fas fa-home"></i></span>
+                    <span class="nav-text">الرئيسية</span>
+                </a>
+            </li>
+            <li class="liquid-nav-item" data-index="1">
+                <a href="javascript:void(0)" onclick="const s = document.getElementById('productSearch'); if(s) { s.scrollIntoView(); s.focus(); }">
+                    <span class="nav-icon"><i class="fas fa-search"></i></span>
+                    <span class="nav-text">بحث</span>
+                </a>
+            </li>
+            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'join_business' %}active{% endif %}" data-index="2">
+                <a href="{% url 'join_business' %}">
+                    <span class="nav-icon"><i class="fas fa-handshake"></i></span>
+                    <span class="nav-text">شراكة</span>
+                </a>
+            </li>
+            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'my_orders' or request.resolver_match.url_name == 'order_detail' %}active{% endif %}" data-index="3">
+                <a href="{% url 'my_orders' %}">
+                    <span class="nav-icon"><i class="fas fa-shopping-bag"></i></span>
+                    <span class="nav-text">طلباتي</span>
+                </a>
+            </li>
+            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'user_profile' or request.resolver_match.url_name == 'address_list' or request.resolver_match.url_name == 'edit_profile' %}active{% endif %}" data-index="4">
+                <a href="{% if user.is_authenticated %}{% url 'user_profile' %}{% else %}javascript:openLoginModal(){% endif %}">
+                    <span class="nav-icon"><i class="fas fa-user"></i></span>
+                    <span class="nav-text">حسابي</span>
+                </a>
+            </li>
+            <div class="nav-indicator">
+                <div class="indicator-circle"></div>
+            </div>
+        </ul>
+    </div>
     
-    <a href="{% url 'suppliers_list' %}" class="nav-item {% if request.resolver_match.url_name == 'suppliers_list' %}active{% endif %}" data-index="0">
-        <i class="fas fa-home"></i>
-        <span>الرئيسية</span>
-    </a>
-    
-    <a href="javascript:void(0)" class="nav-item focus-search" data-index="1" onclick="const s = document.getElementById('supplierSearchInput'); if(s) s.focus();">
-        <i class="fas fa-search"></i>
-        <span>بحث</span>
-    </a>
-    
-    <a href="{% url 'join_business' %}" class="nav-item nav-item-center" data-index="2">
-        <div class="center-icon-wrapper">
-            <i class="fas fa-plus"></i>
-        </div>
-        <span>ابدا نشاطك</span>
-    </a>
-    
-    <a href="{% url 'my_orders' %}" class="nav-item {% if request.resolver_match.url_name == 'my_orders' %}active{% endif %}" data-index="3">
-        <i class="fas fa-shopping-bag"></i>
-        <span>طلباتي</span>
-    </a>
-    
-    <a href="{% if user.is_authenticated %}{% url 'user_profile' %}{% else %}javascript:openLoginModal(){% endif %}" class="nav-item {% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}" data-index="4">
-        <i class="fas fa-user"></i>
-        <span>حسابي</span>
-    </a>
 </nav>
 <script src="{% static 'js/bottom_nav.js' %}?v={{ css_version }}"></script>

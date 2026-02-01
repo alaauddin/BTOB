@@ -622,12 +622,18 @@
                    class="ad-banner" 
                    {% if ad.link %}target="_blank"{% endif %}>
                     
-                    <picture style="width: 100%; height: 100%; display: flex;">
-                        {% if ad.mobile_image %}
-                        <source media="(max-width: 768px)" srcset="{{ ad.mobile_image.url }}">
-                        {% endif %}
-                        <img src="{{ ad.image.url }}" alt="{{ ad.title|default:'Ad' }}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">
-                    </picture>
+                    <div class="ad-image-wrapper" style="position: relative; width: 100%; height: 100%; overflow: hidden; background: #f1f5f9;">
+                        <!-- Aesthetic Blurred Background -->
+                        <div class="ad-blur-bg" style="position: absolute; inset: 0; background-image: url('{{ ad.image.url }}'); background-size: cover; background-position: center; filter: blur(25px) brightness(0.9); transform: scale(1.2); opacity: 0.5;"></div>
+                        
+                        <!-- Full Image Contain -->
+                        <picture style="position: relative; width: 100%; height: 100%; display: flex; z-index: 2; justify-content: center; align-items: center;">
+                            {% if ad.mobile_image %}
+                            <source media="(max-width: 768px)" srcset="{{ ad.mobile_image.url }}">
+                            {% endif %}
+                            <img src="{{ ad.image.url }}" alt="{{ ad.title|default:'Ad' }}" loading="lazy" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
+                        </picture>
+                    </div>
                     
                     {% if ad.supplier %}
                     <div class="supplier-badge absolute top-4 left-4 z-10">
@@ -1204,6 +1210,4 @@ function applyFilters() {
     });
 </script>
 
-<!-- Premium Bottom Navigation -->
-{% include 'includes/bottom_nav.html' %}
 {% endblock %}

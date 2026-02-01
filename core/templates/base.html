@@ -43,6 +43,7 @@
     <link rel="stylesheet" href="{% static 'css/theme.css' %}?v={{ css_version }}">
     <link rel="stylesheet" href="{% static 'css/components.css' %}?v={{ css_version }}">
     <link rel="stylesheet" href="{% static 'css/animations.css' %}?v={{ css_version }}">
+    <link rel="stylesheet" href="{% static 'css/bottom_nav.css' %}?v={{ css_version }}">
 
     <style>
         :root {
@@ -693,7 +694,7 @@
                     <ul class="space-y-2 text-xs text-gray-500">
                         <li><a href="#" class="hover:text-brand-primary transition-colors">من نحن</a></li>
                         <li><a href="#" class="hover:text-brand-primary transition-colors">الشروط والأحكام</a></li>
-                        <li><a href="#" class="hover:text-brand-primary transition-colors">سياسة الخصوصية</a></li>
+                        <li><a href="{% url 'privacy_policy' %}" class="hover:text-brand-primary transition-colors">سياسة الخصوصية</a></li>
                         <li><a href="#" class="hover:text-brand-primary transition-colors">سياسة الاستبدال والاسترجاع</a></li>
                     </ul>
                 </div>
@@ -1409,4 +1410,5 @@
 
 
     {% block extra_js %}{% endblock %}
+    {% include 'includes/bottom_nav.html' %}
 </body>

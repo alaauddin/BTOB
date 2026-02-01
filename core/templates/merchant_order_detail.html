@@ -501,6 +501,19 @@
         </div>
     </header>
 
+    {% if order.pipeline_status.slug == 'cancelled' %}
+    <div class="alert alert-danger rounded-4 border-0 shadow-sm d-flex align-items-center gap-3 mb-4 p-4 animate__animated animate__headShake">
+        <i class="fas fa-exclamation-triangle fa-2x opacity-50"></i>
+        <div class="flex-grow-1">
+            <h5 class="fw-bold mb-1">الطلب ملغي</h5>
+            <p class="mb-0 opacity-75">سبب الإلغاء: <span class="fw-bold">{{ order.cancellation_reason|default:"لم يتم ذكر السبب" }}</span></p>
+        </div>
+        <div class="text-end small opacity-50">
+            <i class="fas fa-calendar-times me-1"></i> تم الإلغاء في {{ order.updated_at|date:"Y/m/d" }}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Visual Pipeline -->
     <div class="pipeline-wrapper">
         <div class="pipeline-stepper">
@@ -677,13 +690,14 @@
                 <h3 class="section-title"><i class="fas fa-bolt"></i> إجراءات سريعة</h3>
                 
                 {% if order.get_next_status %}
-                <form method="post" action="{% url 'update_order_status' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="mb-4">
+                <form id="nextStepForm" method="post" action="{% url 'update_order_status' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="mb-4">
                         {% if request.GET.supplier_id %}
                             <input type="hidden" name="supplier_id" value="{{ request.GET.supplier_id }}">
                         {% endif %}
                     {% csrf_token %}
                     <input type="hidden" name="status" value="next">
-                    <button type="submit" class="btn-premium-action">
+                    <input type="hidden" name="cancellation_reason" id="next_cancellation_reason">
+                    <button type="button" onclick="handleNextStep()" class="btn-premium-action">
                         تحويل إلى: {{ order.get_next_status.name }}
                     </button>
                     <p class="text-center mt-3 small text-muted">سيتم إرسال إشعار تلقائي للعميل بتحديث الحالة</p>
@@ -692,20 +706,21 @@
 
                 <div class="manual-override mt-4">
                     <label class="form-label fw-bold small text-uppercase">تغيير الحالة يدوياً</label>
-                    <form method="post" action="{% url 'update_order_status' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}">
+                    <form id="manualStatusForm" method="post" action="{% url 'update_order_status' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}">
                         {% if request.GET.supplier_id %}
                             <input type="hidden" name="supplier_id" value="{{ request.GET.supplier_id }}">
                         {% endif %}
                         {% csrf_token %}
+                        <input type="hidden" name="cancellation_reason" id="manual_cancellation_reason">
                         <div class="input-group">
-                            <select name="status" class="form-select border-0 bg-light">
+                            <select name="status" id="statusSelect" class="form-select border-0 bg-light">
                                 {% for step in workflow_steps %}
                                     <option value="{{ step.status.slug }}" {% if order.pipeline_status.slug == step.status.slug %}selected{% endif %}>
                                         {{ step.status.name }}
                                     </option>
                                 {% endfor %}
                             </select>
-                            <button class="btn btn-dark" type="submit">حفظ</button>
+                            <button class="btn btn-dark" type="button" onclick="handleManualStatusSubmit()">حفظ</button>
                         </div>
                     </form>
                 </div>
@@ -938,5 +953,66 @@
         L.control.zoom({ position: 'topleft' }).addTo(map);
         {% endif %}
     });
+
+    async function handleNextStep() {
+        const nextStatusName = "{{ order.get_next_status.name|default:'' }}";
+        const nextStatusSlug = "{{ order.get_next_status.slug|default:'' }}";
+        
+        if (nextStatusSlug === 'cancelled') {
+            const { value: reason } = await Swal.fire({
+                title: 'إلغاء الطلب',
+                text: 'يرجى إدخال سبب إلغاء الطلب لإبلاغ الإدارة:',
+                input: 'textarea',
+                inputPlaceholder: 'اكتب سبب الإلغاء هنا...',
+                showCancelButton: true,
+                confirmButtonText: 'تأكيد الإلغاء',
+                cancelButtonText: 'تراجع',
+                confirmButtonColor: '#ef4444',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'يجب إدخال سبب الإلغاء للمتابعة'
+                    }
+                }
+            });
+
+            if (reason) {
+                document.getElementById('next_cancellation_reason').value = reason;
+                document.getElementById('nextStepForm').submit();
+            }
+        } else {
+            document.getElementById('nextStepForm').submit();
+        }
+    }
+
+    async function handleManualStatusSubmit() {
+        const select = document.getElementById('statusSelect');
+        const selectedStatusSlug = select.value;
+        const selectedStatusName = select.options[select.selectedIndex].text;
+        
+        if (selectedStatusSlug === 'cancelled') {
+            const { value: reason } = await Swal.fire({
+                title: 'إلغاء الطلب',
+                text: 'يرجى إدخال سبب إلغاء الطلب لإبلاغ الإدارة:',
+                input: 'textarea',
+                inputPlaceholder: 'اكتب سبب الإلغاء هنا...',
+                showCancelButton: true,
+                confirmButtonText: 'تأكيد الإلغاء',
+                cancelButtonText: 'تراجع',
+                confirmButtonColor: '#ef4444',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'يجب إدخال سبب الإلغاء للمتابعة'
+                    }
+                }
+            });
+
+            if (reason) {
+                document.getElementById('manual_cancellation_reason').value = reason;
+                document.getElementById('manualStatusForm').submit();
+            }
+        } else {
+            document.getElementById('manualStatusForm').submit();
+        }
+    }
 </script>
 {% endblock %}
