@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تعديل البيانات | عرطات{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/user_profile.css' %}?v=1.1">
+<link rel="stylesheet" href="{% static 'css/bottom_nav.css' %}?v=1.1">
+<style>
+    .edit-profile-card {
+        background: white;
+        border-radius: 24px;
+        padding: 2rem;
+        margin-top: -2rem;
+        position: relative;
+        z-index: 10;
+        border: 1px solid var(--profile-border);
+        box-shadow: var(--profile-shadow);
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-label {
+        font-weight: 700;
+        color: var(--profile-dark);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    .form-control-neo {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border-radius: 12px;
+        border: 1.5px solid var(--profile-border);
+        background: #f8fafc;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .form-control-neo:focus {
+        border-color: var(--profile-accent);
+        background: white;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(239, 125, 45, 0.1);
+    }
+    .save-btn-neo {
+        width: 100%;
+        padding: 1rem;
+        background: var(--profile-accent);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        font-weight: 800;
+        font-size: 1rem;
+        margin-top: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .save-btn-neo:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(239, 125, 45, 0.2);
+    }
+    .back-btn-neo {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--profile-text-soft);
+        text-decoration: none;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        transition: all 0.2s ease;
+    }
+    .back-btn-neo:hover {
+        color: var(--profile-dark);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page-wrapper">
+    <!-- Semi-Hero Background -->
+    <div style="height: 180px; background: white; border-bottom: 1px solid var(--profile-border); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -50px; left: 50%; transform: translateX(-50%); width: 400px; height: 200px; background: radial-gradient(circle, rgba(239, 125, 45, 0.08) 0%, transparent 70%);"></div>
+    </div>
+
+    <div class="container" style="max-width: 500px;">
+        <div class="edit-profile-card">
+            <a href="{% url 'user_profile' %}" class="back-btn-neo">
+                <i class="fas fa-arrow-right"></i>
+                <span>العودة للملف الشخصي</span>
+            </a>
+            
+            <h2 class="fw-bold mb-4" style="color: var(--profile-dark);">تعديل البيانات الشخصية</h2>
+
+            <form method="post" class="neo-form">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div class="form-group">
+                    <label class="form-label">{{ field.label }}</label>
+                    <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                           name="{{ field.name }}" 
+                           value="{{ field.value|default:'' }}"
+                           class="form-control-neo"
+                           placeholder="أدخل {{ field.label }}">
+                    {% if field.errors %}
+                    <small class="text-danger mt-1 d-block">{{ field.errors.0 }}</small>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <button type="submit" class="save-btn-neo">حفظ التغييرات</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Premium Bottom Navigation -->
+{% include 'includes/bottom_nav.html' %}
+{% endblock %}

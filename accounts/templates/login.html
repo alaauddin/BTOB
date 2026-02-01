@@ -50,7 +50,27 @@
                 </div>
 
                 <div class="action-section pt-4">
-                    <button type="submit" class="btn-submit-premium">
+                    <!-- Privacy Policy Checkbox -->
+                    <div class="mb-6" dir="rtl">
+                        <label class="flex items-start gap-3 cursor-pointer group" for="privacy_policy_checkbox_standalone">
+                            <input type="checkbox" id="privacy_policy_checkbox_standalone" name="privacy_policy" required
+                                class="w-5 h-5 mt-1 rounded border-white/20 bg-white/5 text-[var(--primary-color)] focus:ring-[var(--primary-color)] transition-all cursor-pointer"
+                                style="accent-color: var(--primary-color);">
+                            <span class="text-sm text-white/60 leading-relaxed group-hover:text-white transition-colors">
+                                أوافق على 
+                                <a href="{% url 'privacy_policy' %}" target="_blank" class="text-white font-bold hover:underline" onclick="event.stopPropagation();">
+                                    سياسة الخصوصية
+                                </a>
+                                 والشروط والأحكام
+                            </span>
+                        </label>
+                        <p id="privacy-error-standalone" class="text-red-400 text-xs mt-2 hidden">
+                            <i class="fas fa-exclamation-circle ml-1"></i>
+                            يرجى الموافقة على سياسة الخصوصية للمتابعة
+                        </p>
+                    </div>
+
+                    <button type="submit" class="btn-submit-premium" id="standaloneSubmitBtn">
                         <span class="btn-text">تسجيل الدخول</span>
                         <div class="btn-icon"><i class="fas fa-arrow-left"></i></div>
                     </button>
@@ -66,7 +86,7 @@
             <!-- Google Login Button -->
             {% load socialaccount %}
             <div class="social-actions">
-                <a href="{% provider_login_url 'google' %}" class="btn-google-premium">
+                <a href="{% provider_login_url 'google' %}" id="google-login-standalone" class="btn-google-premium">
                     <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" alt="Google" class="w-6 h-6">
                     <span>متابعة باستخدام جوجل</span>
                 </a>
@@ -369,6 +389,43 @@
 </style>
 
 <script>
+    // Privacy Policy Validation
+    const loginForm = document.querySelector('.auth-form');
+    const privacyCheckbox = document.getElementById('privacy_policy_checkbox_standalone');
+    const privacyError = document.getElementById('privacy-error-standalone');
+
+    if (loginForm && privacyCheckbox) {
+        loginForm.addEventListener('submit', function(e) {
+            if (!privacyCheckbox.checked) {
+                e.preventDefault();
+                privacyError.classList.remove('hidden');
+                privacyCheckbox.focus();
+                
+                // Optional: visual shake effect
+                privacyCheckbox.parentElement.classList.add('animate-shake');
+                setTimeout(() => privacyCheckbox.parentElement.classList.remove('animate-shake'), 500);
+            } else {
+                privacyError.classList.add('hidden');
+            }
+        });
+    }
+
+    // Intercept Google Login in Standalone Page
+    const googleBtnStandalone = document.getElementById('google-login-standalone');
+    if (googleBtnStandalone && privacyCheckbox) {
+        googleBtnStandalone.addEventListener('click', function(e) {
+            if (!privacyCheckbox.checked) {
+                e.preventDefault();
+                privacyError.classList.remove('hidden');
+                privacyCheckbox.focus();
+                
+                // Shake effect
+                privacyCheckbox.parentElement.classList.add('animate-shake');
+                setTimeout(() => privacyCheckbox.parentElement.classList.remove('animate-shake'), 500);
+            }
+        });
+    }
+
     // Smooth input interaction
     document.querySelectorAll('.form-control').forEach(input => {
         input.addEventListener('focus', () => {
@@ -381,4 +438,15 @@
         });
     });
 </script>
+
+<style>
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    .animate-shake {
+        animation: shake 0.2s ease-in-out 0s 2;
+    }
+</style>
 {% endblock %}

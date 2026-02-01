@@ -33,8 +33,16 @@ from core.views.request_promotion import request_promotion
 from core.views.manage_platform_ads import add_platform_ad, edit_platform_ad, toggle_platform_ad_status
 from core.views.join_business import join_business
 from core.views.merchant_auth import MerchantLoginView
+from core.views.privacy_policy import privacy_policy
+from core.views.profile import profile_view, address_list_view, set_current_address
 
 urlpatterns = [
+    # Static Pages
+    path('privacy-policy/', privacy_policy, name='privacy_policy'),
+    path('profile/', profile_view, name='user_profile'),
+    path('profile/addresses/', address_list_view, name='address_list'),
+    path('profile/addresses/set/<int:pk>/', set_current_address, name='set_current_address'),
+
     # path('products/', ProductListView.as_view(), name='product-list'),
     path('products/<str:store_id>/', product_list, name='product-list'),
     path('products/category/<int:category_id>/<str:store_id>/', product_list, name='product_list_category'),

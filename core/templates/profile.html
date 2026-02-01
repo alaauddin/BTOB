@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}الملف الشخصي | عرطات{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/user_profile.css' %}?v=1.1">
+<link rel="stylesheet" href="{% static 'css/bottom_nav.css' %}?v=1.1">
+{% endblock %}
+
+{% block content %}
+<div class="profile-page-wrapper">
+    <!-- Premium Hero Section -->
+    <header class="profile-hero">
+        <div class="container">
+            <div class="avatar-container">
+                <div class="avatar-main">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+            </div>
+            
+            <h1 class="profile-name">{% if user.get_full_name %}{{ user.get_full_name }}{% else %}مستخدم عرطات{% endif %}</h1>
+            <div class="profile-phone" dir="ltr">
+                <i class="fas fa-phone-alt"></i>
+                <span>+967 {{ user.username }}</span>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="profile-stats-grid">
+                <div class="stat-chip">
+                    <span class="stat-val">{{ total_orders }}</span>
+                    <span class="stat-lbl">إجمالي الطلبات</span>
+                </div>
+                <div class="stat-chip">
+                    <span class="stat-val" style="color: var(--profile-accent);">{{ active_orders }}</span>
+                    <span class="stat-lbl">طلبات نشطة</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container" style="max-width: 600px;">
+        <!-- Account Settings -->
+        <h3 class="menu-section-title">إعدادات الحساب</h3>
+        <div class="profile-menu-container">
+            <a href="{% url 'my_account' %}" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-user-edit"></i></div>
+                <span class="menu-text">تعديل البيانات الشخصية</span>
+                <i class="fas fa-chevron-left menu-arrow"></i>
+            </a>
+
+            <a href="{% url 'address_list' %}" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-map-marker-alt"></i></div>
+                <span class="menu-text">عناوين التوصيل</span>
+                <i class="fas fa-chevron-left menu-arrow"></i>
+            </a>
+        </div>
+
+        <!-- Orders & Commerce -->
+        <h3 class="menu-section-title">المشتريات والنشاط</h3>
+        <div class="profile-menu-container">
+            <a href="{% url 'my_orders' %}" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-shopping-bag"></i></div>
+                <span class="menu-text">إدارة طلباتي</span>
+                <i class="fas fa-chevron-left menu-arrow"></i>
+            </a>
+            <a href="#" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-heart"></i></div>
+                <span class="menu-text">المفضلة</span>
+                <i class="fas fa-chevron-left menu-arrow"></i>
+            </a>
+        </div>
+
+        <!-- Support -->
+        <h3 class="menu-section-title">الدعم والمساعدة</h3>
+        <div class="profile-menu-container">
+            <a href="#" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-question-circle"></i></div>
+                <span class="menu-text">مركز المساعدة</span>
+                <i class="fas fa-chevron-left menu-arrow"></i>
+            </a>
+            <a href="{% url 'privacy_policy' %}" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-file-contract"></i></div>
+                <span class="menu-text">سياسة الخصوصية</span>
+                <i class="fas fa-chevron-left menu-arrow"></i>
+            </a>
+            <a href="{% url 'logout' %}" class="menu-item logout-btn">
+                <div class="menu-icon"><i class="fas fa-sign-out-alt"></i></div>
+                <span class="menu-text">تسجيل الخروج</span>
+                <i class="fas fa-chevron-left menu-arrow"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Premium Bottom Navigation -->
+{% include 'includes/bottom_nav.html' %}
+{% endblock %}

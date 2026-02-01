@@ -1,494 +1,84 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}طلباتي{% endblock %}
+{% block title %}طلباتي | عرطات{% endblock %}
 
 {% block extra_css %}
-<style>
-    /* Orders Page Styles */
-    .orders-hero {
-        background: {{ supplier.navbar_color|default:'#667eea' }};
-        padding: 2.5rem 0;
-        color: white;
-        border-radius: 0 0 30px 30px;
-        margin-bottom: 2rem;
-    }
-    
-    .orders-container {
-        margin-bottom: 3rem;
-    }
-    
-    .orders-filter {
-        background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-        margin-bottom: 2rem;
-    }
-    
-    .filter-title {
-        font-weight: 600;
-        margin-bottom: 1rem;
-        color: #2d3748;
-        display: flex;
-        align-items: center;
-    }
-    
-    .filter-title i {
-        margin-left: 10px;
-        color: #667eea;
-    }
-    
-    .status-filter {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    
-    .status-btn {
-        border: 2px solid #e2e8f0;
-        border-radius: 50px;
-        padding: 8px 20px;
-        background: white;
-        color: #4a5568;
-        transition: all 0.3s ease;
-        font-weight: 500;
-        cursor: pointer;
-    }
-    
-    .status-btn:hover, .status-btn.active {
-        background: {{ supplier.primary_color|default:'#667eea' }};
-        color: white;
-        border-color: transparent;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    
-    .order-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        overflow: hidden;
-        margin-bottom: 1.5rem;
-        transition: all 0.3s ease;
-        border-left: 5px solid #667eea;
-    }
-    
-    .order-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-    }
-    
-    .order-header {
-        background: #f8fafc;
-        padding: 1.5rem;
-        border-bottom: 1px solid #e2e8f0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .order-id {
-        font-weight: 700;
-        color: #2d3748;
-        font-size: 1.2rem;
-    }
-    
-    .order-date {
-        color: #718096;
-        font-size: 0.9rem;
-    }
-    
-    .order-body {
-        padding: 1.5rem;
-    }
-    
-    .order-status {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 15px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-    }
-    
-    .status-pending {
-        background: #fef3cd;
-        color: #856404;
-    }
-    
-    .status-processing, .status-confirmed, .status-shipped, .status-out_for_delivery {
-        background: #cce5ff;
-        color: #004085;
-    }
-    
-    .status-delivered, .status-completed {
-        background: #d4edda;
-        color: #155724;
-    }
-    
-    .status-returned, .status-refunded {
-        background: #e2e8f0;
-        color: #4a5568;
-    }
-    
-    .order-info {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .info-item {
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .info-label {
-        color: #718096;
-        font-size: 0.8rem;
-        margin-bottom: 0.25rem;
-    }
-    
-    .info-value {
-        color: #2d3748;
-        font-weight: 600;
-    }
-    
-    .order-items-preview {
-        display: flex;
-        margin-bottom: 1.5rem;
-    }
-    
-    .item-preview {
-        width: 50px;
-        height: 50px;
-        border-radius: 10px;
-        overflow: hidden;
-        margin-right: -10px;
-        border: 2px solid white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        position: relative;
-    }
-    
-    .item-preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .more-items {
-        width: 50px;
-        height: 50px;
-        border-radius: 10px;
-        background: #e2e8f0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        color: #718096;
-        font-size: 0.9rem;
-    }
-    
-    .order-footer {
-        padding: 1rem 1.5rem;
-        background: #f8fafc;
-        border-top: 1px solid #e2e8f0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .order-total {
-        font-weight: 700;
-        color: #2d3748;
-        font-size: 1.1rem;
-    }
-    
-    .order-actions {
-        display: flex;
-        gap: 0.5rem;
-    }
-    
-    .view-details-btn {
-        background: {{ supplier.primary_color|default:'#667eea' }};
-        color: white;
-        border: none;
-        border-radius: 50px;
-        padding: 8px 20px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        text-decoration: none;
-    }
-    
-    .view-details-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        color: white;
-    }
-    
-    .view-details-btn i {
-        margin-left: 8px;
-    }
-    
-    .track-order-btn {
-        background: #e2e8f0;
-        color: #4a5568;
-        border: none;
-        border-radius: 50px;
-        padding: 8px 15px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        text-decoration: none;
-    }
-    
-    .track-order-btn:hover {
-        background: #cbd5e0;
-        color: #2d3748;
-    }
-    
-    .track-order-btn i {
-        margin-left: 5px;
-    }
-    
-    .no-orders {
-        text-align: center;
-        padding: 4rem 2rem;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    }
-    
-    .no-orders i {
-        font-size: 5rem;
-        color: #e2e8f0;
-        margin-bottom: 1.5rem;
-    }
-    
-    .no-orders h3 {
-        color: #a0aec0;
-        margin-bottom: 1rem;
-    }
-    
-    .start-shopping-btn {
-        background: {{ supplier.primary_color|default:'#667eea' }};
-        color: white;
-        border: none;
-        border-radius: 50px;
-        padding: 12px 30px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        text-decoration: none;
-        margin-top: 1.5rem;
-    }
-    
-    .start-shopping-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        color: white;
-    }
-    
-    .start-shopping-btn i {
-        margin-left: 10px;
-    }
-    
-    @media (max-width: 768px) {
-        .order-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.5rem;
-        }
-        
-        .order-info {
-            grid-template-columns: 1fr;
-        }
-        
-        .order-footer {
-            flex-direction: column;
-            gap: 1rem;
-            align-items: flex-start;
-        }
-        
-        .order-actions {
-            width: 100%;
-            justify-content: space-between;
-        }
-        
-        .view-details-btn, .track-order-btn {
-            flex: 1;
-            justify-content: center;
-            text-align: center;
-        }
-    }
-</style>
+<link rel="stylesheet" href="{% static 'css/order_list.css' %}?v=1.1">
+<link rel="stylesheet" href="{% static 'css/bottom_nav.css' %}?v=1.1">
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="orders-hero">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="display-5 fw-bold mb-2">طلباتي</h1>
-                <p class="lead mb-0">استعرض جميع طلباتك السابقة وحالة كل طلب</p>
-            </div>
-            <div class="col-md-4 text-md-end">
-                <div class="bg-white/20 rounded-lg p-2 d-inline-block">
-                    <span class="d-flex align-items-center">
-                        <i class="fas fa-box fs-4 me-2"></i>
-                        <span class="fs-5 fw-bold">{{ orders|length }} طلب</span>
-                    </span>
-                </div>
-            </div>
+<div class="orders-page-wrapper">
+    <!-- Premium Global Header -->
+    <header class="orders-premium-header">
+        <div class="header-blob"></div>
+        <div class="container">
+            <h1 class="display-5 fw-bold mb-1">طلباتي</h1>
+            <p class="opacity-50 small mb-0">إدارة ومتابعة جميع معاملاتك في مكان واحد</p>
         </div>
-    </div>
-</section>
+    </header>
 
-<div class="container mb-5">
-    <!-- Filters Section -->
-    <div class="orders-filter">
-        <h4 class="filter-title"><i class="fas fa-filter"></i> تصفية حسب الحالة</h4>
-        <div class="status-filter">
-            <button class="status-btn active" data-status="all">الكل</button>
-            <button class="status-btn" data-status="pending">قيد الانتظار</button>
-            <button class="status-btn" data-status="processing">قيد التجهيز</button>
-            <button class="status-btn" data-status="completed">مكتمل</button>
-            <button class="status-btn" data-status="canceled">ملغي</button>
+    <div class="container" style="max-width: 800px;">
+        <!-- Precise Filter Bar -->
+        <div class="filter-glass-container">
+            <div class="filter-chip active" data-status="all">الكل</div>
+            <div class="filter-chip" data-status="pending">قيد الانتظار</div>
+            <div class="filter-chip" data-status="processing">قيد التجهيز</div>
+            <div class="filter-chip" data-status="completed">المكتملة</div>
         </div>
-    </div>
 
-    <!-- Orders List -->
-    <div class="orders-container">
-        {% if orders %}
-            {% for order in orders %}
-            <div class="order-card" data-status="{{ order.pipeline_status.slug }}">
-                <div class="order-header">
-                    <div class="order-id">الطلب #{{ order.id }}</div>
-                    <div class="order-date">{{ order.created_at|date:"d M Y" }}</div>
-                </div>
-                
-                <div class="order-body">
-                    <div class="order-status status-{{ order.pipeline_status.slug }}">
-                        {% if order.pipeline_status.slug == "pending" %}
-                            <i class="fas fa-clock me-2"></i> قيد الانتظار
-                        {% elif order.pipeline_status.slug == "completed" %}
-                            <i class="fas fa-check-circle me-2"></i> مكتمل
-                        {% elif order.pipeline_status.slug == "canceled" %}
-                            <i class="fas fa-times-circle me-2"></i> ملغي
-                        {% elif order.pipeline_status.slug == "processing" %}
-                            <i class="fas fa-cog me-2"></i> قيد التجهيز
+        <!-- Neo-Premium Order List -->
+        <div class="orders-main-container">
+            {% if orders %}
+                {% for order in orders %}
+                <div class="order-premium-card" data-status="{{ order.pipeline_status.slug }}" onclick="window.location.href='{% url 'order_detail' pk=order.pk %}'">
+                    <!-- Visual Side -->
+                    <div class="product-stack">
+                        {% if order.order_items.all.0.product.image %}
+                        <img src="{{ order.order_items.all.0.product.image.url }}" alt="{{ order.order_items.all.0.product.name }}">
                         {% else %}
-                            {{ order.pipeline_status.name }}
+                        <i class="fas fa-box text-muted opacity-25"></i>
                         {% endif %}
                     </div>
                     
-                    <div class="order-info">
-                        <div class="info-item">
-                            <span class="info-label">العميل</span>
-                            <span class="info-value">{{ order.user.username }}</span>
-                        </div>
-                        
-                        <div class="info-item">
-                            <span class="info-label">عدد المنتجات</span>
-                            <span class="info-value">{{ order.order_items.all|length }}</span>
-                        </div>
-                        
-                        <div class="info-item">
-                            <span class="info-label">طريقة الدفع</span>
-                            <span class="info-value">الدفع عند الاستلام</span>
+                    <!-- Main Content Side -->
+                    <div class="card-main-content">
+                        <span class="order-ref-id">الطلب #{{ order.id|stringformat:"05d" }}</span>
+                        <div class="card-meta">
+                            <div class="status-indicator" style="background: {% if order.pipeline_status.slug == 'pending' %}#fffbeb{% elif order.pipeline_status.slug == 'completed' %}#f0fdf4{% elif order.pipeline_status.slug == 'canceled' %}#fef2f2{% else %}#eff6ff{% endif %}; color: {% if order.pipeline_status.slug == 'pending' %}#d97706{% elif order.pipeline_status.slug == 'completed' %}#16a34a{% elif order.pipeline_status.slug == 'canceled' %}#dc2626{% else %}#2563eb{% endif %}">
+                                <span class="status-dot" style="background-color: currentColor;"></span>
+                                <span>{{ order.pipeline_status.name }}</span>
+                            </div>
+                            <span class="meta-date">{{ order.created_at|date:"d M Y" }}</span>
                         </div>
                     </div>
                     
-                    <div class="order-items-preview">
-                        {% for item in order.order_items.all|slice:":4" %}
-                        <div class="item-preview">
-                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                    <!-- End Side -->
+                    <div class="card-end-content" style="padding-bottom: 60px;"> <!-- Extra padding for bottom nav -->
+                        <div class="total-group">
+                            <span class="total-label">السعر الإجمالي</span>
+                            <div class="total-value">
+                                <span style="font-size: 0.75rem; color: var(--neo-accent);">{{ order.get_supplier.currency|default:"ر.ي" }}</span> {{ order.total_price }}
+                            </div>
                         </div>
-                        {% endfor %}
-                        
-                        {% if order.order_items.all|length > 4 %}
-                        <div class="more-items">+{{ order.order_items.all|length|add:"-4" }}</div>
-                        {% endif %}
+                        <div class="action-arrow">
+                            <i class="fas fa-arrow-left"></i>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="order-footer">
-                    <div class="order-total">المجموع: {{ order.total_price }} {{ order.get_supplier.currency }}</div>
-                    
-                    <div class="order-actions">
-                        <a href="{% url 'order_detail' pk=order.pk %}" class="view-details-btn">
-                            <i class="fas fa-eye"></i> التفاصيل
-                        </a>
-                        
-                        {% if order.pipeline_status.slug in "processing,shipped,out_for_delivery,delivered,completed" %}
-                        <a href="#" class="track-order-btn">
-                            <i class="fas fa-truck"></i> تتبع الشحن
-                        </a>
-                        {% endif %}
-                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-orders-state" style="padding-bottom: 100px;">
+                    <div class="empty-icon"><i class="fas fa-shopping-bag"></i></div>
+                    <h5 class="fw-bold">لا يوجد طلبات حتى الآن</h5>
+                    <a href="{% url 'suppliers_list' %}" class="btn px-4 py-2 mt-3" style="background: var(--neo-dark); color: white; border-radius: 12px; font-weight: 600;">ابدأ التسوق</a>
                 </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <!-- Empty State -->
-            <div class="no-orders">
-                <i class="fas fa-box-open"></i>
-                <h3>لا توجد طلبات</h3>
-                <p class="text-muted">لم تقم بإجراء أي طلب حتى الآن</p>
-                <a href="{% url 'suppliers_list' %}" class="start-shopping-btn">
-                    <i class="fas fa-shopping-cart"></i> ابدأ التسوق الآن
-                </a>
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-    // Filter orders by status
-    document.addEventListener('DOMContentLoaded', function() {
-        const filterButtons = document.querySelectorAll('.status-btn');
-        const orderCards = document.querySelectorAll('.order-card');
-        
-        filterButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove active class from all buttons
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                // Add active class to clicked button
-                this.classList.add('active');
-                
-                const status = this.getAttribute('data-status');
-                
-                orderCards.forEach(card => {
-                    if (status === 'all') {
-                        card.style.display = 'block';
-                    } else {
-                        const cardStatus = card.getAttribute('data-status');
-                        card.style.display = cardStatus === status ? 'block' : 'none';
-                    }
-                });
-            });
-        });
-        
-        // Add animation to order cards
-        orderCards.forEach((card, index) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            
-            setTimeout(() => {
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, index * 100);
-        });
-    });
-</script>
+<!-- Premium Bottom Navigation -->
+{% include 'includes/bottom_nav.html' %}
 {% endblock %}

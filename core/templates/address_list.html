@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}عناوين التوصيل | عرطات{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/user_profile.css' %}?v=1.1">
+<link rel="stylesheet" href="{% static 'css/bottom_nav.css' %}?v=1.1">
+<style>
+    .address-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--profile-border);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    .address-card:hover {
+        border-color: var(--profile-accent);
+        box-shadow: var(--profile-shadow);
+    }
+    .address-card.primary {
+        border-left: 5px solid var(--profile-accent);
+        background: linear-gradient(to left, white, #fffaf5);
+    }
+    .addr-tag {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        display: inline-block;
+    }
+    .tag-primary { background: #fff7ed; color: var(--profile-accent); }
+    .tag-past { background: #f1f5f9; color: var(--profile-text-soft); }
+    
+    .addr-main { font-weight: 700; color: var(--profile-dark); font-size: 1rem; margin-bottom: 0.25rem; }
+    .addr-sub { font-size: 0.85rem; color: var(--profile-text-soft); font-weight: 600; }
+    
+    .addr-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px dashed var(--profile-border);
+    }
+    .action-btn {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-decoration: none;
+        color: var(--profile-accent);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .set-primary-btn {
+        background: var(--profile-accent);
+        color: white !important;
+        padding: 8px 15px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+    }
+    .empty-addresses {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--profile-text-soft);
+    }
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.2;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page-wrapper">
+    <header class="profile-hero" style="padding: 2rem 0 1.5rem;">
+        <div class="container">
+            <h1 class="profile-name">عناوين التوصيل</h1>
+            <p class="text-muted small">إدارة مواقع الاستلام الخاصة بك</p>
+        </div>
+    </header>
+
+    <div class="container mt-4" style="max-width: 600px;">
+        <a href="{% url 'user_profile' %}" class="back-btn-neo mb-4">
+            <i class="fas fa-arrow-right"></i>
+            <span>العودة للملف الشخصي</span>
+        </a>
+
+        {% if not primary_address and not past_addresses %}
+        <div class="empty-addresses">
+            <div class="empty-icon"><i class="fas fa-map-marked-alt"></i></div>
+            <h4 class="fw-bold">لا توجد عناوين مسجلة</h4>
+            <p>سيتم حفظ العناوين هنا تلقائياً عند إتمام طلباتك</p>
+        </div>
+        {% else %}
+        
+        {% if primary_address %}
+        <h3 class="menu-section-title">العنوان الحالي (الافتراضي)</h3>
+        <div class="address-card primary">
+            <span class="addr-tag tag-primary">أساسي</span>
+            <div class="addr-main">{{ primary_address.address_line1 }}</div>
+            <div class="addr-sub">{{ primary_address.city }}، {{ primary_address.country }}</div>
+            <div class="addr-sub"><i class="fas fa-phone-alt me-1"></i> {{ primary_address.phone }}</div>
+            
+            <div class="addr-actions">
+                <a href="#" class="action-btn"><i class="fas fa-edit"></i> تعديل</a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if past_addresses %}
+        <h3 class="menu-section-title">عناوين سابقة</h3>
+        {% for addr in past_addresses %}
+        <div class="address-card">
+            <span class="addr-tag tag-past">طلب سابق</span>
+            <div class="addr-main">{{ addr.address_line1 }}</div>
+            <div class="addr-sub">{{ addr.city }}، {{ addr.country }}</div>
+            
+            <div class="addr-actions">
+                <form action="{% url 'set_current_address' addr.pk %}" method="post" style="width: 100%;">
+                    {% csrf_token %}
+                    <button type="submit" class="set-primary-btn border-0 w-100">
+                        <i class="fas fa-check-circle"></i> تعيين كعنوان رئيسي
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% endif %}
+    </div>
+</div>
+
+<!-- Premium Bottom Navigation -->
+{% include 'includes/bottom_nav.html' %}
+{% endblock %}

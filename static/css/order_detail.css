@@ -1,0 +1,378 @@
+/* Neo-Premium Order Details - Precision & Elegance */
+:root {
+    --neo-accent: #ef7d2d;
+    --neo-dark: #1e293b;
+    --neo-light-bg: #fdfdfd;
+    --neo-card-bg: #ffffff;
+    --neo-border: #f1f5f9;
+    --neo-text-muted: #64748b;
+    --neo-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    --neo-curve: 24px;
+}
+
+.order-details-wrapper {
+    background-color: var(--neo-light-bg);
+    min-height: 100vh;
+    padding-bottom: 120px;
+    font-family: 'Inter', 'Outfit', 'Cairo', sans-serif;
+}
+
+/* Minimalist Header - Compressed */
+.order-header-section {
+    padding: 1.5rem 0 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.order-badge-pill {
+    background: #f1f5f9;
+    color: var(--neo-dark);
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0.5rem;
+}
+
+/* Status Cards & Info Grid */
+.detail-grid-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.glass-card {
+    background: white;
+    border: 1.5px solid var(--neo-border);
+    border-radius: var(--neo-curve);
+    box-shadow: var(--neo-shadow);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Order Quick Info Bar */
+.order-stats-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 1.25rem;
+    background: #f8fafc;
+    border-radius: 18px;
+    margin-bottom: 2rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--neo-text-muted);
+    font-weight: 500;
+}
+
+/* Status Stepper - Refined & Precise */
+.order-stepper-container {
+    display: flex;
+    justify-content: space-between;
+    margin: 1.5rem 0 2.5rem;
+    position: relative;
+    padding: 0;
+}
+
+.order-stepper-container::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 5%;
+    right: 5%;
+    height: 3px;
+    background: #f1f5f9;
+    z-index: 0;
+    border-radius: 10px;
+}
+
+.step-item {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.step-dot {
+    width: 32px;
+    height: 32px;
+    background: #ffffff;
+    border: 2px solid #f1f5f9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    color: var(--neo-text-muted);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+}
+
+.step-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--neo-text-muted);
+    transition: all 0.3s ease;
+}
+
+.step-item.active .step-dot {
+    border-color: var(--neo-accent);
+    color: var(--neo-accent);
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(239, 125, 45, 0.2);
+}
+
+.step-item.active .step-label {
+    color: var(--neo-dark);
+}
+
+.step-item.completed .step-dot {
+    background: var(--neo-accent);
+    border-color: var(--neo-accent);
+    color: white;
+}
+
+/* Track Line Completion */
+.step-item.completed::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    right: -50%;
+    width: 100%;
+    height: 3px;
+    background: var(--neo-accent);
+    z-index: -1;
+}
+
+/* RTL Adjustments for completion line */
+[dir="rtl"] .step-item.completed::after {
+    right: auto;
+    left: -50%;
+}
+
+/* Item Rows - Compacted */
+.items-list-title {
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--neo-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.order-item-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: 16px;
+    background: white;
+    border: 1px solid var(--neo-border);
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.order-item-row:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+    border-color: var(--neo-accent);
+}
+
+.item-img-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.item-img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.item-details {
+    flex: 1;
+}
+
+.item-name {
+    display: block;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--neo-dark);
+    margin-bottom: 2px;
+}
+
+.item-qty-tag {
+    font-size: 0.8rem;
+    color: var(--neo-text-muted);
+}
+
+.item-price-box {
+    text-align: left;
+}
+
+[dir="rtl"] .item-price-box {
+    text-align: right;
+}
+
+.price-current {
+    font-weight: 800;
+    color: var(--neo-dark);
+    font-size: 1rem;
+}
+
+/* Order Summary (Side Column) - Compressed */
+.summary-widget {
+    padding: 1.25rem;
+}
+
+.receipt-header {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+}
+
+.summary-row {
+    margin-bottom: 0.5rem;
+}
+
+.summary-total-row {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    font-size: 1.2rem;
+    border-top: 1px dashed var(--neo-border);
+}
+
+.total-accent {
+    color: var(--neo-accent);
+    font-weight: 900;
+    font-size: 1.5rem;
+}
+
+.text-brand-accent {
+    color: var(--neo-accent) !important;
+}
+
+.payment-promo-card {
+    padding: 1.5rem;
+    margin-top: 3rem !important;
+}
+
+.payment-promo-card::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: -20px;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+.wa-btn-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #25d366;
+    color: white;
+    padding: 12px 32px;
+    border-radius: 100px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.wa-btn-premium:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);
+    background: #20ba59;
+}
+
+/* Navigation Buttons */
+.bottom-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-neo {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    border-radius: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-neo-secondary {
+    background: #f1f5f9;
+    color: var(--neo-text-muted);
+}
+
+.btn-neo-secondary:hover {
+    background: #e2e8f0;
+    color: var(--neo-dark);
+}
+
+.btn-neo-primary {
+    background: var(--neo-dark);
+    color: white;
+}
+
+.btn-neo-primary:hover {
+    box-shadow: 0 10px 20px rgba(30, 41, 59, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .detail-grid-container {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-widget {
+        position: static;
+    }
+}
+
+@media (max-width: 576px) {
+    .order-stats-bar {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .order-item-row {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .item-price-box {
+        text-align: center !important;
+    }
+
+    .bottom-actions {
+        flex-direction: column;
+    }
+}

@@ -46,8 +46,8 @@ def signup (request):
 class UserUpdateView(UpdateView):
     model=User
     fields =('first_name','last_name', 'email',)
-    template_name = 'read/my_account.html'
-    success_url = reverse_lazy('my_account')
+    template_name = 'edit_profile.html'
+    success_url = reverse_lazy('user_profile')
 
     def get_object(self):
         return self.request.user

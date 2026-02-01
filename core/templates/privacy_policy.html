@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}سياسة الخصوصية | {{ system_settings.site_name|default:"متجرك" }}{% endblock %}
+
+{% block content %}
+<div class="privacy-policy-page min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[var(--primary-color)] to-[var(--accent-color)] mb-6 shadow-lg">
+                <i class="fas fa-shield-alt text-3xl text-white"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-black text-gray-900 mb-4">سياسة الخصوصية</h1>
+            <p class="text-gray-500 text-lg">آخر تحديث: {% now "d F Y" %}</p>
+        </div>
+
+        <!-- Policy Content Card -->
+        <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="p-8 md:p-12 space-y-8">
+                
+                <!-- Introduction -->
+                <section class="policy-section">
+                    <div class="section-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="section-content">
+                        <h2 class="section-title">مقدمة</h2>
+                        <p>مرحباً بك في {{ system_settings.site_name|default:"متجرنا" }}. نحن نلتزم بحماية خصوصيتك وضمان أمان معلوماتك الشخصية. توضح سياسة الخصوصية هذه كيفية جمع واستخدام وحماية بياناتك عند استخدام منصتنا.</p>
+                    </div>
+                </section>
+
+                <!-- Data Collection -->
+                <section class="policy-section">
+                    <div class="section-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="section-content">
+                        <h2 class="section-title">المعلومات التي نجمعها</h2>
+                        <p>نقوم بجمع المعلومات التالية لتقديم خدماتنا:</p>
+                        <ul class="policy-list">
+                            <li><strong>معلومات الحساب:</strong> الاسم، رقم الهاتف، البريد الإلكتروني</li>
+                            <li><strong>معلومات التوصيل:</strong> العنوان، المدينة، الرمز البريدي</li>
+                            <li><strong>معلومات الطلبات:</strong> سجل الطلبات والمشتريات</li>
+                            <li><strong>بيانات الاستخدام:</strong> كيفية تفاعلك مع المنصة</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- How We Use Data -->
+                <section class="policy-section">
+                    <div class="section-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="section-content">
+                        <h2 class="section-title">كيف نستخدم معلوماتك</h2>
+                        <p>نستخدم المعلومات المجمعة للأغراض التالية:</p>
+                        <ul class="policy-list">
+                            <li>معالجة وتنفيذ طلباتك</li>
+                            <li>إرسال تحديثات حول حالة طلباتك</li>
+                            <li>تحسين تجربة المستخدم على المنصة</li>
+                            <li>تقديم الدعم الفني والمساعدة</li>
+                            <li>إرسال العروض والتحديثات (بموافقتك)</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Data Protection -->
+                <section class="policy-section">
+                    <div class="section-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div class="section-content">
+                        <h2 class="section-title">حماية البيانات</h2>
+                        <p>نتخذ إجراءات أمنية صارمة لحماية معلوماتك:</p>
+                        <ul class="policy-list">
+                            <li>تشفير SSL لجميع البيانات المنقولة</li>
+                            <li>خوادم آمنة مع حماية متقدمة</li>
+                            <li>وصول محدود للموظفين المخولين فقط</li>
+                            <li>مراقبة أمنية مستمرة على مدار الساعة</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Data Sharing -->
+                <section class="policy-section">
+                    <div class="section-icon">
+                        <i class="fas fa-share-alt"></i>
+                    </div>
+                    <div class="section-content">
+                        <h2 class="section-title">مشاركة البيانات</h2>
+                        <p>لن نبيع أو نتاجر بمعلوماتك الشخصية. قد نشارك معلوماتك فقط مع:</p>
+                        <ul class="policy-list">
+                            <li>مزودي خدمات التوصيل لإيصال طلباتك</li>
+                            <li>بوابات الدفع لمعالجة المدفوعات</li>
+                            <li>الجهات الحكومية عند الطلب القانوني</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- User Rights -->
+                <section class="policy-section">
+                    <div class="section-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="section-content">
+                        <h2 class="section-title">حقوقك</h2>
+                        <p>لديك الحق في:</p>
+                        <ul class="policy-list">
+                            <li>الوصول إلى بياناتك الشخصية</li>
+                            <li>تصحيح أي معلومات غير دقيقة</li>
+                            <li>طلب حذف بياناتك</li>
+                            <li>إلغاء الاشتراك من الرسائل التسويقية</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Cookies -->
+                <section class="policy-section">
+                    <div class="section-icon">
+                        <i class="fas fa-cookie-bite"></i>
+                    </div>
+                    <div class="section-content">
+                        <h2 class="section-title">ملفات تعريف الارتباط (Cookies)</h2>
+                        <p>نستخدم ملفات تعريف الارتباط لتحسين تجربتك على المنصة، بما في ذلك:</p>
+                        <ul class="policy-list">
+                            <li>تذكر تفضيلاتك وإعداداتك</li>
+                            <li>الحفاظ على جلسة تسجيل الدخول</li>
+                            <li>تحليل استخدام الموقع لتحسين الأداء</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Contact -->
+                <section class="policy-section">
+                    <div class="section-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="section-content">
+                        <h2 class="section-title">تواصل معنا</h2>
+                        <p>إذا كانت لديك أي أسئلة حول سياسة الخصوصية، يمكنك التواصل معنا عبر:</p>
+                        <div class="contact-info mt-4 space-y-2">
+                            {% if system_settings.company_email %}
+                            <p class="flex items-center gap-2">
+                                <i class="fas fa-envelope text-[var(--primary-color)]"></i>
+                                <span>{{ system_settings.company_email }}</span>
+                            </p>
+                            {% endif %}
+                            {% if system_settings.whatsapp_number %}
+                            <p class="flex items-center gap-2">
+                                <i class="fab fa-whatsapp text-green-500"></i>
+                                <a href="https://wa.me/{{ system_settings.whatsapp_number }}" class="text-green-600 hover:underline">{{ system_settings.whatsapp_number }}</a>
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="text-center mt-8">
+            <a href="javascript:history.back()" class="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-all">
+                <i class="fas fa-arrow-right"></i>
+                <span>العودة</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .privacy-policy-page {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+
+    .policy-section {
+        display: flex;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        background: #f8fafc;
+        border-radius: 1rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+    .policy-section:hover {
+        background: #f1f5f9;
+        border-color: var(--primary-color);
+        transform: translateX(-4px);
+    }
+
+    .section-icon {
+        flex-shrink: 0;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        border-radius: 12px;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .section-content {
+        flex: 1;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 0.75rem;
+    }
+
+    .section-content p {
+        color: #64748b;
+        line-height: 1.8;
+        margin-bottom: 0.5rem;
+    }
+
+    .policy-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 0.75rem;
+    }
+
+    .policy-list li {
+        position: relative;
+        padding-right: 1.5rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        color: #475569;
+        border-bottom: 1px dashed #e2e8f0;
+    }
+
+    .policy-list li:last-child {
+        border-bottom: none;
+    }
+
+    .policy-list li::before {
+        content: '✓';
+        position: absolute;
+        right: 0;
+        color: var(--primary-color);
+        font-weight: bold;
+    }
+
+    @media (max-width: 640px) {
+        .policy-section {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .section-icon {
+            margin: 0 auto;
+        }
+
+        .policy-list li {
+            padding-right: 0;
+            text-align: right;
+        }
+
+        .policy-list li::before {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}

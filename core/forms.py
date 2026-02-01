@@ -372,6 +372,20 @@ class BusinessRequestForm(forms.ModelForm):
             'message': 'رسالة إضافية',
         }
 
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if phone:
+            # Remove any spaces or dashes
+            phone = phone.replace(' ', '').replace('-', '')
+            
+            # Basic Yemeni mobile number validation (9 digits, starts with 77, 73, 71, or 70)
+            import re
+            yemeni_pattern = r'^(77|73|71|70)\d{7}$'
+            if not re.match(yemeni_pattern, phone):
+                raise forms.ValidationError('يرجى إدخال رقم هاتف يمني صحيح (مثلاً: 77XXXXXXX)')
+        
+        return phone
+
 
 class SupplierSettingsForm(forms.ModelForm):
     class Meta:
