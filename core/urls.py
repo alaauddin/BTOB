@@ -31,7 +31,7 @@ from core.views.delete_product import toggle_product_status
 from core.views.toggle_ad_status import toggle_ad_status
 from core.views.request_promotion import request_promotion
 from core.views.manage_platform_ads import add_platform_ad, edit_platform_ad, toggle_platform_ad_status
-from core.views.join_business import join_business
+from core.views.join_business import join_business, verify_signup_otp
 from core.views.merchant_auth import MerchantLoginView
 from core.views.privacy_policy import privacy_policy
 from core.views.profile import profile_view, address_list_view, set_current_address
@@ -50,6 +50,7 @@ urlpatterns = [
     path('<str:store_id>/details/<int:pk>/', product_detail, name='product_detail'),
     path('', SuppliersListView, name='suppliers_list'),
     path('join-business/', join_business, name='join_business'),
+    path('verify-signup-otp/', verify_signup_otp, name='verify_signup_otp'),
     path('merchant/login/', MerchantLoginView.as_view(), name='merchant_login'),
 
 

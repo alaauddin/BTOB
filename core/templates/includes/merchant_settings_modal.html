@@ -1,0 +1,213 @@
+<div id="settings-modal" class="fixed inset-0 z-[2000000] hidden flex items-center justify-center sm:p-4" style="z-index: 9999999 !important;">
+    <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="closeSettingsModal()"></div>
+    
+    <div class="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl relative z-10 overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[85vh] mobile-fullscreen-modal animate-in fade-in zoom-in duration-300">
+        <!-- Modal Header (Fixed) -->
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white flex-shrink-0">
+            <div>
+                <h3 class="text-lg font-bold text-slate-900">إعدادات المتجر</h3>
+                <p class="text-[11px] text-slate-400 mt-0.5">خصص مظهر وتجربة متجرك الخاصة</p>
+            </div>
+            <button onclick="closeSettingsModal()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Scrollable Body -->
+        <div class="flex-grow overflow-y-auto custom-scrollbar overscroll-contain bg-white min-h-0">
+            <form id="settingsForm" action="{% url 'update_merchant_settings' %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="supplier_id" value="{{ supplier.id }}">
+                {{ settings_form.latitude }}
+                {{ settings_form.longitude }}
+
+                <div class="p-6 sm:p-8 space-y-8 sm:space-y-10 pb-12 sm:pb-16">
+                    <!-- Branding Section -->
+                    <section class="space-y-6">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+                                <i class="fas fa-paint-brush"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-800">الهوية البصرية</h4>
+                        </div>
+                        
+                        <!-- Profile & Banner Upload -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Logo Upload -->
+                            <div class="relative group cursor-pointer" onclick="document.getElementById('profile_input').click()">
+                                <label class="block text-sm font-bold text-slate-700 mb-2">شعار المتجر</label>
+                                <div class="w-full h-32 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center bg-slate-50 group-hover:bg-blue-50 group-hover:border-blue-200 transition-all overflow-hidden relative shadow-inner">
+                                    {% if supplier.profile_picture %}
+                                        <img src="{{ supplier.profile_picture.url }}" id="profile_preview" class="w-full h-full object-cover opacity-60">
+                                    {% endif %}
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                        <i class="fas fa-cloud-upload-alt text-2xl text-slate-400 mb-1 group-hover:text-blue-500"></i>
+                                        <span class="text-xs font-bold text-slate-500 group-hover:text-blue-600">تغيير الشعار</span>
+                                    </div>
+                                    {{ settings_form.profile_picture }}
+                                </div>
+                            </div>
+                            
+                            <!-- Banner Upload -->
+                            <div class="relative group cursor-pointer" onclick="document.getElementById('banner_input').click()">
+                                <label class="block text-sm font-bold text-slate-700 mb-2">صورة الغلاف</label>
+                                <div class="w-full h-32 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center bg-slate-50 group-hover:bg-purple-50 group-hover:border-purple-200 transition-all overflow-hidden relative shadow-inner">
+                                    {% if supplier.panal_picture %}
+                                        <img src="{{ supplier.panal_picture.url }}" id="banner_preview" class="w-full h-full object-cover opacity-60">
+                                    {% endif %}
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                        <i class="fas fa-image text-2xl text-slate-400 mb-1 group-hover:text-purple-500"></i>
+                                        <span class="text-xs font-bold text-slate-500 group-hover:text-purple-600">تغيير الغلاف</span>
+                                    </div>
+                                    {{ settings_form.panal_picture }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Color Palette -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-4">باليت الألوان</label>
+                            <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                                {% for field in settings_form %}
+                                    {% if field.name in "primary_color,secondary_color,accent_color,navbar_color,footer_color,text_color" %}
+                                    <div class="flex flex-col items-center gap-2">
+                                        <div class="relative w-12 h-12 rounded-xl overflow-hidden shadow-sm border border-slate-100">
+                                            {{ field }}
+                                        </div>
+                                        <span class="text-[10px] font-bold text-slate-500 text-center leading-tight">{{ field.label }}</span>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </section>
+
+                    <hr class="border-slate-100">
+
+                    <!-- Basic Info Section -->
+                    <section class="space-y-6">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-800">بيانات المتجر</h4>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 mr-2">اسم المتجر</label>
+                                {{ settings_form.name }}
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 mr-2">رقم التواصل</label>
+                                {{ settings_form.phone }}
+                            </div>
+                            <div class="space-y-1.5 md:col-span-2">
+                                <label class="text-xs font-bold text-slate-500 mr-2">العنوان</label>
+                                {{ settings_form.address }}
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 mr-2">المدينة</label>
+                                {{ settings_form.city }}
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 mr-2">الدولة</label>
+                                {{ settings_form.country }}
+                            </div>
+                        </div>
+
+                        <!-- Secondary Phone (Requested earlier) -->
+                        {% if settings_form.secondary_phone %}
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 mr-2">رقم التواصل الإضافي</label>
+                            {{ settings_form.secondary_phone }}
+                        </div>
+                        {% endif %}
+
+                        <!-- Map Preview -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 mr-2">موقع المتجر الجغرافي (اسحب لتغيير الموقع)</label>
+                            <div id="selection-map" class="group transition-all hover:ring-8 hover:ring-blue-50 ring-0 ring-offset-2 border border-slate-200"></div>
+                        </div>
+                    </section>
+
+                    <hr class="border-slate-100">
+
+                    <!-- Controls Section -->
+                    <section class="space-y-6">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center shadow-sm">
+                                <i class="fas fa-toggle-on"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-800">تفضيلات العرض</h4>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Toggle 1 -->
+                            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200 shadow-sm" onclick="this.querySelector('input').click()">
+                                <div>
+                                    <h5 class="text-sm font-bold text-slate-800">عرض المبالغ</h5>
+                                    <p class="text-[10px] text-slate-500">إظهار أرقام المبيعات في اللوحة</p>
+                                </div>
+                                <label class="relative inline-flex items-center pointer-events-none">
+                                    {{ settings_form.show_order_amounts }}
+                                    <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+
+                            <!-- Toggle 2 -->
+                            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200 shadow-sm" onclick="this.querySelector('input').click()">
+                                <div>
+                                    <h5 class="text-sm font-bold text-slate-800">إعلانات المنصة</h5>
+                                    <p class="text-[10px] text-slate-500">السماح بعرض الإعلانات العامة</p>
+                                </div>
+                                <label class="relative inline-flex items-center pointer-events-none">
+                                    {{ settings_form.show_platform_ads }}
+                                    <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+
+                            <!-- Toggle 3 -->
+                            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200 shadow-sm" onclick="this.querySelector('input').click()">
+                                <div>
+                                    <h5 class="text-sm font-bold text-slate-800">شعار المنصة</h5>
+                                    <p class="text-[10px] text-slate-500">عرض شعار المنصة في الـ Navbar</p>
+                                </div>
+                                <label class="relative inline-flex items-center pointer-events-none">
+                                    {{ settings_form.show_system_logo }}
+                                    <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </section>
+
+                    <hr class="border-slate-100">
+
+                    <!-- Policy Section -->
+                    <section class="space-y-4">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center shadow-sm">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-800">السياسات والضمان</h4>
+                        </div>
+                        
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 mr-2">سياسة الاستبدال والاسترجاع</label>
+                            {{ settings_form.return_policy }}
+                        </div>
+                    </section>
+                </div>
+            </form>
+        </div>
+
+        <!-- Modal Footer (Fixed) -->
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 flex-shrink-0">
+            <button type="submit" form="settingsForm" class="flex-grow order-1 sm:order-2 py-3.5 bg-blue-600 text-white rounded-2xl font-black text-lg hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-2">
+                <i class="fas fa-save shadow-sm"></i>
+                <span>حفظ التغييرات</span>
+            </button>
+            <button type="button" onclick="closeSettingsModal()" class="px-6 py-3.5 order-2 sm:order-1 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold hover:bg-slate-50 transition-all">إلغاء</button>
+        </div>
+    </div>
+</div>

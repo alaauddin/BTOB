@@ -1,5 +1,6 @@
 from django import forms
 from django.db import models
+from django.contrib.auth.models import User
 from .models import *
 
 
@@ -387,11 +388,135 @@ class BusinessRequestForm(forms.ModelForm):
         return phone
 
 
+class MerchantSignupForm(forms.Form):
+    # User account fields
+    username = forms.CharField(
+        max_length=150,
+        label='اسم المستخدم',
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all',
+            'placeholder': 'اختر اسم مستخدم فريد'
+        })
+    )
+    password = forms.CharField(
+        label='كلمة المرور',
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all',
+            'placeholder': '••••••••'
+        })
+    )
+    password_confirm = forms.CharField(
+        label='تأكيد كلمة المرور',
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all',
+            'placeholder': '••••••••'
+        })
+    )
+
+    # Business/Supplier fields
+    business_name = forms.CharField(
+        max_length=100,
+        label='اسم النشاط التجاري',
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all',
+            'placeholder': 'مثال: متجر الهواتف الذكية'
+        })
+    )
+    owner_name = forms.CharField(
+        max_length=200,
+        label='اسم صاحب النشاط',
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all',
+            'placeholder': 'الاسم الكامل'
+        })
+    )
+    email = forms.EmailField(
+        label='البريد الإلكتروني',
+        widget=forms.EmailInput(attrs={
+            'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all',
+            'placeholder': 'email@example.com'
+        })
+    )
+    phone = forms.CharField(
+        label='رقم الهاتف (واتساب)',
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all',
+            'placeholder': '77XXXXXXX'
+        })
+    )
+    secondary_phone = forms.CharField(
+        label='رقم هاتف إضافي (اختياري)',
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all',
+            'placeholder': '7XXXXXXXX'
+        })
+    )
+    business_type = forms.CharField(
+        max_length=100,
+        label='نوع النشاط',
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all',
+            'placeholder': 'مثال: إلكترونيات، مطعم، ملابس'
+        })
+    )
+    city = forms.ChoiceField(
+        choices=CITY_CHO,
+        label='المدينة',
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all cursor-pointer'
+        })
+    )
+    country = forms.ChoiceField(
+        choices=COUNTRY_CHO,
+        label='الدولة',
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all cursor-pointer'
+        })
+    )
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError('اسم المستخدم هذا موجود مسبقاً، يرجى اختيار اسم آخر')
+        return username
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if phone:
+            phone = phone.replace(' ', '').replace('-', '')
+            import re
+            yemeni_pattern = r'^(77|73|71|70)\d{7}$'
+            if not re.match(yemeni_pattern, phone):
+                raise forms.ValidationError('يرجى إدخال رقم هاتف يمني صحيح (مثلاً: 77XXXXXXX)')
+        return phone
+
+    def clean_secondary_phone(self):
+        phone = self.cleaned_data.get('secondary_phone')
+        if phone:
+            phone = phone.replace(' ', '').replace('-', '')
+            import re
+            yemeni_pattern = r'^(77|73|71|70|0)\d{7,9}$' # More flexible for secondary
+            if not re.match(yemeni_pattern, phone):
+                raise forms.ValidationError('يرجى إدخال رقم هاتف صحيح')
+        return phone
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        password_confirm = cleaned_data.get('password_confirm')
+
+        if password and password_confirm and password != password_confirm:
+            self.add_error('password_confirm', 'كلمتا المرور غير متطابقتين')
+        
+        return cleaned_data
+
+
 class SupplierSettingsForm(forms.ModelForm):
     class Meta:
         model = Supplier
         fields = [
-            'name', 'phone', 'address', 'city', 'country', 
+            'name', 'phone', 'secondary_phone', 'address', 'city', 'country', 
             'primary_color', 'secondary_color', 'navbar_color', 
             'footer_color', 'text_color', 'accent_color',
             'profile_picture', 'panal_picture', 'latitude', 'longitude', 
@@ -406,6 +531,10 @@ class SupplierSettingsForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
                 'placeholder': 'رقم الهاتف'
+            }),
+            'secondary_phone': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'placeholder': 'رقم هاتف إضافي (اختياري)'
             }),
             'address': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',

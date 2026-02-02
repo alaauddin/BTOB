@@ -3,10 +3,11 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from core.decorators import merchant_required
 from core.models import Supplier, Product, ProductOffer, Promotion, SupplierAds, Order, Category, PlatformOfferAd
-from core.forms import SupplierSettingsForm, ProductForm
+from core.forms import ProductForm, SupplierSettingsForm
 from django.db.models import Count, Sum, Avg
 from django.utils import timezone
 from core.models import SupplierAdPlatfrom
+
 
 
 

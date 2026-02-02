@@ -27,6 +27,15 @@ def upload_to_path(instance, filename):
     
     return os.path.join('uploads/', new_filename)
 
+class OTPVerification(models.Model):
+    phone = models.CharField(max_length=15)
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.phone} - {self.otp}"
+
+
 
 CITY_CHO=[('Sanaa','Sanaa'),('Aden','Aden'),('Tize','Tize')]
 COUNTRY_CHO=[('Yemen','Yemen')]
@@ -85,6 +94,7 @@ class Supplier(models.Model):
     name = models.CharField(max_length=100)
     store_id = models.SlugField(max_length=100, unique=True, null=True, blank=True)
     phone = models.CharField(max_length=15)
+    secondary_phone = models.CharField(max_length=15, blank=True, null=True, verbose_name="رقم هاتف إضافي")
     address = models.CharField(max_length=255)
     city = models.CharField(max_length=100,choices=CITY_CHO)
     country = models.CharField(max_length=100, choices=COUNTRY_CHO)

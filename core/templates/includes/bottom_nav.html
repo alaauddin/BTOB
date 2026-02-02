@@ -15,7 +15,7 @@
                     <span class="nav-text">بحث</span>
                 </a>
             </li>
-            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'join_business' %}active{% endif %}" data-index="2">
+            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'join_business' or request.resolver_match.url_name == 'merchant_login' or request.resolver_match.url_name == 'my_merchant' %}active{% endif %}" data-index="2">
                 <a href="{% url 'join_business' %}">
                     <span class="nav-icon"><i class="fas fa-handshake"></i></span>
                     <span class="nav-text">شراكة</span>
