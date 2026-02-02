@@ -29,13 +29,6 @@
                                 {% endif %}
                             </div>
                             <div class="form-group">
-                                <label class="block text-xs font-bold text-gray-700 mb-1">{{ business_form.email.label }}</label>
-                                {{ business_form.email }}
-                                {% if business_form.email.errors %}
-                                <p class="text-red-500 text-[10px] mt-1">{{ business_form.email.errors.0 }}</p>
-                                {% endif %}
-                            </div>
-                            <div class="form-group">
                                 <label class="block text-xs font-bold text-gray-700 mb-1">{{ business_form.password.label }}</label>
                                 {{ business_form.password }}
                                 {% if business_form.password.errors %}

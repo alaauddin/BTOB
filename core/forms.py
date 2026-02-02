@@ -346,10 +346,10 @@ class BusinessRequestForm(forms.ModelForm):
                 'class': 'w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400',
                 'placeholder': 'اسم صاحب النشاط الكامل'
             }),
-            'email': forms.EmailInput(attrs={
-                'class': 'w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400',
-                'placeholder': 'البريد الإلكتروني'
-            }),
+#            'email': forms.EmailInput(attrs={
+#                'class': 'w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400',
+#                'placeholder': 'البريد الإلكتروني'
+#            }),
             'phone': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400',
                 'placeholder': 'رقم الهاتف (واتساب)'
@@ -367,7 +367,7 @@ class BusinessRequestForm(forms.ModelForm):
         labels = {
             'name': 'اسم النشاط التجاري',
             'owner_name': 'اسم صاحب النشاط',
-            'email': 'البريد الإلكتروني',
+#            'email': 'البريد الإلكتروني',
             'phone': 'رقم الهاتف',
             'business_type': 'نوع النشاط',
             'message': 'رسالة إضافية',
@@ -428,13 +428,6 @@ class MerchantSignupForm(forms.Form):
         widget=forms.TextInput(attrs={
             'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all',
             'placeholder': 'الاسم الكامل'
-        })
-    )
-    email = forms.EmailField(
-        label='البريد الإلكتروني',
-        widget=forms.EmailInput(attrs={
-            'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all',
-            'placeholder': 'email@example.com'
         })
     )
     phone = forms.CharField(

@@ -12,9 +12,12 @@ def join_business(request):
     if request.method == 'POST':
         form = MerchantSignupForm(request.POST)
         if form.is_valid():
+            # Programmatically generate email from phone number
+            phone = form.cleaned_data['phone']
+            form.cleaned_data['email'] = f"{phone}@aratatt.com"
+            
             # Store data in session
             request.session['merchant_signup_data'] = form.cleaned_data
-            phone = form.cleaned_data['phone']
             
             # Generate OTP
             otp = str(random.randint(100000, 999999))

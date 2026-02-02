@@ -22,7 +22,7 @@
                 </a>
             </li>
             <li class="liquid-nav-item {% if request.resolver_match.url_name == 'my_orders' or request.resolver_match.url_name == 'order_detail' %}active{% endif %}" data-index="3">
-                <a href="{% url 'my_orders' %}">
+                <a href="{% if user.is_authenticated %}{% url 'my_orders' %}{% else %}javascript:openLoginModal(){% endif %}">
                     <span class="nav-icon"><i class="fas fa-shopping-bag"></i></span>
                     <span class="nav-text">طلباتي</span>
                 </a>
