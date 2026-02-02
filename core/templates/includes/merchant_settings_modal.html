@@ -1,7 +1,7 @@
 <div id="settings-modal" class="fixed inset-0 z-[2000000] hidden flex items-center justify-center sm:p-4" style="z-index: 9999999 !important;">
     <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="closeSettingsModal()"></div>
     
-    <div class="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl relative z-10 overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[85vh] mobile-fullscreen-modal animate-in fade-in zoom-in duration-300">
+    <div class="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl relative z-10 overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300" style="max-height: 90vh; display: flex; flex-direction: column;">
         <!-- Modal Header (Fixed) -->
         <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white flex-shrink-0">
             <div>
@@ -14,7 +14,7 @@
         </div>
 
         <!-- Scrollable Body -->
-        <div class="flex-grow overflow-y-auto custom-scrollbar overscroll-contain bg-white min-h-0">
+        <div class="flex-grow overflow-y-auto custom-scrollbar overscroll-contain bg-white min-h-0" style="flex: 1 1 auto; overflow-y: auto; min-height: 0;">
             <form id="settingsForm" action="{% url 'update_merchant_settings' %}" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <input type="hidden" name="supplier_id" value="{{ supplier.id }}">
@@ -34,32 +34,56 @@
                         <!-- Profile & Banner Upload -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Logo Upload -->
-                            <div class="relative group cursor-pointer" onclick="document.getElementById('profile_input').click()">
+                            <div class="relative group">
                                 <label class="block text-sm font-bold text-slate-700 mb-2">شعار المتجر</label>
-                                <div class="w-full h-32 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center bg-slate-50 group-hover:bg-blue-50 group-hover:border-blue-200 transition-all overflow-hidden relative shadow-inner">
+                                <div class="w-full h-32 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center bg-slate-50 group-hover:bg-blue-50 group-hover:border-blue-200 transition-all overflow-hidden relative shadow-inner cursor-pointer" onclick="document.getElementById('profile_input').click()">
                                     {% if supplier.profile_picture %}
                                         <img src="{{ supplier.profile_picture.url }}" id="profile_preview" class="w-full h-full object-cover opacity-60">
+                                    {% else %}
+                                        <img src="" id="profile_preview" class="w-full h-full object-cover opacity-60 hidden">
                                     {% endif %}
                                     <div class="absolute inset-0 flex flex-col items-center justify-center">
                                         <i class="fas fa-cloud-upload-alt text-2xl text-slate-400 mb-1 group-hover:text-blue-500"></i>
                                         <span class="text-xs font-bold text-slate-500 group-hover:text-blue-600">تغيير الشعار</span>
                                     </div>
-                                    {{ settings_form.profile_picture }}
+                                    <input type="file" name="profile_picture" id="profile_input" class="hidden" accept="image/*">
                                 </div>
+                                <input type="hidden" name="cropped_image" id="cropped_image_data">
                             </div>
                             
                             <!-- Banner Upload -->
-                            <div class="relative group cursor-pointer" onclick="document.getElementById('banner_input').click()">
+                            <div class="relative group">
                                 <label class="block text-sm font-bold text-slate-700 mb-2">صورة الغلاف</label>
-                                <div class="w-full h-32 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center bg-slate-50 group-hover:bg-purple-50 group-hover:border-purple-200 transition-all overflow-hidden relative shadow-inner">
+                                <div class="w-full h-32 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center bg-slate-50 group-hover:bg-purple-50 group-hover:border-purple-200 transition-all overflow-hidden relative shadow-inner cursor-pointer" onclick="document.getElementById('banner_input').click()">
                                     {% if supplier.panal_picture %}
                                         <img src="{{ supplier.panal_picture.url }}" id="banner_preview" class="w-full h-full object-cover opacity-60">
+                                    {% else %}
+                                        <img src="" id="banner_preview" class="w-full h-full object-cover opacity-60 hidden">
                                     {% endif %}
                                     <div class="absolute inset-0 flex flex-col items-center justify-center">
                                         <i class="fas fa-image text-2xl text-slate-400 mb-1 group-hover:text-purple-500"></i>
                                         <span class="text-xs font-bold text-slate-500 group-hover:text-purple-600">تغيير الغلاف</span>
                                     </div>
-                                    {{ settings_form.panal_picture }}
+                                    <input type="file" name="panal_picture" id="banner_input" class="hidden" accept="image/*">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cropping Overlay Modal -->
+                        <div id="cropper-modal" class="fixed inset-0 z-[3000000] hidden flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm">
+                            <div class="bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl flex flex-col" style="max-height: 90vh; display: flex; flex-direction: column;">
+                                <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
+                                    <h4 class="font-bold text-slate-800">تحجيم الشعار (دائري)</h4>
+                                    <button type="button" onclick="closeCropper()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+                                </div>
+                                <div class="flex-grow p-4 bg-slate-50 flex items-center justify-center overflow-hidden min-h-0" style="flex: 1 1 auto; overflow: hidden; min-height: 0;">
+                                    <div class="max-w-full max-h-full">
+                                        <img id="cropping-image" class="max-w-full">
+                                    </div>
+                                </div>
+                                <div class="px-6 py-4 bg-white border-t border-slate-100 flex gap-3 flex-shrink-0">
+                                    <button type="button" onclick="applyCrop()" class="flex-grow py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all">قص وحفظ</button>
+                                    <button type="button" onclick="closeCropper()" class="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all">إلغاء</button>
                                 </div>
                             </div>
                         </div>

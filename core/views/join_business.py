@@ -86,7 +86,8 @@ def verify_signup_otp(request):
                     country=signup_data['country'],
                     address=f"نوع النشاط: {signup_data['business_type']}",
                     is_active=False,
-                    show_system_logo=False
+                    show_system_logo=False,
+                    store_id=signup_data['username']
                 )
                 
                 # Success! Delete OTP and commit

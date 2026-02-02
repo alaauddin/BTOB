@@ -132,7 +132,24 @@
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
         background: #94a3b8;
     }
+
+    /* Cropper Styles */
+    .cropper-container {
+        direction: ltr !important;
+    }
+    .cropper-view-box,
+    .cropper-face {
+        border-radius: 50%;
+    }
+    
+    /* Laptop Height Fix */
+    @media (min-height: 600px) and (max-height: 800px) {
+        #settings-modal > div:nth-child(2) {
+            max-height: 92vh !important;
+        }
+    }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 {% endblock %}
 
 {% block content %}
@@ -603,6 +620,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script>
     let map;
     let marker;
@@ -646,22 +664,69 @@
         document.body.style.overflow = '';
     }
 
-    // Image Previews
-    document.getElementById('profile_input').onchange = function(evt) {
-        const [file] = this.files;
-        if (file) {
-            const preview = document.getElementById('profile_preview');
-            if (preview) preview.src = URL.createObjectURL(file);
+    // Image Previews & Cropper
+    let cropper;
+    const profileInput = document.getElementById('profile_input');
+    const bannerInput = document.getElementById('banner_input');
+    const cropperModal = document.getElementById('cropper-modal');
+    const croppingImg = document.getElementById('cropping-image');
+
+    profileInput.onchange = function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                croppingImg.src = e.target.result;
+                cropperModal.classList.remove('hidden');
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(croppingImg, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    guides: true,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                });
+            };
+            reader.readAsDataURL(this.files[0]);
         }
+    };
+
+    function closeCropper() {
+        cropperModal.classList.add('hidden');
+        profileInput.value = '';
+        if (cropper) cropper.destroy();
     }
 
-    document.getElementById('banner_input').onchange = function(evt) {
-        const [file] = this.files;
-        if (file) {
-            const preview = document.getElementById('banner_preview');
-            if (preview) preview.src = URL.createObjectURL(file);
-        }
+    function applyCrop() {
+        const canvas = cropper.getCroppedCanvas({
+            width: 512,
+            height: 512
+        });
+        
+        canvas.toBlob((blob) => {
+            const preview = document.getElementById('profile_preview');
+            preview.src = URL.createObjectURL(blob);
+            preview.classList.remove('hidden');
+            
+            // Store blob data in hidden input as base64 or send via AJAX
+            // Modern way: use DataTransfer to update the file input
+            const file = new File([blob], "cropped_logo.png", {type: "image/png"});
+            const container = new DataTransfer();
+            container.items.add(file);
+            profileInput.files = container.files;
+            
+            cropperModal.classList.add('hidden');
+        }, 'image/png');
     }
+
+    bannerInput.onchange = function() {
+        if (this.files && this.files[0]) {
+            const preview = document.getElementById('banner_preview');
+            preview.src = URL.createObjectURL(this.files[0]);
+            preview.classList.remove('hidden');
+        }
+    };
 
     // Handle settings form
     document.getElementById('settingsForm').addEventListener('submit', function(e) {
