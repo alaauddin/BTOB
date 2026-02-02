@@ -559,46 +559,134 @@
         <!-- Non-dismissible backdrop -->
         <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md"></div>
         
-        <div class="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl relative z-10 overflow-hidden flex flex-col my-8" style="max-height: calc(100vh - 4rem);">
+        <div class="bg-white w-full max-w-4xl rounded-[32px] shadow-2xl relative z-10 overflow-hidden flex flex-col my-8" style="max-height: calc(100vh - 4rem);">
             <!-- Header -->
             <div class="px-8 py-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
                 <div class="flex items-center gap-3 mb-2">
                     <i class="fas fa-file-contract text-3xl"></i>
                     <h2 class="text-2xl font-black">الشروط والأحكام</h2>
                 </div>
-                <p class="text-blue-100 text-sm">يرجى قراءة الشروط والأحكام والموافقة عليها للمتابعة</p>
+                <p class="text-blue-100 text-base">يرجى قراءة الشروط والأحكام والموافقة عليها للمتابعة</p>
             </div>
 
             <!-- Content -->
             <div class="flex-grow overflow-y-auto custom-scrollbar p-8 space-y-6 bg-gray-50">
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                         <i class="fas fa-handshake text-blue-500"></i>
                         عقد الاستخدام والتعاون
                     </h3>
-                    <div class="space-y-4 text-gray-700 leading-relaxed text-sm">
-                        <p>
-                            باستخدام منصة عرطات دوتكوم، أنت توافق على الشروط والأحكام التالية:
-                        </p>
-                        
-                        <ul class="list-disc list-inside space-y-2 mr-4">
-                            <li>الالتزام بتقديم منتجات وخدمات عالية الجودة</li>
-                            <li>التعامل بنزاهة ومصداقية مع العملاء</li>
-                            <li>الالتزام بالأسعار المعلنة وعدم التلاعب بها</li>
-                            <li>احترام سياسات المنصة وشروطها</li>
-                            <li>توفير خدمة عملاء ممتازة ومعالجة الشكاوى بسرعة</li>
-                            <li>عدم نشر محتوى مخالف أو غير أخلاقي</li>
-                            <li>تقبل عمولات المنصة على كل عملية بيع</li>
-                            <li>تأكيد الطلبات وشحنها في الوقت المحدد</li>
-                        </ul>
-
-                        <div class="bg-yellow-50 border-r-4 border-yellow-400 p-4 rounded-lg mt-6">
-                            <p class="text-yellow-800 font-bold flex items-center gap-2">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                ملحوظة هامة
+                    <div class="space-y-6 text-gray-700 leading-relaxed">
+                        <div class="prose prose-slate max-w-none">
+                            <p class="font-bold text-gray-900 border-b-2 border-primary-color/20 pb-4 mb-8 text-lg">
+                                يقر التاجر ويوافق على بنود هذه الاتفاقية عند فتح متجره بالمنصة، وتتكون من المواد التالية:
                             </p>
-                            <p class="text-yellow-700 text-sm mt-2">
-                                مخالفة هذه الشروط قد يؤدي إلى تعليق أو إيقاف حسابك على المنصة.
+                            
+                            <div class="space-y-8">
+                                <!-- Article 1 -->
+                                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                    <h4 class="font-black text-gray-900 text-lg mb-3 flex items-center gap-3">
+                                        <span class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm">١</span>
+                                        التمهيد والتعريفات
+                                    </h4>
+                                    <p class="text-sm text-gray-600 leading-relaxed">توضح هذه المادة تعريفات "المنصة"، "التاجر"، و "المشتري" المنظمة للعلاقة القانونية والتشغيلية داخل عرطات دوت كوم.</p>
+                                </div>
+
+                                <!-- Article 2 -->
+                                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                    <h4 class="font-black text-gray-900 text-lg mb-3 flex items-center gap-3">
+                                        <span class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm">٢</span>
+                                        شروط العضوية والأهلية
+                                    </h4>
+                                    <p class="text-sm text-gray-600 leading-relaxed">يقر التاجر بأهليته القانونية الكاملة، ويلتزم بتقديم معلومات صحيحة (هوية، هاتف، سجل تجاري) ويتحمل مسؤولية أمن حسابه.</p>
+                                </div>
+
+                                <!-- Article 3 -->
+                                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                    <h4 class="font-black text-gray-900 text-lg mb-3 flex items-center gap-3">
+                                        <span class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm">٣</span>
+                                        التزامات التاجر التشغيلية
+                                    </h4>
+                                    <ul class="list-disc list-inside text-sm text-gray-600 space-y-2 mr-4">
+                                        <li>عرض منتجات أصلية بصور حقيقية ووصف دقيق.</li>
+                                        <li>إدارة الطلبات باحترافية وسرعة استجابة عالية.</li>
+                                        <li>وضوح الأسعار وتحديث حالة المخزون باستمرار.</li>
+                                        <li>تقديم خدمة عملاء متميزة ومعالجة الشكاوى بفعالية.</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Article 4 -->
+                                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                    <h4 class="font-black text-gray-900 text-lg mb-3 flex items-center gap-3">
+                                        <span class="w-8 h-8 rounded-lg bg-red-600 text-white flex items-center justify-center text-sm">٤</span>
+                                        السلع المحظورة
+                                    </h4>
+                                    <p class="text-sm text-gray-600 leading-relaxed">يُحظر عرض المخدرات، الأسلحة، المواد المخلة بالآداب، أو أي سلع تخالف القوانين. للمنصة حق حذف المنتجات وإغلاق الحسابات المخالفة فوراً.</p>
+                                </div>
+
+                                <!-- Article 5 -->
+                                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                    <h4 class="font-black text-gray-900 text-lg mb-3 flex items-center gap-3">
+                                        <span class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm">٥</span>
+                                        سياسة الاستبدال والاسترجاع
+                                    </h4>
+                                    <p class="text-sm text-gray-600 leading-relaxed">الالتزام بقوانين حماية المستهلك النافذة وتوضيح سياسة المتجر بوضوح بما لا يتعارض مع السياسة العامة للمنصة.</p>
+                                </div>
+
+                                <!-- Article 6 -->
+                                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm border-r-4 border-r-green-500">
+                                    <h4 class="font-black text-gray-900 text-lg mb-3 flex items-center gap-3">
+                                        <span class="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center text-sm">٦</span>
+                                        رسوم الاشتراكات
+                                    </h4>
+                                    <p class="text-sm text-gray-600 leading-relaxed font-bold">المنصة لا تتقاضى عمولات على المبيعات، بل رسوم اشتراك رمزية (5$ شهرياً) تدفع مقدماً كل ثلاثة أشهر، مع مراعاة العروض المجانية الممنوحة.</p>
+                                </div>
+
+                                <!-- Article 7 -->
+                                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                    <h4 class="font-black text-gray-900 text-lg mb-3 flex items-center gap-3">
+                                        <span class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm">٧</span>
+                                        الملكية الفكرية
+                                    </h4>
+                                    <p class="text-sm text-gray-600 leading-relaxed">يمنح التاجر المنصة حق استخدام شعاراته وصوره للتسويق، ويقر بملكيته الكاملة لكل ما يرفعه ويتحمل المسؤولية أمام الغير.</p>
+                                </div>
+
+                                <!-- Article 8 -->
+                                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm border-r-4 border-r-orange-400">
+                                    <h4 class="font-black text-gray-900 text-lg mb-3 flex items-center gap-3">
+                                        <span class="w-8 h-8 rounded-lg bg-orange-500 text-white flex items-center justify-center text-sm">٨</span>
+                                        إخلاء المسؤولية
+                                    </h4>
+                                    <p class="text-sm text-gray-600 leading-relaxed italic">المنصة هي وسيط استضافة وربط فقط؛ لا تتدخل في البيع والشراء المباشر ولا تتحمل أي مسؤولية عن جودة المنتجات أو الخسائر المادية.</p>
+                                </div>
+
+                                <!-- Article 9 -->
+                                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                    <h4 class="font-black text-gray-900 text-lg mb-3 flex items-center gap-3">
+                                        <span class="w-8 h-8 rounded-lg bg-red-600 text-white flex items-center justify-center text-sm">٩</span>
+                                        إنهاء الاتفاقية
+                                    </h4>
+                                    <p class="text-sm text-gray-600 leading-relaxed">حق إغلاق المتجر عند مخالفة البنود، تكرار الشكاوى، أو الإضرار بسمعة المنصة. يحق للتاجر الطلب بعد تسوية كافة الالتزامات.</p>
+                                </div>
+
+                                <!-- Article 10 -->
+                                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                    <h4 class="font-black text-gray-900 text-lg mb-3 flex items-center gap-3">
+                                        <span class="w-8 h-8 rounded-lg bg-slate-800 text-white flex items-center justify-center text-sm">١٠</span>
+                                        القانون الواجب التطبيق
+                                    </h4>
+                                    <p class="text-sm text-gray-600 leading-relaxed">تخضع الاتفاقية لقوانين الجمهورية اليمنية، والنزاعات يتم حسمها في محاكم العاصمة صنعاء.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-primary-color/5 border-r-4 border-primary-color p-6 rounded-2xl mt-10">
+                            <p class="text-primary-color font-black flex items-center gap-2 text-lg mb-2">
+                                <i class="fas fa-certificate"></i>
+                                إقرار نهائي
+                            </p>
+                            <p class="text-gray-700 text-base leading-relaxed">
+                                إن موافقتك على هذه الشروط تعني التزامك الكامل وبلا قيد بكافة بنود "اتفاقية فتح متجر" المنظمة للعلاقة بين التاجر والمنصة، مع إقرارك بالاطلاع على التفاصيل الكاملة المنشورة.
                             </p>
                         </div>
                     </div>
@@ -608,8 +696,8 @@
             <!-- Footer -->
             <div class="px-8 py-6 bg-white border-t border-gray-200 flex flex-col gap-3">
                 <label class="flex items-start gap-3 cursor-pointer group">
-                    <input type="checkbox" id="agree-checkbox" class="mt-1 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    <span class="text-sm text-gray-700 group-hover:text-gray-900">
+                    <input type="checkbox" id="agree-checkbox" class="mt-1 w-6 h-6 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <span class="text-base text-gray-700 group-hover:text-gray-900">
                         أوافق على جميع الشروط والأحكام الموضحة أعلاه وألتزم بالعمل بها
                     </span>
                 </label>

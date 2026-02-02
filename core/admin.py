@@ -58,7 +58,7 @@ from django.urls import reverse
 from django.utils.html import format_html, mark_safe
 
 class SupplierAdmin(admin.ModelAdmin):
-    list_display = ('name', 'city', 'country', 'primary_color', 'views_count', 'is_active')
+    list_display = ('name', 'city', 'country', 'primary_color', 'views_count', 'agreed_to_terms', 'is_active')
     search_fields = ('name', 'city')
     
     def workflow_steps_list(self, obj):
@@ -126,9 +126,13 @@ class SupplierAdmin(admin.ModelAdmin):
         ('اعدادات الفئات', {
             'fields': ('can_add_categories', 'can_add_product_categories','show_system_logo', 'show_out_of_stock')
         }),
+        ('الشروط والأحكام', {
+            'fields': ('agreed_to_terms', 'terms_agreed_at'),
+            'description': 'بيانات الموافقة على شروط الانضمام للمنصة.'
+        }),
     )
 
-    readonly_fields = ('workflow_steps_list', 'map_picker')
+    readonly_fields = ('workflow_steps_list', 'map_picker', 'terms_agreed_at')
 
     def map_picker(self, obj):
         lat = obj.latitude or 15.3694  # Default to Sana'a
