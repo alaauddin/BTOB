@@ -607,6 +607,7 @@
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-dark);
+    border-radius: 42px !important;
 }
 
 @keyframes modal-fade-in {
