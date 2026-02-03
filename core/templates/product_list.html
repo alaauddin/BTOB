@@ -2,7 +2,34 @@
 {% load static %}
 {% load cart_filters %}
 
-{% block title %}منتجات {{ supplier.name }}{% endblock %}
+{% block title %}{{ supplier.name }} | المنتجات{% endblock %}
+
+{% block extra_meta %}
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:title" content="{{ supplier.name }} - تسوق أفضل المنتجات">
+    <meta property="og:description" content="{% if supplier.description %}{{ supplier.description }}{% else %}استكشف تشكيلة واسعة من المنتجات المميزة لدى {{ supplier.name }}. تسوق الآن بأفضل الأسعار!{% endif %}">
+    {% if supplier.panal_picture %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ supplier.panal_picture.url }}">
+    {% elif supplier.profile_picture %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ supplier.profile_picture.url }}">
+    {% else %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'logo.png' %}">
+    {% endif %}
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.build_absolute_uri }}">
+    <meta property="twitter:title" content="{{ supplier.name }}">
+    <meta property="twitter:description" content="{% if supplier.description %}{{ supplier.description }}{% else %}استكشف تشكيلة واسعة من المنتجات المميزة لدى {{ supplier.name }}.{% endif %}">
+    {% if supplier.panal_picture %}
+    <meta property="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ supplier.panal_picture.url }}">
+    {% elif supplier.profile_picture %}
+    <meta property="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ supplier.profile_picture.url }}">
+    {% endif %}
+{% endblock %}
+
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/products.css' %}?v={{ css_version }}">
