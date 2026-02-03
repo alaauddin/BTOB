@@ -666,6 +666,7 @@
 
     // Image Previews & Cropper
     let cropper;
+    let croppedProfileBlob = null; // Store the blob globally
     const profileInput = document.getElementById('profile_input');
     const bannerInput = document.getElementById('banner_input');
     const cropperModal = document.getElementById('cropper-modal');
@@ -695,22 +696,47 @@
     function closeCropper() {
         cropperModal.classList.add('hidden');
         profileInput.value = '';
+        croppedProfileBlob = null; // Reset blob
         if (cropper) cropper.destroy();
     }
 
     function applyCrop() {
-        const canvas = cropper.getCroppedCanvas({
+        // 1. Get the square cropped canvas
+        const sourceCanvas = cropper.getCroppedCanvas({
             width: 512,
             height: 512
         });
+
+        // 2. Create a new canvas for the circular result
+        const roundedCanvas = document.createElement('canvas');
+        const ctx = roundedCanvas.getContext('2d');
+        roundedCanvas.width = sourceCanvas.width;
+        roundedCanvas.height = sourceCanvas.height;
+
+        // 3. Draw the circle path (mask)
+        ctx.beginPath();
+        ctx.arc(
+            roundedCanvas.width / 2, 
+            roundedCanvas.height / 2, 
+            Math.min(roundedCanvas.width, roundedCanvas.height) / 2, 
+            0, 
+            2 * Math.PI
+        );
+        ctx.closePath();
+        ctx.clip(); // Restricts drawing to inside the circle
+
+        // 4. Draw the source image into the circle
+        ctx.drawImage(sourceCanvas, 0, 0);
         
-        canvas.toBlob((blob) => {
+        // 5. Convert to blob
+        roundedCanvas.toBlob((blob) => {
+            croppedProfileBlob = blob; // Save blob for submission
+            
             const preview = document.getElementById('profile_preview');
             preview.src = URL.createObjectURL(blob);
             preview.classList.remove('hidden');
             
-            // Store blob data in hidden input as base64 or send via AJAX
-            // Modern way: use DataTransfer to update the file input
+            // Visual feedback only
             const file = new File([blob], "cropped_logo.png", {type: "image/png"});
             const container = new DataTransfer();
             container.items.add(file);
@@ -732,6 +758,11 @@
     document.getElementById('settingsForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(this);
+        
+        // Explicitly append the cropped blob if it exists
+        if (croppedProfileBlob) {
+            formData.set('profile_picture', croppedProfileBlob, 'cropped_logo.png');
+        }
         
         // Show loader
         Swal.fire({
