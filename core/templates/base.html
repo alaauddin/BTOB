@@ -44,6 +44,9 @@
     <link rel="stylesheet" href="{% static 'css/components.css' %}?v={{ css_version }}">
     <link rel="stylesheet" href="{% static 'css/animations.css' %}?v={{ css_version }}">
     <link rel="stylesheet" href="{% static 'css/bottom_nav.css' %}?v={{ css_version }}">
+    
+    <!-- Main Base CSS (Extracted) -->
+    <link rel="stylesheet" href="{% static 'css/main_base.css' %}?v={{ css_version }}">
 
     <style>
         :root {
@@ -76,462 +79,22 @@
             --body-bg-gradient: linear-gradient(135deg, {{ supplier.primary_color|default:'#ef7d2d' }}1A 0%, {{ supplier.secondary_color|default:'#ffffff' }}1A 100%);
         }
 
-        @keyframes logo-pop-in {
-            0% {
-                opacity: 0;
-                transform: scale(0.85) translateY(-10px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-
-        .animate-logo {
-            animation: logo-pop-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            will-change: transform, opacity;
-        }
-
-        /* Amazing Page Loader Styles */
-        #page-loader {
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f8fafc 100%);
-            background-size: 200% 200%;
-            animation: mesh-gradient 8s ease infinite;
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s;
-        }
-
-        #nprogress .bar {
-            background: var(--primary-color) !important;
-            height: 3px !important;
-        }
-        #nprogress .spinner-icon {
-            border-top-color: var(--primary-color) !important;
-            border-left-color: var(--primary-color) !important;
-        }
-        #nprogress .peg {
-            box-shadow: 0 0 10px var(--primary-color), 0 0 5px var(--primary-color) !important;
-        }
-
-        #page-loader.hidden-loader {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        .loader-content {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .loader-ring {
-            position: absolute;
-            width: 160px;
-            height: 160px;
-            border-radius: 50%;
-            padding: 4px;
-            background: conic-gradient(from 0deg, transparent, var(--primary-color), transparent, var(--primary-color), transparent);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            animation: rotate-ring 2s linear infinite;
-        }
-
-        @keyframes rotate-ring {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Password Visibility Toggle Styles */
-        .password-toggle-wrapper {
-            position: relative;
-        }
-        .password-toggle-btn {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color 0.2s;
-            z-index: 10;
-        }
-        .password-toggle-btn:hover {
-            color: var(--primary-color);
-        }
-        .input-premium-with-toggle {
-            padding-left: 45px !important;
-        }
-
-        .loader-logo-container {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border-radius: 20px;
-        }
-
-        .loader-logo {
-            animation: logo-breath 2.5s ease-in-out infinite;
-            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.08));
-        }
-
-        @keyframes logo-breath {
-            0%, 100% { transform: scale(1); filter: drop-shadow(0 8px 16px rgba(0,0,0,0.08)); }
-            50% { transform: scale(1.08); filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.12)); }
-        }
-
-        .logo-glimmer {
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-            transform: skewX(-25deg);
-            animation: glimmer 4s infinite;
-        }
-
-        @keyframes glimmer {
-            0% { left: -150%; }
-            20%, 100% { left: 150%; }
-        }
-
-        /* Brand Utility Classes */
-        .bg-brand-primary { background-color: var(--primary-color) !important; }
-        .text-brand-primary { color: var(--primary-color) !important; }
-        .border-brand-primary { border-color: var(--primary-color) !important; }
-        
-        .bg-gradient-brand {
-            background: linear-gradient(135deg, var(--primary-color), var(--accent-color)) !important;
-        }
-        
-        .btn-brand {
-            background: linear-gradient(135deg, var(--primary-color), var(--accent-color)) !important;
-            color: white !important;
-            transition: all 0.3s ease;
-            border: none !important;
-        }
-        
-        .btn-brand:hover {
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Ensure SweetAlert2 is always on top of custom modals */
-        .swal2-container {
-            z-index: 2000000 !important;
-        }
-
-        /* Neo-Premium 3.0: Luminescent Horizon Navbar */
-        .curved-navbar {
-            border-radius: 0 0 100% 100% / 0 0 45px 45px;
-            /* Multi-layered shadow with Aurora underglow */
-            box-shadow: 0 10px 40px -15px rgba(239, 125, 45, 0.08),
-                        0 20px 60px -10px rgba(239, 125, 45, 0.05) !important;
-            border-bottom: 0.5px solid rgba(255, 255, 255, 0.6) !important;
-            backdrop-filter: blur(25px);
-            
-            /* Sunset Pearl Palette with Mesh Texture Overlay */
-            background: linear-gradient(135deg, #fdfcfb 0%, #fff1eb 100%);
-            background-image: 
-                radial-gradient(circle at 20% 30%, rgba(239, 125, 45, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(239, 125, 45, 0.03) 0%, transparent 50%),
-                linear-gradient(135deg, #fdfcfb 0%, #fff1eb 100%);
-                
-            padding-bottom: 12px;
-            min-height: 70px;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: visible; /* To allow glow bleed */
-        }
-
-        .curved-navbar::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 40px;
-            background: radial-gradient(ellipse at center, rgba(239, 125, 45, 0.12) 0%, transparent 70%);
-            filter: blur(15px);
-            z-index: -1;
-            pointer-events: none;
-            opacity: 0.6;
-        }
-
-        .curved-navbar.navbar-scrolled {
-            min-height: 60px;
-            padding-bottom: 8px;
-            background: rgba(253, 252, 251, 0.96);
-            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.1) !important;
-            border-radius: 0 0 100% 100% / 0 0 25px 25px;
-        }
-
-        .nav-orb {
-            width: 44px;
-            height: 44px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 
-                0 4px 10px rgba(0,0,0,0.03),
-                inset 0 0 15px rgba(239, 125, 45, 0.02);
-            border: 0.5px solid rgba(255, 255, 255, 0.8);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            color: var(--text-color);
-            position: relative;
-        }
-
-        .nav-orb:hover {
-            transform: scale(1.1) translateY(-3px);
-            box-shadow: 
-                0 15px 30px -5px rgba(239, 125, 45, 0.25),
-                inset 0 0 10px rgba(239, 125, 45, 0.1);
-            color: var(--primary-color);
-        }
-
-        /* Luminescent Gem Effect */
-        .nav-orb::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            background: linear-gradient(135deg, rgba(255,255,255,1) 0%, transparent 60%);
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        .logo-orb-wrapper {
-            background: white;
-            padding: 3px;
-            border-radius: 50%;
-            box-shadow: 
-                0 18px 45px -5px rgba(239, 125, 45, 0.25),
-                0 8px 20px rgba(0, 0, 0, 0.08);
-            border: 3.5px solid white;
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            width: 96px;
-            height: 96px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 10;
-        }
-
-        .logo-orb-wrapper.logo-dual {
-            width: 170px; /* Wider pill for dual logos */
-            border-radius: 60px;
-            padding: 4px 18px;
-            gap: 12px;
-        }
-
-        .logo-orb-wrapper img {
-            width: 90%;
-            height: 90%;
-            object-fit: contain;
-            transition: all 0.5s ease;
-        }
-        
-        .logo-orb-wrapper.logo-dual img {
-            width: 70px;
-            height: 70px;
-        }
-
-        .logo-separator {
-            width: 1.5px;
-            height: 35px;
-            background: rgba(0, 0, 0, 0.08);
-            border-radius: 2px;
-        }
-
-        .navbar-scrolled .logo-orb-wrapper {
-            width: 78px;
-            height: 78px;
-            transform: translateY(2px);
-        }
-
-        .navbar-scrolled .logo-orb-wrapper.logo-dual {
-            width: 130px;
-            height: 78px;
-            padding: 4px 12px;
-            gap: 8px;
-        }
-        
-        .navbar-scrolled .logo-orb-wrapper.logo-dual img {
-            width: 50px;
-            height: 50px;
-        }
-        
-        .navbar-scrolled .logo-separator {
-            height: 25px;
-        }
-
-        .logo-orb-wrapper:hover {
-            transform: scale(1.08) rotate(2deg);
-            box-shadow: 0 25px 50px -10px rgba(239, 125, 45, 0.3);
-        }
-        
-        .logo-orb-wrapper:hover img {
-            transform: scale(1.1);
-        }
-
-        /* Light-streak animation */
-        @keyframes light-streak {
-            0% { left: -100%; opacity: 0; }
-            50% { opacity: 0.5; }
-            100% { left: 200%; opacity: 0; }
-        }
-
-        .curved-navbar::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
-            animation: light-streak 8s infinite linear;
-            pointer-events: none;
-        }
-
-        /* --- Amazing Login Modal Premium Enhancements --- */
-        .modal-glass {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            box-shadow: 
-                0 25px 50px -12px rgba(0, 0, 0, 0.15),
-                inset 0 0 80px rgba(255, 255, 255, 0.4) !important;
-        }
-
-        .tab-switcher-container {
-            position: relative;
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 4px;
-            margin: 0 24px;
-            display: flex;
-            gap: 4px;
-            border: 1px solid rgba(0,0,0,0.03);
-        }
-
-        .tab-indicator {
-            position: absolute;
-            top: 4px;
-            bottom: 4px;
-            inset-inline-start: 4px;
-            width: calc(50% - 4px);
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1;
-        }
-
-        .tab-btn {
-            position: relative;
-            z-index: 2;
-            flex: 1;
-            padding: 10px 0;
-            font-size: 13px;
-            font-weight: 700;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            color: #64748b;
-        }
-
-        .tab-btn.active {
-            color: var(--primary-color);
-        }
-
-        .animate-modal-fade {
-            animation: modal-fade-scale 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        @keyframes modal-fade-scale {
-            0% { transform: scale(0.95); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .input-premium {
-            background: #ffffff !important;
-            border: 1.5px solid #e2e8f0 !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        }
-
-        .input-premium::placeholder {
-            color: #94a3b8 !important;
-            opacity: 1;
-        }
-
-        .input-premium:focus {
-            background: white !important;
-            border-color: var(--primary-color) !important;
-            box-shadow: 0 0 0 4px rgba(239, 125, 45, 0.1) !important;
-            transform: translateY(-1px);
-        }
-
-        .shimmer-btn {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .shimmer-btn::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -150%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                to right,
-                transparent 0%,
-                rgba(255, 255, 255, 0.3) 50%,
-                transparent 100%
-            );
-            transform: rotate(30deg);
-            transition: all 0.8s ease;
-        }
-
-        .shimmer-btn:hover::after {
-            left: 150%;
-        }
-
-        .fade-in-section {
-            animation: fade-in-up 0.5s ease-out forwards;
-        }
-
-        @keyframes fade-in-up {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="flex flex-col min-h-screen overflow-x-hidden">
+    <body class="flex flex-col min-h-screen overflow-x-hidden">
+    <script>
+        // Site Configuration for main_base.js
+        window.siteConfig = {
+            isAuthenticated: {% if user.is_authenticated %}true{% else %}false{% endif %},
+            addToCartUrl: "{% url 'add_to_cart' product_id=0 store_id='STORE_ID' %}",
+            subToCartUrl: "{% url 'sub_to_cart' product_id=0 store_id='STORE_ID' %}",
+            estimatedFee: "{{ estimated_fee|default:0 }}",
+            csrfToken: "{{ csrf_token }}"
+        };
+    </script>
     <script>NProgress.start();</script>
     <!-- Page Loader -->
     <div id="page-loader">
@@ -554,14 +117,14 @@
         </div>
     </div>
     <!-- Login Modal -->
-    <div id="loginModal" class="fixed inset-0 z-[2000000] hidden overflow-y-auto" style="z-index: 9999999 !important;" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div id="loginModal" class="fixed inset-0 z-[2000000] hidden" style="z-index: 9999999 !important;" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center">
             <div class="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-opacity" aria-hidden="true" onclick="closeLoginModal()"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-middle rounded-[32px] text-right overflow-hidden transform transition-all sm:my-8 sm:align-middle w-[92%] sm:max-w-[400px] modal-glass animate-modal-fade">
+            
+            <div class="rounded-[32px] text-right overflow-hidden transform transition-all w-full max-w-[420px] max-h-[calc(100dvh-2rem)] flex flex-col modal-glass animate-modal-fade relative z-10 shadow-2xl">
                 
                 <!-- Logo Header -->
-                <div class="pt-8 pb-4 text-center">
+                <div class="pt-8 pb-4 text-center flex-shrink-0">
                     <div class="flex items-center justify-center gap-3">
                         {% if supplier.profile_picture %}
                             <div class="w-14 h-14 rounded-2xl bg-white shadow-lg p-2 flex items-center justify-center transform -rotate-3 hover:rotate-0 transition-all border border-gray-50">
@@ -581,10 +144,10 @@
                     </div>
                 </div>
 
-                <!-- Unified Auth Form -->
-                <div class="">
+                <!-- Scrollable Body -->
+                <div class="overflow-y-auto custom-scrollbar flex-grow px-6 pb-6 pt-2">
                     <!-- Tab Switcher -->
-                    <div class="tab-switcher-container">
+                    <div class="tab-switcher-container mb-6">
                         <div id="tab-indicator" class="tab-indicator"></div>
                         <button onclick="switchLoginTab('client')" id="tab-client" class="tab-btn active">
                             <i class="fas fa-user ml-1 text-[10px]"></i>
@@ -596,175 +159,119 @@
                         </button>
                     </div>
 
-                    <div class="px-6 pt-5 pb-4">
-                        <!-- Client Login Content -->
-                        <div id="client-login-content" class="text-center fade-in-section">
-                            <div class="mb-3">
-                                <i class="fas fa-mobile-alt text-3xl text-[var(--primary-color)] opacity-40"></i>
+                    <!-- Client Login -->
+                    <div id="client-login-content" class="text-center fade-in-section">
+             
+                        <h3 class="text-xl font-bold text-gray-900 mb-1" id="modal-title">
+                            تسجيل الدخول / إنشاء حساب
+                        </h3>
+                        <p class="text-gray-500 mb-6 text-xs" id="modal-desc">
+                            أدخل رقم هاتفك للمتابعة. سيتم إنشاء حساب لك تلقائياً إذا كنت جديداً.
+                        </p>
+                        
+                        <form id="unifiedAuthForm" class="space-y-4 text-right">
+                            <!-- Google Login -->
+                            <a href="{% provider_login_url 'google' %}" class="w-full text-xs font-bold text-gray-700 hover:bg-gray-50 bg-white py-3 rounded-xl transition-all flex items-center justify-center gap-2 border border-gray-100 mb-4">
+                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4" alt="Google Logo">
+                                <span>المتابعة باستخدام Google</span>
+                            </a>
+
+                            <div class="relative flex py-2 items-center">
+                                <div class="flex-grow border-t border-gray-100"></div>
+                                <span class="flex-shrink-0 mx-3 text-gray-300 text-[10px]">أو برقم الهاتف</span>
+                                <div class="flex-grow border-t border-gray-100"></div>
                             </div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-1" id="modal-title">
-                                تسجيل الدخول / إنشاء حساب
-                            </h3>
-                            <p class="text-gray-500 mb-4 text-xs" id="modal-desc">
-                                أدخل رقم هاتفك للمتابعة. إذا كنت جديداً، سيتم إنشاء حساب لك تلقائياً.
-                            </p>
-                            
-                            <form id="unifiedAuthForm" class="space-y-4">
-                                <!-- Google Login -->
-                                <div class="text-center">
-                                    <a href="{% provider_login_url 'google' %}" id="google-login-modal" class="w-full text-xs font-bold text-gray-700 hover:bg-gray-50 bg-white py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 border border-gray-100">
-                                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4" alt="Google Logo">
-                                        <span>المتابعة باستخدام Google</span>
-                                    </a>
-                                </div>
 
-                                <!-- Divider -->
-                                <div class="relative flex py-0.5 items-center">
-                                    <div class="flex-grow border-t border-gray-100"></div>
-                                    <span class="flex-shrink-0 mx-3 text-gray-300 text-[9px]">أو باستخدام رقم الهاتف</span>
-                                    <div class="flex-grow border-t border-gray-100"></div>
+                            <div class="relative group" dir="ltr">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-700 font-bold tracking-wider text-xs border-r border-gray-100 pr-2 my-2 bg-gray-50 rounded-l-xl z-10">
+                                    +967
                                 </div>
-
-                                <!-- Phone Field -->
-                                <div class="relative group" dir="ltr">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-700 font-bold tracking-wider text-xs border-r border-gray-100 pr-2 my-1.5 bg-gray-100 rounded-l-lg" style="z-index: 10;">
-                                        +967
-                                    </div>
-                                    <input type="tel" name="phone" id="auth_phone" required 
-                                        placeholder="77xxxxxxx"
-                                        maxlength="9"
-                                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, ''); handlePhoneValidation(this);"
-                                        class="block w-full pl-16 pr-3 py-3 rounded-xl text-gray-900 text-left input-premium outline-none placeholder-gray-300 text-sm font-medium tracking-wide">
-                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-300 group-focus-within:text-[var(--primary-color)] transition-colors">
-                                        <i class="fas fa-mobile-alt text-xs"></i>
-                                    </div>
-                                </div>
-                                <p id="phone-validation-msg" class="text-[10px] text-red-500 mt-1 hidden text-right"></p>
-                            </form>
-                        </div>
-
-                        <!-- Merchant Login Content -->
-                        <div id="merchant-login-content" class="hidden text-center fade-in-section">
-                            <div class="mb-3">
-                                <i class="fas fa-store text-3xl text-[var(--primary-color)] opacity-40"></i>
+                                <input type="tel" name="phone" id="auth_phone" required 
+                                    placeholder="77xxxxxxx"
+                                    maxlength="9"
+                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, ''); handlePhoneValidation(this);"
+                                    class="block w-full pl-16 pr-4 py-3.5 rounded-xl text-gray-900 text-left input-premium outline-none placeholder-gray-300 text-sm font-medium">
                             </div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-1">
-                                تسجيل دخول التاجر
-                            </h3>
-                            <p class="text-gray-500 mb-4 text-xs">
-                                يرجى إدخال بيانات حسابك للدخول إلى لوحة التحكم
-                            </p>
-                            
-                            <form id="merchantAuthForm" class="space-y-4 text-right">
-                                <div class="mb-2">
-                                    <label for="merchant_username" class="block text-xs font-medium text-gray-700 mb-1">اسم المستخدم</label>
-                                    <input id="merchant_username" name="username" type="text" autocomplete="username" required 
-                                        class="appearance-none rounded-xl relative block w-full px-4 py-2.5 input-premium placeholder-gray-300 text-gray-900 focus:outline-none text-sm" 
-                                        placeholder="اسم المستخدم">
-                                </div>
-                                <div class="mb-2">
-                                    <label for="merchant_password" class="block text-xs font-medium text-gray-700 mb-1">كلمة المرور</label>
-                                    <div class="password-toggle-wrapper">
-                                        <input id="merchant_password" name="password" type="password" autocomplete="current-password" required 
-                                            class="appearance-none rounded-xl relative block w-full px-4 py-2.5 input-premium input-premium-with-toggle placeholder-gray-300 text-gray-900 focus:outline-none text-sm" 
-                                            placeholder="كلمة المرور">
-                                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('merchant_password', 'merchant_pw_icon')">
-                                            <i id="merchant_pw_icon" class="fas fa-eye text-xs"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="flex justify-start">
-                                    <button type="button" onclick="togglePasswordReset(true)" class="text-[10px] font-bold text-[var(--primary-color)] hover:underline">
-                                        نسيت كلمة المرور؟
+                            <p id="phone-validation-msg" class="text-[10px] text-red-500 mt-1 hidden"></p>
+                        </form>
+                    </div>
+
+                    <!-- Merchant Login -->
+                    <div id="merchant-login-content" class="hidden text-center fade-in-section">
+                        
+                        <h3 class="text-xl font-bold text-gray-900 mb-1">دخول التجار</h3>
+                        <p class="text-gray-500 mb-6 text-xs">أدخل بيانات حسابك للوصول للوحة التحكم</p>
+                        
+                        <form id="merchantAuthForm" class="space-y-4 text-right">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 mr-2">اسم المستخدم</label>
+                                <input id="merchant_username" name="username" type="text" required 
+                                    class="w-full px-4 py-3.5 rounded-xl input-premium text-sm" placeholder="Username">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 mr-2">كلمة المرور</label>
+                                <div class="relative">
+                                    <input id="merchant_password" name="password" type="password" required 
+                                        class="w-full px-4 py-3.5 rounded-xl input-premium text-sm pl-12" placeholder="Password">
+                                    <button type="button" class="absolute left-0 inset-y-0 px-4 flex items-center text-gray-400" onclick="togglePasswordVisibility('merchant_password', 'merchant_pw_icon')">
+                                        <i id="merchant_pw_icon" class="fas fa-eye text-xs"></i>
                                     </button>
                                 </div>
-                            </form>
-
-                            <!-- Password Reset Section (Hidden by default) -->
-                            <div id="password-reset-content" class="hidden space-y-4 text-right fade-in-section">
-                                <div class="text-center mb-4">
-                                    <h4 class="text-sm font-bold text-gray-800">استعادة كلمة المرور</h4>
-                                    <p class="text-[10px] text-gray-500 mt-1">أدخل اسم المستخدم لتزويدك بخيارات الاستعادة</p>
-                                </div>
-                                
-                                <div class="mb-2">
-                                    <label for="reset_username" class="block text-xs font-medium text-gray-700 mb-1">اسم المستخدم</label>
-                                    <input id="reset_username" type="text" 
-                                        class="appearance-none rounded-xl relative block w-full px-4 py-2.5 input-premium placeholder-gray-300 text-gray-900 focus:outline-none text-sm" 
-                                        placeholder="اسم المستخدم أو الهاتف">
-                                </div>
-                                <div class="flex justify-start mb-2">
-                                    <button type="button" onclick="handlePasswordResetRequest(true)" class="text-[10px] font-bold text-gray-400 hover:text-[var(--primary-color)] transition-colors">
-                                        نسيت اسم المستخدم وكلمة المرور؟
-                                    </button>
-                                </div>
-
-                                <div id="reset-status-container" class="hidden rounded-xl p-3 text-right bg-gray-50 text-[11px]">
-                                    <!-- Dynamic content -->
-                                </div>
-
-                                <button type="button" id="reset-submit-btn" onclick="handlePasswordResetRequest()" class="w-full py-2.5 bg-gray-800 text-white font-bold rounded-xl text-sm transition-all active:scale-[0.98]">
-                                    تحقق من الحساب
-                                </button>
-                                
-                                <button type="button" onclick="togglePasswordReset(false)" class="w-full text-[10px] font-bold text-gray-400 hover:text-gray-600">
-                                    العودة لتسجيل الدخول
-                                </button>
                             </div>
+                            <button type="button" onclick="togglePasswordReset(true)" class="text-[10px] font-bold text-[var(--primary-color)] hover:underline">نسيت كلمة المرور؟</button>
+                        </form>
+
+                        <div id="password-reset-content" class="hidden space-y-4 text-right fade-in-section mt-4">
+                            <div class="h-px bg-gray-100 w-full mb-4"></div>
+                            <h4 class="text-sm font-bold text-gray-800 text-center mb-2">استعادة الحساب</h4>
+                            <div id="reset-status-container" class="hidden mb-4 rounded-xl p-3 text-right bg-blue-50 text-blue-700 text-[11px] border border-blue-100"></div>
                             
-                            <div class="text-center mt-4">
-                                <a href="{% url 'join_business' %}" class="text-[11px] font-bold" style="color: var(--primary-color);">
-                                    ليس لديك حساب؟ انضم إلينا
-                                </a>
+                            <div id="reset-form-content" class="space-y-4">
+                                <input id="reset_username" type="text" class="w-full px-4 py-3.5 rounded-xl input-premium text-sm" placeholder="اسم المستخدم أو الهاتف">
+                                <button type="button" id="reset-submit-btn" onclick="handlePasswordResetRequest()" class="w-full py-3.5 bg-gray-900 text-white rounded-xl font-bold text-xs hover:bg-black transition-all">تحقق من الحساب</button>
+                                <div class="flex flex-col gap-2 text-center mt-2">
+                                    <button type="button" onclick="handlePasswordResetRequest(true)" class="text-[10px] font-bold text-gray-400 hover:text-[var(--primary-color)]">نسيت كل البيانات؟</button>
+                                    <button type="button" onclick="togglePasswordReset(false)" class="text-[10px] font-bold text-gray-500 underline">العودة لتسجيل الدخول</button>
+                                </div>
                             </div>
                         </div>
 
-                        <div id="loginError" class="bg-red-50 text-red-600 text-[11px] py-2.5 px-4 rounded-xl mt-4 hidden flex items-center gap-2 text-right">
-                            <i class="fas fa-exclamation-circle flex-shrink-0"></i>
-                            <span class="error-text"></span>
+                        <div class="text-center mt-8">
+                            <a href="{% url 'join_business' %}" class="text-xs font-bold text-[var(--primary-color)] hover:underline">
+                                ليس لديك حساب تجاري؟ انضم إلينا الآن
+                            </a>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-gray-50 px-6 py-4">
-                    <!-- Privacy Policy Checkbox -->
-                    <div class="mb-4 text-right">
-                        <label class="flex items-start gap-2 cursor-pointer group" for="privacy_policy_checkbox">
-                            <input type="checkbox" id="privacy_policy_checkbox" name="privacy_policy" 
-                                class="w-4 h-4 mt-1 rounded border-gray-300 text-[var(--primary-color)] focus:ring-[var(--primary-color)] transition-all cursor-pointer">
-                            <span class="text-[11px] text-gray-600 leading-tight group-hover:text-gray-800 transition-colors">
-                                أوافق على 
-                                <a href="{% url 'privacy_policy' %}" target="_blank" class="text-[var(--primary-color)] font-bold hover:underline" onclick="event.stopPropagation();">
-                                    سياسة الخصوصية
-                                </a>
-                                 والشروط والأحكام
-                            </span>
-                        </label>
+                <!-- Fixed Footer -->
+                <div class="p-6 bg-gray-50/50 border-t border-gray-100 flex-shrink-0">
+                    <div id="loginError" class="hidden mb-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 animate-shake">
+                        <i class="fas fa-exclamation-circle text-red-500 text-sm"></i>
+                        <p class="error-text text-[10px] text-red-600 font-bold text-right flex-1"></p>
                     </div>
 
-                    <div class="flex gap-2 mb-2">
-                        <button type="button" id="authSubmitBtn" onclick="handleLoginSubmit()" 
-                            class="flex-1 py-3 px-4 btn-brand text-white font-bold rounded-2xl shadow-lg shadow-[var(--primary-color)]/20 text-sm active:scale-[0.98] shimmer-btn">
+                    <div class="flex items-center gap-2 mb-4 justify-end">
+                        <label for="privacy_policy_checkbox" class="text-[10px] text-gray-500 font-medium">
+                            أوافق على <a href="{% url 'privacy_policy' %}" class="text-[var(--primary-color)] hover:underline">سياسة الخصوصية</a>
+                        </label>
+                        <input type="checkbox" id="privacy_policy_checkbox" class="w-4 h-4 rounded border-gray-300 text-[var(--primary-color)]">
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button id="authSubmitBtn" onclick="handleLoginSubmit()" class="flex-1 py-4 text-white rounded-2xl font-bold text-xs shadow-lg shadow-orange-200/50 hover:brightness-105 transition-all whitespace-nowrap" style="background-color: var(--primary-color) !important;">
                             متابعة
                         </button>
-                        <button type="button" onclick="closeLoginModal()" 
-                            class="flex-1 py-3 px-4 bg-white/20 border border-white/40 text-gray-600 font-bold rounded-2xl text-sm hover:bg-white/40 transition-all">
+                        <button onclick="closeLoginModal()" class="flex-1 py-4 bg-white border border-gray-200 text-gray-500 rounded-2xl font-bold text-xs hover:bg-gray-50 transition-all whitespace-nowrap">
                             إلغاء
                         </button>
-                    </div>
-
-                    <!-- Join As Merchant Link -->
-                    <div class="mt-4 pt-4 border-t border-gray-100 text-center">
-                        <p class="text-[11px] text-gray-400 mb-1">لديك عمل تجاري؟ انضم إلينا</p>
-                        <a href="{% url 'join_business' %}" class="text-[12px] font-bold text-[var(--primary-color)] hover:underline">
-                            سجل كتاجر الآن
-                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 
     <!-- Navigation Bar -->
     <nav class="curved-navbar fixed inset-x-0 top-0 z-50 py-2 transition-all duration-300">
@@ -857,26 +364,6 @@
             </div>
             {% endfor %}
         </div>
-        <script>
-            // Auto-dismiss server-side messages
-            document.addEventListener('DOMContentLoaded', function() {
-                const messages = document.querySelectorAll('.animate-slide-in-message');
-                messages.forEach((msg, index) => {
-                    // Stagger animation
-                    setTimeout(() => {
-                        msg.style.opacity = '1';
-                        msg.style.transform = 'translateY(0)';
-                    }, index * 200);
-
-                    // Auto remove
-                    setTimeout(() => {
-                        msg.style.opacity = '0';
-                        msg.style.transform = 'translateY(-20px)';
-                        setTimeout(() => msg.remove(), 300);
-                    }, 4000 + (index * 500));
-                });
-            });
-        </script>
         {% endif %}
 
         {% block content %}{% endblock %}
@@ -1023,840 +510,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" defer></script>
     
-    <!-- Custom JavaScript -->
-    <script>
-        // Update greeting based on time of day
-        document.addEventListener('DOMContentLoaded', function() {
-            const hour = new Date().getHours();
-            const greetingText = document.getElementById('greeting-text');
-            const greetingIcon = document.getElementById('greeting-icon');
-            
-            if (greetingText && greetingIcon) {
-                if (hour >= 5 && hour < 12) {
-                    greetingText.textContent = 'صباح الخير';
-                    greetingIcon.className = 'fas fa-sun text-yellow-500 ml-2';
-                } else if (hour >= 12 && hour < 17) {
-                    greetingText.textContent = 'طاب مساؤك';
-                    greetingIcon.className = 'fas fa-sun text-orange-500 ml-2';
-                } else if (hour >= 17 && hour < 21) {
-                    greetingText.textContent = 'مساء الخير';
-                    greetingIcon.className = 'fas fa-moon text-indigo-500 ml-2';
-                } else {
-                    greetingText.textContent = 'تصبح على خير';
-                    greetingIcon.className = 'fas fa-moon text-blue-500 ml-2';
-                }
-            }
-        });
-
-        (function(){
-            // Unregister service workers (best-effort)
-            if ('serviceWorker' in navigator) {
-                try {
-                    navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => { try { r.unregister(); } catch(e){} }));
-                } catch(e){}
-            }
-        })();
-
-        // Global helper: animate a cart/count element with a short scale effect
-        function animateCartElement(target) {
-            try {
-                var el = null;
-                if (!target) {
-                    el = document.getElementById('total-items') || document.querySelector('.floating-cart-badge');
-                    el = target;
-                }
-                if (!el) return;
-
-                // apply a transient transform for a pop effect
-                el.style.transition = 'transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1)';
-                el.style.transform = 'scale(1.18)';
-                // ensure reflow
-                void el.offsetWidth;
-                window.setTimeout(function(){
-                    el.style.transform = '';
-                }, 260);
-            } catch (e) {
-                // fail silently
-                console.warn('animateCartElement error', e);
-            }
-        }
-
-        // Expose globally (safe) so other scripts can call directly
-        window.animateCartElement = animateCartElement;
-
-        // Global helper: initialize modal handling (no-op safe implementation)
-        function initializeModalHandling() {
-            try {
-                // simple delegated toggles for data-modal-target attributes
-                document.querySelectorAll('[data-modal-target]').forEach(function(btn){
-                    if (btn.__modal_init) return; btn.__modal_init = true;
-                    btn.addEventListener('click', function(e){
-                        var sel = btn.getAttribute('data-modal-target');
-                        if (!sel) return;
-                        var modal = document.querySelector(sel);
-                        if (!modal) return;
-                        modal.classList.toggle('hidden');
-                    });
-                });
-
-                // close buttons inside modals: data-modal-close
-                document.querySelectorAll('[data-modal-close]').forEach(function(btn){
-                    if (btn.__modal_close_init) return; btn.__modal_close_init = true;
-                    btn.addEventListener('click', function(e){
-                        var modal = btn.closest('.modal') || document.querySelector(btn.getAttribute('data-modal-close'));
-                        if (modal) modal.classList.add('hidden');
-                    });
-                });
-            } catch (e) {
-                console.warn('initializeModalHandling error', e);
-            }
-        }
-
-        window.initializeModalHandling = initializeModalHandling;
-    </script>
-
-
-
-
-    {% if user.is_authenticated %}
-    <script>
-        // Server-side auth status
-        let isAuthenticated = true;
-    </script>
-    {% else %}
-    <script>
-        let isAuthenticated = false;
-    </script>
-    {% endif %}
-
-    <script>
-        // Wait for jQuery to be available
-        function waitForJQuery(callback) {
-            if (typeof $ !== 'undefined') {
-                callback();
-            } else {
-                setTimeout(function() {
-                    waitForJQuery(callback);
-                }, 100);
-            }
-        }
-        
-        let pendingAction = null;
-
-        function openLoginModal(actionCallback) {
-            document.getElementById('loginModal').classList.remove('hidden');
-            if (actionCallback) pendingAction = actionCallback;
-            // Default to client tab
-            switchLoginTab('client');
-        }
-
-        function closeLoginModal() {
-            document.getElementById('loginModal').classList.add('hidden');
-            pendingAction = null;
-            document.getElementById('loginError').classList.add('hidden');
-        }
-
-        let currentActiveTab = 'client';
-
-        function switchLoginTab(tab) {
-            currentActiveTab = tab;
-            const clientContent = document.getElementById('client-login-content');
-            const merchantContent = document.getElementById('merchant-login-content');
-            const clientTab = document.getElementById('tab-client');
-            const merchantTab = document.getElementById('tab-merchant');
-            const privacyContainer = document.querySelector('#loginModal .bg-gray-50 .mb-4.text-right');
-
-            if (tab === 'client') {
-                clientContent.classList.remove('hidden');
-                merchantContent.classList.add('hidden');
-                clientTab.classList.add('active');
-                merchantTab.classList.remove('active');
-                document.getElementById('tab-indicator').style.transform = 'translateX(0)';
-                if (privacyContainer) privacyContainer.style.display = 'block';
-            } else {
-                clientContent.classList.add('hidden');
-                merchantContent.classList.remove('hidden');
-                merchantTab.classList.add('active');
-                clientTab.classList.remove('active');
-                // Move indicator to the start (left in RTL)
-                document.getElementById('tab-indicator').style.transform = 'translateX(-100%)';
-                if (privacyContainer) privacyContainer.style.display = 'none';
-            }
-            document.getElementById('loginError').classList.add('hidden');
-        }
-
-        function handleLoginSubmit() {
-            if (currentActiveTab === 'client') {
-                handleClientAuthSubmit();
-            } else {
-                handleMerchantAuthSubmit();
-            }
-        }
-
-        function handleClientAuthSubmit() {
-            const phone = document.getElementById('auth_phone').value;
-            const errorDiv = document.getElementById('loginError');
-            const submitBtn = document.getElementById('authSubmitBtn');
-            const csrftoken = getCookie('csrftoken');
-            const privacyCheckbox = document.getElementById('privacy_policy_checkbox');
-            
-            // Validate privacy policy checkbox
-            if (!privacyCheckbox.checked) {
-                errorDiv.querySelector('.error-text').textContent = 'يجب الموافقة على سياسة الخصوصية للمتابعة';
-                errorDiv.classList.remove('hidden');
-                privacyCheckbox.focus();
-                return;
-            }
-
-            if (!phone) {
-                errorDiv.querySelector('.error-text').textContent = 'رقم الهاتف مطلوب';
-                errorDiv.classList.remove('hidden');
-                return;
-            }
-
-            const originalText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i> جاري المعالجة...';
-            errorDiv.classList.add('hidden');
-
-            fetch('/api/unified-auth/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({ phone })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification(data.message, 'success');
-                    handlePostAuth(data);
-                } else {
-                    errorDiv.querySelector('.error-text').textContent = data.message || 'حدث خطأ غير متوقع';
-                    errorDiv.classList.remove('hidden');
-                }
-            })
-            .catch(error => {
-                console.error(error);
-                errorDiv.querySelector('.error-text').textContent = 'حدث خطأ في الاتصال';
-                errorDiv.classList.remove('hidden');
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            });
-        }
-
-        function handleMerchantAuthSubmit() {
-            const username = document.getElementById('merchant_username').value;
-            const password = document.getElementById('merchant_password').value;
-            const errorDiv = document.getElementById('loginError');
-            const submitBtn = document.getElementById('authSubmitBtn');
-            const csrftoken = getCookie('csrftoken');
-
-            if (!username || !password) {
-                errorDiv.querySelector('.error-text').textContent = 'اسم المستخدم وكلمة المرور مطلوبان';
-                errorDiv.classList.remove('hidden');
-                return;
-            }
-
-            const originalText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i> جاري الدخول...';
-            errorDiv.classList.add('hidden');
-
-            fetch('/api/merchant-login/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({ username, password })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification(data.message, 'success');
-                    if (data.redirect_url) {
-                        window.location.href = data.redirect_url;
-                    } else {
-                        window.location.reload();
-                    }
-                } else {
-                    errorDiv.querySelector('.error-text').textContent = data.message || 'حدث خطأ غير متوقع';
-                    errorDiv.classList.remove('hidden');
-                }
-            })
-            .catch(error => {
-                console.error(error);
-                errorDiv.querySelector('.error-text').textContent = 'حدث خطأ في الاتصال';
-                errorDiv.classList.remove('hidden');
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            });
-        }
-
-        // Intercept Google Login in Modal
-        document.addEventListener('DOMContentLoaded', function() {
-            const googleBtn = document.getElementById('google-login-modal');
-            const privacyCheckbox = document.getElementById('privacy_policy_checkbox');
-            const privacyErrorMsg = document.getElementById('privacy-error-msg');
-
-            if (googleBtn && privacyCheckbox) {
-                googleBtn.addEventListener('click', function(e) {
-                    if (!privacyCheckbox.checked) {
-                        e.preventDefault();
-                        privacyErrorMsg.classList.remove('hidden');
-                        privacyCheckbox.focus();
-                    }
-                });
-            }
-        });
-
-        function handlePostAuth(data) {
-            const actionToRun = pendingAction;
-            closeLoginModal();
-            isAuthenticated = true;
-            
-            if (actionToRun) {
-                const actionResult = actionToRun();
-                if (actionResult && typeof actionResult.always === 'function') {
-                    actionResult.always(() => window.location.reload());
-                } else if (actionResult && typeof actionResult.then === 'function') {
-                    actionResult.then(() => window.location.reload()).catch(() => window.location.reload());
-                } else {
-                    window.location.reload();
-                }
-            } else {
-                window.location.reload(); 
-            }
-        }
-        
-        waitForJQuery(function() {
-            // Original addToCart logic wrapped
-            window.performAddToCart = function(productId, supplierId) {
-                const csrftoken = getCookie('csrftoken');
-                
-                // --- Optimistic Update ---
-                const totalItemsEl = $('#total-items');
-                const totalItemsMobileEl = $('#total-items-mobile');
-                const mobileCartCountEl = $('#mobile-cart-count');
-                const itemQtyEl = $('#total-qty-items-' + productId);
-                const quantityLabelEl = $("#quantity-" + productId);
-                
-                const prevTotal = parseInt(totalItemsEl.first().text()) || 0;
-                const prevItemQty = parseInt(itemQtyEl.first().text()) || 0;
-                
-                // Update UI immediately
-                totalItemsEl.text(prevTotal + 1);
-                totalItemsMobileEl.text(prevTotal + 1);
-                mobileCartCountEl.text(prevTotal + 1);
-                itemQtyEl.text(prevItemQty + 1);
-                quantityLabelEl.html(prevItemQty + 1);
-                
-                $('#ib-' + productId).show();
-                $('#qty-ctrl-' + productId).removeClass('d-none');
-                $('#add-btn-' + productId).addClass('d-none');
-                $('#mobileCartBar').removeClass('d-none');
-                
-                animateCartElement('total-items');
-                animateCartElement('mobile-cart-count');
-                // ---------------------------
-
-                return $.ajax({
-                    url: "{% url 'add_to_cart' product_id=0 store_id=0 %}".replace('0', productId).replace('0', supplierId),
-                    type: "POST",
-                    headers: { "X-CSRFToken": csrftoken },
-                    success: function (response) {
-                        // Sync with server state
-                        $('#total-items').text(response.cart_items_count);
-                        $('#total-items-mobile').text(response.cart_items_count);
-                        $('#total-qty-items-' + productId).text(response.cart_item_count);
-                        $("#quantity-" + productId).html(response.cart_item_count);
-                        $('#mobile-cart-count').text(response.cart_items_count);
-                        
-                        if (response.cart_total !== undefined) {
-                            const estimatedFee = parseFloat('{{ estimated_fee|default:0 }}');
-                            $('#mobile-cart-total').text(Math.floor(response.cart_total + estimatedFee));
-                        }
-                        
-                        if (response.cart_items_count > 0) {
-                            $('#mobileCartBar').removeClass('d-none');
-                        } else {
-                            $('#mobileCartBar').addClass('d-none');
-                        }
-                        
-                        showNotification('تمت إضافة المنتج إلى السلة بنجاح', 'success');
-                    },
-                    error: function (xhr) {
-                        // --- Rollback ---
-                        totalItemsEl.text(prevTotal);
-                        totalItemsMobileEl.text(prevTotal);
-                        mobileCartCountEl.text(prevTotal);
-                        itemQtyEl.text(prevItemQty);
-                        quantityLabelEl.html(prevItemQty);
-                        
-                        if (prevItemQty === 0) {
-                            $('#ib-' + productId).hide();
-                            $('#qty-ctrl-' + productId).addClass('d-none');
-                            $('#add-btn-' + productId).removeClass('d-none');
-                        }
-                        if (prevTotal === 0) {
-                            $('#mobileCartBar').addClass('d-none');
-                        }
-                        // -----------------
-                        
-                        const message = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'حدث خطأ أثناء إضافة المنتج إلى السلة';
-                        showNotification(message, 'error');
-                    }
-                });
-            };
-
-            // Public interceptor
-            window.addToCart = function(productId, supplierId) {
-                if (typeof isAuthenticated !== 'undefined' && !isAuthenticated) {
-                    openLoginModal(function() {
-                        return window.performAddToCart(productId, supplierId);
-                    });
-                } else {
-                    window.performAddToCart(productId, supplierId);
-                }
-            }
-        });
-        
-        waitForJQuery(function() {
-            window.subToCart = function(productId, supplierId) {
-                const csrftoken = getCookie('csrftoken');
-                
-                // --- Optimistic Update ---
-                const totalItemsEl = $('#total-items');
-                const totalItemsMobileEl = $('#total-items-mobile');
-                const mobileCartCountEl = $('#mobile-cart-count');
-                const itemQtyEl = $('#total-qty-items-' + productId);
-                const quantityLabelEl = $("#quantity-" + productId);
-                
-                const prevTotal = parseInt(totalItemsEl.first().text()) || 0;
-                const prevItemQty = parseInt(itemQtyEl.first().text()) || 0;
-                
-                if (prevItemQty <= 0) return;
-
-                // Update UI immediately
-                const newTotal = Math.max(0, prevTotal - 1);
-                const newItemQty = prevItemQty - 1;
-                
-                totalItemsEl.text(newTotal);
-                totalItemsMobileEl.text(newTotal);
-                mobileCartCountEl.text(newTotal);
-                itemQtyEl.text(newItemQty);
-                quantityLabelEl.html(newItemQty);
-                
-                if (newItemQty === 0) {
-                    $('#ib-' + productId).hide();
-                    $('#qty-ctrl-' + productId).addClass('d-none');
-                    $('#add-btn-' + productId).removeClass('d-none');
-                }
-                
-                if (newTotal === 0) {
-                    $('#mobileCartBar').addClass('d-none');
-                }
-
-                animateCartElement('total-items');
-                animateCartElement('mobile-cart-count');
-                // ---------------------------
-
-                $.ajax({
-                    url: "{% url 'sub_to_cart' product_id=0 store_id=0 %}".replace('0', productId).replace('0', supplierId),
-                    type: "POST",
-                    headers: { "X-CSRFToken": csrftoken },
-                    success: function (response) {
-                        // Sync with server state
-                        $('#total-items').text(response.cart_items_count);
-                        $('#total-items-mobile').text(response.cart_items_count);
-                        $('#total-qty-items-' + productId).text(response.cart_item_count);
-                        $("#quantity-" + productId).html(response.cart_item_count);
-                        $('#mobile-cart-count').text(response.cart_items_count);
-
-                        if (response.cart_total !== undefined) {
-                            const estimatedFee = parseFloat('{{ estimated_fee|default:0 }}');
-                            $('#mobile-cart-total').text(Math.floor(response.cart_total + estimatedFee));
-                        }
-
-                        if (response.cart_items_count === 0) {
-                            $('#mobileCartBar').addClass('d-none');
-                        } else {
-                            $('#mobileCartBar').removeClass('d-none');
-                        }
-                        
-                        showNotification('تم تحديث الكمية في السلة', 'success');
-                    },
-                    error: function (xhr) {
-                        // --- Rollback ---
-                        totalItemsEl.text(prevTotal);
-                        totalItemsMobileEl.text(prevTotal);
-                        mobileCartCountEl.text(prevTotal);
-                        itemQtyEl.text(prevItemQty);
-                        quantityLabelEl.html(prevItemQty);
-                        
-                        $('#ib-' + productId).show();
-                        $('#qty-ctrl-' + productId).removeClass('d-none');
-                        $('#add-btn-' + productId).addClass('d-none');
-                        $('#mobileCartBar').removeClass('d-none');
-                        // -----------------
-                        const message = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'حدث خطأ أثناء تحديث السلة';
-                        showNotification(message, 'error');
-                    }
-                });
-            }
-        });
-        
-        // Helper to get CSRF token
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
-        function handlePhoneValidation(input) {
-            const errorMsg = document.getElementById('phone-validation-msg');
-            const submitBtn = document.getElementById('authSubmitBtn');
-            const val = input.value;
-            
-            // Yemeni mobile prefixes: 70, 71, 73, 77, 78
-            // Total length excluding country code is 9 digits
-            const yemeniMobileRegex = /^(70|71|73|77|78)[0-9]{7}$/;
-            
-            if (val.length === 0) {
-                errorMsg.classList.add('hidden');
-                input.classList.remove('border-red-500', 'text-red-900', 'focus:ring-red-500');
-                input.classList.add('border-gray-100', 'focus:ring-[var(--primary-color)]');
-                submitBtn.disabled = false; return;
-            }
-
-            if (val.length === 9) {
-                if (!yemeniMobileRegex.test(val)) {
-                    errorMsg.textContent = 'رقم غير صحيح. يرجى التأكد من أن الرقم يبدأ بـ 77, 73, 71, 70 او 78';
-                    errorMsg.classList.remove('hidden');
-                    input.classList.add('border-red-500', 'text-red-900', 'focus:ring-red-500');
-                    input.classList.remove('border-gray-100', 'focus:ring-[var(--primary-color)]');
-                    submitBtn.disabled = true;
-                } else {
-                    errorMsg.classList.add('hidden');
-                    input.classList.remove('border-red-500', 'text-red-900', 'focus:ring-red-500');
-                    input.classList.add('border-green-500', 'focus:ring-green-500'); // Green for valid
-                    submitBtn.disabled = false;
-                }
-            } else {
-                // Formatting while typing
-                errorMsg.classList.add('hidden');
-                input.classList.remove('border-red-500', 'text-red-900', 'focus:ring-red-500', 'border-green-500', 'focus:ring-green-500');
-                input.classList.add('border-gray-100', 'focus:ring-[var(--primary-color)]');
-                submitBtn.disabled = false;
-            }
-        }
-
-        function showNotification(message, type = 'info') {
-            // Define colors based on type using CSS variables
-            const config = {
-                success: { icon: 'fa-check-circle', color: 'var(--success-color)', bg: 'rgba(34, 197, 94, 0.95)' },
-                error: { icon: 'fa-exclamation-circle', color: 'var(--danger-color)', bg: 'rgba(239, 68, 68, 0.95)' },
-                warning: { icon: 'fa-exclamation-triangle', color: 'var(--warning-color)', bg: 'rgba(251, 191, 36, 0.95)' },
-                info: { icon: 'fa-info-circle', color: 'var(--primary-color)', bg: 'var(--primary-color)' }
-            };
-
-            const styles = config[type] || config.info;
-            
-            const notification = document.createElement('div');
-            
-            // Fixed positioning with explicit z-index and top offset to clear navbar
-            notification.className = 'fixed top-24 left-4 right-4 md:left-auto md:right-6 md:w-auto md:max-w-sm rounded-xl shadow-lg text-white transform transition-all duration-300 ease-out flex items-stretch overflow-hidden';
-            
-            notification.style.zIndex = '99999'; // Ensure it's above everything including navbar (z-50)
-            notification.style.backgroundColor = '#ffffff'; 
-            notification.style.borderLeft = `6px solid ${styles.color}`;
-            notification.style.color = '#333';
-            
-            // Glass effect styles
-            notification.style.backdropFilter = 'blur(12px)';
-            notification.style.border = '1px solid rgba(255,255,255,0.4)';
-            notification.style.borderLeft = `6px solid ${styles.color}`;
-            
-            // Initial State for Animation
-            notification.style.opacity = '0';
-            notification.style.transform = 'translateY(-20px)';
-
-            notification.innerHTML = `
-                <div class="flex items-center p-3 md:p-4 w-full" style="background-color: rgba(255, 255, 255, 0.8);">
-                    <div class="flex-shrink-0 ml-3">
-                        <i class="fas ${styles.icon} text-xl md:text-2xl" style="color: ${styles.color}"></i>
-                    </div>
-                    <div class="flex-1 mr-2">
-                        <p class="text-sm md:text-base font-bold text-gray-800 leading-tight">${message}</p>
-                    </div>
-                    <button onclick="this.closest('div.fixed').remove()" class="mr-3 text-gray-400 hover:text-gray-600 transition-colors">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
-            
-            // Add to page
-            document.body.appendChild(notification);
-            
-            // Animate in
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    notification.style.opacity = '1';
-                    notification.style.transform = 'translateY(0)';
-                });
-            });
-            
-            // Auto Remove
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateY(-20px)';
-                setTimeout(() => {
-                    if (notification.parentNode) notification.parentNode.removeChild(notification);
-                }, 300);
-            }, 4000);
-        }
-        
-        // Global Page Loader Logic
-        document.addEventListener('DOMContentLoaded', function() {
-            const loader = document.getElementById('page-loader');
-            
-            // Hide loader immediately on DOM content ready (doesn't wait for images)
-            if (loader) {
-                setTimeout(() => {
-                    loader.classList.add('hidden-loader');
-                    NProgress.done();
-                }, 100); 
-            } else {
-                NProgress.done();
-            }
-
-            // Function to show loader
-            window.showPageLoader = function() {
-                if (loader) loader.classList.remove('hidden-loader');
-                NProgress.start();
-            };
-
-            // Trigger on internal link clicks
-            document.body.addEventListener('click', function(e) {
-                const link = e.target.closest('a');
-                if (!link) return;
-
-                const href = link.getAttribute('href');
-                if (href && 
-                    !href.startsWith('#') && 
-                    !href.startsWith('javascript:') && 
-                    !href.startsWith('mailto:') && 
-                    !href.startsWith('tel:') && 
-                    !link.hasAttribute('download') &&
-                    link.target !== '_blank' &&
-                    !e.ctrlKey && !e.shiftKey && !e.metaKey && !e.altKey) {
-                    
-                    showPageLoader();
-                }
-            });
-
-            // Trigger on all form submissions (except those with remote/ajax flags if any)
-            document.addEventListener('submit', function(e) {
-                const form = e.target;
-                if (!form.hasAttribute('data-no-loader')) {
-                    showPageLoader();
-                }
-            });
-
-            function setupDropdown(btnId, dropdownId) {
-                const btn = document.getElementById(btnId);
-                const dropdown = document.getElementById(dropdownId);
-                
-                if (btn && dropdown) {
-                    btn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        dropdown.classList.toggle('hidden');
-                    });
-    
-                    // Close when clicking outside
-                    document.addEventListener('click', function(e) {
-                        if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
-                            dropdown.classList.add('hidden');
-                        }
-                    });
-                }
-            }
-
-            setupDropdown('user-menu-button', 'user-dropdown');
-            setupDropdown('guest-menu-button', 'guest-dropdown');
-
-            // --- Password Reset Logic ---
-            window.togglePasswordReset = function(show) {
-                const loginForm = document.getElementById('merchantAuthForm');
-                const merchantContent = document.getElementById('merchant-login-content');
-                const resetContent = document.getElementById('password-reset-content');
-                
-                if (show) {
-                    loginForm.classList.add('hidden');
-                    resetContent.classList.remove('hidden');
-                    merchantContent.querySelector('h3').classList.add('hidden');
-                    merchantContent.querySelector('.mb-3').classList.add('hidden');
-                    merchantContent.querySelector('p').classList.add('hidden');
-                } else {
-                    loginForm.classList.remove('hidden');
-                    resetContent.classList.add('hidden');
-                    merchantContent.querySelector('h3').classList.remove('hidden');
-                    merchantContent.querySelector('.mb-3').classList.remove('hidden');
-                    merchantContent.querySelector('p').classList.remove('hidden');
-                    document.getElementById('reset_username').value = '';
-                    const statusContainer = document.getElementById('reset-status-container');
-                    statusContainer.classList.add('hidden');
-                    statusContainer.innerHTML = '';
-                }
-            };
-
-            window.handlePasswordResetRequest = function(isForgotBoth = false) {
-                const usernameEl = document.getElementById('reset_username');
-                const username = isForgotBoth ? '' : usernameEl.value;
-                const submitBtn = document.getElementById('reset-submit-btn');
-                const statusContainer = document.getElementById('reset-status-container');
-                
-                if (!isForgotBoth && !username) {
-                    showNotification('يرجى إدخال اسم المستخدم ورقم الهاتف', 'error');
-                    return;
-                }
-
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i>جاري التحقق...';
-                
-                fetch('/api/password-reset-request/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({ username: username })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    statusContainer.classList.remove('hidden');
-                    if (data.success) {
-                        if (data.is_forgot_both) {
-                             statusContainer.className = 'rounded-xl p-4 text-right bg-blue-50 text-blue-700 text-[11px] border border-blue-100 space-y-3';
-                             const message = encodeURIComponent(`مرحباً، لقد نسيت اسم المستخدم وكلمة المرور الخاصة بي. أحتاج للمساعدة في استعادة بيانات حسابي.`);
-                             const whatsappUrl = `https://wa.me/${data.support_phone}?text=${message}`;
-                             statusContainer.innerHTML = `
-                                <p class="font-bold mb-2">استعادة بيانات الحساب</p>
-                                <p>${data.message}</p>
-                                <div class="space-y-2 mt-3">
-                                    <a href="${whatsappUrl}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all">
-                                        <i class="fab fa-whatsapp text-lg"></i>
-                                        تواصل مع الدعم الفني
-                                    </a>
-                                    <button type="button" onclick="togglePasswordReset(false)" class="w-full py-2.5 bg-gray-800 text-white rounded-xl font-bold text-[10px] hover:bg-gray-900 transition-all">
-                                        العودة لتسجيل الدخول
-                                    </button>
-                                </div>
-                            `;
-                        } else {
-                            statusContainer.className = 'rounded-xl p-4 text-right bg-green-50 text-green-700 text-[11px] border border-green-100 space-y-3';
-                            const message = encodeURIComponent(`مرحباً، لقد قمت بطلب استعادة كلمة المرور لحسابي (${data.username}).`);
-                            const whatsappUrl = `https://wa.me/${data.support_phone}?text=${message}`;
-                            statusContainer.innerHTML = `
-                            <p class="font-bold mb-2">تم تحديث كلمة المرور!</p>
-                            <p>${data.message}</p>
-                            <div class="space-y-2 mt-3">
-                                <a href="${whatsappUrl}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2.5 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all text-xs">
-                                    <i class="fab fa-whatsapp text-lg"></i>
-                                    متابعة الطلب في واتساب
-                                </a>
-                                <button type="button" onclick="togglePasswordReset(false); document.getElementById('merchant_username').value='${data.username}';" class="w-full py-2.5 bg-gray-800 text-white rounded-xl font-bold text-[10px] hover:bg-gray-900 transition-all">
-                                    الذهاب لصفحة تسجيل الدخول
-                                </button>
-                            </div>
-                        `;
-                        }
-                        submitBtn.classList.add('hidden');
-                    } else {
-                        statusContainer.className = 'rounded-xl p-3 text-right bg-red-50 text-red-600 text-[11px] border border-red-100';
-                        statusContainer.innerHTML = `<i class="fas fa-exclamation-circle ml-2"></i>${data.message}`;
-                        submitBtn.innerHTML = 'تحقق من الحساب';
-                        submitBtn.disabled = false;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('حدث خطأ في النظام. يرجى المحاولة لاحقاً.', 'error');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'تحقق من الحساب';
-                });
-            };
-            // ---------------------------
-
-            // Global Password Toggle Helper
-            window.togglePasswordVisibility = function(inputId, iconId) {
-                const passwordInput = document.getElementById(inputId);
-                const toggleIcon = document.getElementById(iconId);
-                
-                if (passwordInput.type === 'password') {
-                    passwordInput.type = 'text';
-                    toggleIcon.classList.remove('fa-eye');
-                    toggleIcon.classList.add('fa-eye-slash');
-                } else {
-                    passwordInput.type = 'password';
-                    toggleIcon.classList.remove('fa-eye-slash');
-                    toggleIcon.classList.add('fa-eye');
-                }
-            };
-
-            // --- UI/UX Enhanced Scrolling Dynamics ---
-            const navbar = document.querySelector('.curved-navbar');
-            if (navbar) {
-                let lastScrollTop = 0;
-                window.addEventListener('scroll', function() {
-                    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    
-                    if (scrollTop > 50) {
-                        navbar.classList.add('navbar-scrolled');
-                    } else {
-                        navbar.classList.remove('navbar-scrolled');
-                    }
-                    lastScrollTop = scrollTop;
-                }, { passive: true });
-            }
-
-            // Handle browser back button (pageshow event)
-            window.addEventListener('pageshow', function(event) {
-                if (event.persisted && loader) {
-                    loader.classList.add('hidden-loader');
-                }
-            });
-        });
-
-        // Add progress bar animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes progress-shrink {
-                from { width: 100%; }
-                to { width: 0%; }
-            }
-            .animate-slide-in {
-                animation: slide-in-right 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
-
+    <!-- Main Base JS (Extracted) -->
+    <script src="{% static 'js/main_base.js' %}?v={{ css_version }}" defer></script>
 
     {% block extra_js %}{% endblock %}
     {% include 'includes/bottom_nav.html' %}
