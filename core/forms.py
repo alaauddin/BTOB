@@ -381,7 +381,7 @@ class BusinessRequestForm(forms.ModelForm):
             
             # Basic Yemeni mobile number validation (9 digits, starts with 77, 73, 71, or 70)
             import re
-            yemeni_pattern = r'^(77|73|71|70)\d{7}$'
+            yemeni_pattern = r'^(77|78|73|71|70)\d{7}$'
             if not re.match(yemeni_pattern, phone):
                 raise forms.ValidationError('يرجى إدخال رقم هاتف يمني صحيح (مثلاً: 77XXXXXXX)')
         
@@ -470,6 +470,13 @@ class MerchantSignupForm(forms.Form):
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
+        
+        if not username:
+             return username
+
+        if ' ' in username:
+            raise forms.ValidationError('اسم المستخدم يجب أن يكون كلمة واحدة (بدون مسافات)')
+            
         if User.objects.filter(username=username).exists():
             raise forms.ValidationError('اسم المستخدم هذا موجود مسبقاً، يرجى اختيار اسم آخر')
         return username
@@ -479,7 +486,7 @@ class MerchantSignupForm(forms.Form):
         if phone:
             phone = phone.replace(' ', '').replace('-', '')
             import re
-            yemeni_pattern = r'^(77|73|71|70)\d{7}$'
+            yemeni_pattern = r'^(77|78|73|71|70)\d{7}$'
             if not re.match(yemeni_pattern, phone):
                 raise forms.ValidationError('يرجى إدخال رقم هاتف يمني صحيح (مثلاً: 77XXXXXXX)')
         return phone
@@ -489,7 +496,7 @@ class MerchantSignupForm(forms.Form):
         if phone:
             phone = phone.replace(' ', '').replace('-', '')
             import re
-            yemeni_pattern = r'^(77|73|71|70|0)\d{7,9}$' # More flexible for secondary
+            yemeni_pattern = r'^(77|78|73|71|70|0)\d{7,9}$' # More flexible for secondary
             if not re.match(yemeni_pattern, phone):
                 raise forms.ValidationError('يرجى إدخال رقم هاتف صحيح')
         return phone
