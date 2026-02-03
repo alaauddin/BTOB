@@ -205,11 +205,11 @@ MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 
 
 
-LOGOUT_REDIRECT_URL = 'login'
+LOGOUT_REDIRECT_URL = 'suppliers_list'
 
 LOGIN_REDIRECT_URL = 'suppliers_list'
 
-LOGIN_URL= 'login'
+LOGIN_URL= 'suppliers_list'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
