@@ -450,22 +450,82 @@
     }
 }
 
+/* Refined Modal Components */
+.tab-card {
+    border: 1.5px solid #f1f5f9;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-card.active {
+    border-color: var(--primary-color);
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(239, 125, 45, 0.08);
+}
+
+.tab-card.active .icon-box {
+    background: var(--primary-color) !important;
+}
+
+.tab-card.active .icon-box i {
+    color: white !important;
+}
+
+.tab-card.active span {
+    color: var(--primary-color);
+}
+
+.icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.floating-field-wrapper {
+    position: relative;
+    margin-top: 24px;
+}
+
+.floating-label {
+    position: absolute;
+    top: -10px;
+    right: 14px;
+    background: white;
+    padding: 0 6px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #94a3b8;
+    z-index: 10;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    border-radius: 10px;
+}
+
 .input-premium {
     background: #ffffff !important;
     border: 1.5px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    padding: 14px 18px !important;
+    font-size: 14px !important;
+    color: #1e293b !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.input-premium::placeholder {
-    color: #94a3b8 !important;
-    opacity: 1;
+    width: 100%;
 }
 
 .input-premium:focus {
-    background: white !important;
     border-color: var(--primary-color) !important;
-    box-shadow: 0 0 0 4px rgba(239, 125, 45, 0.1) !important;
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 4px rgba(239, 125, 45, 0.05) !important;
+    outline: none !important;
+}
+
+.input-premium:focus+.floating-label {
+    color: var(--primary-color);
 }
 
 .shimmer-btn {
@@ -591,4 +651,9 @@
     60% {
         transform: translate3d(4px, 0, 0);
     }
+}
+
+.overflow-hidden {
+    overflow: hidden !important;
+    height: 100vh !important;
 }

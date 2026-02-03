@@ -124,7 +124,7 @@
             <div class="rounded-[32px] text-right overflow-hidden transform transition-all w-full max-w-[420px] max-h-[calc(100dvh-2rem)] flex flex-col modal-glass animate-modal-fade relative z-10 shadow-2xl">
                 
                 <!-- Logo Header -->
-                <div class="pt-8 pb-4 text-center flex-shrink-0">
+                <div class="pt-8 pb-2 text-center flex-shrink-0">
                     <div class="flex items-center justify-center gap-3">
                         {% if supplier.profile_picture %}
                             <div class="w-14 h-14 rounded-2xl bg-white shadow-lg p-2 flex items-center justify-center transform -rotate-3 hover:rotate-0 transition-all border border-gray-50">
@@ -145,81 +145,82 @@
                 </div>
 
                 <!-- Scrollable Body -->
-                <div class="overflow-y-auto custom-scrollbar flex-grow px-6 pb-6 pt-2">
-                    <!-- Tab Switcher -->
-                    <div class="tab-switcher-container mb-6">
-                        <div id="tab-indicator" class="tab-indicator"></div>
-                        <button onclick="switchLoginTab('client')" id="tab-client" class="tab-btn active">
-                            <i class="fas fa-user ml-1 text-[10px]"></i>
-                            العملاء
+                <div class="px-6 py-4 flex-grow overflow-y-auto custom-scrollbar">
+                    
+                    <!-- New Refined Tab Switcher -->
+                    <div class="flex gap-3 mb-8">
+                        <button onclick="switchLoginTab('client')" id="tab-client" class="tab-card active flex-1 flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all">
+                            <div class="icon-box transition-colors">
+                                <i class="fas fa-user-tie text-lg text-gray-400"></i>
+                            </div>
+                            <span class="text-[11px] font-bold text-gray-400">العملاء</span>
                         </button>
-                        <button onclick="switchLoginTab('merchant')" id="tab-merchant" class="tab-btn">
-                            <i class="fas fa-store ml-1 text-[10px]"></i>
-                            التجار
+                        <button onclick="switchLoginTab('merchant')" id="tab-merchant" class="tab-card flex-1 flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all">
+                            <div class="icon-box transition-colors">
+                                <i class="fas fa-store text-lg text-gray-400"></i>
+                            </div>
+                            <span class="text-[11px] font-bold text-gray-400">التجار</span>
                         </button>
                     </div>
 
                     <!-- Client Login -->
                     <div id="client-login-content" class="text-center fade-in-section">
-             
-                        <h3 class="text-xl font-bold text-gray-900 mb-1" id="modal-title">
-                            تسجيل الدخول / إنشاء حساب
-                        </h3>
-                        <p class="text-gray-500 mb-6 text-xs" id="modal-desc">
-                            أدخل رقم هاتفك للمتابعة. سيتم إنشاء حساب لك تلقائياً إذا كنت جديداً.
-                        </p>
+                        <h3 class="text-base font-bold text-gray-900 mb-6" id="modal-title">مرحباً بعودتك.. قم بتسجيل الدخول</h3>
                         
-                        <form id="unifiedAuthForm" class="space-y-4 text-right">
+                        <form id="unifiedAuthForm" class="space-y-6 text-right">
                             <!-- Google Login -->
-                            <a href="{% provider_login_url 'google' %}" class="w-full text-xs font-bold text-gray-700 hover:bg-gray-50 bg-white py-3 rounded-xl transition-all flex items-center justify-center gap-2 border border-gray-100 mb-4">
+                            <a href="{% provider_login_url 'google' %}" class="w-full text-xs font-bold text-gray-700 hover:bg-gray-50 bg-white py-4 rounded-2xl transition-all flex items-center justify-center gap-3 border border-gray-100 mb-1 shadow-sm">
                                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4" alt="Google Logo">
                                 <span>المتابعة باستخدام Google</span>
                             </a>
 
-                            <div class="relative flex py-2 items-center">
-                                <div class="flex-grow border-t border-gray-100"></div>
-                                <span class="flex-shrink-0 mx-3 text-gray-300 text-[10px]">أو برقم الهاتف</span>
-                                <div class="flex-grow border-t border-gray-100"></div>
+                            <div class="relative flex py-1 items-center">
+                                <div class="flex-grow border-t border-gray-50"></div>
+                                <span class="flex-shrink-0 mx-3 text-gray-300 text-[10px] font-bold">أو برقم الهاتف</span>
+                                <div class="flex-grow border-t border-gray-50"></div>
                             </div>
 
-                            <div class="relative group" dir="ltr">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-700 font-bold tracking-wider text-xs border-r border-gray-100 pr-2 my-2 bg-gray-50 rounded-l-xl z-10">
+                            <div class="floating-field-wrapper" dir="ltr">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-700 font-bold text-xs border-r border-gray-100 pr-3 my-3 bg-gray-50/20 rounded-l-xl z-20">
                                     +967
                                 </div>
                                 <input type="tel" name="phone" id="auth_phone" required 
-                                    placeholder="77xxxxxxx"
                                     maxlength="9"
                                     onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                     oninput="this.value = this.value.replace(/[^0-9]/g, ''); handlePhoneValidation(this);"
-                                    class="block w-full pl-16 pr-4 py-3.5 rounded-xl text-gray-900 text-left input-premium outline-none placeholder-gray-300 text-sm font-medium">
+                                    class="block w-full pl-20 pr-4 py-4 rounded-2xl text-gray-900 text-left input-premium outline-none text-sm font-medium">
+                                <label class="floating-label">رقم الموبايل</label>
                             </div>
                             <p id="phone-validation-msg" class="text-[10px] text-red-500 mt-1 hidden"></p>
+
+                            <!-- Privacy Policy Checkbox (Client Only) -->
+                            <div class="flex items-center gap-2 mt-4 justify-start">
+                                <input type="checkbox" id="privacy_policy_checkbox" class="w-4 h-4 rounded border-gray-300 text-[var(--primary-color)] cursor-pointer">
+                                <label for="privacy_policy_checkbox" class="text-[10px] text-gray-500 font-medium cursor-pointer">
+                                    أوافق على <a href="{% url 'privacy_policy' %}" class="text-[var(--primary-color)] hover:underline" onclick="event.stopPropagation()">سياسة الخصوصية</a>
+                                </label>
+                            </div>
                         </form>
                     </div>
 
                     <!-- Merchant Login -->
                     <div id="merchant-login-content" class="hidden text-center fade-in-section">
-                        
-                        <h3 class="text-xl font-bold text-gray-900 mb-1">دخول التجار</h3>
-                        <p class="text-gray-500 mb-6 text-xs">أدخل بيانات حسابك للوصول للوحة التحكم</p>
-                        
-                        <form id="merchantAuthForm" class="space-y-4 text-right">
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-gray-700 mr-2">اسم المستخدم</label>
+                        <form id="merchantAuthForm" class="space-y-6 text-right pt-2 border-t border-gray-50">
+                            <div class="floating-field-wrapper">
                                 <input id="merchant_username" name="username" type="text" required 
-                                    class="w-full px-4 py-3.5 rounded-xl input-premium text-sm" placeholder="Username">
+                                    class="w-full px-4 py-4 rounded-2xl input-premium text-sm">
+                                <label class="floating-label">اسم المستخدم</label>
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-gray-700 mr-2">كلمة المرور</label>
-                                <div class="relative">
-                                    <input id="merchant_password" name="password" type="password" required 
-                                        class="w-full px-4 py-3.5 rounded-xl input-premium text-sm pl-12" placeholder="Password">
-                                    <button type="button" class="absolute left-0 inset-y-0 px-4 flex items-center text-gray-400" onclick="togglePasswordVisibility('merchant_password', 'merchant_pw_icon')">
-                                        <i id="merchant_pw_icon" class="fas fa-eye text-xs"></i>
-                                    </button>
-                                </div>
+                            
+                            <div class="floating-field-wrapper">
+                                <input id="merchant_password" name="password" type="password" required 
+                                    class="w-full px-4 py-4 rounded-2xl input-premium text-sm pl-12 text-left" dir="ltr">
+                                <label class="floating-label">كلمة المرور</label>
+                                <button type="button" class="absolute left-0 inset-y-0 px-4 flex items-center text-gray-400" onclick="togglePasswordVisibility('merchant_password', 'merchant_pw_icon')">
+                                    <i id="merchant_pw_icon" class="fas fa-eye text-xs"></i>
+                                </button>
                             </div>
-                            <button type="button" onclick="togglePasswordReset(true)" class="text-[10px] font-bold text-[var(--primary-color)] hover:underline">نسيت كلمة المرور؟</button>
+                            <button type="button" onclick="togglePasswordReset(true)" class="text-[10px] font-bold text-[var(--primary-color)] hover:underline mt-2 inline-block">نسيت كلمة المرور؟</button>
                         </form>
 
                         <div id="password-reset-content" class="hidden space-y-4 text-right fade-in-section mt-4">
@@ -228,8 +229,11 @@
                             <div id="reset-status-container" class="hidden mb-4 rounded-xl p-3 text-right bg-blue-50 text-blue-700 text-[11px] border border-blue-100"></div>
                             
                             <div id="reset-form-content" class="space-y-4">
-                                <input id="reset_username" type="text" class="w-full px-4 py-3.5 rounded-xl input-premium text-sm" placeholder="اسم المستخدم أو الهاتف">
-                                <button type="button" id="reset-submit-btn" onclick="handlePasswordResetRequest()" class="w-full py-3.5 bg-gray-900 text-white rounded-xl font-bold text-xs hover:bg-black transition-all">تحقق من الحساب</button>
+                                <div class="floating-field-wrapper">
+                                    <input id="reset_username" type="text" class="w-full px-4 py-4 rounded-2xl input-premium text-sm">
+                                    <label class="floating-label">البيانات (اسم المستخدم أو الهاتف)</label>
+                                </div>
+                                <button type="button" id="reset-submit-btn" onclick="handlePasswordResetRequest()" class="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold text-xs hover:bg-black transition-all flex items-center justify-center">تحقق من الحساب</button>
                                 <div class="flex flex-col gap-2 text-center mt-2">
                                     <button type="button" onclick="handlePasswordResetRequest(true)" class="text-[10px] font-bold text-gray-400 hover:text-[var(--primary-color)]">نسيت كل البيانات؟</button>
                                     <button type="button" onclick="togglePasswordReset(false)" class="text-[10px] font-bold text-gray-500 underline">العودة لتسجيل الدخول</button>
@@ -237,7 +241,7 @@
                             </div>
                         </div>
 
-                        <div class="text-center mt-8">
+                        <div class="text-center mt-12 pb-4">
                             <a href="{% url 'join_business' %}" class="text-xs font-bold text-[var(--primary-color)] hover:underline">
                                 ليس لديك حساب تجاري؟ انضم إلينا الآن
                             </a>
@@ -252,19 +256,12 @@
                         <p class="error-text text-[10px] text-red-600 font-bold text-right flex-1"></p>
                     </div>
 
-                    <div class="flex items-center gap-2 mb-4 justify-end">
-                        <label for="privacy_policy_checkbox" class="text-[10px] text-gray-500 font-medium">
-                            أوافق على <a href="{% url 'privacy_policy' %}" class="text-[var(--primary-color)] hover:underline">سياسة الخصوصية</a>
-                        </label>
-                        <input type="checkbox" id="privacy_policy_checkbox" class="w-4 h-4 rounded border-gray-300 text-[var(--primary-color)]">
-                    </div>
-
                     <div class="flex gap-3">
-                        <button id="authSubmitBtn" onclick="handleLoginSubmit()" class="flex-1 py-4 text-white rounded-2xl font-bold text-xs shadow-lg shadow-orange-200/50 hover:brightness-105 transition-all whitespace-nowrap" style="background-color: var(--primary-color) !important;">
-                            متابعة
-                        </button>
-                        <button onclick="closeLoginModal()" class="flex-1 py-4 bg-white border border-gray-200 text-gray-500 rounded-2xl font-bold text-xs hover:bg-gray-50 transition-all whitespace-nowrap">
+                        <button onclick="closeLoginModal()" class="flex-1 py-4 bg-white border border-gray-200 text-gray-500 rounded-2xl font-bold text-xs hover:bg-gray-50 transition-all whitespace-nowrap flex items-center justify-center">
                             إلغاء
+                        </button>
+                        <button id="authSubmitBtn" onclick="handleLoginSubmit()" class="flex-1 py-4 text-white rounded-2xl font-bold text-xs shadow-lg shadow-orange-200/50 hover:brightness-105 transition-all whitespace-nowrap flex items-center justify-center" style="background-color: var(--primary-color) !important;">
+                            متابعة
                         </button>
                     </div>
                 </div>

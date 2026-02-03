@@ -101,7 +101,10 @@ let pendingAction = null;
 
 window.openLoginModal = function (actionCallback) {
     const modal = document.getElementById('loginModal');
-    if (modal) modal.classList.remove('hidden');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
     if (actionCallback) pendingAction = actionCallback;
     // Default to client tab
     switchLoginTab('client');
@@ -109,7 +112,10 @@ window.openLoginModal = function (actionCallback) {
 
 window.closeLoginModal = function () {
     const modal = document.getElementById('loginModal');
-    if (modal) modal.classList.add('hidden');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
     pendingAction = null;
     const errorDiv = document.getElementById('loginError');
     if (errorDiv) errorDiv.classList.add('hidden');
@@ -123,7 +129,6 @@ window.switchLoginTab = function (tab) {
     const merchantContent = document.getElementById('merchant-login-content');
     const clientTab = document.getElementById('tab-client');
     const merchantTab = document.getElementById('tab-merchant');
-    const privacyContainer = document.querySelector('#loginModal .bg-gray-50 .mb-4.text-right');
     const indicator = document.getElementById('tab-indicator');
 
     if (tab === 'client') {
@@ -132,7 +137,6 @@ window.switchLoginTab = function (tab) {
         if (clientTab) clientTab.classList.add('active');
         if (merchantTab) merchantTab.classList.remove('active');
         if (indicator) indicator.style.transform = 'translateX(0)';
-        if (privacyContainer) privacyContainer.style.display = 'block';
     } else {
         if (clientContent) clientContent.classList.add('hidden');
         if (merchantContent) merchantContent.classList.remove('hidden');
@@ -140,7 +144,6 @@ window.switchLoginTab = function (tab) {
         if (clientTab) clientTab.classList.remove('active');
         // Move indicator to the start (left in RTL)
         if (indicator) indicator.style.transform = 'translateX(-100%)';
-        if (privacyContainer) privacyContainer.style.display = 'none';
     }
     const errorDiv = document.getElementById('loginError');
     if (errorDiv) errorDiv.classList.add('hidden');
@@ -263,6 +266,7 @@ function handleMerchantAuthSubmit() {
 function handlePostAuth(data) {
     const actionToRun = pendingAction;
     closeLoginModal();
+    document.body.classList.remove('overflow-hidden');
     window.siteConfig.isAuthenticated = true;
 
     if (actionToRun) {
