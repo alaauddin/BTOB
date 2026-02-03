@@ -3,22 +3,31 @@
 <nav class="liquid-nav-wrapper">
     <div class="liquid-nav">
         <ul class="nav-items-list">
-            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'suppliers_list' or request.resolver_match.url_name == 'product-list' or request.resolver_match.url_name == 'product_list_category' or request.resolver_match.url_name == 'product_list_subcategory' %}active{% endif %}" data-index="0">
-                <a href="{% url 'suppliers_list' %}">
-                    <span class="nav-icon"><i class="fas fa-home"></i></span>
-                    <span class="nav-text">الرئيسية</span>
+            {% if not user.is_authenticated %}
+            <li class="liquid-nav-item" data-index="0">
+                <a href="javascript:openLoginModal()">
+                    <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                    <span class="nav-text">لوحة التحكم</span>
                 </a>
             </li>
+            {% elif user.supplier %}
+            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'my_merchant' %}active{% endif %}" data-index="0">
+                <a href="{% url 'my_merchant' %}">
+                    <span class="nav-icon"><i class="fas fa-store"></i></span>
+                    <span class="nav-text">متجري</span>
+                </a>
+            </li>
+            {% endif %}
             <li class="liquid-nav-item" data-index="1">
                 <a href="javascript:void(0)" onclick="const s = document.getElementById('productSearch'); if(s) { s.scrollIntoView(); s.focus(); }">
                     <span class="nav-icon"><i class="fas fa-search"></i></span>
                     <span class="nav-text">بحث</span>
                 </a>
             </li>
-            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'join_business' or request.resolver_match.url_name == 'merchant_login' or request.resolver_match.url_name == 'my_merchant' %}active{% endif %}" data-index="2">
-                <a href="{% url 'join_business' %}">
-                    <span class="nav-icon"><i class="fas fa-handshake"></i></span>
-                    <span class="nav-text">شراكة</span>
+            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'suppliers_list' or request.resolver_match.url_name == 'product-list' or request.resolver_match.url_name == 'product_list_category' or request.resolver_match.url_name == 'product_list_subcategory' %}active{% endif %}" data-index="2">
+                <a href="{% url 'suppliers_list' %}">
+                    <span class="nav-icon"><i class="fas fa-home"></i></span>
+                    <span class="nav-text">الرئيسية</span>
                 </a>
             </li>
             <li class="liquid-nav-item {% if request.resolver_match.url_name == 'my_orders' or request.resolver_match.url_name == 'order_detail' %}active{% endif %}" data-index="3">

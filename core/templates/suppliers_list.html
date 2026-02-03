@@ -22,7 +22,7 @@
         }
         
         .main-ads-swiper .swiper-slide {
-            height: 100%;
+            height: 80%;
         }
         
         /* Banner Overlay Styles */
@@ -185,7 +185,7 @@
         .main-ads-swiper {
             width: 100%; /* Full width */
             max-width: 100%; 
-            height: 260px; 
+            height: 235px; 
             margin: -25px 0 24px 0; /* Negative top margin, no horizontal margin */
             border-radius: 0 0 50px 50px; /* Distinctive bottom curve */
             overflow: hidden;
@@ -225,33 +225,32 @@
 
         .ad-card {
             background: #ffffff;
-            border-radius: 28px; /* Very rounded card */
+            border-radius: 16px; 
             overflow: hidden;
-            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid rgba(241, 245, 249, 0.8);
             display: flex;
             flex-direction: column;
+            width: 100%; /* Let swiper control width */
             height: 100%;
             position: relative;
         }
 
         .ad-card:hover {
-            transform: translateY(-8px) scale(1.01);
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
-            border-color: transparent;
+            transform: translateY(-4px); /* Subtler hover */
+            box-shadow: 0 12px 24px -8px rgba(0,0,0,0.1);
         }
 
         .ad-image {
             position: relative;
             width: 100%;
-            padding-top: 85%; /* Slightly taller aspect for improved harmony */
+            padding-top: 75%; 
             overflow: hidden;
             background-color: #f1f5f9;
-            /* Curved effect: Round the bottom corners of the image container to create the separation */
-            border-radius: 0 0 28px 28px; 
-            margin-bottom: 8px; /* Space for the curve to breathe */
-            mask-image: linear-gradient(to bottom, black 90%, transparent 100%); /* Subtle fade at very bottom if needed, or keeping it clean solid */
+            border-radius: 0 0 16px 16px; 
+            margin-bottom: 0;
+            mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
         }
 
         .ad-image img {
@@ -260,130 +259,117 @@
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Cover is better for the "immersive" card look */
+            object-fit: cover;
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .ad-card:hover .ad-image img {
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
         /* Modern Glass Badges on Cards */
         .ad-badge-discount {
             position: absolute;
-            top: 12px;
-            left: 12px;
+            top: 6px;
+            left: 6px;
             background: rgba(239, 68, 68, 0.95);
             color: white;
             font-weight: 800;
-            font-size: 0.75rem;
-            padding: 6px 12px;
-            border-radius: 20px;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            font-size: 0.55rem;
+            padding: 2px 6px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
             z-index: 10;
-            border: 1px solid rgba(255,255,255,0.2);
-            display: inline-flex;
-            align-items: center;
+            border: 1px solid rgba(255,255,255,0.1);
             width: fit-content;
         }
 
         .ad-badge-hot {
             position: absolute;
-            top: 12px;
-            left: 12px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
+            top: 6px;
+            left: 6px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
             color: #d97706;
             font-weight: 700;
-            font-size: 0.75rem;
-            padding: 6px 12px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            font-size: 0.55rem;
+            padding: 2px 6px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
             z-index: 10;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 2px;
             width: fit-content;
         }
 
         .ad-info {
-            padding: 12px 18px 20px 18px; /* More breathing room */
+            padding: 6px 8px 8px 8px; /* Extra tight padding */
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .ad-supplier-name {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        
-        .supplier-inline-logo {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        .ad-supplier-name span {
-            font-size: 0.75rem;
-            color: #64748b;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            justify-content: flex-start;
+            gap: 0; /* No gap */
         }
 
         .ad-product-name {
-            font-size: 1rem;
-            font-weight: 800;
+            font-size: 0.75rem;
+            font-weight: 700;
             color: #1e293b;
-            margin-bottom: 6px;
-            line-height: 1.4;
-            letter-spacing: -0.01em;
-        }
-
-        .ad-description {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            margin-bottom: 12px;
-            font-weight: 500;
+            margin-bottom: 0;
+            line-height: 1.1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .ad-price {
             display: flex;
             align-items: baseline;
-            gap: 8px;
-            margin-top: auto;
-            background: #f8fafc; /* Subtle pill bg for price */
-            padding: 8px 12px;
-            border-radius: 12px;
-            width: fit-content;
+            gap: 2px;
+            margin-top: 2px;
+            background: transparent;
+            padding: 0;
+            width: 100%;
         }
 
         .final-price {
-            font-size: 1.1rem;
-            font-weight: 900;
+            font-size: 0.85rem;
+            font-weight: 800;
             color: #0f172a;
-            letter-spacing: -0.5px;
         }
 
-    .original-price {
-        font-size: 0.75rem;
-        text-decoration: line-through;
-        color: #cbd5e1;
-    }
+        .original-price {
+            font-size: 0.65rem;
+            text-decoration: line-through;
+            color: #cbd5e1;
+        }
 
     /* Mobile Media Query for specific ad card adjustments */
     @media (max-width: 640px) {
-        .ads-scroll-container .ad-card {
-            width: 140px; /* Force a smaller width for horizontal scrolling cards on mobile */
-            min-width: 140px;
+        .platform-offers-swiper .ad-card {
+            width: 100%;
+            border-radius: 10px;
         }
+        
+        .ad-image {
+            padding-top: 80%;
+        }
+        
+        .ad-info {
+            padding: 3px 5px 5px 5px;
+        }
+        
+        .ad-product-name {
+            font-size: 0.65rem;
+        }
+        
+        .final-price {
+            font-size: 0.75rem;
+        }
+    }
         
         .ad-image {
             padding-top: 100%; /* Square on mobile usually looks best */
@@ -673,16 +659,11 @@
                                 <img src="{{ ad.product.image.url }}" alt="{{ ad.product.name }}" loading="lazy">
                             </div>
                             <div class="ad-info">
-                                <div class="ad-supplier-name">
-                                    <img src="{% if ad.product.supplier.profile_picture %}{{ ad.product.supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ ad.product.supplier.name }}" class="supplier-inline-logo" loading="lazy">
-                                    <span>{{ ad.product.supplier.name }}</span>
-                                </div>
                                 <h4 class="ad-product-name">{{ ad.product.name }}</h4>
-                                <p class="ad-description">{{ ad.description|truncatewords:10 }}</p>
                                 <div class="ad-price">
                                     <span class="final-price">{{ ad.product.get_price_with_offer|floatformat:0 }} {{ ad.product.supplier.currency }}</span>
                                     {% if ad.product.has_discount %}
-                                    <span class="original-price" style="text-decoration: line-through; color: #94a3b8; font-size: 0.9rem; margin-right: 8px;">{{ ad.product.price|floatformat:0 }}</span>
+                                    <span class="original-price" style="text-decoration: line-through; color: #94a3b8; font-size: 0.8rem; margin-right: 6px;">{{ ad.product.price|floatformat:0 }}</span>
                                     {% endif %}
                                 </div>
                             </div>
@@ -1150,9 +1131,9 @@ function applyFilters() {
 
         // Initialize Platform Offers Swiper
         const platformOffersSwiper = new Swiper('.platform-offers-swiper', {
-            slidesPerView: 2.2, // Smaller cards on mobile (was 1.5)
-            spaceBetween: 14,
-            loop: true, // Enable infinite loop
+            slidesPerView: 3.2, // Ultra-small cards on mobile
+            spaceBetween: 6, // Tight gaps
+            loop: true,
             autoplay: {
                 delay: 2000,
                 disableOnInteraction: false, 
@@ -1163,20 +1144,23 @@ function applyFilters() {
                 hide: false,
             },
             breakpoints: {
+                480: {
+                    slidesPerView: 3.5,
+                },
                 640: {
-                    slidesPerView: 3.2, // Was 2.5
+                    slidesPerView: 4.5,
                 },
                 768: {
-                    slidesPerView: 4.2, // Was 3.5
+                    slidesPerView: 5.5,
                 },
                 1024: {
-                    slidesPerView: 5.5, // Was 4.5
+                    slidesPerView: 6.8, 
                 },
                 1280: {
-                    slidesPerView: 6.5, // Was 5.5
+                    slidesPerView: 7.8,
                 },
                 1536: {
-                    slidesPerView: 7.5, // Extra large screens
+                    slidesPerView: 8.8,
                 },
             }
         });

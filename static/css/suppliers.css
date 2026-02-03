@@ -678,6 +678,7 @@
 @media (max-width: 768px) {
     .ad-banner {
         height: 160px;
+        margin-top: 40px;
     }
 }
 

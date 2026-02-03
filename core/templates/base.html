@@ -387,6 +387,119 @@
             animation: light-streak 8s infinite linear;
             pointer-events: none;
         }
+
+        /* --- Amazing Login Modal Premium Enhancements --- */
+        .modal-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.15),
+                inset 0 0 80px rgba(255, 255, 255, 0.4) !important;
+        }
+
+        .tab-switcher-container {
+            position: relative;
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 4px;
+            margin: 0 24px;
+            display: flex;
+            gap: 4px;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .tab-indicator {
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            inset-inline-start: 4px;
+            width: calc(50% - 4px);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        .tab-btn {
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            padding: 10px 0;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            color: #64748b;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+        }
+
+        .animate-modal-fade {
+            animation: modal-fade-scale 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes modal-fade-scale {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .input-premium {
+            background: #ffffff !important;
+            border: 1.5px solid #e2e8f0 !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .input-premium::placeholder {
+            color: #94a3b8 !important;
+            opacity: 1;
+        }
+
+        .input-premium:focus {
+            background: white !important;
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 4px rgba(239, 125, 45, 0.1) !important;
+            transform: translateY(-1px);
+        }
+
+        .shimmer-btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shimmer-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -150%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                transparent 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                transparent 100%
+            );
+            transform: rotate(30deg);
+            transition: all 0.8s ease;
+        }
+
+        .shimmer-btn:hover::after {
+            left: 150%;
+        }
+
+        .fade-in-section {
+            animation: fade-in-up 0.5s ease-out forwards;
+        }
+
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -418,67 +531,165 @@
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-opacity" aria-hidden="true" onclick="closeLoginModal()"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-middle bg-white rounded-3xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full border border-gray-100">
+            <div class="inline-block align-middle rounded-[32px] text-right overflow-hidden transform transition-all sm:my-8 sm:align-middle w-[92%] sm:max-w-[400px] modal-glass animate-modal-fade">
                 
-                <!-- Logo Header Removed from top -->
+                <!-- Logo Header -->
+                <div class="pt-8 pb-4 text-center">
+                    <div class="flex items-center justify-center gap-3">
+                        {% if supplier.profile_picture %}
+                            <div class="w-14 h-14 rounded-2xl bg-white shadow-lg p-2 flex items-center justify-center transform -rotate-3 hover:rotate-0 transition-all border border-gray-50">
+                                <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="w-full h-full object-contain">
+                            </div>
+                        {% endif %}
+                        
+                        {% if supplier.profile_picture and system_settings.logo or system_settings.logo or not supplier.profile_picture %}
+                            <div class="w-14 h-14 rounded-2xl bg-white shadow-lg p-2 flex items-center justify-center transform rotate-3 hover:rotate-0 transition-all border border-gray-50">
+                                {% if system_settings.logo %}
+                                    <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="w-full h-full object-contain">
+                                {% else %}
+                                    <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="w-full h-full object-contain">
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
 
                 <!-- Unified Auth Form -->
-                <div class="bg-white px-6 pt-5 pb-4">
-                    <div class="text-center">
-                        <div class="mb-3">
-                            <i class="fas fa-mobile-alt text-3xl text-[var(--primary-color)] opacity-40"></i>
+                <div class="">
+                    <!-- Tab Switcher -->
+                    <div class="tab-switcher-container">
+                        <div id="tab-indicator" class="tab-indicator"></div>
+                        <button onclick="switchLoginTab('client')" id="tab-client" class="tab-btn active">
+                            <i class="fas fa-user ml-1 text-[10px]"></i>
+                            العملاء
+                        </button>
+                        <button onclick="switchLoginTab('merchant')" id="tab-merchant" class="tab-btn">
+                            <i class="fas fa-store ml-1 text-[10px]"></i>
+                            التجار
+                        </button>
+                    </div>
+
+                    <div class="px-6 pt-5 pb-4">
+                        <!-- Client Login Content -->
+                        <div id="client-login-content" class="text-center fade-in-section">
+                            <div class="mb-3">
+                                <i class="fas fa-mobile-alt text-3xl text-[var(--primary-color)] opacity-40"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-1" id="modal-title">
+                                تسجيل الدخول / إنشاء حساب
+                            </h3>
+                            <p class="text-gray-500 mb-4 text-xs" id="modal-desc">
+                                أدخل رقم هاتفك للمتابعة. إذا كنت جديداً، سيتم إنشاء حساب لك تلقائياً.
+                            </p>
+                            
+                            <form id="unifiedAuthForm" class="space-y-4">
+                                <!-- Google Login -->
+                                <div class="text-center">
+                                    <a href="{% provider_login_url 'google' %}" id="google-login-modal" class="w-full text-xs font-bold text-gray-700 hover:bg-gray-50 bg-white py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 border border-gray-100">
+                                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4" alt="Google Logo">
+                                        <span>المتابعة باستخدام Google</span>
+                                    </a>
+                                </div>
+
+                                <!-- Divider -->
+                                <div class="relative flex py-0.5 items-center">
+                                    <div class="flex-grow border-t border-gray-100"></div>
+                                    <span class="flex-shrink-0 mx-3 text-gray-300 text-[9px]">أو باستخدام رقم الهاتف</span>
+                                    <div class="flex-grow border-t border-gray-100"></div>
+                                </div>
+
+                                <!-- Phone Field -->
+                                <div class="relative group" dir="ltr">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-700 font-bold tracking-wider text-xs border-r border-gray-100 pr-2 my-1.5 bg-gray-100 rounded-l-lg" style="z-index: 10;">
+                                        +967
+                                    </div>
+                                    <input type="tel" name="phone" id="auth_phone" required 
+                                        placeholder="77xxxxxxx"
+                                        maxlength="9"
+                                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, ''); handlePhoneValidation(this);"
+                                        class="block w-full pl-16 pr-3 py-3 rounded-xl text-gray-900 text-left input-premium outline-none placeholder-gray-300 text-sm font-medium tracking-wide">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-300 group-focus-within:text-[var(--primary-color)] transition-colors">
+                                        <i class="fas fa-mobile-alt text-xs"></i>
+                                    </div>
+                                </div>
+                                <p id="phone-validation-msg" class="text-[10px] text-red-500 mt-1 hidden text-right"></p>
+                            </form>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-1" id="modal-title">
-                            تسجيل الدخول / إنشاء حساب
-                        </h3>
-                        <p class="text-gray-500 mb-4 text-xs" id="modal-desc">
-                            أدخل رقم هاتفك للمتابعة. إذا كنت جديداً، سيتم إنشاء حساب لك تلقائياً.
-                        </p>
-                        
-                        <form id="unifiedAuthForm" class="space-y-4">
-                            <!-- Google Login -->
-                            <div class="text-center">
-                                <a href="{% provider_login_url 'google' %}" id="google-login-modal" class="w-full text-xs font-bold text-gray-700 hover:bg-gray-50 bg-white py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 border border-gray-100">
-                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4" alt="Google Logo">
-                                    <span>المتابعة باستخدام Google</span>
+
+                        <!-- Merchant Login Content -->
+                        <div id="merchant-login-content" class="hidden text-center fade-in-section">
+                            <div class="mb-3">
+                                <i class="fas fa-store text-3xl text-[var(--primary-color)] opacity-40"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-1">
+                                تسجيل دخول التاجر
+                            </h3>
+                            <p class="text-gray-500 mb-4 text-xs">
+                                يرجى إدخال بيانات حسابك للدخول إلى لوحة التحكم
+                            </p>
+                            
+                            <form id="merchantAuthForm" class="space-y-4 text-right">
+                                <div class="mb-2">
+                                    <label for="merchant_username" class="block text-xs font-medium text-gray-700 mb-1">اسم المستخدم</label>
+                                    <input id="merchant_username" name="username" type="text" autocomplete="username" required 
+                                        class="appearance-none rounded-xl relative block w-full px-4 py-2.5 input-premium placeholder-gray-300 text-gray-900 focus:outline-none text-sm" 
+                                        placeholder="اسم المستخدم">
+                                </div>
+                                <div>
+                                    <label for="merchant_password" class="block text-xs font-medium text-gray-700 mb-1">كلمة المرور</label>
+                                    <input id="merchant_password" name="password" type="password" autocomplete="current-password" required 
+                                        class="appearance-none rounded-xl relative block w-full px-4 py-2.5 input-premium placeholder-gray-300 text-gray-900 focus:outline-none text-sm" 
+                                        placeholder="كلمة المرور">
+                                </div>
+                                <div class="flex justify-start">
+                                    <button type="button" onclick="togglePasswordReset(true)" class="text-[10px] font-bold text-[var(--primary-color)] hover:underline">
+                                        نسيت كلمة المرور؟
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Password Reset Section (Hidden by default) -->
+                            <div id="password-reset-content" class="hidden space-y-4 text-right fade-in-section">
+                                <div class="text-center mb-4">
+                                    <h4 class="text-sm font-bold text-gray-800">استعادة كلمة المرور</h4>
+                                    <p class="text-[10px] text-gray-500 mt-1">أدخل اسم المستخدم لتزويدك بخيارات الاستعادة</p>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <label for="reset_username" class="block text-xs font-medium text-gray-700 mb-1">اسم المستخدم</label>
+                                    <input id="reset_username" type="text" 
+                                        class="appearance-none rounded-xl relative block w-full px-4 py-2.5 input-premium placeholder-gray-300 text-gray-900 focus:outline-none text-sm" 
+                                        placeholder="اسم المستخدم أو الهاتف">
+                                </div>
+                                <div class="flex justify-start mb-2">
+                                    <button type="button" onclick="handlePasswordResetRequest(true)" class="text-[10px] font-bold text-gray-400 hover:text-[var(--primary-color)] transition-colors">
+                                        نسيت اسم المستخدم وكلمة المرور؟
+                                    </button>
+                                </div>
+
+                                <div id="reset-status-container" class="hidden rounded-xl p-3 text-right bg-gray-50 text-[11px]">
+                                    <!-- Dynamic content -->
+                                </div>
+
+                                <button type="button" id="reset-submit-btn" onclick="handlePasswordResetRequest()" class="w-full py-2.5 bg-gray-800 text-white font-bold rounded-xl text-sm transition-all active:scale-[0.98]">
+                                    تحقق من الحساب
+                                </button>
+                                
+                                <button type="button" onclick="togglePasswordReset(false)" class="w-full text-[10px] font-bold text-gray-400 hover:text-gray-600">
+                                    العودة لتسجيل الدخول
+                                </button>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <a href="{% url 'join_business' %}" class="text-[11px] font-bold" style="color: var(--primary-color);">
+                                    ليس لديك حساب؟ انضم إلينا
                                 </a>
                             </div>
-
-                            <!-- Divider -->
-                            <div class="relative flex py-0.5 items-center">
-                                <div class="flex-grow border-t border-gray-100"></div>
-                                <span class="flex-shrink-0 mx-3 text-gray-300 text-[9px]">أو باستخدام رقم الهاتف</span>
-                                <div class="flex-grow border-t border-gray-100"></div>
-                            </div>
-
-                            <!-- Phone Field -->
-                            <div class="relative group" dir="ltr">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 font-bold tracking-wider text-xs border-r border-gray-100 pr-2 my-1.5 bg-gray-50 rounded-l-lg" style="z-index: 10;">
-                                    +967
-                                </div>
-                                <input type="tel" name="phone" id="auth_phone" required 
-                                    placeholder="77xxxxxxx"
-                                    maxlength="9"
-                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                                    oninput="this.value = this.value.replace(/[^0-9]/g, ''); handlePhoneValidation(this);"
-                                    class="block w-full pl-16 pr-3 py-3 bg-white border border-gray-100 rounded-xl text-gray-900 text-left shadow-sm focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-300 text-sm font-medium tracking-wide">
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-300 group-focus-within:text-[var(--primary-color)] transition-colors">
-                                    <i class="fas fa-mobile-alt text-xs"></i>
-                                </div>
-                            </div>
-                            <p id="phone-validation-msg" class="text-[10px] text-red-500 mt-1 hidden text-right"></p>
-                        </form>
-
-                        <!-- Merchant Link directly below phone -->
-                        <div class="text-center mt-4">
-                            <a href="{% url 'merchant_login' %}" class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-100 transition-all border border-blue-100/50 shadow-sm">
-                                <i class="fas fa-store"></i>
-                                هل أنت تاجر؟ سجل دخولك من هنا
-                            </a>
                         </div>
 
-                        <div id="loginError" class="bg-red-50 text-red-600 text-sm py-3 px-4 rounded-xl mt-4 hidden flex items-center gap-2">
-                            <i class="fas fa-exclamation-circle"></i>
+                        <div id="loginError" class="bg-red-50 text-red-600 text-[11px] py-2.5 px-4 rounded-xl mt-4 hidden flex items-center gap-2 text-right">
+                            <i class="fas fa-exclamation-circle flex-shrink-0"></i>
                             <span class="error-text"></span>
                         </div>
                     </div>
@@ -500,28 +711,23 @@
                         </label>
                     </div>
 
-                    <div class="flex gap-2 mb-4">
-                        <button type="button" id="authSubmitBtn" onclick="handleAuthSubmit()" 
-                            class="flex-1 py-3 px-4 btn-brand text-white font-bold rounded-xl shadow-sm text-sm active:scale-[0.98]">
+                    <div class="flex gap-2 mb-2">
+                        <button type="button" id="authSubmitBtn" onclick="handleLoginSubmit()" 
+                            class="flex-1 py-3 px-4 btn-brand text-white font-bold rounded-2xl shadow-lg shadow-[var(--primary-color)]/20 text-sm active:scale-[0.98] shimmer-btn">
                             متابعة
                         </button>
                         <button type="button" onclick="closeLoginModal()" 
-                            class="flex-1 py-3 px-4 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl text-sm hover:bg-gray-50 transition-all">
+                            class="flex-1 py-3 px-4 bg-white/20 border border-white/40 text-gray-600 font-bold rounded-2xl text-sm hover:bg-white/40 transition-all">
                             إلغاء
                         </button>
                     </div>
 
-                    <!-- Dual Logos at the Bottom -->
-                    <div class="flex items-center justify-center gap-3 pt-3 border-t border-gray-100 opacity-40">
-                        {% if supplier.profile_picture %}
-                            <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-8 w-auto object-contain grayscale hover:grayscale-0 transition-all" loading="lazy">
-                            <div class="h-4 w-px bg-gray-300"></div>
-                        {% endif %}
-                        {% if system_settings.logo %}
-                            <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-8 w-auto object-contain grayscale hover:grayscale-0 transition-all" loading="lazy">
-                        {% else %}
-                            <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-8 w-auto object-contain grayscale" loading="lazy">
-                        {% endif %}
+                    <!-- Join As Merchant Link -->
+                    <div class="mt-4 pt-4 border-t border-gray-100 text-center">
+                        <p class="text-[11px] text-gray-400 mb-1">لديك عمل تجاري؟ انضم إلينا</p>
+                        <a href="{% url 'join_business' %}" class="text-[12px] font-bold text-[var(--primary-color)] hover:underline">
+                            سجل كتاجر الآن
+                        </a>
                     </div>
                 </div>
             </div>
@@ -908,6 +1114,8 @@
         function openLoginModal(actionCallback) {
             document.getElementById('loginModal').classList.remove('hidden');
             if (actionCallback) pendingAction = actionCallback;
+            // Default to client tab
+            switchLoginTab('client');
         }
 
         function closeLoginModal() {
@@ -916,21 +1124,57 @@
             document.getElementById('loginError').classList.add('hidden');
         }
 
-        function handleAuthSubmit() {
+        let currentActiveTab = 'client';
+
+        function switchLoginTab(tab) {
+            currentActiveTab = tab;
+            const clientContent = document.getElementById('client-login-content');
+            const merchantContent = document.getElementById('merchant-login-content');
+            const clientTab = document.getElementById('tab-client');
+            const merchantTab = document.getElementById('tab-merchant');
+            const privacyContainer = document.querySelector('#loginModal .bg-gray-50 .mb-4.text-right');
+
+            if (tab === 'client') {
+                clientContent.classList.remove('hidden');
+                merchantContent.classList.add('hidden');
+                clientTab.classList.add('active');
+                merchantTab.classList.remove('active');
+                document.getElementById('tab-indicator').style.transform = 'translateX(0)';
+                if (privacyContainer) privacyContainer.style.display = 'block';
+            } else {
+                clientContent.classList.add('hidden');
+                merchantContent.classList.remove('hidden');
+                merchantTab.classList.add('active');
+                clientTab.classList.remove('active');
+                // Move indicator to the start (left in RTL)
+                document.getElementById('tab-indicator').style.transform = 'translateX(-100%)';
+                if (privacyContainer) privacyContainer.style.display = 'none';
+            }
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function handleLoginSubmit() {
+            if (currentActiveTab === 'client') {
+                handleClientAuthSubmit();
+            } else {
+                handleMerchantAuthSubmit();
+            }
+        }
+
+        function handleClientAuthSubmit() {
             const phone = document.getElementById('auth_phone').value;
             const errorDiv = document.getElementById('loginError');
             const submitBtn = document.getElementById('authSubmitBtn');
             const csrftoken = getCookie('csrftoken');
             const privacyCheckbox = document.getElementById('privacy_policy_checkbox');
-            const privacyErrorMsg = document.getElementById('privacy-error-msg');
-
+            
             // Validate privacy policy checkbox
             if (!privacyCheckbox.checked) {
-                privacyErrorMsg.classList.remove('hidden');
+                errorDiv.querySelector('.error-text').textContent = 'يجب الموافقة على سياسة الخصوصية للمتابعة';
+                errorDiv.classList.remove('hidden');
                 privacyCheckbox.focus();
                 return;
             }
-            privacyErrorMsg.classList.add('hidden');
 
             if (!phone) {
                 errorDiv.querySelector('.error-text').textContent = 'رقم الهاتف مطلوب';
@@ -956,6 +1200,57 @@
                 if (data.success) {
                     showNotification(data.message, 'success');
                     handlePostAuth(data);
+                } else {
+                    errorDiv.querySelector('.error-text').textContent = data.message || 'حدث خطأ غير متوقع';
+                    errorDiv.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                errorDiv.querySelector('.error-text').textContent = 'حدث خطأ في الاتصال';
+                errorDiv.classList.remove('hidden');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+        }
+
+        function handleMerchantAuthSubmit() {
+            const username = document.getElementById('merchant_username').value;
+            const password = document.getElementById('merchant_password').value;
+            const errorDiv = document.getElementById('loginError');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            const csrftoken = getCookie('csrftoken');
+
+            if (!username || !password) {
+                errorDiv.querySelector('.error-text').textContent = 'اسم المستخدم وكلمة المرور مطلوبان';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i> جاري الدخول...';
+            errorDiv.classList.add('hidden');
+
+            fetch('/api/merchant-login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        window.location.reload();
+                    }
                 } else {
                     errorDiv.querySelector('.error-text').textContent = data.message || 'حدث خطأ غير متوقع';
                     errorDiv.classList.remove('hidden');
@@ -1372,6 +1667,109 @@
 
             setupDropdown('user-menu-button', 'user-dropdown');
             setupDropdown('guest-menu-button', 'guest-dropdown');
+
+            // --- Password Reset Logic ---
+            window.togglePasswordReset = function(show) {
+                const loginForm = document.getElementById('merchantAuthForm');
+                const merchantContent = document.getElementById('merchant-login-content');
+                const resetContent = document.getElementById('password-reset-content');
+                
+                if (show) {
+                    loginForm.classList.add('hidden');
+                    resetContent.classList.remove('hidden');
+                    merchantContent.querySelector('h3').classList.add('hidden');
+                    merchantContent.querySelector('.mb-3').classList.add('hidden');
+                    merchantContent.querySelector('p').classList.add('hidden');
+                } else {
+                    loginForm.classList.remove('hidden');
+                    resetContent.classList.add('hidden');
+                    merchantContent.querySelector('h3').classList.remove('hidden');
+                    merchantContent.querySelector('.mb-3').classList.remove('hidden');
+                    merchantContent.querySelector('p').classList.remove('hidden');
+                    document.getElementById('reset_username').value = '';
+                    const statusContainer = document.getElementById('reset-status-container');
+                    statusContainer.classList.add('hidden');
+                    statusContainer.innerHTML = '';
+                }
+            };
+
+            window.handlePasswordResetRequest = function(isForgotBoth = false) {
+                const usernameEl = document.getElementById('reset_username');
+                const username = isForgotBoth ? '' : usernameEl.value;
+                const submitBtn = document.getElementById('reset-submit-btn');
+                const statusContainer = document.getElementById('reset-status-container');
+                
+                if (!isForgotBoth && !username) {
+                    showNotification('يرجى إدخال اسم المستخدم ورقم الهاتف', 'error');
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i>جاري التحقق...';
+                
+                fetch('/api/password-reset-request/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ username: username })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    statusContainer.classList.remove('hidden');
+                    if (data.success) {
+                        if (data.is_forgot_both) {
+                             statusContainer.className = 'rounded-xl p-4 text-right bg-blue-50 text-blue-700 text-[11px] border border-blue-100 space-y-3';
+                             const message = encodeURIComponent(`مرحباً، لقد نسيت اسم المستخدم وكلمة المرور الخاصة بي. أحتاج للمساعدة في استعادة بيانات حسابي.`);
+                             const whatsappUrl = `https://wa.me/${data.support_phone}?text=${message}`;
+                             statusContainer.innerHTML = `
+                                <p class="font-bold mb-2">استعادة بيانات الحساب</p>
+                                <p>${data.message}</p>
+                                <div class="space-y-2 mt-3">
+                                    <a href="${whatsappUrl}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all">
+                                        <i class="fab fa-whatsapp text-lg"></i>
+                                        تواصل مع الدعم الفني
+                                    </a>
+                                    <button type="button" onclick="togglePasswordReset(false)" class="w-full py-2.5 bg-gray-800 text-white rounded-xl font-bold text-[10px] hover:bg-gray-900 transition-all">
+                                        العودة لتسجيل الدخول
+                                    </button>
+                                </div>
+                            `;
+                        } else {
+                            statusContainer.className = 'rounded-xl p-4 text-right bg-green-50 text-green-700 text-[11px] border border-green-100 space-y-3';
+                            const message = encodeURIComponent(`مرحباً، لقد قمت بطلب استعادة كلمة المرور لحسابي (${data.username}).`);
+                            const whatsappUrl = `https://wa.me/${data.support_phone}?text=${message}`;
+                            statusContainer.innerHTML = `
+                            <p class="font-bold mb-2">تم تحديث كلمة المرور!</p>
+                            <p>${data.message}</p>
+                            <div class="space-y-2 mt-3">
+                                <a href="${whatsappUrl}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2.5 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all text-xs">
+                                    <i class="fab fa-whatsapp text-lg"></i>
+                                    متابعة الطلب في واتساب
+                                </a>
+                                <button type="button" onclick="togglePasswordReset(false); document.getElementById('merchant_username').value='${data.username}';" class="w-full py-2.5 bg-gray-800 text-white rounded-xl font-bold text-[10px] hover:bg-gray-900 transition-all">
+                                    الذهاب لصفحة تسجيل الدخول
+                                </button>
+                            </div>
+                        `;
+                        }
+                        submitBtn.classList.add('hidden');
+                    } else {
+                        statusContainer.className = 'rounded-xl p-3 text-right bg-red-50 text-red-600 text-[11px] border border-red-100';
+                        statusContainer.innerHTML = `<i class="fas fa-exclamation-circle ml-2"></i>${data.message}`;
+                        submitBtn.innerHTML = 'تحقق من الحساب';
+                        submitBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('حدث خطأ في النظام. يرجى المحاولة لاحقاً.', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'تحقق من الحساب';
+                });
+            };
+            // ---------------------------
 
             // --- UI/UX Enhanced Scrolling Dynamics ---
             const navbar = document.querySelector('.curved-navbar');
