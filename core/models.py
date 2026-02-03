@@ -731,6 +731,8 @@ class SystemSettings(models.Model):
     
     whatsapp_api_url = models.URLField(blank=True, verbose_name="رابط API واتساب")
     whatsapp_api_key = models.CharField(max_length=500, blank=True, verbose_name="الكود API واتساب")
+    
+    show_merchant_agreement = models.BooleanField(default=False, verbose_name="عرض اتفاقية التجار")
 
 
 

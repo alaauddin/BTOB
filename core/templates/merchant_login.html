@@ -42,11 +42,17 @@
                         class="appearance-none rounded-xl relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm transition-colors" 
                         placeholder="اسم المستخدم">
                 </div>
-                <div>
+                <div class="mb-4">
                     <label for="password" class="block text-sm font-medium text-gray-700 mb-1">كلمة المرور</label>
-                    <input id="password" name="password" type="password" autocomplete="current-password" required 
-                        class="appearance-none rounded-xl relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm transition-colors" 
-                        placeholder="كلمة المرور">
+                    <div class="relative">
+                        <input id="password" name="password" type="password" autocomplete="current-password" required 
+                            class="appearance-none rounded-xl relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm transition-colors pl-12" 
+                            placeholder="كلمة المرور">
+                        <button type="button" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-500 transition-colors"
+                            onclick="togglePasswordVisibility('password', 'pw_icon_main')">
+                            <i id="pw_icon_main" class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 

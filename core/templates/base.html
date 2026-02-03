@@ -150,6 +150,33 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Password Visibility Toggle Styles */
+        .password-toggle-wrapper {
+            position: relative;
+        }
+        .password-toggle-btn {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            z-index: 10;
+        }
+        .password-toggle-btn:hover {
+            color: var(--primary-color);
+        }
+        .input-premium-with-toggle {
+            padding-left: 45px !important;
+        }
+
         .loader-logo-container {
             position: relative;
             z-index: 1;
@@ -636,11 +663,16 @@
                                         class="appearance-none rounded-xl relative block w-full px-4 py-2.5 input-premium placeholder-gray-300 text-gray-900 focus:outline-none text-sm" 
                                         placeholder="اسم المستخدم">
                                 </div>
-                                <div>
+                                <div class="mb-2">
                                     <label for="merchant_password" class="block text-xs font-medium text-gray-700 mb-1">كلمة المرور</label>
-                                    <input id="merchant_password" name="password" type="password" autocomplete="current-password" required 
-                                        class="appearance-none rounded-xl relative block w-full px-4 py-2.5 input-premium placeholder-gray-300 text-gray-900 focus:outline-none text-sm" 
-                                        placeholder="كلمة المرور">
+                                    <div class="password-toggle-wrapper">
+                                        <input id="merchant_password" name="password" type="password" autocomplete="current-password" required 
+                                            class="appearance-none rounded-xl relative block w-full px-4 py-2.5 input-premium input-premium-with-toggle placeholder-gray-300 text-gray-900 focus:outline-none text-sm" 
+                                            placeholder="كلمة المرور">
+                                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('merchant_password', 'merchant_pw_icon')">
+                                            <i id="merchant_pw_icon" class="fas fa-eye text-xs"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="flex justify-start">
                                     <button type="button" onclick="togglePasswordReset(true)" class="text-[10px] font-bold text-[var(--primary-color)] hover:underline">
@@ -1770,6 +1802,22 @@
                 });
             };
             // ---------------------------
+
+            // Global Password Toggle Helper
+            window.togglePasswordVisibility = function(inputId, iconId) {
+                const passwordInput = document.getElementById(inputId);
+                const toggleIcon = document.getElementById(iconId);
+                
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                }
+            };
 
             // --- UI/UX Enhanced Scrolling Dynamics ---
             const navbar = document.querySelector('.curved-navbar');

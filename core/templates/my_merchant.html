@@ -367,7 +367,7 @@
     {% include 'includes/merchant_settings_modal.html' %}
 
     <!-- Terms Agreement Modal (Persistent) -->
-    {% if not supplier.agreed_to_terms %}
+    {% if not supplier.agreed_to_terms and system_settings.show_merchant_agreement %}
     <div id="terms-modal" class="fixed inset-0 z-[9999999] flex items-center justify-center p-4 overflow-y-auto" style="z-index: 99999999 !important;">
         <!-- Non-dismissible backdrop -->
         <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md"></div>

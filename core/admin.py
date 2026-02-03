@@ -217,7 +217,7 @@ class SupplierAdPlatfromAdmin(admin.ModelAdmin):
 
 @admin.register(SystemSettings)
 class SystemSettingsAdmin(admin.ModelAdmin):
-    list_display = ('site_name', 'company_email', 'show_download_app')
+    list_display = ('site_name', 'company_email', 'show_download_app', 'show_merchant_agreement')
     fieldsets = (
         ('المعلومات العامة', {
             'fields': ('site_name', 'description', 'logo','laoder_image')
@@ -233,6 +233,9 @@ class SystemSettingsAdmin(admin.ModelAdmin):
         }),
         ('واتساب', {
             'fields': ('whatsapp_api_url', 'whatsapp_api_key')
+        }),
+        ('اتفاقيات وشروط', {
+            'fields': ('show_merchant_agreement',)
         }),
         ('إعدادات SEO', {
             'fields': ('seo_title', 'seo_description', 'seo_keywords'),
