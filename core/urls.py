@@ -44,7 +44,7 @@ urlpatterns = [
     path('profile/addresses/set/<int:pk>/', set_current_address, name='set_current_address'),
 
     # path('products/', ProductListView.as_view(), name='product-list'),
-    path('/<str:store_id>/', product_list, name='product-list'),
+    path('products/<str:store_id>/', product_list, name='product-list'),
     path('products/category/<int:category_id>/<str:store_id>/', product_list, name='product_list_category'),
     path('products/category/product_list_subcategory/<int:subcategory_id>/<str:store_id>/', product_list, name='product_list_subcategory'),
     path('<str:store_id>/details/<int:pk>/', product_detail, name='product_detail'),
