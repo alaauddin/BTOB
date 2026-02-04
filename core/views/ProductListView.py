@@ -17,9 +17,15 @@ from datetime import timedelta
 logger = logging.getLogger(__name__)
 
 # @login_required <-- Removed for public access
-def product_list(request, store_id, category_id=None, subcategory_id=None):
+def product_list(request, store_id=None, category_id=None, subcategory_id=None):
     # Base queryset
-    supplier = get_object_or_404(Supplier, store_id=store_id, is_active=True)
+    is_multi_tenant = hasattr(request, 'tenant') and request.tenant.schema_name != 'public'
+    if is_multi_tenant:
+        supplier = Supplier.objects.first()
+        store_id = supplier.store_id # Use the local supplier's ID
+    else:
+        # Fallback for public/legacy access
+        supplier = get_object_or_404(Supplier, store_id=store_id, is_active=True)
     today = timezone.now().date()
     
     # Visit tracking (session based)

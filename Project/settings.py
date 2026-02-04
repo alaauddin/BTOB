@@ -31,7 +31,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Application definition
 
-INSTALLED_APPS = [
+SHARED_APPS = (
+    'django_tenants',  # mandatory
+    'tenants',         # mandatory
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,18 +41,30 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-
     'widget_tweaks',
+)
+
+TENANT_APPS = (
     'core',
-    'accounts',   
+    'accounts',
     'service_provider',
-    
-]
+    'django.contrib.admin', 
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+)
+
+INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
+
+TENANT_MODEL = "tenants.Client"
+TENANT_DOMAIN_MODEL = "tenants.Domain"
+
+DATABASE_ROUTERS = (
+    'django_tenants.routers.TenantSyncRouter',
+)
 
 SITE_ID = 1
 
@@ -96,12 +110,16 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+MIDDLEWARE.insert(0, 'django_tenants.middleware.main.TenantMainMiddleware')
+
 # Add allauth middleware if available (required for version >= 0.56.0)
 import importlib.util
 if importlib.util.find_spec('allauth.account.middleware'):
     MIDDLEWARE.append('allauth.account.middleware.AccountMiddleware')
 
 ROOT_URLCONF = 'Project.urls'
+PUBLIC_SCHEMA_URLCONF = 'Project.urls_public'
+TENANT_SCHEMA_URLCONF = 'Project.urls_tenant'
 
 TEMPLATES = [
     {
@@ -132,24 +150,14 @@ WSGI_APPLICATION = 'Project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME','aratfbjj_aratat_db'),
-        'USER': os.getenv('DB_USER','aratfbjj_aratat_db_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD','wr94$43URhE4'),
+        'ENGINE': 'django_tenants.postgresql_backend',
+        'NAME': os.getenv('DB_NAME', 'btob_tenants_db'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '3306'),
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-        },
+        'PORT': os.getenv('DB_PORT', '5455'),
     }
 }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
 
 
 # Password validation
@@ -205,11 +213,9 @@ MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 
 
 
-LOGOUT_REDIRECT_URL = 'suppliers_list'
-
-LOGIN_REDIRECT_URL = 'suppliers_list'
-
-LOGIN_URL= 'suppliers_list'
+LOGOUT_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'home'
+LOGIN_URL= 'account_login'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB

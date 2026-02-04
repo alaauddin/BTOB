@@ -28,8 +28,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            "ALTER TABLE core_currency CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
-        ),
+        # migrations.RunSQL(
+        #     "ALTER TABLE core_currency CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
+        # ),
         migrations.RunPython(migrate_currency),
     ]

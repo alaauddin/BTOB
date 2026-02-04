@@ -7,8 +7,8 @@
     <title>{% block title %}{% if system_settings.seo_title %}{{ system_settings.seo_title }}{% else %}{{ system_settings.site_name|default:"متجرك الإلكتروني" }}{% endif %}{% endblock %}</title>
     
     <!-- Dynamic SEO Tags -->
-    <meta name="description" content="{% block meta_description %}{{ system_settings.seo_description|default:system_settings.description }}{% endblock %}">
-    {% if system_settings.seo_keywords %}
+    <meta name="description" content="{% block meta_description %}{% if system_settings %}{{ system_settings.seo_description|default:system_settings.description }}{% endif %}{% endblock %}">
+    {% if system_settings and system_settings.seo_keywords %}
     <meta name="keywords" content="{{ system_settings.seo_keywords }}">
     {% endif %}
     

@@ -17,12 +17,22 @@ from core.models import SupplierAdPlatfrom
 def my_merchant(request):
     template_name = 'my_merchant.html'
 
+    # Multi-tenancy support
+    is_multi_tenant = hasattr(request, 'tenant') and request.tenant.schema_name != 'public'
+    
     # Allow superuser to view other suppliers
     if request.user.is_superuser and request.GET.get('supplier_id'):
         supplier_id = request.GET.get('supplier_id')
         supplier = Supplier.objects.filter(id=supplier_id).first()
+    elif is_multi_tenant:
+        # In a tenant schema, there is usually only one Supplier (the tenant owner)
+        supplier = Supplier.objects.first()
+        # Security check: Ensure logged in user owns this supplier/tenant
+        if supplier and supplier.user != request.user and not request.user.is_superuser:
+            # If user is not optional context (e.g. staff), reject
+             return redirect('account_login')
     else:
-        # accessing related object safely
+        # accessing related object safely (Legacy/Public mode)
         supplier = getattr(request.user, 'supplier', None)
     
     if not supplier:
