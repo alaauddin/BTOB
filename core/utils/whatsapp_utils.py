@@ -1,31 +1,9 @@
 import requests
 import logging
 import threading
-import ssl
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.poolmanager import PoolManager
-from requests.packages.urllib3.util import ssl_
-
 from core.models import SystemSettings
 
 logger = logging.getLogger(__name__)
-
-class LegacySSLAdapter(HTTPAdapter):
-    """
-    Au custom HTTP adapter that lowers the SSL security level to allow weak ciphers.
-    This fixes 'SSLEOFError' on some legacy or misconfigured servers.
-    """
-    def init_poolmanager(self, connections, maxsize, block=False):
-        context = ssl_.create_urllib3_context()
-        # Set security level to 1 (allows legacy ciphers/protocols)
-        # This is often needed for servers that don't support the stricter defaults of OpenSSL 3.0+
-        context.set_ciphers('DEFAULT@SECLEVEL=1')
-        self.poolmanager = PoolManager(
-            num_pools=connections,
-            maxsize=maxsize,
-            block=block,
-            ssl_context=context
-        )
 
 def _send_whatsapp_message_sync(phone, message):
     """
@@ -39,19 +17,14 @@ def _send_whatsapp_message_sync(phone, message):
     # Ensure phone number is a string and clean it if necessary
     phone = str(phone).strip()
     if phone.startswith('0'):
-        phone = '967' + phone[1:] # Assuming Yemen if it starts with 0
+        phone = '967' + phone[1:]  # Assuming Yemen if it starts with 0
     elif not phone.startswith('+') and not phone.startswith('967'):
         # If no country code, prepend 967 as default for this platform
-        if len(phone) == 9: # standard yemen mobile without 0
+        if len(phone) == 9:  # standard yemen mobile without 0
              phone = '967' + phone
 
     try:
-        session = requests.Session()
-        # Mount the custom adapter for the WhatsApp API URL
-        adapter = LegacySSLAdapter()
-        session.mount('https://', adapter)
-
-        response = session.post(
+        response = requests.post(
             system_settings.whatsapp_api_url,
             headers={
                 'X-API-Key': system_settings.whatsapp_api_key,
