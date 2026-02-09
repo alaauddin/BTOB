@@ -8,13 +8,13 @@
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
     :root {
-        --primary: {{ supplier.primary_color|default:'#ef7d2d' }};
-        --secondary: {{ supplier.footer_color|default:'#3a505e' }};
-        --accent: {{ supplier.accent_color|default:'#9abfc4' }};
+        --primary: {{ supplier.primary_color|default:'#F58231' }};
+        --secondary: {{ supplier.footer_color|default:'#2B6CB0' }};
+        --accent: {{ supplier.accent_color|default:'#00FFFF' }};
         --bg-glass: rgba(255, 255, 255, 0.85);
         --border-glass: rgba(255, 255, 255, 0.3);
         --shadow-premium: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
-        --text-main: #3a505e;
+        --text-main: #4A5568;
         --text-muted: #64748b;
     }
 
@@ -79,7 +79,7 @@
         padding: 1.5rem;
         border-radius: 24px;
         color: white;
-        box-shadow: 0 20px 30px -10px rgba(239, 125, 45, 0.2);
+        box-shadow: 0 20px 30px -10px rgba(245, 130, 49, 0.2);
         margin-bottom: 2rem;
     }
 
@@ -185,7 +185,7 @@
         border-color: #fbd38d;
         color: white;
         transform: scale(1.15);
-        box-shadow: 0 0 20px rgba(239, 125, 45, 0.3);
+        box-shadow: 0 0 20px rgba(245, 130, 49, 0.3);
     }
 
     .step-item.completed .step-icon {
@@ -248,7 +248,7 @@
 
     .section-title i {
         color: var(--primary);
-        background: rgba(239, 125, 45, 0.08);
+        background: rgba(245, 130, 49, 0.08);
         padding: 8px;
         border-radius: 10px;
         font-size: 0.875rem;
@@ -366,7 +366,7 @@
         border-radius: 14px;
         font-weight: 700;
         border: none;
-        box-shadow: 0 8px 15px -3px rgba(239, 125, 45, 0.2);
+        box-shadow: 0 8px 15px -3px rgba(245, 130, 49, 0.2);
         transition: all 0.3s ease;
         width: 100%;
         font-size: 1rem;
@@ -378,7 +378,7 @@
 
     .btn-premium-action:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 25px -5px rgba(239, 125, 45, 0.3);
+        box-shadow: 0 12px 25px -5px rgba(245, 130, 49, 0.3);
         color: white;
     }
 

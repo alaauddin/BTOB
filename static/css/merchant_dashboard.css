@@ -225,7 +225,7 @@
 
 
 .stats-card {
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(168, 85, 247, 0.1));
+    background: linear-gradient(135deg, rgba(245, 130, 49, 0.1), rgba(0, 255, 255, 0.1));
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 20px;
@@ -308,7 +308,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, rgba(37, 99, 235, 0.3), rgba(168, 85, 247, 0.3));
+    background: linear-gradient(45deg, rgba(245, 130, 49, 0.3), rgba(0, 255, 255, 0.3));
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -356,7 +356,7 @@
 
 .main-content .action-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+    box-shadow: 0 8px 20px rgba(245, 130, 49, 0.4);
 }
 
 .floating-add-btn {
@@ -442,16 +442,16 @@
 
 /* Tab Specific Colors - Active & Inactive Highlights */
 .tab-btn.tab-products {
-    color: #2563eb;
-    background: rgba(37, 99, 235, 0.05);
+    color: #F58231;
+    background: rgba(245, 130, 49, 0.05);
 }
 
 .tab-btn.tab-products i {
-    color: #2563eb;
+    color: #F58231;
 }
 
 .tab-btn.tab-products.active {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: linear-gradient(135deg, #F58231, #e06b12);
     color: white;
 }
 
@@ -469,8 +469,8 @@
 }
 
 .tab-btn.tab-orders.active {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
+    background: linear-gradient(135deg, #FFE35B, #f59e0b);
+    color: #4A5568;
 }
 
 .tab-btn.tab-orders.active i {

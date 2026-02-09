@@ -36,12 +36,12 @@
 <style>
     /* Dynamic Theme Variables */
     :root {
-        --primary-color: {{ supplier.primary_color|default:'#2563eb' }};
+        --primary-color: {{ supplier.primary_color|default:'#F58231' }};
         --secondary-color: {{ supplier.secondary_color|default:'#ffffff' }};
-        --accent-color: {{ supplier.accent_color|default:'#2563eb' }};
-        --navbar-bg: {{ supplier.navbar_color|default:'#2563eb' }};
-        --footer-bg: {{ supplier.footer_color|default:'#1e293b' }};
-        --text-color: {{ supplier.text_color|default:'#1e293b' }};
+        --accent-color: {{ supplier.accent_color|default:'#00FFFF' }};
+        --navbar-bg: {{ supplier.navbar_color|default:'#F58231' }};
+        --footer-bg: {{ supplier.footer_color|default:'#2B6CB0' }};
+        --text-color: {{ supplier.text_color|default:'#4A5568' }};
         
         --glass-bg: rgba(255, 255, 255, 0.95);
         
@@ -52,7 +52,7 @@
         --warning-gradient: var(--warning-color);
         
         /* Dynamic Background */
-        --body-bg-gradient: linear-gradient(135deg, {{ supplier.primary_color|default:'#2563eb' }}1A 0%, {{ supplier.secondary_color|default:'#ffffff' }}1A 100%);
+        --body-bg-gradient: linear-gradient(135deg, {{ supplier.primary_color|default:'#F58231' }}1A 0%, {{ supplier.secondary_color|default:'#ffffff' }}1A 100%);
     }
     
     @media (max-width: 768px) {
@@ -81,6 +81,22 @@
         .hero-subtitle {
             font-size: 0.8rem !important;
             margin-bottom: 0 !important;
+        }
+
+        /* Force Category Button Active State to be less orange */
+        .modern-category-btn.active {
+            background: var(--brand-slate, #2B6CB0) !important;
+            color: white !important;
+            border-color: var(--primary-color, #F58231) !important;
+            box-shadow: 0 8px 20px rgba(43, 108, 176, 0.25) !important;
+        }
+
+        /* Force Category Button Active State to be less orange */
+        .modern-category-btn.active {
+            background: var(--brand-slate, #2B6CB0) !important;
+            color: white !important;
+            border-color: var(--primary-color, #F58231) !important;
+            box-shadow: 0 8px 20px rgba(43, 108, 176, 0.25) !important;
         }
     }
 </style>
@@ -136,9 +152,9 @@
                         <!-- Premium CTA Button -->
                         {% if ad.product %}
                         <a href="{% url 'product_detail' store_id=supplier.store_id pk=ad.product.id %}" 
-                           style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, var(--primary-color, #2563eb) 0%, var(--accent-color, #1d4ed8) 100%); color: #fff; padding: 0.75rem 1.75rem; border-radius: 50px; font-weight: 600; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 15px rgba(37,99,235,0.4); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid rgba(255,255,255,0.2);"
-                           onmouseover="this.style.transform='translateY(-2px) scale(1.05)'; this.style.boxShadow='0 6px 20px rgba(37,99,235,0.5)';"
-                           onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 4px 15px rgba(37,99,235,0.4)';">
+                           style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, var(--brand-slate, #2B6CB0) 0%, var(--accent-color, #00FFFF) 100%); color: #fff; padding: 0.75rem 1.75rem; border-radius: 50px; font-weight: 600; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 15px rgba(43, 108, 176, 0.3); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid rgba(255,255,255,0.2);"
+                           onmouseover="this.style.transform='translateY(-2px) scale(1.05)'; this.style.boxShadow='0 6px 20px rgba(43, 108, 176, 0.4)';"
+                           onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 4px 15px rgba(43, 108, 176, 0.3)';">
                             <span>استكشف العرض</span>
                             <i class="fas fa-arrow-left" style="transition: transform 0.3s;"></i>
                         </a>

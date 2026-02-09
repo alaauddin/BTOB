@@ -1,11 +1,15 @@
 /* Suppliers List Specific Styles */
 
 :root {
-    --primary-color: #ef7d2d;
-    --primary-dark: #d6621b;
-    --brand-slate: #3a505e;
+    --primary-color: #F58231;
+    --primary-yellow: #FFE35B;
+    --primary-dark: #e06b12;
+    --brand-slate: #2B6CB0;
+    --brand-cyan: #00FFFF;
     --light-gray: #f8fafc;
     --border-color: #e2e8f0;
+    --brand-gradient: linear-gradient(to right, #F58231, #FFE35B);
+    --tech-gradient: linear-gradient(135deg, #2B6CB0, #00FFFF);
 }
 
 /* Hero Section Refinement */
@@ -25,8 +29,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 10% 20%, rgba(239, 125, 45, 0.03) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(154, 191, 196, 0.03) 0%, transparent 40%);
+    background: radial-gradient(circle at 10% 20%, rgba(245, 130, 49, 0.03) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(0, 255, 255, 0.03) 0%, transparent 40%);
     pointer-events: none;
 }
 
@@ -125,20 +129,21 @@
 .category-pill:hover {
     transform: translateY(-4px);
     border-color: var(--primary-color);
-    box-shadow: 0 10px 20px rgba(239, 125, 45, 0.15);
+    box-shadow: 0 10px 20px rgba(245, 130, 49, 0.15);
     color: var(--primary-color);
 }
 
 .category-pill.active {
-    background: var(--primary-color) !important;
+    background: var(--brand-slate) !important;
     color: white !important;
-    border-color: var(--primary-dark) !important;
-    box-shadow: 0 10px 25px rgba(239, 125, 45, 0.45) !important;
-    transform: scale(1.08) translateY(-2px);
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 10px 25px rgba(43, 108, 176, 0.3) !important;
+    transform: scale(1.05) translateY(-2px);
+    border-width: 2px !important;
 }
 
 .category-pill.active i {
-    color: white !important;
+    color: var(--primary-color) !important;
     transform: scale(1.1);
 }
 
@@ -199,9 +204,9 @@
 
 .supplier-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(239, 125, 45, 0.05);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08), 0 5px 15px rgba(245, 130, 49, 0.05);
     /* Softer, deeper shadow */
-    border-color: rgba(239, 125, 45, 0.3);
+    border-color: rgba(245, 130, 49, 0.3);
 }
 
 .supplier-cover {
@@ -274,7 +279,7 @@
 }
 
 .supplier-stat i {
-    color: #ef7d2d;
+    color: #F58231;
     font-size: 0.8rem;
 }
 
@@ -330,7 +335,7 @@
 }
 
 .btn-visit {
-    background: linear-gradient(135deg, #3a505e 0%, #2d3e4a 100%) !important;
+    background: linear-gradient(135deg, #2B6CB0 0%, #1a4d8c 100%) !important;
     color: white !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     /* Optimized touch target - balanced size */
@@ -345,8 +350,8 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     /* Multi-layer shadow for depth */
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),
-        0 6px 16px rgba(58, 80, 94, 0.3),
-        0 2px 8px rgba(58, 80, 94, 0.2) !important;
+        0 6px 16px rgba(43, 108, 176, 0.3),
+        0 2px 8px rgba(43, 108, 176, 0.2) !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -371,17 +376,15 @@
     z-index: -1;
 }
 
-/* Enhanced hover state with stronger visual feedback */
 .btn-visit:hover {
     /* More pronounced lift */
     transform: translateY(-3px) scale(1.03) !important;
-    /* Vibrant brand-colored glow */
+    /* Professional Blue glow */
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2),
-        0 12px 32px rgba(239, 125, 45, 0.4),
-        0 6px 16px rgba(239, 125, 45, 0.3),
-        0 0 0 1px rgba(239, 125, 45, 0.2) !important;
+        0 12px 32px rgba(43, 108, 176, 0.3),
+        0 6px 16px rgba(43, 108, 176, 0.2) !important;
     color: white !important;
-    border-color: rgba(239, 125, 45, 0.3) !important;
+    border-color: rgba(43, 108, 176, 0.3) !important;
 }
 
 .btn-visit:hover::before {
@@ -407,15 +410,14 @@
 }
 
 .rating-box {
-    background: rgba(255, 165, 2, 0.1);
-    color: #ef7d2d;
+    background: rgba(43, 108, 176, 0.1);
+    color: var(--brand-slate);
     padding: 8px 14px;
     border-radius: 10px;
     font-size: 0.85rem;
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    /* Prevent shrinking */
 }
 
 .no-suppliers {
@@ -488,7 +490,7 @@
 
 .search-input-group:focus-within {
     transform: translateY(-2px);
-    box-shadow: 0 15px 40px rgba(239, 125, 45, 0.12);
+    box-shadow: 0 15px 40px rgba(245, 130, 49, 0.12);
     border-color: var(--primary-color);
 }
 
@@ -628,7 +630,7 @@
 
 .ad-banner:hover {
     transform: translateY(-4px);
-    box-shadow: 0 15px 35px rgba(239, 125, 45, 0.15);
+    box-shadow: 0 15px 35px rgba(245, 130, 49, 0.15);
 }
 
 .ad-banner img {

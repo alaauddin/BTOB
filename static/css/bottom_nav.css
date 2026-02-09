@@ -1,12 +1,11 @@
-/* Liquid Bottom Navigation - Brand: Dynamic Identity */
 :root {
-    --liquid-primary: #ffffff;
-    /* Active Icon/Text Color (White) */
-    --liquid-bg: var(--navbar-bg, #ef7d2d);
-    /* Main Brand Color (Orange) */
-    --liquid-unselected: rgba(255, 255, 255, 0.6);
-    /* Unselected Icons (Semi-transparent white) */
-    --liquid-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    --liquid-primary: #f1f5f9;
+    /* Active Icon/Text Color (Bright Grey) */
+    --liquid-bg: #111827;
+    /* Dark Charcoal Background */
+    --liquid-unselected: rgba(255, 255, 255, 0.4);
+    /* Unselected Icons */
+    --liquid-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .liquid-nav-wrapper {
@@ -101,6 +100,7 @@
     transform: translateY(0);
     /* Reset transform */
     pointer-events: none;
+    font-weight: 700;
 }
 
 .liquid-nav-item.active .nav-text {
@@ -118,12 +118,12 @@
     /* Pop up higher */
     width: 65px;
     height: 65px;
-    background: var(--liquid-bg);
-    /* Same as bar = merged shape */
+    background: #F58231;
+    /* Use Brand Orange for the bubble */
     border-radius: 50%;
 
     /* Clean border to separate from page content if needed, or none for pure liquid */
-    border: 5px solid #f3f4f6;
+    border: 5px solid #ffffff;
     /* Use body background color (usually gray-50/100) to fake a cutout */
 
     transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);

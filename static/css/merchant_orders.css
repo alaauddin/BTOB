@@ -1,7 +1,7 @@
 :root {
-    --primary-color: #ef7d2d;
+    --primary-color: #F58231;
     --secondary-color: #ffffff;
-    --accent-color: #9abfc4;
+    --accent-color: #00FFFF;
 }
 
 /* Custom Notifications */
@@ -333,7 +333,7 @@
     border-color: #fbd38d;
     color: white;
     transform: scale(1.1);
-    box-shadow: 0 0 15px rgba(239, 125, 45, 0.2);
+    box-shadow: 0 0 15px rgba(245, 130, 49, 0.2);
 }
 
 .mini-step-item.completed .mini-step-icon {
@@ -364,7 +364,7 @@
 
 .mini-step-item.active:hover .mini-step-icon {
     background: var(--primary-color);
-    box-shadow: 0 0 20px rgba(239, 125, 45, 0.4);
+    box-shadow: 0 0 20px rgba(245, 130, 49, 0.4);
 }
 
 .mini-step-item.completed:hover .mini-step-icon {
@@ -526,7 +526,7 @@
 
 /* Unified Statistics Summary */
 .stats-summary-card {
-    background: linear-gradient(135deg, rgba(239, 125, 45, 0.05), rgba(154, 191, 196, 0.05));
+    background: linear-gradient(135deg, rgba(245, 130, 49, 0.05), rgba(0, 255, 255, 0.05));
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 16px;
@@ -668,7 +668,7 @@
 .status-tab.active {
     background: var(--primary-color);
     color: white;
-    box-shadow: 0 4px 12px rgba(239, 125, 45, 0.2);
+    box-shadow: 0 4px 12px rgba(245, 130, 49, 0.2);
 }
 
 /* Compact Filter Row */
@@ -712,7 +712,7 @@
 .filter-input-wrapper input:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(239, 125, 45, 0.1);
+    box-shadow: 0 0 0 3px rgba(245, 130, 49, 0.1);
 }
 
 .date-range-group {

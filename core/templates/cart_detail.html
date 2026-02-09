@@ -6,7 +6,7 @@
 {% block extra_css %}
     <style>
     :root {
-        --primary-color: {{ supplier.primary_color|default:'#2563eb' }};
+        --primary-color: {{ supplier.primary_color|default:'#F58231' }};
         --secondary-color: {{ supplier.secondary_color|default:'rgb(135, 219, 255)' }};
         --accent-color: {{ supplier.secondary_color|default:'rgb(135, 219, 255)' }};
     }
@@ -710,7 +710,7 @@
         // Custom Icon Definition
         const customIcon = L.divIcon({
             className: 'custom-map-marker',
-            html: `<i class="fas fa-map-marker-alt fa-3x" style="color: ${getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#2563eb'}; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>`,
+            html: `<i class="fas fa-map-marker-alt fa-3x" style="color: ${getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#F58231'}; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>`,
             iconSize: [40, 40],
             iconAnchor: [20, 40]
         });

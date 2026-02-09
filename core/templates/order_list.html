@@ -45,7 +45,7 @@
                     <div class="card-main-content">
                         <span class="order-ref-id">الطلب #{{ order.id|stringformat:"05d" }}</span>
                         <div class="card-meta">
-                            <div class="status-indicator" style="background: {% if order.pipeline_status.slug == 'pending' %}#fffbeb{% elif order.pipeline_status.slug == 'completed' %}#f0fdf4{% elif order.pipeline_status.slug == 'canceled' %}#fef2f2{% else %}#eff6ff{% endif %}; color: {% if order.pipeline_status.slug == 'pending' %}#d97706{% elif order.pipeline_status.slug == 'completed' %}#16a34a{% elif order.pipeline_status.slug == 'canceled' %}#dc2626{% else %}#2563eb{% endif %}">
+                            <div class="status-indicator" style="background: {% if order.pipeline_status.slug == 'pending' %}#fffbeb{% elif order.pipeline_status.slug == 'completed' %}#f0fdf4{% elif order.pipeline_status.slug == 'canceled' %}#fef2f2{% else %}#eff6ff{% endif %}; color: {% if order.pipeline_status.slug == 'pending' %}#d97706{% elif order.pipeline_status.slug == 'completed' %}#16a34a{% elif order.pipeline_status.slug == 'canceled' %}#dc2626{% else %}#F58231{% endif %}">
                                 <span class="status-dot" style="background-color: currentColor;"></span>
                                 <span>{{ order.pipeline_status.name }}</span>
                             </div>

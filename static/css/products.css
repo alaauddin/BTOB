@@ -1,9 +1,9 @@
 /* Products List & Browsing Styles */
 
 :root {
-    --primary-color: #2563eb;
-    --primary-dark: #1e40af;
-    --secondary-color: #6366f1;
+    --primary-color: #F58231;
+    --primary-dark: #e06b12;
+    --secondary-color: #2B6CB0;
     --success-color: #22c55e;
     --warning-color: #f59e0b;
     --danger-color: #ef4444;
@@ -330,9 +330,10 @@
 }
 
 .modern-category-btn.active {
-    background: var(--dark-color);
+    background: var(--brand-slate);
     color: white;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(43, 108, 176, 0.2);
+    border-color: var(--brand-slate);
 }
 
 .modern-subcategory-panel {
@@ -425,7 +426,7 @@
     position: absolute;
     top: 16px;
     left: 16px;
-    background: rgba(37, 99, 235, 0.85);
+    background: rgba(245, 130, 49, 0.85);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     color: white;

@@ -1,9 +1,9 @@
 /* specialized CSS for Merchant Marketing/Ads Page */
 
 :root {
-    --primary-color: #ef7d2d;
+    --primary-color: #F58231;
     --secondary-color: #ffffff;
-    --accent-color: #9abfc4;
+    --accent-color: #00FFFF;
 }
 
 /* Custom Notifications (Toasts) */
@@ -125,12 +125,12 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(239, 125, 45, 0.2);
+    box-shadow: 0 4px 10px rgba(245, 130, 49, 0.2);
 }
 
 /* Unified Statistics Summary */
 .stats-summary-card {
-    background: linear-gradient(135deg, rgba(239, 125, 45, 0.05), rgba(154, 191, 196, 0.05));
+    background: linear-gradient(135deg, rgba(245, 130, 49, 0.05), rgba(0, 255, 255, 0.05));
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
@@ -212,7 +212,7 @@
 .status-tab.active {
     background: var(--primary-color);
     color: white;
-    box-shadow: 0 4px 10px rgba(239, 125, 45, 0.15);
+    box-shadow: 0 4px 10px rgba(245, 130, 49, 0.15);
 }
 
 .search-wrapper {
@@ -406,7 +406,7 @@ input:checked+.toggle-slider:before {
 .btn-row-action:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
-    background: #fff7ed;
+    background: #fffafa;
     transform: translateY(-2px);
 }
 
@@ -476,7 +476,7 @@ input:checked+.toggle-slider:before {
     outline: none;
     border-color: var(--primary-color);
     background: white;
-    box-shadow: 0 0 0 4px rgba(239, 125, 45, 0.1);
+    box-shadow: 0 0 0 4px rgba(245, 130, 49, 0.1);
     transform: translateY(-1px);
 }
 
@@ -536,7 +536,7 @@ input:checked+.toggle-slider:before {
 
 .upload-card-premium:hover {
     border-color: var(--primary-color);
-    background: rgba(239, 125, 45, 0.03);
+    background: rgba(245, 130, 49, 0.03);
     transform: scale(1.005);
 }
 
@@ -557,7 +557,7 @@ input:checked+.toggle-slider:before {
 .upload-card-premium:hover .upload-icon-box {
     color: var(--primary-color);
     transform: translateY(-3px) scale(1.1);
-    box-shadow: 0 10px 15px -3px rgba(239, 125, 45, 0.2);
+    box-shadow: 0 10px 15px -3px rgba(245, 130, 49, 0.2);
 }
 
 .premium-preview-overlay {
@@ -594,11 +594,11 @@ input:checked+.toggle-slider:before {
 .btn-premium-primary {
     background: linear-gradient(135deg, var(--primary-color), #f97316);
     color: white;
-    box-shadow: 0 4px 12px rgba(239, 125, 45, 0.2);
+    box-shadow: 0 4px 12px rgba(245, 130, 49, 0.2);
 }
 
 .btn-premium-primary:hover {
-    box-shadow: 0 8px 20px rgba(239, 125, 45, 0.3);
+    box-shadow: 0 8px 20px rgba(245, 130, 49, 0.3);
     transform: translateY(-2px);
 }
 

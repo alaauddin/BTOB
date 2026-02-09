@@ -51,14 +51,14 @@
     <style>
         :root {
             /* Brand Core */
-            --primary-color: {{ supplier.primary_color|default:'#ef7d2d' }};
+            --primary-color: {{ supplier.primary_color|default:'#F58231' }};
             --secondary-color: {{ supplier.secondary_color|default:'#ffffff' }};
-            --accent-color: {{ supplier.accent_color|default:'#9abfc4' }};
-            --text-color: {{ supplier.text_color|default:'#3a505e' }};
+            --accent-color: {{ supplier.accent_color|default:'#00FFFF' }};
+            --text-color: {{ supplier.text_color|default:'#4A5568' }};
 
             /* Layout Colors */
-            --navbar-bg: {{ supplier.navbar_color|default:'#ef7d2d' }};
-            --footer-bg: {{ supplier.footer_color|default:'#3a505e' }};
+            --navbar-bg: {{ supplier.navbar_color|default:'#F58231' }};
+            --footer-bg: {{ supplier.footer_color|default:'#2B6CB0' }};
 
             /* Accent & Highlights */
             --success-color: #22c55e;
@@ -76,7 +76,7 @@
             --shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.15);
 
             /* Dynamic Background */
-            --body-bg-gradient: linear-gradient(135deg, {{ supplier.primary_color|default:'#ef7d2d' }}1A 0%, {{ supplier.secondary_color|default:'#ffffff' }}1A 100%);
+            --body-bg-gradient: linear-gradient(135deg, {{ supplier.primary_color|default:'#F58231' }}1A 0%, {{ supplier.secondary_color|default:'#ffffff' }}1A 100%);
         }
 
         }
