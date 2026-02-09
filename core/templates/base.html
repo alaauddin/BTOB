@@ -76,9 +76,6 @@
             --shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.15);
 
             /* Dynamic Background */
-            --body-bg-gradient: linear-gradient(135deg, {{ supplier.primary_color|default:'#F58231' }}1A 0%, {{ supplier.secondary_color|default:'#ffffff' }}1A 100%);
-        }
-
         }
     </style>
     
@@ -294,26 +291,78 @@
                 {% endif %}
             </div>
 
-            <!-- Left: User Menu Orb (End of flex in RTL) -->
+            <!-- Left: User Menu Dropdown (End of flex in RTL) -->
             <div class="flex items-center w-24 justify-end">
-                {% if user.is_authenticated %}
-                    <div class="relative group">
-                        <a href="{% url 'user_profile' %}" class="nav-orb">
-                            <i class="fas fa-user text-xl"></i>
+                <div class="relative">
+                    <button id="userMenuBtn" class="nav-orb" onclick="toggleUserDropdown(event)">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="userDropdownMenu" class="hidden absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50" style="direction: rtl;">
+                        {% comment %} صفحة المتاجر {% endcomment %}
+                        {% if request.path != '/stores' %}
+                        <a href="{% url 'suppliers_list' %}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-50">
+                            <i class="fas fa-store ml-3 text-gray-400"></i>
+                            <span class="text-sm font-medium">تصفح المتاجر</span>
                         </a>
+                        {% endif %}
+                        {% comment %} الصفحة الرئيسية {% endcomment %}
+                        {% if request.path != '/' %}
+                        <a href="{% url 'landing_page' %}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-50">
+                            <i class="fas fa-home ml-3 text-gray-400"></i>
+                            <span class="text-sm font-medium">الصفحة الرئيسية</span>
+                        </a>
+                        {% endif %}
+                        {% if user.is_authenticated %}
+                            <!-- Authenticated User Options -->
+                            <a href="{% url 'user_profile' %}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-50">
+                                <i class="fas fa-user-circle ml-3 text-gray-400"></i>
+                                <span class="text-sm font-medium">حسابي</span>
+                            </a>
+                            
+                            {% if user.supplier_set.exists %}
+                                <!-- User is a supplier -->
+                                <a href="{% url 'my_merchant' %}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-50">
+                                    <i class="fas fa-store ml-3 text-gray-400"></i>
+                                    <span class="text-sm font-medium">متجري</span>
+                                </a>
+                            {% else %}
+                                <!-- User is not a supplier - show join option -->
+                                <a href="{% url 'join_business' %}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-50">
+                                    <i class="fas fa-store-alt ml-3 text-primary-color"></i>
+                                    <span class="text-sm font-medium text-primary-color">انضم كتاجر</span>
+                                </a>
+                            {% endif %}
+                            
+                            <a href="{% url 'logout' %}" class="flex items-center px-4 py-3 text-red-600 hover:bg-red-50 transition-colors">
+                                <i class="fas fa-sign-out-alt ml-3"></i>
+                                <span class="text-sm font-medium">تسجيل الخروج</span>
+                            </a>
+                        {% else %}
+                            <!-- Not Authenticated Options -->
+                            <button onclick="openLoginModal(); closeUserDropdown();" class="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-50">
+                                <i class="fas fa-sign-in-alt ml-3 text-gray-400"></i>
+                                <span class="text-sm font-medium">تسجيل الدخول</span>
+                            </button>
+                            
+                            <button onclick="openLoginModal('merchant'); closeUserDropdown();" class="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-50">
+                                <i class="fas fa-user-tie ml-3 text-gray-400"></i>
+                                <span class="text-sm font-medium">تسجيل دخول التجار</span>
+                            </button>
+                            
+                            <a href="{% url 'join_business' %}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-store-alt ml-3 text-primary-color"></i>
+                                <span class="text-sm font-medium text-primary-color">انضم كتاجر</span>
+                            </a>
+                        {% endif %}
                     </div>
-                {% else %}
-                    <div class="relative group">
-                        <button onclick="openLoginModal()" class="nav-orb">
-                            <i class="fas fa-user text-xl"></i>
-                        </button>
-                    </div>
-                {% endif %}
+                </div>
             </div>
         </div>
 
         <!-- Center: Premium Logo Orb (Sitting on the curve) -->
-        <a href="/" class="absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-1/2 z-20">
+        <a href="/" class="absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-1/4 z-20">
             <div class="logo-orb-wrapper {% if supplier and supplier.show_system_logo %}logo-dual{% endif %}">
                 {% if supplier %}
                     <!-- Supplier Logo -->
@@ -333,7 +382,7 @@
     </nav>
     
     <!-- Main Content -->
-    <main class="main-content flex-grow w-full pt-20 lg:pt-28 overflow-x-hidden">
+    <main class="main-content flex-grow w-full overflow-x-hidden">
         {% if messages %}
         <!-- Server-side Messages Wrapper -->
         <div class="fixed top-24 left-4 right-4 md:left-auto md:right-6 md:w-auto md:max-w-sm flex flex-col space-y-2 pointer-events-none" style="z-index: 99999;">

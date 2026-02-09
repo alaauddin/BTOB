@@ -35,8 +35,11 @@ from core.views.join_business import join_business, verify_signup_otp
 from core.views.merchant_auth import MerchantLoginView
 from core.views.privacy_policy import privacy_policy
 from core.views.profile import profile_view, address_list_view, set_current_address
+from core.views.landing import landing_page
 
 urlpatterns = [
+    # Landing Page
+    path('', landing_page, name='landing_page'),
     # Static Pages
     path('privacy-policy/', privacy_policy, name='privacy_policy'),
     path('profile/', profile_view, name='user_profile'),
@@ -48,7 +51,7 @@ urlpatterns = [
     path('products/category/<int:category_id>/<str:store_id>/', product_list, name='product_list_category'),
     path('products/category/product_list_subcategory/<int:subcategory_id>/<str:store_id>/', product_list, name='product_list_subcategory'),
     path('<str:store_id>/details/<int:pk>/', product_detail, name='product_detail'),
-    path('', SuppliersListView, name='suppliers_list'),
+    path('stores', SuppliersListView, name='suppliers_list'),
     path('join-business/', join_business, name='join_business'),
     path('verify-signup-otp/', verify_signup_otp, name='verify_signup_otp'),
     path('merchant/login/', MerchantLoginView.as_view(), name='merchant_login'),

@@ -2,115 +2,130 @@
 {% load static %}
 
 {% block content %}
-<section class="business-join-wrapper py-12 bg-gray-50">
+<section class="business-join-wrapper py-1 md:py-2 bg-[#f8fafc]">
     <div class="container mx-auto px-4">
-        <div class="max-w-2xl mx-auto business-join-card bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div class="business-join-header p-8 bg-gray-900 text-white text-center" style="background: linear-gradient(135deg, var(--primary-color, #F58231), var(--primary-dark, #e06b12));">
-                <h2 class="text-3xl font-bold mb-4">انضم إلينا كشريك نجاح</h2>
-                <p class="opacity-90 leading-relaxed">هل تمتلك نشاطاً تجارياً وترغب في زيادة مبيعاتك؟ انضم إلى منصتنا اليوم واعرض منتجاتك لآلاف العملاء.</p>
+        <div class="max-w-3xl mx-auto business-join-card bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+            <!-- Header: Ultra Compact -->
+            <div class="business-join-header p-3 md:p-4 text-white text-center" 
+                 style="background: linear-gradient(135deg, #F58231, #FFE35B);">
+                <h2 class="text-lg md:text-xl font-extrabold mb-0.5 tracking-tight">انضم إلينا كشريك نجاح</h2>
+                <p class="text-white/90 text-[10px] md:text-xs">زد مبيعاتك واعرض منتجاتك لآلاف العملاء في منصتنا</p>
             </div>
 
-            <div class="p-6">
-                <form method="POST" class="business-request-form space-y-6">
+            <div class="p-3 md:p-4">
+                <form method="POST" class="business-request-form space-y-2">
                     {% csrf_token %}
                     
-                    <!-- Account Information Section -->
-                    <div class="space-y-3">
-                        <h3 class="text-md font-bold text-gray-900 border-b pb-1 flex items-center gap-2">
-                            <i class="fas fa-user-circle text-[var(--primary-color)] text-sm"></i>
-                            بيانات الحساب
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+                    <!-- Section: Account info -->
+                    <div>
+                        <div class="flex items-center gap-1.5 mb-2">
+                            <i class="fas fa-user-shield text-[10px] text-orange-500"></i>
+                            <h3 class="text-[11px] font-bold text-gray-800">بيانات الحساب الأساسية</h3>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div class="form-group">
-                                <label class="block text-xs font-bold text-gray-700 mb-1">{{ business_form.username.label }}</label>
+                                <label class="block text-[9px] font-bold text-gray-400 mb-0.5 mr-1">{{ business_form.username.label }}</label>
                                 {{ business_form.username }}
                                 {% if business_form.username.errors %}
-                                <p class="text-red-500 text-[10px] mt-1">{{ business_form.username.errors.0 }}</p>
+                                <p class="text-red-500 text-[8px] mt-0.5 pr-1">{{ business_form.username.errors.0 }}</p>
                                 {% endif %}
                             </div>
-                            <div class="form-group">
-                                <label class="block text-xs font-bold text-gray-700 mb-1">{{ business_form.password.label }}</label>
-                                {{ business_form.password }}
-                                {% if business_form.password.errors %}
-                                <p class="text-red-500 text-[10px] mt-1">{{ business_form.password.errors.0 }}</p>
-                                {% endif %}
-                            </div>
-                            <div class="form-group">
-                                <label class="block text-xs font-bold text-gray-700 mb-1">{{ business_form.password_confirm.label }}</label>
-                                {{ business_form.password_confirm }}
-                                {% if business_form.password_confirm.errors %}
-                                <p class="text-red-500 text-[10px] mt-1">{{ business_form.password_confirm.errors.0 }}</p>
-                                {% endif %}
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="form-group">
+                                    <label class="block text-[9px] font-bold text-gray-400 mb-0.5 mr-1">{{ business_form.password.label }}</label>
+                                    {{ business_form.password }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="block text-[9px] font-bold text-gray-400 mb-0.5 mr-1">{{ business_form.password_confirm.label }}</label>
+                                    {{ business_form.password_confirm }}
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Business Information Section -->
-                    <div class="space-y-3">
-                        <h3 class="text-md font-bold text-gray-900 border-b pb-1 flex items-center gap-2">
-                            <i class="fas fa-store text-[var(--primary-color)] text-sm"></i>
-                            بيانات النشاط التجاري
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+                    <div class="h-px bg-gray-50 my-1"></div>
+
+                    <!-- Section: Business info -->
+                    <div>
+                        <div class="flex items-center gap-1.5 mb-2">
+                            <i class="fas fa-store text-[10px] text-blue-500"></i>
+                            <h3 class="text-[11px] font-bold text-gray-800">بيانات النشاط التجاري</h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-2">
                             <div class="form-group">
-                                <label class="block text-xs font-bold text-gray-700 mb-1">{{ business_form.business_name.label }}</label>
+                                <label class="block text-[9px] font-bold text-gray-400 mb-0.5 mr-1">{{ business_form.business_name.label }}</label>
                                 {{ business_form.business_name }}
-                                {% if business_form.business_name.errors %}
-                                <p class="text-red-500 text-[10px] mt-1">{{ business_form.business_name.errors.0 }}</p>
-                                {% endif %}
                             </div>
                             <div class="form-group">
-                                <label class="block text-xs font-bold text-gray-700 mb-1">{{ business_form.owner_name.label }}</label>
+                                <label class="block text-[9px] font-bold text-gray-400 mb-0.5 mr-1">{{ business_form.owner_name.label }}</label>
                                 {{ business_form.owner_name }}
-                                {% if business_form.owner_name.errors %}
-                                <p class="text-red-500 text-[10px] mt-1">{{ business_form.owner_name.errors.0 }}</p>
-                                {% endif %}
                             </div>
-                            <div class="form-group">
-                                <label class="block text-xs font-bold text-gray-700 mb-1">{{ business_form.phone.label }}</label>
-                                {{ business_form.phone }}
-                                {% if business_form.phone.errors %}
-                                <p class="text-red-500 text-[10px] mt-1">{{ business_form.phone.errors.0 }}</p>
-                                {% endif %}
+                            
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="form-group">
+                                    <label class="block text-[9px] font-bold text-gray-400 mb-0.5 mr-1">{{ business_form.phone.label }}</label>
+                                    {{ business_form.phone }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="block text-[9px] font-bold text-gray-400 mb-0.5 mr-1">{{ business_form.secondary_phone.label }}</label>
+                                    {{ business_form.secondary_phone }}
+                                </div>
                             </div>
+
                             <div class="form-group">
-                                <label class="block text-xs font-bold text-gray-700 mb-1">{{ business_form.secondary_phone.label }}</label>
-                                {{ business_form.secondary_phone }}
-                                {% if business_form.secondary_phone.errors %}
-                                <p class="text-red-500 text-[10px] mt-1">{{ business_form.secondary_phone.errors.0 }}</p>
-                                {% endif %}
-                            </div>
-                            <div class="form-group">
-                                <label class="block text-xs font-bold text-gray-700 mb-1">{{ business_form.business_type.label }}</label>
+                                <label class="block text-[9px] font-bold text-gray-400 mb-0.5 mr-1">{{ business_form.business_type.label }}</label>
                                 {{ business_form.business_type }}
-                                {% if business_form.business_type.errors %}
-                                <p class="text-red-500 text-[10px] mt-1">{{ business_form.business_type.errors.0 }}</p>
-                                {% endif %}
                             </div>
-                            <div class="form-group">
-                                <label class="block text-xs font-bold text-gray-700 mb-1">{{ business_form.city.label }}</label>
-                                {{ business_form.city }}
-                                {% if business_form.city.errors %}
-                                <p class="text-red-500 text-[10px] mt-1">{{ business_form.city.errors.0 }}</p>
-                                {% endif %}
-                            </div>
-                            <div class="form-group">
-                                <label class="block text-xs font-bold text-gray-700 mb-1">{{ business_form.country.label }}</label>
-                                {{ business_form.country }}
-                                {% if business_form.country.errors %}
-                                <p class="text-red-500 text-[10px] mt-1">{{ business_form.country.errors.0 }}</p>
-                                {% endif %}
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="form-group">
+                                    <label class="block text-[9px] font-bold text-gray-400 mb-0.5 mr-1">{{ business_form.city.label }}</label>
+                                    {{ business_form.city }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="block text-[9px] font-bold text-gray-400 mb-0.5 mr-1">{{ business_form.country.label }}</label>
+                                    {{ business_form.country }}
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl hover:bg-black transition-all shadow-md transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm">
-                        <span>إنشاء حساب التاجر</span>
-                        <i class="fas fa-user-plus"></i>
-                    </button>
+                    <!-- Compact Actions -->
+                    <div class="pt-1">
+                        <button type="submit" class="w-full text-white font-bold py-2.5 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-xs" 
+                                style="background: linear-gradient(135deg, #2B6CB0, #00FFFF);">
+                            <span>بدء رحلة النجاح الآن</span>
+                            <i class="fas fa-check-circle"></i>
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </section>
+
+<style>
+    .business-join-card { animation: cardSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes cardSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .form-group input, .form-group select, .form-group textarea {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+        color: #1e293b;
+    }
+    .form-group input:focus, .form-group select:focus {
+        background: white;
+        border-color: #F58231;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(245, 130, 49, 0.1);
+    }
+</style>
 {% endblock %}
+

@@ -24,7 +24,7 @@
                     <span class="nav-text">بحث</span>
                 </a>
             </li>
-            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'suppliers_list' or request.resolver_match.url_name == 'product-list' or request.resolver_match.url_name == 'product_list_category' or request.resolver_match.url_name == 'product_list_subcategory' %}active{% endif %}" data-index="2">
+            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'landing_page' or request.resolver_match.url_name == 'suppliers_list' or request.resolver_match.url_name == 'product-list' or request.resolver_match.url_name == 'product_list_category' or request.resolver_match.url_name == 'product_list_subcategory' %}active{% endif %}" data-index="2">
                 <a href="{% url 'suppliers_list' %}">
                     <span class="nav-icon"><i class="fas fa-home"></i></span>
                     <span class="nav-text">الرئيسية</span>
@@ -36,7 +36,7 @@
                     <span class="nav-text">طلباتي</span>
                 </a>
             </li>
-            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'user_profile' or request.resolver_match.url_name == 'address_list' or request.resolver_match.url_name == 'edit_profile' %}active{% endif %}" data-index="4">
+            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'join_business' or request.resolver_match.url_name == 'user_profile' or request.resolver_match.url_name == 'address_list' or request.resolver_match.url_name == 'edit_profile' %}active{% endif %}" data-index="4">
                 <a href="{% if user.is_authenticated %}{% url 'user_profile' %}{% else %}javascript:openLoginModal(){% endif %}">
                     <span class="nav-icon"><i class="fas fa-user"></i></span>
                     <span class="nav-text">حسابي</span>

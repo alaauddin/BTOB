@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ابدأ متجرك الإلكتروني - {{ system_settings.site_name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/landing.css' %}?v={{ css_version }}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container mx-auto px-4 py-20">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <!-- Hero Content -->
+            <div class="hero-content text-center lg:text-right" data-aos="fade-left">
+                <h1 class="hero-title">
+                    لا تبدأ من الصفر، ابدأ من متجر جاهز
+                </h1>
+                <p class="hero-subtitle">
+                    ابدأ تجربتك مع متجر جاهز بالكامل بسهولة البديات بتصميم احترافي، منتجات مضافة، وربط مع بوابة دفع وحلول شحن.
+                </p>
+                <div class="hero-cta">
+                    <a href="{% url 'join_business' %}" class="btn-primary">
+                        <i class="fas fa-rocket ml-2"></i>
+                        انطلق الآن
+                    </a>
+                    <a href="#features" class="btn-secondary">
+                        اكتشف المزايا
+                        <i class="fas fa-arrow-down mr-2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hero Image/Mockups -->
+            <div class="hero-mockups" data-aos="fade-right">
+                <div class="mockup-container">
+                    <div class="mockup-card mockup-1">
+                        <i class="fas fa-store text-4xl text-primary mb-3"></i>
+                        <p class="text-sm font-bold">إدارة كاملة للمتجر</p>
+                    </div>
+                    <div class="mockup-card mockup-2">
+                        <i class="fas fa-chart-line text-4xl text-success mb-3"></i>
+                        <p class="text-sm font-bold">تحليلات دقيقة</p>
+                    </div>
+                    <div class="mockup-card mockup-3">
+                        <i class="fas fa-mobile-alt text-4xl text-info mb-3"></i>
+                        <p class="text-sm font-bold">متوافق مع الجوال</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features-section">
+    <div class="container mx-auto px-4 py-16">
+        <div class="text-center mb-12" data-aos="fade-up">
+            <h2 class="section-title">واجهتك واحدة من هالمشاكل؟ إحنا الحل الأمثل لك</h2>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3 class="feature-title">توفير الوقت والجهد</h3>
+                <p class="feature-desc">ما عندك وقت ولا تشتي تضيع جهودك تبدأ من الصفر</p>
+            </div>
+
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-icon">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </div>
+                <h3 class="feature-title">ما عندك خبرة</h3>
+                <p class="feature-desc">ما تتطلب منك خبرة في الإدارة الإلكترونية</p>
+            </div>
+
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-icon">
+                    <i class="fas fa-shipping-fast"></i>
+                </div>
+                <h3 class="feature-title">تشتي تبدأ فوراً</h3>
+                <p class="feature-desc">تستخدم تحاول من البداية</p>
+            </div>
+
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3 class="feature-title">دعم احترافي</h3>
+                <p class="feature-desc">فريق متاح طوال اليوم لمساعدتك وحل أي مشاكل</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Everything from Day 1 Section -->
+<section class="everything-section">
+    <div class="container mx-auto px-4 py-16">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <!-- Illustration -->
+            <div class="everything-visual" data-aos="fade-right">
+                <div class="feature-showcase">
+                    <div class="showcase-item">
+                        <i class="fas fa-palette"></i>
+                        <span>تصميم احترافي مخصص لمتاجرك</span>
+                    </div>
+                    <div class="showcase-item">
+                        <i class="fas fa-truck"></i>
+                        <span>وصف لكل منتج مضاف</span>
+                    </div>
+                    <div class="showcase-item">
+                        <i class="fas fa-credit-card"></i>
+                        <span>متجر سهولة جاهز</span>
+                    </div>
+                    <div class="showcase-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>أساسيات جاهزة ومتكاملة</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="everything-content" data-aos="fade-left">
+                <span class="section-tag">
+                    <i class="fas fa-rocket ml-2"></i>
+                    تصميم احترافي مخصص لاستقطبك
+                </span>
+                <h2 class="section-title">كل شي تحتاجه... موجود من أول يوم</h2>
+                <p class="section-desc">
+                    كل متجر يجي مع كل ما تحتاجه لإدخار منتجاتك وبدبرة المتجر بريحة وسهولة بنظام الحسابات والوظيفة والمدد.
+                </p>
+
+                <div class="benefits-list">
+                    <div class="benefit-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>تصميم احترافي مخصص لمتاجرك</span>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>وصف لكل منتج مضاف</span>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>متجر سهولة جاهز</span>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>أساسيات جاهزة ومتكاملة</span>
+                    </div>
+                </div>
+
+                <a href="{% url 'suppliers_list' %}" class="btn-outline">
+                    تصفح المتاجر الجاهزة
+                    <i class="fas fa-arrow-left mr-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA Section -->
+<section class="final-cta-section">
+    <div class="container mx-auto px-4 py-20">
+        <div class="cta-card" data-aos="zoom-in">
+            <h2 class="cta-title">جاهز تبدأ رحلة نجاحك؟</h2>
+            <p class="cta-desc">انضم لآلاف التجار الناجحين وافتح متجرك الإلكتروني اليوم</p>
+            <a href="{% url 'join_business' %}" class="btn-cta">
+                <i class="fas fa-rocket ml-2"></i>
+                ابدأ الآن مجاناً
+            </a>
+            <p class="cta-note">لا تحتاج بطاقة ائتمان • دعم فني على مدار الساعة</p>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 800,
+        easing: 'ease-in-out',
+        once: true
+    });
+</script>
+{% endblock %}

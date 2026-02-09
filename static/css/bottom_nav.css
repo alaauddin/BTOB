@@ -118,12 +118,14 @@
     /* Pop up higher */
     width: 65px;
     height: 65px;
-    background: #F58231;
+    background: linear-gradient(to left, #FBD042, #FF6B35);
+    /* background: #F58231; */
     /* Use Brand Orange for the bubble */
     border-radius: 50%;
 
     /* Clean border to separate from page content if needed, or none for pure liquid */
-    border: 5px solid #ffffff;
+    border: 5px solid #e8f4f5;
+    /* Circular gradient effect using box-shadow */
     /* Use body background color (usually gray-50/100) to fake a cutout */
 
     transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -183,7 +185,6 @@
     }
 }
 
-/* Ensure content spacing */
-.main-content {
-    padding-bottom: 120px !important;
-}
+
+/* Ensure content spacing for bottom navigation */
+.main-content {}

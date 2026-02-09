@@ -842,3 +842,31 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+// === User Dropdown Menu Functions ===
+window.toggleUserDropdown = function (event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('userDropdownMenu');
+    if (dropdown) {
+        dropdown.classList.toggle('hidden');
+    }
+};
+
+window.closeUserDropdown = function () {
+    const dropdown = document.getElementById('userDropdownMenu');
+    if (dropdown) {
+        dropdown.classList.add('hidden');
+    }
+};
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function (event) {
+    const dropdown = document.getElementById('userDropdownMenu');
+    const button = document.getElementById('userMenuBtn');
+
+    if (dropdown && button &&
+        !dropdown.contains(event.target) &&
+        !button.contains(event.target)) {
+        dropdown.classList.add('hidden');
+    }
+});

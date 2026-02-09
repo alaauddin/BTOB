@@ -186,7 +186,7 @@
             width: 100%; /* Full width */
             max-width: 100%; 
             height: 235px; 
-            margin: -25px 0 24px 0; /* Negative top margin, no horizontal margin */
+            margin: -39px 0 24px 0; /* Negative top margin, no horizontal margin */
             border-radius: 0 0 50px 50px; /* Distinctive bottom curve */
             overflow: hidden;
             box-shadow: 0 20px 40px -5px rgba(0,0,0,0.1); 
@@ -681,7 +681,7 @@
 
     <!-- Search Bar Section -->
     <div class="search-section-wrapper">
-        <div class="container">
+        <div class="container" >
             <div class="search-input-group">
                 <i class="fas fa-search search-icon"></i>
                 <input dir="ltr" type="text" id="supplierSearchInput" placeholder="ابحث عن متجر أو تصنيف..." onkeyup="applyFilters()">
@@ -691,7 +691,7 @@
 
     <!-- Filter & Categories -->
 <div class="category-nav-wrapper">
-    <div class="container">
+    <div class="container" style="padding: 0px;">
         <span class="filter-label mb-4"> </span>
         <div class="category-scroll-container">
             <button class="category-pill active" data-category="all" onclick="setCategory('all')">
@@ -710,7 +710,7 @@
 </div>
 
     <!-- Suppliers Marquee Section -->
-    <div class="supplier-marquee-section" style="overflow: hidden; padding: 20px 0;">
+    <div class="supplier-marquee-section" style="overflow: hidden; ">
         
         <!-- Row 1: Left Direction -->
         <div class="swiper supplier-marquee-left mb-6"> <!-- Removed dir="ltr" for RTL support -->

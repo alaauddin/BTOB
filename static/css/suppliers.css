@@ -80,11 +80,8 @@
     z-index: 40;
     margin-top: -1.5rem;
     padding: 12px 0;
-    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
 }
 
 .category-scroll-container {
@@ -127,9 +124,8 @@
 }
 
 .category-pill:hover {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     border-color: var(--primary-color);
-    box-shadow: 0 10px 20px rgba(245, 130, 49, 0.15);
     color: var(--primary-color);
 }
 
@@ -137,7 +133,6 @@
     background: var(--brand-slate) !important;
     color: white !important;
     border-color: var(--primary-color) !important;
-    box-shadow: 0 10px 25px rgba(43, 108, 176, 0.3) !important;
     transform: scale(1.05) translateY(-2px);
     border-width: 2px !important;
 }
@@ -990,7 +985,6 @@
 
 /* Producing Families Premium Design - Default Desktop */
 .producing-families-wrapper {
-    background: linear-gradient(180deg, #fff9f2 0%, #ffffff 100%);
     border-radius: 40px;
     margin-top: 0.5rem;
 }
@@ -1059,7 +1053,7 @@
     height: 80px;
     background: #f8fafc;
     border-radius: 20px;
-    padding: 10px;
+
     margin-bottom: 15px;
     transition: transform 0.5s ease;
     border: 1px solid #f1f5f9;
@@ -1117,7 +1111,6 @@
 
     .category-nav-wrapper {
         padding: 8px 0;
-        margin-top: -1rem;
     }
 
     .filter-label {
@@ -1185,7 +1178,7 @@
 
     .supplier-card-premium {
         width: 85px;
-        height: 110px;
+        height: 85px;
         padding: 8px 4px;
         border-radius: 10px;
     }

@@ -84,25 +84,17 @@ h6 {
     background-clip: text;
 }
 
-/* Fixed navbar spacing adjustments */
-.main-content {
-    padding-top: 100px !important;
-}
+/* Fixed navbar spacing adjustments - Optimized for new flat navbar */
+.main-content {}
 
 @media (max-width: 992px) {
-    .main-content {
-        padding-top: 85px !important;
-    }
+    .main-content {}
 }
 
 @media (max-width: 768px) {
-    .main-content {
-        padding-top: 90px !important;
-    }
+    .main-content {}
 }
 
 @media (max-width: 576px) {
-    .main-content {
-        padding-top: 90px !important;
-    }
+    .main-content {}
 }
