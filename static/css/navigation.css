@@ -202,7 +202,8 @@
 /* TOPBAR */
 .topbar {
     height: var(--topbar-height);
-    background-color: #fff;
+    background-color: var(--navbar-bg);
+    color: var(--navbar-text);
     border-bottom: 1px solid var(--border-soft);
     display: flex;
     align-items: center;
@@ -214,6 +215,53 @@
     /* Ensure full width */
     justify-content: space-between;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.topbar i {
+    color: inherit;
+    opacity: 0.8;
+}
+
+/* Ensure text inside topbar adopts navbar-text */
+.topbar .text-gray-500,
+.topbar .text-gray-800,
+.topbar .text-gray-900 {
+    color: inherit !important;
+}
+
+.topbar .text-xs,
+.topbar .text-sm {
+    color: var(--navbar-text-muted);
+}
+
+/* 🛡️ 🔍 DROPDOWN & INPUT PROTECTION 
+   Explicitly reset colors for children of white surfaces (Dropdowns, Menus, Inputs)
+*/
+.topbar .bg-white,
+.topbar .bg-white * {
+    color: var(--text-main) !important;
+}
+
+/* Handle muted text specifically in white surfaces */
+.topbar .bg-white .text-gray-500,
+.topbar .bg-white .text-muted,
+.topbar .bg-white .text-xs,
+.topbar .bg-white .text-sm {
+    color: var(--text-muted) !important;
+}
+
+/* Reset brand icons in white surfaces to remain readable */
+.topbar .bg-white .text-brand-primary {
+    color: var(--brand-primary) !important;
+}
+
+.topbar .bg-white .text-brand-secondary {
+    color: var(--brand-secondary) !important;
+}
+
+.topbar .store-avatar {
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Store Switcher */

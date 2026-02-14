@@ -40,7 +40,7 @@
     <link rel="stylesheet" href="{% static 'css/theme.css' %}?v={{ css_version }}">
     <link rel="stylesheet" href="{% static 'css/components.css' %}?v={{ css_version }}">
     <link rel="stylesheet" href="{% static 'css/animations.css' %}?v={{ css_version }}">
-    <link rel="stylesheet" href="{% static 'css/bottom_nav.css' %}?v={{ css_version }}">
+
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}?v={{ css_version }}">
     
     <!-- Main Base CSS (Extracted) -->
@@ -67,9 +67,15 @@
             --color-structure: var(--brand-primary); /* Always Blue for structure */
             
             {% if supplier.primary_color %}
-            --color-action: {{ supplier.primary_color }}; /* Tenant Brand = Action */
+            --color-action: {{ supplier.primary_color }}; /* Tenant Brand = Action (Buttons/Links) */
+            --navbar-bg: {{ supplier.navbar_color|default:supplier.primary_color }};    /* Tenant Brand = Top Bar Color (لون الشريط العلوي) */
+            --navbar-text: #ffffff;                       /* White text for branded headers */
+            --navbar-text-muted: rgba(255, 255, 255, 0.7);
             {% else %}
             --color-action: var(--brand-secondary); /* Default Orange Action */
+            --navbar-bg: #ffffff;                   /* Default White Header */
+            --navbar-text: var(--text-main);        /* Default Dark Text */
+            --navbar-text-muted: var(--text-muted);
             {% endif %}
 
             {% if supplier.secondary_color %}
@@ -81,9 +87,10 @@
             /* Legacy support & fallback */
             --primary-color: var(--color-action); 
             --secondary-color: var(--color-structure); 
+            --dark-color: #1e293b; /* Adding missing dark color for cart.css compatibility */
 
             /* Layout Colors */
-            --navbar-bg: var(--color-structure);
+
             --footer-bg: #1e293b;
 
             /* Visual Effects */
@@ -354,10 +361,7 @@
         </div>
     </div>
     
-    <!-- Mobile Bottom Nav -->
-    {% if nav_state == 'merchant' or nav_state == 'multi_merchant' %}
-        {% include 'includes/mobile_bottom_nav.html' %}
-    {% endif %}
+
 
 
 
@@ -375,8 +379,5 @@
     
     {% block extra_js %}{% endblock %}
     
-    {% comment %} Show bottom nav on specific pages only (not on product/cart pages) {% endcomment %}
-    {% if request.resolver_match.url_name not in 'product-list,product_canonical,product_detail,store_cart,cart-detail' %}
-        {% include 'includes/bottom_nav.html' %}
-    {% endif %}
+
 </body>

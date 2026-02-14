@@ -10,8 +10,17 @@
 {% block content %}
 <!-- Hero Section -->
 <section class="hero-section">
-    <div class="container mx-auto px-4 py-20">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
+    <div class="container mx-auto px-4 py-20 relative">
+        <!-- Subtle Logo Watermark -->
+        <div class="absolute top-10 right-10 opacity-5 hidden lg:block" style="pointer-events: none;">
+            {% if system_settings.logo %}
+                <img src="{{ system_settings.logo.url }}" alt="Logo" class="w-48 h-48 object-contain">
+            {% else %}
+                <span class="text-9xl font-black text-white">رواج</span>
+            {% endif %}
+        </div>
+        
+        <div class="grid lg:grid-cols-2 gap-12 items-center relative z-10">
             <!-- Hero Content -->
             <div class="hero-content text-center lg:text-right" data-aos="fade-left">
                 <h1 class="hero-title text-white font-black mb-6">
@@ -123,6 +132,17 @@
 <section class="dashboard-mockup-section py-24 bg-gradient-to-b from-white to-blue-50/30 overflow-hidden">
     <div class="container mx-auto px-4">
         <div class="text-center mb-16" data-aos="fade-up">
+            <!-- Logo Badge -->
+            <div class="flex justify-center mb-6">
+                <div class="inline-flex items-center gap-3 bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100">
+                    {% if system_settings.logo %}
+                        <img src="{{ system_settings.logo.url }}" alt="Logo" class="w-8 h-8 object-contain">
+                    {% endif %}
+                    <span class="text-xl font-black text-brand-primary">{{ system_settings.site_name|default:"رواج" }}</span>
+                    <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-bold">Dashboard</span>
+                </div>
+            </div>
+            
             <h2 class="section-title text-4xl font-black text-brand-primary mb-4">لوحة تحكم احترافية لإدارة متجرك</h2>
             <p class="text-xl text-gray-600 max-w-3xl mx-auto">نظام إدارة متكامل يمكنك من متابعة مبيعاتك، طلباتك، ومنتجاتك بكل سهولة</p>
             <div class="h-1 w-20 bg-brand-secondary mx-auto rounded-full mt-6"></div>
@@ -135,16 +155,16 @@
                 <!-- Navigation Dots -->
                 <div class="flex justify-center gap-3 mb-8">
                     <button class="carousel-dot active" data-slide="0">
+                        <i class="fas fa-tachometer-alt text-sm"></i>
+                        <span class="dot-label">الرئيسية</span>
+                    </button>
+                    <button class="carousel-dot" data-slide="1">
                         <i class="fas fa-boxes text-sm"></i>
                         <span class="dot-label">المنتجات</span>
                     </button>
-                    <button class="carousel-dot" data-slide="1">
+                    <button class="carousel-dot" data-slide="2">
                         <i class="fas fa-shopping-cart text-sm"></i>
                         <span class="dot-label">الطلبات</span>
-                    </button>
-                    <button class="carousel-dot" data-slide="2">
-                        <i class="fas fa-chart-line text-sm"></i>
-                        <span class="dot-label">التحليلات</span>
                     </button>
                 </div>
 
@@ -164,7 +184,7 @@
                                     <span>127.0.0.1:8001/dashboard/</span>
                                 </div>
                             </div>
-                            <div class="mockup-content bg-gray-50 p-8 overflow-hidden" style="height: 500px;">
+                            <div class="mockup-content bg-gray-50 p-4 md:p-8 overflow-hidden">
                                 <!-- Dashboard Overview Mockup -->
                                 <div class="space-y-6">
                                     <!-- Header Card -->
@@ -258,7 +278,7 @@
                                     <span>127.0.0.1:8001/dashboard/products/</span>
                                 </div>
                             </div>
-                            <div class="mockup-content bg-gray-50 p-6 overflow-hidden" style="height: 500px;">
+                            <div class="mockup-content bg-gray-50 p-4 md:p-6 overflow-hidden">
                                 <!-- Products Page Mockup -->
                                 <div class="space-y-4">
                                     <!-- Header -->
@@ -536,7 +556,8 @@
 /* Slides Container */
 .carousel-slides-container {
     position: relative;
-    height: 600px;
+    height: auto;
+    min-height: 600px;
 }
 
 .carousel-slide {
@@ -548,6 +569,8 @@
     transform: translateX(100%) scale(0.9);
     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
+    display: flex;
+    justify-content: center;
 }
 
 .carousel-slide.active {
@@ -574,6 +597,8 @@
     border: 1px solid rgba(255, 255, 255, 0.4);
     transform-style: preserve-3d;
     transition: transform 0.3s ease;
+    width: 100%;
+    max-width: 900px;
 }
 
 .glass-card-mockup:hover {
@@ -601,8 +626,8 @@
 }
 
 .browser-dots .dot {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
 }
 
@@ -627,48 +652,10 @@
 .mockup-content {
     position: relative;
     border-radius: 0 0 16px 16px;
-    overflow: hidden;
-    background: #f9fafb;
-}
-
-.mockup-screenshot {
-    width: 100%;
-    height: auto;
-    display: block;
-    transition: transform 0.3s ease;
-}
-
-.glass-card-mockup:hover .mockup-screenshot {
-    transform: scale(1.02);
-}
-
-.mockup-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
-    padding: 32px 24px 24px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.glass-card-mockup:hover .mockup-overlay {
-    opacity: 1;
-}
-
-.overlay-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    color: #2B5876;
-    font-weight: 700;
-    font-size: 0.875rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow-y: auto;
+    height: 500px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.1) transparent;
 }
 
 /* Arrow Navigation */
@@ -684,7 +671,7 @@
     color: #6b7280;
     display: flex;
     align-items: center;
-    justify-center;
+    justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -710,9 +697,13 @@
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .carousel-slides-container {
-        height: 400px;
+        min-height: 400px;
     }
     
+    .mockup-content {
+        height: 320px;
+    }
+
     .carousel-dot .dot-label {
         display: none;
     }
@@ -731,11 +722,11 @@
     }
     
     .carousel-arrow.prev {
-        right: -12px;
+        right: -8px;
     }
     
     .carousel-arrow.next {
-        left: -12px;
+        left: -8px;
     }
     
     .mockup-browser-bar {
@@ -745,7 +736,17 @@
     .browser-address span {
         font-size: 0.65rem;
     }
+
+    /* Scaling factor for very small screens */
+    .glass-card-mockup {
+        border-radius: 16px;
+    }
+
+    .mockup-stat-value {
+        font-size: 1.1rem;
+    }
 }
+
 </style>
 
 <script>
@@ -984,6 +985,15 @@ document.addEventListener('keydown', (e) => {
 <section class="final-cta-section">
     <div class="container mx-auto px-4 py-20">
         <div class="cta-card" data-aos="zoom-in">
+            <!-- Logo Above CTA -->
+            <div class="flex justify-center mb-8">
+                {% if system_settings.logo %}
+                    <img src="{{ system_settings.logo.url }}" alt="Logo" class="w-20 h-20 object-contain">
+                {% else %}
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-black">ر</div>
+                {% endif %}
+            </div>
+            
             <h2 class="cta-title">جاهز تبدأ رحلة نجاحك؟</h2>
             <p class="cta-desc">انضم لآلاف التجار الناجحين وافتح متجرك الإلكتروني اليوم</p>
             <a href="{% url 'join_business' %}" class="btn-cta">
@@ -994,6 +1004,69 @@ document.addEventListener('keydown', (e) => {
         </div>
     </div>
 </section>
+
+<!-- Footer -->
+<footer class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-16">
+    <div class="container mx-auto px-4">
+        <div class="grid md:grid-cols-4 gap-8 mb-12">
+            <!-- Brand Column -->
+            <div class="md:col-span-2">
+                <div class="flex items-center gap-3 mb-4">
+                    {% if system_settings.logo %}
+                        <img src="{{ system_settings.logo.url }}" alt="Logo" class="w-12 h-12 object-contain">
+                    {% endif %}
+                    <span class="text-2xl font-black">{{ system_settings.site_name|default:"رواج" }}</span>
+                </div>
+                <p class="text-gray-400 mb-6 leading-relaxed max-w-md">
+                    منصة متكاملة لإنشاء وإدارة المتاجر الإلكترونية بكل سهولة واحترافية. ابدأ رحلتك التجارية معنا اليوم.
+                </p>
+                <div class="flex gap-3">
+                    <a href="#" class="w-10 h-10 bg-gray-700 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 bg-gray-700 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 bg-gray-700 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 bg-gray-700 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Quick Links -->
+            <div>
+                <h3 class="font-bold text-lg mb-4">روابط سريعة</h3>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="#features" class="hover:text-white transition-colors">المميزات</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">الأسعار</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">من نحن</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">المدونة</a></li>
+                </ul>
+            </div>
+            
+            <!-- Support -->
+            <div>
+                <h3 class="font-bold text-lg mb-4">الدعم</h3>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="#" class="hover:text-white transition-colors">مركز المساعدة</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">اتصل بنا</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">الشروط والأحكام</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">سياسة الخصوصية</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Footer Bottom -->
+        <div class="border-t border-gray-700 pt-8 text-center">
+            <p class="text-gray-400 text-sm">
+                © 2024 {{ system_settings.site_name|default:"رواج" }}. جميع الحقوق محفوظة.
+            </p>
+        </div>
+    </div>
+</footer>
 
 {% endblock %}
 

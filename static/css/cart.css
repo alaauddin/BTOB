@@ -367,7 +367,7 @@
 
 .mobile-checkout-btn {
     background: var(--dark-color);
-    color: white;
+    color: var(--primary-color);
     padding: 14px 28px;
     border-radius: 14px;
     font-weight: 800;

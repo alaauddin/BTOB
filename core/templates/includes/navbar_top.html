@@ -12,8 +12,11 @@
 
         <!-- Branding for Visitor / Onboarding (When sidebar is hidden) -->
         {% if nav_state == 'visitor' or nav_state == 'onboarding' %}
-        <a href="/" class="flex items-center gap-2">
-             {% if system_settings.logo %}
+        <a href="{% if supplier %}{% url 'product-list' supplier.store_id %}{% else %}/{% endif %}" class="flex items-center gap-2">
+             {% if supplier and supplier.profile_picture %}
+                <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover">
+                <span class="font-bold text-gray-800 hidden md:block">{{ supplier.name }}</span>
+             {% elif system_settings.logo %}
                 <img src="{{ system_settings.logo.url }}" alt="Logo" class="w-auto h-12 lg:h-12 object-contain">
             {% else %}
                 <span class="font-black text-brand-primary text-xl">رواج</span>
@@ -179,9 +182,7 @@
             </a>
             {% endif %}
 
-            <button class="relative w-10 h-10 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors">
-                <i class="far fa-bell text-lg"></i>
-            </button>
+          
 
             <!-- User Menu Dropdown -->
             <div class="relative">
