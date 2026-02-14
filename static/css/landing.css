@@ -1,19 +1,25 @@
 /* Landing Page Styles - Brand Identity Colors */
 
 :root {
-    --landing-primary: #F58231;
-    --landing-primary-dark: #e06b12;
-    --landing-secondary: #FFE35B;
-    --landing-blue: #2B6CB0;
-    --landing-cyan: #00FFFF;
-    --landing-dark: #1a202c;
-    --landing-gray: #4a5568;
-    --landing-light: #f7fafc;
+    /* Map to Global Design System (base.html) */
+    --landing-primary: var(--brand-secondary);
+    /* Action Orange */
+    --landing-primary-dark: #c2762b;
+    /* Calculated manually or use a darker var if available */
+    --landing-secondary: #D48231;
+    /* Brand Orange for accents */
+    --landing-blue: var(--brand-primary);
+    /* Trust Blue */
+    --landing-cyan: var(--brand-accent);
+    /* Accent Cyan */
+    --landing-dark: var(--text-main);
+    --landing-gray: var(--text-muted);
+    --landing-light: var(--bg-soft);
 }
 
 /* Hero Section */
 .hero-section {
-    background: linear-gradient(135deg, #F58231 0%, #FFE35B 100%);
+    background: linear-gradient(135deg, #2B5876 0%, #8BB8D1 100%);
     position: relative;
     overflow: hidden;
     min-height: 90vh;
@@ -71,7 +77,7 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #2B6CB0 0%, #00FFFF 100%);
+    background: linear-gradient(135deg, #D48231 0%, #E89A4E 100%);
     color: white;
     padding: 1rem 2.5rem;
     border-radius: 50px;
@@ -80,13 +86,13 @@
     display: inline-flex;
     align-items: center;
     text-decoration: none;
-    box-shadow: 0 10px 30px rgba(43, 108, 176, 0.3);
+    box-shadow: 0 10px 30px rgba(212, 130, 49, 0.3);
     transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
     transform: translateY(-3px);
-    box-shadow: 0 15px 40px rgba(43, 108, 176, 0.4);
+    box-shadow: 0 15px 40px rgba(212, 130, 49, 0.4);
 }
 
 .btn-secondary {
@@ -229,7 +235,7 @@
 .feature-icon {
     width: 80px;
     height: 80px;
-    background: linear-gradient(135deg, #F58231, #FFE35B);
+    background: linear-gradient(135deg, #2B5876, #8BB8D1);
     border-radius: 20px;
     display: flex;
     align-items: center;
@@ -350,7 +356,7 @@
 
 /* Final CTA Section */
 .final-cta-section {
-    background: linear-gradient(135deg, #2B6CB0 0%, #00FFFF 100%);
+    background: linear-gradient(135deg, #2B5876 0%, #8BB8D1 100%);
     position: relative;
     overflow: hidden;
 }
@@ -382,7 +388,7 @@
 
 .btn-cta {
     background: white;
-    color: #F58231;
+    color: #D48231;
     padding: 1.25rem 3rem;
     border-radius: 50px;
     font-weight: 700;
@@ -417,5 +423,333 @@
 
     .cta-card {
         padding: 3rem 1.5rem;
+    }
+}
+
+/* ===================================
+   PREMIUM SAAS ENHANCEMENTS
+   =================================== */
+
+/* Glass Morphism Cards */
+.glass-card {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+}
+
+.glass-card-hero {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Enhanced Button Interactions */
+.btn-primary {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-primary:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(212, 130, 49, 0.4),
+        0 0 20px rgba(212, 130, 49, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Enhanced Card Interactions */
+.feature-card {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+}
+
+/* Dashboard Mockup Styles */
+.dashboard-mockup {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.mockup-header {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.mockup-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.mockup-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.mockup-stat-card {
+    background: linear-gradient(135deg, #f7fafc 0%, #e8f5f5 100%);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+}
+
+.mockup-stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--brand-primary);
+    margin-bottom: 0.25rem;
+}
+
+.mockup-stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.mockup-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.mockup-table-header {
+    background: #f8fafc;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+    text-align: right;
+}
+
+.mockup-table-header th {
+    padding: 0.75rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.mockup-table-row {
+    transition: background 0.15s;
+}
+
+.mockup-table-row:hover {
+    background: #f8fafc;
+}
+
+.mockup-table-row td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #f0f4f8;
+    font-size: 0.85rem;
+    color: var(--text-main);
+}
+
+.mockup-status {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.mockup-status.success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.mockup-status.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Trust Bar Styles */
+.trust-bar {
+    background: white;
+    padding: 3rem 0;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.trust-logo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 2rem;
+    align-items: center;
+    justify-items: center;
+}
+
+.trust-logo-item {
+    width: 120px;
+    height: 60px;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: grayscale(100%) opacity(0.6);
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.trust-logo-item:hover {
+    filter: grayscale(0%) opacity(1);
+    transform: scale(1.05);
+}
+
+/* FAQ Accordion Styles */
+.faq-section {
+    background: linear-gradient(135deg, #f7fafc 0%, #e8f5f5 100%);
+    padding: 5rem 0;
+}
+
+.faq-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.faq-item {
+    background: white;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.faq-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.faq-question {
+    width: 100%;
+    text-align: right;
+    padding: 1.5rem;
+    background: white;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.faq-question:hover {
+    background: #f8fafc;
+}
+
+.faq-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--brand-secondary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.faq-item.active .faq-icon {
+    transform: rotate(45deg);
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    padding: 0 1.5rem;
+}
+
+.faq-item.active .faq-answer {
+    max-height: 300px;
+    padding: 0 1.5rem 1.5rem;
+}
+
+.faq-answer p {
+    color: var(--text-muted);
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+/* Mobile Responsive Enhancements */
+@media (max-width: 768px) {
+    .dashboard-mockup {
+        padding: 1rem;
+    }
+
+    .mockup-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .mockup-stat-card {
+        padding: 0.75rem;
+    }
+
+    .mockup-stat-value {
+        font-size: 1.25rem;
+    }
+
+    .mockup-table {
+        font-size: 0.75rem;
+    }
+
+    .mockup-table-header th,
+    .mockup-table-row td {
+        padding: 0.5rem;
+    }
+
+    .trust-logo-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .faq-question {
+        font-size: 1rem;
+        padding: 1.25rem;
     }
 }

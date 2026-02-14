@@ -1,135 +1,119 @@
 <div class="col animate-fade-in-up" style="animation-delay: {{ forloop.counter0|divisibleby:4|yesno:'0,0.1,0.2,0.3' }}s">
-    <div class="modern-product-card" data-product-id="{{ product.id }}" style="cursor: pointer;" onclick="if (!event.target.closest('button') && !event.target.closest('a') && !event.target.closest('.modern-quantity-controls')) window.location.href='{% url 'product_detail' store_id=supplier.store_id pk=product.pk %}'">
-        <div class="modern-product-image-container">
-            <a href="{% url 'product_detail' store_id=supplier.store_id pk=product.pk %}">
-                <img src="{{ product.image.url }}" class="modern-product-image" alt="{{ product.name }}" loading="lazy">
+    <div class="store-card" data-product-id="{{ product.id }}">
+        
+        <!-- Image Area -->
+        <div class="card-image-wrapper">
+            <a href="{% url 'product_canonical' store_slug=supplier.store_id pk=product.pk %}" class="d-block w-100 h-100">
+                <img src="{{ product.image.url }}" class="card-img" alt="{{ product.name }}" loading="lazy">
             </a>
             
-            <!-- World-Class Badges -->
-            {% if product.stock <= 0 %}
-            <span class="modern-product-badge out-of-stock">نفذت الكمية</span>
-            {% elif product.stock < 5 %}
-            <span class="modern-product-badge low-stock">كمية محدودة</span>
-            {% endif %}
-            
-            {% if product.has_discount %}
-                {% with discount=product.get_discount_precentage %}
-                    {% if discount >= 20 %}
-                    <span class="modern-product-badge hot"><i class="fas fa-fire me-1"></i> {{ discount }}%</span>
-                    {% else %}
-                    <span class="modern-product-badge sale">-%{{ discount }}</span>
-                    {% endif %}
-                {% endwith %}
-            {% elif product.is_new %}
-            <span class="modern-product-badge">جديد</span>
-            {% endif %}
-            
-            <!-- Media Indicators -->
-            <div class="absolute bottom-2 left-2 flex flex-col gap-1 z-20">
-                {% if product.video %}
-                    <div class="bg-blue-600/90 text-white p-1 rounded backdrop-blur-md shadow-lg" style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;" title="يحتوي على فيديو">
-                        <i class="fas fa-video" style="font-size: 10px;"></i>
-                    </div>
+            <!-- Badges Groups (Top Left) -->
+            <div class="position-absolute top-0 start-0 p-2 d-flex flex-column gap-1 z-2">
+                {% if product.stock <= 0 %}
+                <span class="badge bg-dark bg-opacity-75 backdrop-blur-sm rounded-pill font-weight-normal px-2">نفذت الكمية</span>
+                {% elif product.stock < 5 %}
+                <span class="badge bg-warning text-dark rounded-pill font-weight-bold px-2">كمية محدودة</span>
                 {% endif %}
-                {% if product.additional_images.exists %}
-                    <div class="bg-slate-800/80 text-white p-1 rounded backdrop-blur-md shadow-lg" style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;" title="يحتوي على صور إضافية">
-                        <i class="fas fa-images" style="font-size: 10px;"></i>
-                    </div>
+                
+                {% if product.has_discount %}
+                    {% with discount=product.get_discount_precentage %}
+                    <span class="badge bg-danger rounded-pill px-2">
+                        <i class="fas fa-fire me-1"></i> -{{ discount }}%
+                    </span>
+                    {% endwith %}
+                {% elif product.is_new %}
+                <span class="badge bg-primary rounded-pill px-2">جديد</span>
                 {% endif %}
             </div>
             
-            <!-- Floating Wishlist -->
+            <!-- Wishlist (Top Right) -->
+            <!-- Authenticated Check handled by JS/click event if complicated, but simple toggle here -->
             {% if user.is_authenticated %}
-            <button class="wishlist-btn" onclick="toggleWishlist({{ product.id }})" data-bs-toggle="tooltip" title="إضافة للمفضلة">
+            <button class="wishlist-btn-float" onclick="toggleWishlist({{ product.id }})" aria-label="Add to wishlist">
                 <i class="far fa-heart"></i>
             </button>
             {% else %}
-            <button class="wishlist-btn" onclick="showLoginPrompt()" data-bs-toggle="tooltip" title="سجل دخولك لإضافة المنتجات للمفضلة">
+            <button class="wishlist-btn-float" onclick="window.location.href='{% url 'login' %}'" aria-label="Login for wishlist">
                 <i class="far fa-heart"></i>
             </button>
             {% endif %}
             
-            <!-- Interactions -->
-            <div class="product-overlay">
-                <div class="overlay-actions">
-                    <button class="overlay-btn" onclick="shareProduct({{ product.id }})" data-bs-toggle="tooltip" title="مشاركة">
-                        <i class="fas fa-share-alt"></i>
-                    </button>
+            <!-- Media Indicators (Bottom Left) -->
+            <div class="position-absolute bottom-0 start-0 p-2 d-flex gap-1 z-2">
+                {% if product.video %}
+                <div class="bg-dark bg-opacity-50 text-white rounded p-1 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                    <i class="fas fa-video fa-xs"></i>
                 </div>
+                {% endif %}
+                {% if product.additional_images.exists %}
+                <div class="bg-dark bg-opacity-50 text-white rounded p-1 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                    <i class="fas fa-images fa-xs"></i>
+                </div>
+                {% endif %}
             </div>
         </div>
-        
-        <div class="modern-product-info">
-            <div class="product-category-tag">
-                {{ product.category.name }}
-                {% if product.stock > 0 and product.stock < 10 %}
-                <span class="text-[10px] text-orange-500 font-bold mr-2">(متوفر {{ product.stock }})</span>
+
+        <!-- Content Area -->
+        <div class="card-content">
+            <div class="prod-category">{{ product.category.name }}</div>
+            
+            <h3 class="prod-title">
+                <a href="{% url 'product_canonical' store_slug=supplier.store_id pk=product.pk %}" class="text-decoration-none text-reset">
+                    {{ product.name }}
+                </a>
+            </h3>
+            
+            <!-- Price Row -->
+            <div class="price-row mb-3">
+                {% if product.has_discount %}
+                    <span class="current-price">{{ product.get_price_with_offer|floatformat:0 }} <small class="fs-7 fw-normal">{{ supplier.currency }}</small></span>
+                    <span class="old-price">{{ product.price|floatformat:0 }}</span>
+                {% else %}
+                    <span class="current-price">{{ product.price|floatformat:0 }} <small class="fs-7 fw-normal">{{ supplier.currency }}</small></span>
                 {% endif %}
             </div>
             
-            <h3 class="modern-product-name">
-                <a href="{% url 'product_detail' store_id=supplier.store_id pk=product.pk %}" class="text-decoration-none">{{ product.name }}</a>
-            </h3>
-            
-            <div class="product-rating">
-                <div class="stars">
-                    <i class="fas fa-star"></i>
-                    <span class="rating-value">{{ product.get_average_rating|default:"5.0" }}</span>
-                </div>
-                <span class="rating-count">({{ product.get_total_reviews|default:"0" }})</span>
-                <div class="product-views ml-auto">
-                    <i class="fas fa-eye text-gray-400 ml-1" style="font-size: 0.75rem;"></i>
-                    <span class="text-gray-500" style="font-size: 0.75rem;">{{ product.views_count|default:"0" }}</span>
-                </div>
-            </div>
-            
-                <div class="pricing-wrapper">
-                    {% if product.has_discount %}
-                        <span class="modern-product-price">{{ product.get_price_with_offer|floatformat:0 }} {{ supplier.currency }}</span>
-                        <span class="old-price">{{ product.price|floatformat:0 }} {{ supplier.currency }}</span>
-                    {% else %}
-                        <span class="modern-product-price">{{ product.price|floatformat:0 }} {{ supplier.currency }}</span>
-                    {% endif %}
-                </div>
-            
-            <div class="modern-product-actions">
+            <!-- Actions -->
+            <div class="mt-auto">
                 {% with cart_item_qty=product.quantity_in_cart|default:0 %}
-                    <div class="modern-quantity-controls {% if cart_item_qty == 0 %}d-none{% endif %}" id="qty-ctrl-{{ product.id }}" data-product-id="{{ product.id }}">
-                        <button class="modern-qty-btn" onclick="subToCart('{{ product.id }}', '{{ supplier.store_id }}')">
-                            <i class="fas fa-minus"></i>
-                        </button>
-                        <span class="modern-qty-display" id="total-qty-items-{{ product.id }}">{{ cart_item_qty }}</span>
-                        <button class="modern-qty-btn" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')" {% if product.stock <= cart_item_qty %}disabled style="opacity: 0.5; cursor: not-allowed;" title="أقصى كمية متاحة"{% endif %}>
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
+                
+                <!-- Quantity Controls (If in cart) -->
+                <div class="d-flex align-items-center justify-content-between bg-light rounded-pill p-1 {% if cart_item_qty == 0 %}d-none{% endif %}" 
+                     id="qty-ctrl-{{ product.id }}" 
+                     style="border: 1px solid var(--surface-3);">
                     
-                    {% if product.stock > 0 %}
-                    <button class="modern-cart-btn-long {% if cart_item_qty > 0 %}d-none{% endif %}" id="add-btn-{{ product.id }}" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>إضافة للسلة</span>
+                    <button class="btn btn-sm btn-white rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0" 
+                            style="width: 32px; height: 32px;"
+                            onclick="subToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                        <i class="fas fa-minus fs-7"></i>
                     </button>
-                    {% else %}
-                    <button class="modern-cart-btn-long out-of-stock-btn" disabled style="background: #94a3b8; cursor: not-allowed;">
-                        <i class="fas fa-info-circle"></i>
-                        <span>غير متوفر</span>
+                    
+                    <span class="fw-bold px-2" id="total-qty-items-{{ product.id }}">{{ cart_item_qty }}</span>
+                    
+                    <button class="btn btn-sm btn-white rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0" 
+                            style="width: 32px; height: 32px;"
+                            onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')"
+                            {% if product.stock <= cart_item_qty %}disabled style="opacity: 0.5"{% endif %}>
+                        <i class="fas fa-plus fs-7"></i>
                     </button>
-                    {% endif %}
+                </div>
+
+                <!-- Add Button (If NOT in cart) -->
+                {% if product.stock > 0 %}
+                <button class="btn-add-cart {% if cart_item_qty > 0 %}d-none{% endif %}" 
+                        id="add-btn-{{ product.id }}" 
+                        onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                    <i class="fas fa-shopping-bag"></i>
+                    إضافة
+                </button>
+                {% else %}
+                <button class="btn btn-light w-100 rounded-pill py-2 text-muted fw-bold small" disabled>
+                    غير متوفر
+                </button>
+                {% endif %}
+                
                 {% endwith %}
             </div>
         </div>
-            
-            <!-- Social Share Menu (Hidden by default) -->
-            <div class="social-share-menu" id="share-menu-{{ product.id }}">
-                <button class="share-item whatsapp" onclick="shareWhatsApp('{{ product.name }}', '{{ product.id }}')">
-                    <i class="fab fa-whatsapp"></i>
-                </button>
-                <button class="share-item facebook" onclick="shareFacebook('{{ product.id }}')">
-                    <i class="fab fa-facebook-f"></i>
-                </button>
-                <button class="share-item copy" onclick="copyProductLink('{{ product.id }}')">
-                    <i class="fas fa-link"></i>
-                </button>
-            </div>
     </div>
 </div>

@@ -1,0 +1,223 @@
+/* 
+   Rawaaj Design System 
+   v1.0.0 - Saas Transformation
+*/
+
+:root {
+    /* 
+       CORE PALETTE 
+       - Fixed Rawaaj Brand Identity colors. 
+       - These do NOT change per tenant usually, unless fully white-labeled.
+    */
+    --brand-primary: #2B5876;
+    /* Trust Blue - Structural */
+    --brand-secondary: #D48231;
+    /* Action Orange - Conversion */
+    --brand-accent: #8BB8D1;
+    /* Info Blue - Support */
+
+    /* NEUTRALS */
+    --bg-main: #FFFFFF;
+    --bg-soft: #F8FAFC;
+    /* Slate 50 */
+    --bg-surface: #FFFFFF;
+
+    --text-main: #1e293b;
+    /* Slate 800 */
+    --text-muted: #64748b;
+    /* Slate 500 */
+    --text-inverted: #FFFFFF;
+
+    --border-soft: #e2e8f0;
+    /* Slate 200 */
+    --border-focus: #8BB8D1;
+    /* Accent Blue */
+
+    /* SEMANTIC ROLES (Default Mapping) */
+    /* 
+       Structure: 
+       navbars, sidebars, heavy headers -> --brand-primary
+       actions: 
+       buttons, links, conversion points -> --brand-secondary 
+    */
+    --color-structure: var(--brand-primary);
+    --color-action: var(--brand-secondary);
+    --color-highlight: var(--brand-accent);
+}
+
+/* 
+   UTILITIES 
+   Mimicking Tailwind classes for dynamic CSS variable usage 
+*/
+
+/* Backgrounds */
+.bg-brand-primary {
+    background-color: var(--color-structure) !important;
+}
+
+.bg-brand-secondary {
+    background-color: var(--color-action) !important;
+}
+
+.bg-brand-accent {
+    background-color: var(--color-highlight) !important;
+}
+
+.bg-soft {
+    background-color: var(--bg-soft) !important;
+}
+
+.bg-surface {
+    background-color: var(--bg-surface) !important;
+}
+
+/* Text */
+.text-brand-primary {
+    color: var(--color-structure) !important;
+}
+
+.text-brand-secondary {
+    color: var(--color-action) !important;
+}
+
+.text-brand-accent {
+    color: var(--color-highlight) !important;
+}
+
+.text-main {
+    color: var(--text-main) !important;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* Borders */
+.border-brand-primary {
+    border-color: var(--color-structure) !important;
+}
+
+.border-brand-secondary {
+    border-color: var(--color-action) !important;
+}
+
+.border-soft {
+    border-color: var(--border-soft) !important;
+}
+
+/* 
+   COMPONENTS 
+*/
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    /* Medium roundness, not pill */
+    font-weight: 700;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1.25;
+}
+
+.btn-primary {
+    background-color: var(--color-action);
+    /* Orange Action */
+    color: var(--text-inverted);
+    border: 1px solid transparent;
+}
+
+.btn-primary:hover {
+    filter: brightness(0.9);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(212, 130, 49, 0.3);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--color-structure);
+    color: var(--color-structure);
+    /* Blue Text */
+}
+
+.btn-secondary:hover {
+    background-color: rgba(43, 88, 118, 0.05);
+    /* Light Blue Tint */
+}
+
+.btn-ghost {
+    background-color: transparent;
+    color: var(--text-muted);
+}
+
+.btn-ghost:hover {
+    background-color: var(--bg-soft);
+    color: var(--text-main);
+}
+
+/* CARDS - SaaS Style */
+.card-saas {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 0.75rem;
+    /* 12px */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-saas:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+}
+
+/* FORMS */
+.input-saas {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-soft);
+    border-radius: 0.5rem;
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-saas:focus {
+    outline: none;
+    border-color: var(--color-highlight);
+    box-shadow: 0 0 0 3px rgba(139, 184, 209, 0.2);
+}
+
+/* NAVBAR SPECIFIC */
+.nav-saas {
+    background-color: var(--color-structure);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link-saas {
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nav-link-saas:hover,
+.nav-link-saas.active {
+    color: white;
+    text-shadow: 0 0 10px rgba(139, 184, 209, 0.5);
+}
+
+/* RTL Helpers */
+[dir="rtl"] .space-x-reverse> :not([hidden])~ :not([hidden]) {
+    --tw-space-x-reverse: 1;
+}
+
+/* GLOBAL RESET OVERRIDES */
+body {
+    background-color: var(--bg-soft);
+    color: var(--text-main);
+    font-family: 'Cairo', 'Tajawal', sans-serif;
+}

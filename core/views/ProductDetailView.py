@@ -3,7 +3,7 @@ from core.models import Product, Cart, Supplier
 from django.contrib.auth.decorators import login_required
 
 # @login_required
-def product_detail(request, store_id, pk):
+def product_detail(request, pk, store_id=None, store_slug=None):
     """Function-based view for product detail.
 
     Provides context similar to the previous DetailView:
@@ -12,7 +12,18 @@ def product_detail(request, store_id, pk):
     - cart: user's Cart for that supplier (or None)
     """
     product = get_object_or_404(Product.objects.prefetch_related('additional_images'), pk=pk)
-    supplier = get_object_or_404(Supplier, store_id=store_id, is_active=True)
+    
+    # Resolve Supplier
+    target_slug = store_slug or store_id
+    if not target_slug:
+         raise Http404("Store identifier missing")
+         
+    if hasattr(request, 'current_store') and request.current_store.store_id == target_slug:
+        supplier = request.current_store
+    else:
+        supplier = get_object_or_404(Supplier, store_id=target_slug, is_active=True)
+        
+    store_id = supplier.store_id
     
     # Visit tracking (session based)
     if 'visited_products' not in request.session:

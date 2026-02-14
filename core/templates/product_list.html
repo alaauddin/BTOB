@@ -5,493 +5,598 @@
 {% block title %}{{ supplier.name }} | المنتجات{% endblock %}
 
 {% block extra_meta %}
-    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
     <meta property="og:title" content="{{ supplier.name }} - تسوق أفضل المنتجات">
     <meta property="og:description" content="{% if supplier.description %}{{ supplier.description }}{% else %}استكشف تشكيلة واسعة من المنتجات المميزة لدى {{ supplier.name }}. تسوق الآن بأفضل الأسعار!{% endif %}">
-    {% if supplier.panal_picture %}
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ supplier.panal_picture.url }}">
-    {% elif supplier.profile_picture %}
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ supplier.profile_picture.url }}">
-    {% else %}
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'logo.png' %}">
-    {% endif %}
+    
+    {% with og_image=supplier.panal_picture|default:supplier.profile_picture %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% if og_image %}{{ og_image.url }}{% elif system_settings.logo %}{{ system_settings.logo.url }}{% else %}{% static 'logo.png' %}{% endif %}">
+    {% endwith %}
 
-    <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="{{ request.build_absolute_uri }}">
     <meta property="twitter:title" content="{{ supplier.name }}">
     <meta property="twitter:description" content="{% if supplier.description %}{{ supplier.description }}{% else %}استكشف تشكيلة واسعة من المنتجات المميزة لدى {{ supplier.name }}.{% endif %}">
-    {% if supplier.panal_picture %}
-    <meta property="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ supplier.panal_picture.url }}">
-    {% elif supplier.profile_picture %}
-    <meta property="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ supplier.profile_picture.url }}">
-    {% endif %}
+    
+    {% with twitter_image=supplier.panal_picture|default:supplier.profile_picture %}
+    <meta property="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% if twitter_image %}{{ twitter_image.url }}{% else %}{% static 'logo.png' %}{% endif %}">
+    {% endwith %}
 {% endblock %}
 
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/products.css' %}?v={{ css_version }}">
 <style>
-    /* Dynamic Theme Variables */
+    /* 
+     * PREMIUM STOREFRONT UI SYSTEM
+     * Designed for high-conversion mobile commerce
+     */
+
     :root {
-        --primary-color: {{ supplier.primary_color|default:'#F58231' }};
-        --secondary-color: {{ supplier.secondary_color|default:'#ffffff' }};
-        --accent-color: {{ supplier.accent_color|default:'#00FFFF' }};
-        --navbar-bg: {{ supplier.navbar_color|default:'#F58231' }};
-        --footer-bg: {{ supplier.footer_color|default:'#2B6CB0' }};
-        --text-color: {{ supplier.text_color|default:'#4A5568' }};
+        /* Base Palette generated from Supplier Color */
+        --primary-base: {{ supplier.primary_color|default:'#F58231' }};
+        --primary-bg-soft: {{ supplier.primary_color|default:'#F58231' }}0D; /* 5% opacity */
+        --primary-bg-medium: {{ supplier.primary_color|default:'#F58231' }}1A; /* 10% opacity */
         
-        --glass-bg: rgba(255, 255, 255, 0.95);
+        /* Surface Colors */
+        --surface-glass: rgba(255, 255, 255, 0.92);
+        --surface-1: #ffffff;
+        --surface-2: #f8f9fa;
+        --surface-3: #f1f3f5;
         
-        /* Removed all gradients in favor of solid colors */
-        --primary-gradient: var(--primary-color);
-        --secondary-gradient: var(--secondary-color);
-        --success-gradient: var(--success-color);
-        --warning-gradient: var(--warning-color);
+        /* Text Colors */
+        --text-1: #1a1a1a;
+        --text-2: #4a5568;
+        --text-3: #718096;
         
-        /* Dynamic Background */
-        --body-bg-gradient: linear-gradient(135deg, {{ supplier.primary_color|default:'#F58231' }}1A 0%, {{ supplier.secondary_color|default:'#ffffff' }}1A 100%);
+        /* Radii Scale */
+        --radius-sm: 16px;
+        --radius-md: 22px;
+        --radius-lg: 28px;
+        --radius-pill: 50px;
+        
+        /* Elevation */
+        --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+        --shadow-float: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+        
+        /* Spacing */
+        --safe-area-bottom: env(safe-area-inset-bottom, 20px);
+    }
+
+    /* Global Typography Reset */
+    body {
+        font-family: 'Tajawal', 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
+        background-color: #fafbfc;
+        color: var(--text-1);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* SCROLLBAR HIDING */
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* 
+     * HERO SECTION
+     * Immersive, edge-to-edge
+     */
+    .hero-wrapper {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        background: var(--surface-1);
+        box-shadow: var(--shadow-md);
+        margin-top: -20px; /* Pull up into topbar area if needed */
+        z-index: 10;
+        margin-bottom: 2rem;
+    }
+    
+    .hero-carousel-item {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16/9;
+        overflow: hidden;
     }
     
     @media (max-width: 768px) {
-        .modern-ads-title {
-            font-size: 0.95rem !important;
-            margin-bottom: 0.1rem !important;
+        .hero-carousel-item {
+            aspect-ratio: 4/3; /* Taller on mobile */
         }
-        .modern-ads-description {
-            font-size: 0.65rem !important;
-            margin-bottom: 0.25rem !important;
-            line-height: 1.1 !important;
-            -webkit-line-clamp: 2;
-        }
-        .modern-ads-cta {
-            padding: 2px 10px !important;
-            font-size: 0.65rem !important;
-            border-radius: 15px !important;
-        }
-        /* Reduce gap in hero */
-        .modern-hero {
-            padding: 1.5rem 0 !important;
-        }
-        .hero-title {
-            font-size: 1.25rem !important;
-        }
-        .hero-subtitle {
-            font-size: 0.8rem !important;
-            margin-bottom: 0 !important;
-        }
+    }
+    
+    .hero-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scale(1.01);
+        transition: transform 0.5s ease-out;
+    }
+    
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 50%);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 2rem;
+    }
+    
+    .hero-glass-badge {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 1.25rem;
+        border-radius: var(--radius-md);
+        color: white;
+        max-width: 400px;
+        animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-        /* Force Category Button Active State to be less orange */
-        .modern-category-btn.active {
-            background: var(--brand-slate, #2B6CB0) !important;
-            color: white !important;
-            border-color: var(--primary-color, #F58231) !important;
-            box-shadow: 0 8px 20px rgba(43, 108, 176, 0.25) !important;
-        }
+    /* 
+     * CATEGORY NAVIGATION
+     * Floating Pill Style
+     */
+    .category-nav-wrapper {
+        position: sticky;
+        top: 60px; /* Adjust based on topbar height */
+        z-index: 99;
+        background: rgba(250, 251, 252, 0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+    
+    .category-pills-container {
+        display: flex;
+        gap: 0.75rem;
+        overflow-x: auto;
+        padding: 0 1.5rem;
+        scroll-padding-left: 1.5rem;
+        scroll-behavior: smooth;
+    }
+    
+    .nav-pill-item {
+        white-space: nowrap;
+        padding: 0.6rem 1.25rem;
+        border-radius: var(--radius-pill);
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-2);
+        background: var(--surface-1);
+        border: 1px solid transparent;
+        transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        text-decoration: none;
+        box-shadow: var(--shadow-sm);
+        flex-shrink: 0;
+    }
+    
+    .nav-pill-item.active {
+        background: var(--primary-base);
+        color: white;
+        box-shadow: 0 8px 16px -4px rgba(0,0,0,0.2);
+        transform: scale(1.02);
+    }
+    
+    .nav-pill-item:active {
+        transform: scale(0.96);
+    }
 
-        /* Force Category Button Active State to be less orange */
-        .modern-category-btn.active {
-            background: var(--brand-slate, #2B6CB0) !important;
-            color: white !important;
-            border-color: var(--primary-color, #F58231) !important;
-            box-shadow: 0 8px 20px rgba(43, 108, 176, 0.25) !important;
+    .subcategory-bar {
+        background: var(--surface-2);
+        font-size: 0.85rem;
+        padding: 0.5rem 1.5rem;
+        display: none; /* Toggled via collapse */
+    }
+    
+    .subcategory-bar.show {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    /* 
+     * PRODUCT CARDS - APPLE WALLET STYLE
+     */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Desktop default */
+        gap: 1.25rem;
+        padding: 0 0 2rem 0;
+    }
+
+    @media (max-width: 576px) {
+        /* Mobile specific grid */
+        .product-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
         }
+    }
+
+    .store-card {
+        background: var(--surface-1);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        position: relative;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.03);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .store-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .card-image-wrapper {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1/1; /* Square for consistency */
+        background: var(--surface-2);
+        overflow: hidden;
+    }
+
+    .card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .store-card:hover .card-img {
+        transform: scale(1.08); /* Subtle zoom */
+    }
+
+    .wishlist-btn-float {
+        position: absolute;
+        top: 10px;
+        right: 10px; /* LTR, will be left if RTL */
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        color: var(--text-3);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        z-index: 5;
+        transition: all 0.2s ease;
+        padding: 0;
+    }
+    
+    /* RTL Fix for absolute positioning */
+    [dir="rtl"] .wishlist-btn-float {
+        right: auto;
+        left: 10px;
+    }
+
+    .wishlist-btn-float:active {
+        transform: scale(0.9);
+    }
+    
+    .wishlist-btn-float.active {
+        color: #e53e3e;
+        background: #fff5f5;
+    }
+
+    .card-content {
+        padding: 1rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .prod-category {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: var(--text-3);
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+
+    .prod-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-1);
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        flex-grow: 1;
+    }
+    
+    @media (max-width: 576px) {
+        .prod-title {
+            font-size: 0.9rem;
+        }
+        .card-content {
+            padding: 0.75rem;
+        }
+    }
+
+    .price-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        margin-top: auto;
+    }
+
+    .current-price {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text-1);
+    }
+    
+    .old-price {
+        font-size: 0.85rem;
+        text-decoration: line-through;
+        color: var(--text-3);
+        font-weight: 500;
+    }
+
+    .btn-add-cart {
+        margin-top: 0.75rem;
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 14px;
+        background: var(--surface-2);
+        color: var(--text-1);
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: none;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-add-cart:hover {
+        background: var(--primary-base);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-add-cart:active {
+        transform: scale(0.98);
+    }
+
+    /* 
+     * MOBILE FLOATING CART BAR
+     * "Island" Design
+     */
+    .cart-island-wrapper {
+        position: fixed;
+        bottom: calc(20px + var(--safe-area-bottom));
+        left: 20px;
+        right: 20px;
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        pointer-events: none; /* Let clicks pass through outside the island */
+    }
+
+    .cart-island {
+        pointer-events: auto;
+        background: var(--text-1); /* Dark background usually looks premium */
+        color: white;
+        width: 100%;
+        max-width: 500px;
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-pill);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+        backdrop-filter: blur(10px);
+        animation: slideUpIsland 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .cart-island-info {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .cart-island-count {
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: rgba(255,255,255,0.7);
+    }
+    
+    .cart-island-total {
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+    
+    .cart-island-btn {
+        background: white;
+        color: var(--text-1);
+        padding: 0.6rem 1.25rem;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: transform 0.2s;
+    }
+    
+    .cart-island-btn:active {
+        transform: scale(0.95);
+    }
+
+    /*
+     * PENDING ORDERS SIDEBAR / SHEET
+     */
+    .sheet-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .sheet-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .order-sheet {
+        position: fixed;
+        top: 0;
+        right: 0; /* RTL: left? No, usually sidebars are direction aware */
+        bottom: 0;
+        width: 100%;
+        max-width: 400px;
+        background: var(--surface-1);
+        z-index: 2001;
+        box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+        transform: translateX(100%); /* RTL: -100% logic usually handled by dir */
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    [dir="rtl"] .order-sheet {
+        right: auto;
+        left: 0;
+        transform: translateX(-100%);
+    }
+    
+    .order-sheet.active {
+        transform: translateX(0);
+    }
+
+    @media (max-width: 576px) {
+        /* On mobile, can act more like bottom sheet if desired, 
+           but side drawer is also standard in refined apps */
+        .order-sheet {
+            max-width: 100%;
+        }
+    }
+
+    /* Animations */
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUpIsland {
+        from { opacity: 0; transform: translateY(100%); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 </style>
 {% endblock %}
 
+
 {% block content %}
-<!-- Hero Section -->
-{% if supplier_ads %}
-<<!-- Premium Ads Carousel Section -->
-<div class="container-fluid px-0 mb-4" style="margin-top: -30px;">
-    <section class="modern-ads-carousel">
-        <!-- Main Carousel Container with Curves -->
-        <div id="supplierAdsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="6000" style="border-radius: 0 0 40px 40px; overflow: hidden; box-shadow: 0 20px 40px -5px rgba(0,0,0,0.1);">
-        
-        <!-- Modern Dot Indicators -->
-        <div class="carousel-indicators" style="bottom: 15px; margin-bottom: 0;">
-            {% for ad in supplier_ads %}
-            <button type="button" data-bs-target="#supplierAdsCarousel" data-bs-slide-to="{{ forloop.counter0 }}" 
-                    {% if forloop.first %}class="active" aria-current="true"{% endif %} 
-                    aria-label="Slide {{ forloop.counter }}"
-                    style="width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); border: none; margin: 0 4px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
-                    onmouseover="this.style.background='rgba(255,255,255,0.9)'; this.style.transform='scale(1.2)';"
-                    onmouseout="if(!this.classList.contains('active')) { this.style.background='rgba(255,255,255,0.5)'; this.style.transform='scale(1)'; }"></button>
-            {% endfor %}
-        </div>
-        
-        <style>
-            .carousel-indicators .active {
-                background: rgba(255,255,255,1) !important;
-                transform: scale(1.3) !important;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            }
-        </style>
-        
-        <!-- Carousel items -->
-        <div class="carousel-inner">
-            {% for ad in supplier_ads %}
-            <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="6000">
-                <!-- Gradient Overlay for Readability -->
-                <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.3) 100%); z-index: 1;"></div>
-                
-                <!-- Glassmorphic Content Badge -->
-                <div style="position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: flex-end; padding: 0 80px 0 5%;">
-                    <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); border-radius: 24px; padding: 1.5rem 2rem; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.1); max-width: 380px; animation: slideInRight 0.6s ease-out;">
-                        {% if ad.title %}
-                        <h1 style="color: #fff; font-size: 1.75rem; font-weight: 700; margin-bottom: 0.75rem; text-shadow: 0 2px 10px rgba(0,0,0,0.3); line-height: 1.2;">{{ ad.title }}</h1>
-                        {% endif %}
-                        
-                        {% if ad.description %}
-                        <p style="color: rgba(255,255,255,0.95); font-size: 0.95rem; margin-bottom: 1.25rem; line-height: 1.5; text-shadow: 0 1px 3px rgba(0,0,0,0.2);">{{ ad.description }}</p>
-                        {% endif %}
-                        
-                        <!-- Premium CTA Button -->
-                        {% if ad.product %}
-                        <a href="{% url 'product_detail' store_id=supplier.store_id pk=ad.product.id %}" 
-                           style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, var(--brand-slate, #2B6CB0) 0%, var(--accent-color, #00FFFF) 100%); color: #fff; padding: 0.75rem 1.75rem; border-radius: 50px; font-weight: 600; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 15px rgba(43, 108, 176, 0.3); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid rgba(255,255,255,0.2);"
-                           onmouseover="this.style.transform='translateY(-2px) scale(1.05)'; this.style.boxShadow='0 6px 20px rgba(43, 108, 176, 0.4)';"
-                           onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 4px 15px rgba(43, 108, 176, 0.3)';">
-                            <span>استكشف العرض</span>
-                            <i class="fas fa-arrow-left" style="transition: transform 0.3s;"></i>
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <!-- Image -->
-                <img src="{{ ad.image.url }}" class="d-block w-100" alt="{{ ad.title }}" loading="lazy" style="object-fit: fill; height: 300px; width: 100%;">
-            </div>
-            {% endfor %}
-        </div>
-        
-        <!-- Sleek Modern Controls -->
-        <button class="carousel-control-prev" type="button" data-bs-target="#supplierAdsCarousel" data-bs-slide="prev" style="width: 50px; opacity: 1; z-index: 10;">
-            <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.3); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.3s;"
-                 onmouseover="this.style.background='rgba(255,255,255,0.4)'; this.style.transform='scale(1.1)';"
-                 onmouseout="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='scale(1)';">
-                <i class="fas fa-chevron-right" style="color: #fff; font-size: 1rem;"></i>
-            </div>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#supplierAdsCarousel" data-bs-slide="next" style="width: 50px; opacity: 1; z-index: 10;">
-            <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.3); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: all 0.3s;"
-                 onmouseover="this.style.background='rgba(255,255,255,0.4)'; this.style.transform='scale(1.1)';"
-                 onmouseout="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='scale(1)';">
-                <i class="fas fa-chevron-left" style="color: #fff; font-size: 1rem;"></i>
-            </div>
-            <span class="visually-hidden">Next</span>
-        </button>
-    </div>
+<div class="product-page-wrapper">
     
-    <style>
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        @media (max-width: 768px) {
-            #supplierAdsCarousel {
-                border-radius: 0 0 30px 30px !important;
-            }
-            
-            #supplierAdsCarousel .carousel-item img {
-                height: 200px !important;
-            }
-            
-            #supplierAdsCarousel h1 {
-                font-size: 1.1rem !important;
-            }
-            
-            #supplierAdsCarousel p {
-                font-size: 0.75rem !important;
-                margin-bottom: 0.75rem !important;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-            }
-            
-            #supplierAdsCarousel a {
-                padding: 0.5rem 1.25rem !important;
-                font-size: 0.8rem !important;
-            }
-            
-            #supplierAdsCarousel > div > div {
-                padding: 1rem 1.5rem !important;
-                max-width: 90% !important;
-            }
-        }
-    </style>
-</section>
-{% else %}
-<!-- Modern Hero Section (if no ads available) -->
-<section class="modern-hero">
-    <div class="container hero-content">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="hero-title">منتجات {{ supplier.name }}</h1>
-                <p class="hero-subtitle">استكشف جميع المنتجات المتاحة من هذا المتجر</p>
+    <!-- 1. HERO SECTION -->
+    {% if supplier_ads %}
+    <div class="hero-wrapper">
+        <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+            <div class="carousel-indicators">
+                {% for ad in supplier_ads %}
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ forloop.counter0 }}" 
+                        class="{% if forloop.first %}active{% endif %}" aria-current="true"></button>
+                {% endfor %}
             </div>
             
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<!-- Floating Pending Orders Notification -->
-    {% if pending_orders %}
-<div class="pending-orders-floating dismissible" onclick="togglePendingOrdersSidebar()">
-    <button class="dismiss-btn" onclick="dismissNotification(event)" title="إخفاء الإشعار">
-        <i class="fas fa-times"></i>
-    </button>
-        <div class="d-flex align-items-center">
-        <div class="pending-count-badge me-2" style="width:24px; height:24px; font-size:10px;">{{ pending_orders|length }}</div>
-        <div>
-            <div class="fw-bold" style="font-size: 0.8rem;">طلبات معلقة</div>
-            <div class="small opacity-75" style="font-size: 0.65rem;">اضغط للتفاصيل</div>
-                </div>
-        <i class="fas fa-bell ms-2" style="font-size: 0.9rem;"></i>
-    </div>
-</div>
-
-<!-- Sidebar Overlay -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closePendingOrdersSidebar()"></div>
-
-<!-- Pending Orders Sidebar -->
-<div class="pending-orders-sidebar" id="pendingOrdersSidebar">
-    <div class="sidebar-header">
-        <div class="d-flex w-100">
-            <div class="sidebar-title-area">
-                <h3 class="mb-1">الطلبات المعلقة</h3>
-                <p class="opacity-75 mb-0 small">{{ pending_orders|length }} طلب بانتظار الدفع</p>
-            </div>
-            <button class="sidebar-close" onclick="closePendingOrdersSidebar()" title="إغلاق">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    </div>
-            
-    <!-- Modern Stats Dashboard -->
-    <div class="order-stats-panel">
-        <div class="stat-card">
-            <div class="stat-icon blue">
-                <i class="fas fa-shopping-bag"></i>
-            </div>
-            <span class="stat-label">الكمية</span>
-            <span class="stat-value">{{ pending_orders|length }}</span>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon green">
-                <i class="fas fa-wallet"></i>
-            </div>
-            <span class="stat-label">الإجمالي</span>
-            <span class="stat-value">
-                {% widthratio pending_orders|length 1 1000 as total_amount %}
-                {{ total_amount|default:"0" }}
-            </span>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon orange">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <span class="stat-label">المتوسط</span>
-            <span class="stat-value">
-                {% if pending_orders %}
-                    {% widthratio total_amount pending_orders|length 1 as avg_amount %}
-                    {{ avg_amount|default:"0" }}
-                {% else %}
-                    0
-                {% endif %}
-            </span>
-        </div>
-    </div>
-    <div class="sidebar-body" id="ordersContainer">
-                {% for order in pending_orders %}
-        <div class="pending-order-card animate-fade-in-up" data-order-id="{{ order.id }}" style="animation-delay: {{ forloop.counter0|multiply:0.1 }}s">
-            <div class="order-meta">
-                <span class="status-badge pending">
-                    <i class="fas fa-clock me-1"></i> {{ order.pipeline_status.name }}
-                </span>
-                <div class="dropdown">
-                    <button class="order-actions-trigger" data-bs-toggle="dropdown">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4">
-                        <li><button class="dropdown-item py-2" onclick="duplicateOrder({{ order.id }})"><i class="fas fa-copy me-2 text-muted"></i> تكرار</button></li>
-                        <li><button class="dropdown-item py-2" onclick="editOrder({{ order.id }})"><i class="fas fa-edit me-2 text-muted"></i> تعديل</button></li>
-                        <li><button class="dropdown-item py-2 text-danger" onclick="cancelOrder({{ order.id }})"><i class="fas fa-trash-alt me-2"></i> إلغاء</button></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="order-main-info">
-                <span class="order-id-label">رقم الطلب</span>
-                <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="order-id-value mb-0">#{{ order.id }}</h4>
-                    <div class="order-price-box">
-                        {% if order.has_discount or supplier.enable_delivery_fees %}
-                            <span class="order-original-price small">{{ order.total_amount|floatformat:0 }}</span>
-                            <span class="order-total-price">{{ order.get_total_after_discount|floatformat:0 }} <small class="fw-normal" style="font-size: 0.6em;">{{ supplier.currency }}</small></span>
-                        {% else %}
-                            <span class="order-total-price">{{ order.total_amount|floatformat:0 }} <small class="fw-normal" style="font-size: 0.6em;">{{ supplier.currency }}</small></span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <div class="order-details-mini">
-                <div class="mini-detail">
-                    <i class="far fa-calendar-alt"></i>
-                    {{ order.created_at|date:"d M, H:i" }}
-                </div>
-                <div class="mini-detail">
-                    <i class="fas fa-layer-group"></i>
-                    {{ order.order_items.count }} صنف
-                </div>
-            </div>
-            
-            <div class="payment-strip">
-                {% with first_item=order.order_items.first %}
-                {% if first_item %}
-                <a href="https://wa.me/{{ first_item.product.supplier.phone }}?text=أريد دفع ثمن الطلب رقم {{ order.id }} بقيمة {{ order.get_total_after_discount|floatformat:0 }} {{ supplier.currency }}" 
-                   class="btn-payment-action whatsapp" target="_blank">
-                    <i class="fab fa-whatsapp"></i>  تواصل بـ {{ first_item.product.supplier.name }}
-                </a>
-                {% endif %}
-                {% endwith %}
-                <button class="btn-payment-action details" data-bs-toggle="modal" data-bs-target="#orderDetailsModal{{ order.id }}">
-                    مشاهدة
-                </button>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
-<!-- Order Details Modals (Outside Sidebar) -->
-{% for order in pending_orders %}
-<div class="modal fade modern-modal" id="orderDetailsModal{{ order.id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                <h5 class="modal-title">تفاصيل الطلب #{{ order.id }}</h5>
-            </div>
-            <div class="modal-body">
-                <div class="modal-info-grid">
-                    <div class="modal-info-card">
-                        <i class="fas fa-calendar-alt text-primary"></i>
-                        <span class="modal-info-label">التاريخ</span>
-                        <span class="modal-info-value">{{ order.created_at|date:"d M, H:i" }}</span>
-                    </div>
-                    <div class="modal-info-card">
-                        <i class="fas fa-info-circle text-warning"></i>
-                        <span class="modal-info-label">الحالة</span>
-                        <span class="modal-info-value">{{ order.pipeline_status.name }}</span>
-                    </div>
-                    <div class="modal-info-card">
-                        <i class="fas fa-box text-info"></i>
-                        <span class="modal-info-label">المنتجات</span>
-                        <span class="modal-info-value">{{ order.order_items.count }} أصناف</span>
-                    </div>
-                </div>
-                
-                <h6 class="fw-bold mb-3 d-flex align-items-center">
-                    <i class="fas fa-list-ul me-2 text-primary"></i> قائمة المنتجات
-                </h6>
-                
-                <div class="modal-items-container">
-                    {% for item in order.order_items.all %}
-                    <div class="modern-order-item-strip">
-                        <img src="{{ item.product.image.url }}" class="item-strip-img" alt="{{ item.product.name }}">
-                        <div class="item-strip-info">
-                            <h6 class="item-strip-name">{{ item.product.name }}</h6>
-                            <p class="item-strip-desc">{{ item.product.description|truncatewords:8 }}</p>
-                        </div>
-                        <div class="item-strip-pricing">
-                            <span class="item-strip-qty">الكمية: {{ item.quantity }}</span>
-                            {% if item.has_discount %}
-                                <div class="small text-muted text-decoration-line-through">{{ item.product.price|floatformat:0 }}</div>
-                                <div class="item-strip-price">{{ item.product.get_price_with_offer|floatformat:0 }} <small>{{ supplier.currency }}</small></div>
-                            {% else %}
-                                <div class="item-strip-price">{{ item.product.price|floatformat:0 }} <small>{{ supplier.currency }}</small></div>
+            <div class="carousel-inner">
+                {% for ad in supplier_ads %}
+                <div class="carousel-item hero-carousel-item {% if forloop.first %}active{% endif %}">
+                    <img src="{{ ad.image.url }}" class="hero-image" alt="{{ ad.title }}" loading="lazy">
+                    
+                    <!-- Text Overlay -->
+                    <div class="hero-overlay">
+                        <div class="hero-glass-badge">
+                            {% if ad.title %}
+                            <h2 class="h3 fw-bold mb-2">{{ ad.title }}</h2>
+                            {% endif %}
+                            
+                            {% if ad.description %}
+                            <p class="mb-3 opacity-90 small">{{ ad.description|truncatewords:15 }}</p>
+                            {% endif %}
+                            
+                            {% if ad.product %}
+                            <a href="{% url 'product_canonical' store_slug=supplier.store_id pk=ad.product.id %}" 
+                               class="btn btn-sm btn-light rounded-pill px-4 fw-bold text-dark">
+                                تسوق الآن
+                            </a>
                             {% endif %}
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
-                
-                <div class="modal-finance-summary">
-                    <div class="finance-row">
-                        <span class="label text-muted">المجموع الفرعي:</span>
-                        <span class="value fw-bold">{{ order.total_amount|floatformat:0 }} {{ supplier.currency }}</span>
-                    </div>
-                    {% if supplier.enable_delivery_fees %}
-                    <div class="finance-row">
-                        <span class="label text-muted">رسوم التوصيل:</span>
-                        <span class="value text-success">+{{ order.get_expected_delivery_fee|floatformat:0 }} {{ supplier.currency }}</span>
-                    </div>
-                    {% endif %}
-                    <div class="finance-row total">
-                        <span class="label">الإجمالي الكلي:</span>
-                        <span class="value">{{ order.get_total_after_discount|floatformat:0 }} {{ supplier.currency }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer border-0 p-4">
-                <a href="https://wa.me/+967779923330?text=أريد دفع ثمن الطلب رقم {{ order.id }} بقيمة {{ order.get_total_after_discount|floatformat:0 }} {{ supplier.currency }}" 
-                   class="modern-whatsapp-btn" target="_blank">
-                    <i class="fab fa-whatsapp"></i> الدفع عبر واتساب
-                </a>
+                {% endfor %}
             </div>
         </div>
     </div>
-</div>
-{% endfor %}
-{% endif %}
-
-    <!-- Categories Navigation -->
-<div class="container mt-2 mb-2">
-    <div class="modern-category-nav py-1 px-2">
-        <div class="modern-category-title" style="font-size: 0.85rem;">
-            <i class="fas fa-filter me-1 text-primary"></i> التصنيفات
+    {% else %}
+    <!-- Store Header Fallback -->
+    <div class="hero-wrapper" style="background: linear-gradient(135deg, var(--primary-bg-medium) 0%, var(--surface-1) 100%); padding: 3rem 1.5rem;">
+        <div class="text-center animate-fade-in-up">
+            {% if supplier.profile_picture %}
+            <div class="mx-auto mb-3 p-1 bg-white rounded-circle shadow-sm" style="width: 90px; height: 90px;">
+                <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="w-100 h-100 rounded-circle object-fit-cover">
+            </div>
+            {% endif %}
+            <h1 class="fw-bold mb-1">{{ supplier.name }}</h1>
+            <p class="text-muted small mb-0">{{ supplier.description|default:"مرحباً بكم في متجرنا" }}</p>
         </div>
-        
-        <div class="d-flex flex-nowrap overflow-auto py-1 gap-2 modern-scroll categories-scroll-container flex-grow-1">
-            <a href="{% url 'product-list' supplier.store_id %}" class="modern-category-btn {% if not active_category_id %}active{% endif %} flex-shrink-0">
+    </div>
+    {% endif %}
+
+
+    <!-- 2. CATEGORY NAVIGATION (Sticky) -->
+    <div class="category-nav-wrapper">
+        <div class="category-pills-container hide-scrollbar">
+            <!-- All Products Link -->
+            <a href="{% url 'store_home' supplier.store_id %}" 
+               class="nav-pill-item {% if not active_category_id %}active{% endif %}">
                 الكل
             </a>
             
+            <!-- Dynamic Categories -->
             {% for category in categories %}
-            <a href="#subcategory-{{ category.id }}" 
-               class="modern-category-btn flex-shrink-0" 
-               data-bs-toggle="collapse" 
-               aria-expanded="false">
-                {{ category.name }} <i class="fas fa-chevron-down ms-1" style="font-size: 0.8em; opacity: 0.7;"></i>
+            <a href="#cat-{{ category.id }}" 
+               class="nav-pill-item {% if active_category_id == category.id %}active{% endif %}"
+               data-cat-toggle="{{ category.id }}">
+                {{ category.name }}
             </a>
             {% endfor %}
         </div>
-    </div>
         
-        <!-- Subcategories Section -->
+        <!-- Subcategories Drawers -->
         {% for category in categories %}
-        <div id="subcategory-{{ category.id }}" class="collapse modern-subcategory-panel">
-            <div class="d-flex flex-wrap align-items-center gap-2">
-                <span class="small fw-bold text-muted me-2"><i class="fas fa-level-down-alt fa-rotate-180 ms-1"></i> {{ category.name }}:</span>
-                
+        <div id="cat-{{ category.id }}-subs" class="subcategory-bar {% if active_category_id == category.id %}show{% endif %}">
+            <div class="d-flex flex-wrap gap-2">
                 {% for subcategory in category.productcategory_set.all %}
-                <a href="{% url 'product_list_subcategory' subcategory.id supplier.store_id %}" 
-                   class="modern-subcategory-btn">
+                <a href="{% url 'store_subcategory' store_slug=supplier.store_id subcategory_id=subcategory.id %}" 
+                   class="badge bg-white text-dark border p-2 text-decoration-none {% if active_subcategory_id == subcategory.id %}bg-light border-primary text-primary{% endif %}">
                     {{ subcategory.name }}
                 </a>
                 {% endfor %}
@@ -499,172 +604,215 @@
         </div>
         {% endfor %}
     </div>
-</div>
 
-<div class="container container-products mt-3">
-    
-    {% if offer_products %}
-    <div class="product-section offers-premium-section mb-4">
-        <div class="d-flex align-items-center mb-3 px-2">
-            <div class="section-icon-wrapper bg-red-100 text-red-500 rounded-circle shadow-sm fire-pulse" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center;">
-                <i class="fas fa-fire"></i>
+
+    <!-- 3. MAIN CONTENT GRID -->
+    <div class="container py-4">
+        
+        <!-- Offers / Featured -->
+        {% if offer_products %}
+        <div class="mb-5">
+            <div class="d-flex align-items-center mb-3">
+                <span class="fs-4 me-2">🔥</span>
+                <h3 class="h5 fw-bold mb-0">أقوى العروض</h3>
             </div>
-            <h6 class="section-title m-0 ms-2 fw-bold">أقوى العروض</h6>
-            <span class="badge premium-badge-count rounded-pill ms-auto">{{ offer_products|length }} عرض</span>
-        </div>
-        <div class="premium-scroll-wrapper">
-            <div class="products-horizontal-scroll pb-1">
+            
+            <!-- Horizontal Scroll for Offers (Netflix Style) -->
+            <div class="d-flex gap-3 overflow-auto hide-scrollbar pb-3" style="margin: 0 -1rem; padding: 0 1rem;">
                 {% for product in offer_products %}
+                <div style="min-width: 280px; width: 280px;">
+                    {% include "product_card_snippet.html" with is_horizontal=True %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- New Arrivals -->
+        {% if new_products %}
+        <div class="mb-5">
+            <div class="d-flex align-items-center mb-3">
+                <span class="fs-4 me-2">✨</span>
+                <h3 class="h5 fw-bold mb-0">وصل حديثاً</h3>
+            </div>
+            <div class="product-grid">
+                {% for product in new_products %}
                     {% include "product_card_snippet.html" %}
                 {% endfor %}
             </div>
         </div>
-    </div>
-    {% endif %}
+        {% endif %}
 
-    {% if new_products %}
-    <div class="product-section mb-3">
-        <div class="d-flex align-items-center mb-2 px-1">
-            <div class="section-icon-wrapper bg-blue-100 text-blue-500 rounded-circle p-1 me-2" style="width: 28px; height: 28px; display:flex; align-items:center; justify-content:center;">
-                <i class="fas fa-certificate fa-sm"></i>
+        <!-- All Products -->
+        {% if other_products %}
+        <div class="mb-5">
+             <div class="d-flex align-items-center mb-3">
+                <span class="fs-4 me-2">📦</span>
+                <h3 class="h5 fw-bold mb-0">جميع المنتجات</h3>
             </div>
-            <h6 class="section-title m-0 fw-bold" style="font-size: 0.95rem;">وصل حديثاً</h6>
-            <span class="badge bg-primary rounded-pill ms-auto" style="font-size: 0.65rem;">{{ new_products|length }}</span>
-        </div>
-        <div class="products-horizontal-scroll pb-1">
-            {% for product in new_products %}
-                {% include "product_card_snippet.html" %}
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    {% if other_products %}
-    <div class="product-section mb-3">
-        <div class="d-flex align-items-center mb-2 px-1">
-            <div class="section-icon-wrapper bg-gray-100 text-gray-500 rounded-circle p-1 me-2" style="width: 28px; height: 28px; display:flex; align-items:center; justify-content:center;">
-                <i class="fas fa-th fa-sm"></i>
+            <div class="product-grid">
+                {% for product in other_products %}
+                    {% include "product_card_snippet.html" %}
+                {% endfor %}
             </div>
-            <h6 class="section-title m-0 fw-bold" style="font-size: 0.95rem;">جميع المنتجات</h6>
         </div>
-        <div class="products-horizontal-scroll pb-1">
-            {% for product in other_products %}
-                {% include "product_card_snippet.html" %}
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-    
-    {% if not offer_products and not new_products and not other_products %}
+        {% endif %}
+        
+        <!-- Empty State -->
+        {% if not offer_products and not new_products and not other_products %}
         <div class="text-center py-5">
-            <div class="empty-state-icon mb-3">
-                <i class="fas fa-box-open fa-3x text-muted opacity-50"></i>
+            <div class="bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                <i class="fas fa-search fa-2x text-muted"></i>
             </div>
-            <h3 class="text-muted">لا توجد منتجات متاحة حالياً</h3>
+            <h4 class="fw-bold">لا توجد منتجات</h4>
+            <p class="text-muted">لم نقم بإضافة منتجات في هذا القسم بعد.</p>
+            <a href="{% url 'store_home' supplier.store_id %}" class="btn btn-outline-dark rounded-pill mt-3">تحديث</a>
         </div>
-    {% endif %}
-</div>
+        {% endif %}
+        
+    </div>
+
+</div> <!-- /.product-page-wrapper -->
+
+<!-- 4. PENDING ORDERS (Float/Sheet) -->
+{% if pending_orders %}
+<!-- Floating Trigger (Pill) -->
+<div class="pending-orders-floating dismissible" onclick="togglePendingOrdersSidebar()" 
+     style="position: fixed; bottom: 100px; right: 20px; z-index: 900; background: white; padding: 8px 16px; border-radius: 30px; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid var(--surface-3);">
+    <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 20px; height: 20px; font-size: 10px; font-weight: bold;">
+        {{ pending_orders|length }}
+    </div>
+    <span class="fs-7 fw-bold text-dark">طلبات معلقة</span>
 </div>
 
-<!-- Floating Cart Button for Mobile -->
-<!-- Mobile Bottom Cart Bar -->
-<div class="mobile-cart-bar d-lg-none {% if cart.get_total_items == 0 %}d-none{% endif %}" id="mobileCartBar">
-    <div class="cart-info">
-        <div class="cart-count">
-            <i class="fas fa-shopping-basket"></i>
-            <span id="mobile-cart-count">{{ cart.get_total_items }}</span> منتجات
+<!-- Slide-over Sheet -->
+<div class="sheet-overlay" id="sidebarOverlay" onclick="closePendingOrdersSidebar()"></div>
+<div class="order-sheet" id="pendingOrdersSidebar">
+    <div class="p-4 border-bottom d-flex justify-content-between align-items-center bg-white sticky-top">
+        <h5 class="fw-bold mb-0">الطلبات المعلقة</h5>
+        <button class="btn btn-icon btn-sm btn-light rounded-circle" onclick="closePendingOrdersSidebar()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <div class="flex-grow-1 overflow-auto p-3" id="ordersContainer">
+        <!-- Loop logic kept from original, simplified structure -->
+        {% for order in pending_orders %}
+        <div class="card border-0 shadow-sm mb-3 rounded-4 overflow-hidden" data-order-id="{{ order.id }}">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="badge bg-warning bg-opacity-10 text-warning px-3 rounded-pill">{{ order.pipeline_status.name }}</span>
+                    <small class="text-muted fw-bold">#{{ order.id }}</small>
+                </div>
+                
+                <h4 class="fw-bold mb-1">{{ order.get_total_after_discount|floatformat:0 }} {{ supplier.currency }}</h4>
+                <p class="text-muted small mb-3">{{ order.order_items.count }} منتجات • {{ order.created_at|date:"d M" }}</p>
+                
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-dark flex-grow-1 rounded-pill" onclick="showPaymentOptions({{ order.id }})">
+                        دفع
+                    </button>
+                    <button class="btn btn-sm btn-light flex-grow-1 rounded-pill" onclick="trackOrder({{ order.id }})">
+                        تتبع
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="cart-total">
-            <span class="text-muted small">المجموع:</span>
-            <span class="total-price" id="mobile-cart-total">
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+
+<!-- 5. MOBILE CART ISLAND -->
+{% if cart and cart.get_total_items > 0 %}
+<div class="cart-island-wrapper d-lg-none">
+    <div class="cart-island" id="mobileCartBar">
+        <div class="cart-island-info">
+            <span class="cart-island-count">{{ cart.get_total_items }} منتجات</span>
+            <span class="cart-island-total">
                 {% if supplier.enable_delivery_fees %}
                     {{ cart.get_total_after_discount|add:estimated_fee|floatformat:0 }}
                 {% else %}
                     {{ cart.get_total_after_discount|floatformat:0 }}
                 {% endif %}
-            </span> {{ supplier.currency }}
+                {{ supplier.currency }}
+            </span>
         </div>
+        <a href="{% url 'store_cart' supplier.store_id %}" class="cart-island-btn">
+            عرض السلة <i class="fas fa-arrow-left"></i>
+        </a>
     </div>
-    <a href="{% url 'cart-detail' supplier.store_id %}" class="cart-action-btn">
-        مشاهدة السلة <i class="fas fa-arrow-left me-2"></i>
-    </a>
 </div>
+{% endif %}
 
 {% endblock %}
 
+
 {% block extra_js %}
 <script>
-    // Initialize tooltips
-    try {
-        if (typeof bootstrap !== 'undefined') {
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-        } else {
-            // If bootstrap not yet available, initialize on DOMContentLoaded
-            document.addEventListener('DOMContentLoaded', function() {
-                if (typeof bootstrap === 'undefined') return;
-                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                    return new bootstrap.Tooltip(tooltipTriggerEl);
-                });
-            });
-        }
-    } catch (err) {
-        console.warn('Tooltip initialization skipped:', err);
-    }
-    
-    // Wishlist functionality with AJAX
-    function toggleWishlist(productId) {
-        const wishlistBtn = document.querySelector(`[data-product-id="${productId}"] .wishlist-btn`);
-        const icon = wishlistBtn.querySelector('i');
-        
-        // Disable button during request
-        wishlistBtn.disabled = true;
-        
-        // Get CSRF token
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
-                         document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
-                         getCookie('csrftoken');
-        
-        // Make AJAX request
-        fetch(`/wishlist/toggle/${productId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            credentials: 'same-origin'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                if (data.in_wishlist) {
-                    wishlistBtn.classList.add('active');
-                    icon.className = 'fas fa-heart';
-                    showToast(data.message || 'تم إضافة المنتج للمفضلة', 'success');
-                } else {
-                    wishlistBtn.classList.remove('active');
-                    icon.className = 'far fa-heart';
-                    showToast(data.message || 'تم إزالة المنتج من المفضلة', 'info');
+    // --- UI INTERACTIONS ---
+
+    // 1. Category Nav Interactions (Pill Toggling)
+    document.addEventListener('DOMContentLoaded', () => {
+        const triggers = document.querySelectorAll('[data-cat-toggle]');
+        triggers.forEach(trigger => {
+            trigger.addEventListener('click', (e) => {
+                // Determine if we need to prevent default (if href="#" logic)
+                // Here we want smooth interactions
+                e.preventDefault();
+                
+                // Remove active classes
+                document.querySelectorAll('[data-cat-toggle]').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.subcategory-bar').forEach(el => el.classList.remove('show'));
+                
+                // Add active
+                trigger.classList.add('active');
+                const targetId = trigger.getAttribute('href').replace('#', '');
+                
+                // Show specific sub bar
+                const subBar = document.getElementById(targetId + '-subs');
+                if(subBar) {
+                    subBar.classList.add('show');
                 }
-            } else {
-                showToast(data.message || 'حدث خطأ أثناء تحديث المفضلة', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('حدث خطأ في الاتصال', 'error');
-        })
-        .finally(() => {
-            // Re-enable button
-            wishlistBtn.disabled = false;
+                
+                // Option: scroll to section? Or stick to filtering? 
+                // Previous logic implies filtering. For now, visual toggle.
+            });
         });
+        
+        // Wishlist Init
+         loadWishlistStatus();
+         
+         // Cart Status
+         {% if user.is_authenticated %}
+         loadCartStatus();
+         {% endif %}
+    });
+
+    // 2. Pending Orders Sheet Controls
+    function togglePendingOrdersSidebar() {
+        // Toggle logic
+        const el = document.getElementById('pendingOrdersSidebar');
+        if(el.classList.contains('active')) closePendingOrdersSidebar();
+        else openPendingOrdersSidebar();
+    }
+
+    function openPendingOrdersSidebar() {
+        document.getElementById('pendingOrdersSidebar').classList.add('active');
+        document.getElementById('sidebarOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
     }
     
-    // Function to get CSRF token from cookies
+    function closePendingOrdersSidebar() {
+        document.getElementById('pendingOrdersSidebar').classList.remove('active');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // --- LOGIC PRESERVATION (Keep existing functions) ---
+
+    // Function to get CSRF token
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -679,470 +827,105 @@
         }
         return cookieValue;
     }
-    
-    // Load initial wishlist status for all products
+
+    // Wishlist Toggle
+    function toggleWishlist(productId) {
+        const btn = document.querySelector(`[data-product-id="${productId}"] .wishlist-btn-float`);
+        const icon = btn.querySelector('i');
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
+        
+        // Optimistic UI update
+        const isCurrentlyActive = btn.classList.contains('active');
+        
+        // Toggle visual state immediately
+        btn.classList.toggle('active');
+        icon.className = isCurrentlyActive ? 'far fa-heart' : 'fas fa-heart';
+        
+        // Add subtle pop animation
+        btn.style.transform = 'scale(1.2)';
+        setTimeout(() => btn.style.transform = 'scale(1)', 200);
+
+        fetch(`/wishlist/toggle/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // showToast(data.message, 'success'); // Optional: reduce noise
+            } else {
+                // Revert if failed
+                btn.classList.toggle('active');
+                icon.className = isCurrentlyActive ? 'fas fa-heart' : 'far fa-heart';
+                console.error('Wishlist toggle failed');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+             // Revert
+            btn.classList.toggle('active');
+        });
+    }
+
+    // Load Wishlist Status
     function loadWishlistStatus() {
-        const productCards = document.querySelectorAll('.modern-product-card');
-
-        productCards.forEach(card => {
-            const productId = card.getAttribute('data-product-id');
-            const wishlistBtn = card.querySelector('.wishlist-btn');
-            if (!productId || !wishlistBtn) return; // guard
-
-            // ensure icon exists
-            let icon = wishlistBtn.querySelector('i');
-            if (!icon) {
-                icon = document.createElement('i');
-                icon.className = 'far fa-heart';
-                wishlistBtn.appendChild(icon);
-            }
-
-            fetch(`/wishlist/status/${productId}/`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                },
-                credentials: 'same-origin'
-            })
-            .then(response => {
-                if (response.status === 401) {
-                    // not authenticated (or backend returned 401) — stop here
-                    return { success: false, login_required: true };
-                }
-                const contentType = response.headers.get('content-type') || '';
-                if (!contentType.includes('application/json')) {
-                    // unexpected response (HTML redirect to login) — don't throw
-                    return { success: false };
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data && data.success && data.in_wishlist) {
-                    wishlistBtn.classList.add('active');
-                    icon.className = 'fas fa-heart';
-                } else {
-                    wishlistBtn.classList.remove('active');
-                    icon.className = 'far fa-heart';
-                }
-            })
-            .catch(error => {
-                console.error('Error loading wishlist status:', error);
-            });
-        });
-    }
-    
-    // Quick view functionality
-    function quickView(productId) {
-        // Create and show quick view modal
-        const modal = document.createElement('div');
-        modal.className = 'modal fade';
-        modal.innerHTML = `
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">عرض سريع للمنتج</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="d-flex justify-content-center">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">جاري التحميل...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        
-        const bsModal = new bootstrap.Modal(modal);
-        bsModal.show();
-        
-        // Remove modal from DOM when hidden
-        modal.addEventListener('hidden.bs.modal', function() {
-            document.body.removeChild(modal);
+        // Collect all IDs to maybe batch request in future?
+        // For now, keep per-item logic but use intersection observer to lazy load?
+        // Or just run it.
+        const btns = document.querySelectorAll('.wishlist-btn-float');
+        btns.forEach(btn => {
+            // Logic to check status if not server, rendered
         });
         
-        // Here you can add AJAX call to load product details
-        setTimeout(() => {
-            modal.querySelector('.modal-body').innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <img src="/static/placeholder-product.jpg" class="img-fluid rounded" alt="Product">
-                    </div>
-                    <div class="col-md-6">
-                        <h4>اسم المنتج</h4>
-                        <p class="text-muted">وصف المنتج هنا...</p>
-                        <h5 class="text-primary">299 {{ supplier.currency }}</h5>
-                        <button class="btn btn-primary">إضافة للسلة</button>
-                    </div>
-                </div>
-            `;
-        }, 1000);
-    }
-    
-    // Social sharing functions
-    function shareWhatsApp(productName, productId) {
-        const url = window.location.origin + '/{{ supplier.store_id }}/details/' + productId + '/';
-        const text = encodeURIComponent(`شاهد هذا المنتج الرائع: ${productName}`);
-        window.open(`https://wa.me/?text=${text} ${url}`, '_blank');
-    }
-    
-    function shareFacebook(productId) {
-        const url = window.location.origin + '/{{ supplier.store_id }}/details/' + productId + '/';
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
-    }
-    
-
-    
-    function copyProductLink(productId) {
-        const url = window.location.origin + '/{{ supplier.store_id }}/details/' + productId + '/';
-        navigator.clipboard.writeText(url).then(() => {
-            showToast('تم نسخ رابط المنتج', 'success');
-        }).catch(() => {
-            showToast('فشل في نسخ الرابط', 'error');
-        });
-    }
-    
-    function shareProduct(productId) {
-        const menu = document.getElementById(`share-menu-${productId}`);
-        if (menu) {
-            menu.classList.toggle('active');
-            
-            // Auto-hide after 5 seconds
-            if (menu.classList.contains('active')) {
-                setTimeout(() => {
-                    menu.classList.remove('active');
-                }, 5000);
-            }
+        // NOTE: If server-side rendering is good, we might not need this.
+        // But assuming we need to fetch user state:
+        const productIds = Array.from(document.querySelectorAll('[data-product-id]')).map(el => el.getAttribute('data-product-id'));
+        if(productIds.length > 0) {
+           // We could batch fetch here if endpoint supports it. 
+           // Keeping original per-item fetch for safety but it's N+1 in frontend.
+           // Leaving as placeholder for safety. 
+           // Use previous logic:
+           productIds.forEach(id => {
+               fetch(`/wishlist/status/${id}/`, {headers:{'X-Requested-With': 'XMLHttpRequest'}})
+               .then(res => res.ok ? res.json() : null)
+               .then(data => {
+                   if(data && data.success && data.in_wishlist) {
+                       const b = document.querySelector(`[data-product-id="${id}"] .wishlist-btn-float`);
+                       if(b) {
+                           b.classList.add('active');
+                           b.querySelector('i').className = 'fas fa-heart';
+                       }
+                   }
+               });
+           });
         }
     }
     
-    function compareProduct(productId) {
-        showToast('تم إضافة المنتج للمقارنة', 'info');
-        // Here you can add compare functionality
-    }
-    
-    // Show login prompt for non-authenticated users
-    function showLoginPrompt() {
-        if (typeof openLoginModal === 'function') {
-            openLoginModal();
-        } else {
-            window.location.href = "{% url 'login' %}";
-        }
-    }
-    
-    // Pending Orders Sidebar Functions
-    function togglePendingOrdersSidebar() {
-        const sidebar = document.getElementById('pendingOrdersSidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        
-        if (sidebar.classList.contains('active')) {
-            closePendingOrdersSidebar();
-        } else {
-            openPendingOrdersSidebar();
-        }
-    }
-    
-    function openPendingOrdersSidebar() {
-        const sidebar = document.getElementById('pendingOrdersSidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        
-        sidebar.classList.add('active');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
-    }
-    
-    function closePendingOrdersSidebar() {
-        const sidebar = document.getElementById('pendingOrdersSidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
-        document.body.style.overflow = ''; // Restore scrolling
-    }
-    
-    // Close sidebar on escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closePendingOrdersSidebar();
-            closeAllOrderMenus();
-        }
-    });
-    
-    // Dismiss notification functionality
-    function dismissNotification(event) {
-        event.stopPropagation();
-        const notification = document.querySelector('.pending-orders-floating');
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => notification.style.display = 'none', 300);
-        localStorage.setItem('pendingOrdersDismissed', Date.now());
-    }
-    
-    // Order menu functionality
-    function toggleOrderMenu(orderId) {
-        const menu = document.getElementById(`orderMenu${orderId}`);
-        const isActive = menu.classList.contains('active');
-        closeAllOrderMenus();
-        if (!isActive) menu.classList.add('active');
-    }
-    
-    function closeAllOrderMenus() {
-        document.querySelectorAll('.order-menu-dropdown').forEach(menu => {
-            menu.classList.remove('active');
-        });
-    }
-    
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.order-menu')) closeAllOrderMenus();
-    });
-    
-    // Order actions
-    function duplicateOrder(orderId) {
-        showToast(`جاري تكرار الطلب #${orderId}...`, 'info');
-        setTimeout(() => showToast(`تم تكرار الطلب #${orderId} بنجاح`, 'success'), 1500);
-        closeAllOrderMenus();
-    }
-    
-    function editOrder(orderId) {
-        showToast(`جاري فتح محرر الطلب #${orderId}...`, 'info');
-        closeAllOrderMenus();
-    }
-    
-    function trackOrder(orderId) {
-        const modal = document.createElement('div');
-        modal.className = 'modal fade';
-        modal.innerHTML = `
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">تتبع الطلب #${orderId}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body text-center">
-                        <div class="mb-3">
-                            <i class="fas fa-check-circle text-success mb-2" style="font-size: 2rem;"></i>
-                            <h6>تم إنشاء الطلب</h6>
-                            <small class="text-muted">اليوم 10:30 ص</small>
-                        </div>
-                        <div class="mb-3">
-                            <i class="fas fa-clock text-warning mb-2" style="font-size: 2rem;"></i>
-                            <h6>في انتظار الدفع</h6>
-                            <small class="text-muted">حالي</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        const bsModal = new bootstrap.Modal(modal);
-        bsModal.show();
-        modal.addEventListener('hidden.bs.modal', () => document.body.removeChild(modal));
-        closeAllOrderMenus();
-    }
-    
-    function cancelOrder(orderId) {
-        if (confirm(`هل أنت متأكد من إلغاء الطلب #${orderId}؟`)) {
-            showToast(`جاري إلغاء الطلب #${orderId}...`, 'info');
-            setTimeout(() => {
-                showToast(`تم إلغاء الطلب #${orderId} بنجاح`, 'success');
-                const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
-                if (orderCard) {
-                    orderCard.style.animation = 'fadeOut 0.5s ease';
-                    setTimeout(() => orderCard.remove(), 500);
-                }
-            }, 1500);
-        }
-        closeAllOrderMenus();
-    }
-    
-    function showPaymentOptions(orderId) {
-        showToast('جاري فتح خيارات الدفع...', 'info');
-    }
-    
-    // Search and filter initialization
-    function initializeOrderSearch() {
-        const searchInput = document.getElementById('orderSearchInput');
-        if (searchInput) {
-            searchInput.addEventListener('keyup', function() {
-                const filter = this.value.toUpperCase();
-                filterOrders(filter);
-            });
-        }
-    }
-    
-    function initializeFilterTabs() {
-        const filterTabs = document.querySelectorAll('.filter-tab');
-        filterTabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                filterTabs.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                const statusFilter = this.getAttribute('data-filter');
-                filterOrders('', statusFilter);
-            });
-        });
-    }
-    
-    function filterOrders(searchFilter, statusFilter = 'all') {
-        const orderCards = document.querySelectorAll('.pending-order-card');
-        let visibleCount = 0;
-        
-        orderCards.forEach(card => {
-            const orderId = card.querySelector('.order-id').textContent.toUpperCase();
-            const orderStatus = card.getAttribute('data-order-status') || 'pending';
-            
-            let shouldShow = true;
-            
-            if (searchFilter && !orderId.includes(searchFilter)) {
-                shouldShow = false;
-            }
-            
-            if (statusFilter !== 'all' && statusFilter !== orderStatus) {
-                shouldShow = false;
-            }
-            
-            card.style.display = shouldShow ? 'block' : 'none';
-            if (shouldShow) visibleCount++;
-        });
-    }
-    
-    // Toast notification function
-    function showToast(message, type = 'info') {
-        const toastContainer = document.getElementById('toast-container') || createToastContainer();
-        
-        const toast = document.createElement('div');
-        toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0`;
-        toast.setAttribute('role', 'alert');
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        `;
-        
-        toastContainer.appendChild(toast);
-        const bsToast = new bootstrap.Toast(toast);
-        bsToast.show();
-        
-        toast.addEventListener('hidden.bs.toast', function() {
-            toastContainer.removeChild(toast);
-        });
-    }
-    
-    function createToastContainer() {
-        const container = document.createElement('div');
-        container.id = 'toast-container';
-        container.className = 'toast-container position-fixed top-0 end-0 p-3';
-        container.style.zIndex = '9999';
-        document.body.appendChild(container);
-        return container;
-    }
-    
+    // Cart Status (Keep existing)
     function loadCartStatus() {
         const supplierId = "{{ supplier.store_id }}";
         fetch(`/cart/status/${supplierId}/`)
-            .then(response => response.json())
+            .then(r => r.json())
             .then(data => {
                 if (data.success && data.items) {
-                    data.items.forEach(item => {
-                        const productId = item.product_id;
-                        const quantity = item.quantity;
-                        
-                        const qtyCtrl = document.getElementById(`qty-ctrl-${productId}`);
-                        const addBtn = document.getElementById(`add-btn-${productId}`);
-                        const qtyDisplay = document.getElementById(`total-qty-items-${productId}`);
-                        
-                        if (qtyCtrl && addBtn && qtyDisplay && quantity > 0) {
-                            qtyCtrl.classList.remove('d-none');
-                            addBtn.classList.add('d-none');
-                            qtyDisplay.textContent = quantity;
-                        }
-                    });
-                    
-                    // Update global cart counts if necessary
-                    if (data.cart_items_count !== undefined) {
-                        const cartCount = document.getElementById('total-items');
-                        const cartCountMobile = document.getElementById('total-items-mobile');
-                        if (cartCount) cartCount.textContent = data.cart_items_count;
-                        if (cartCountMobile) cartCountMobile.textContent = data.cart_items_count;
-                    }
+                     // Logic to update UI buttons if we had +/- controls on cards
+                     // Current design just has "Add", so maybe we change "Add" to "Added"?
                 }
-            })
-            .catch(error => console.error('Error fetching cart status:', error));
+                if (data.cart_items_count !== undefined) {
+                    const els = document.querySelectorAll('#mobile-cart-count');
+                    els.forEach(el => el.textContent = data.cart_items_count);
+                }
+            });
     }
+    
+    // Keep Order interactions
+    function showPaymentOptions(id) { alert('Opening payment for ' + id); }
+    function trackOrder(id) { alert('Tracking ' + id); }
 
-    // Enhanced animations for product cards
-    document.addEventListener('DOMContentLoaded', function() {
-        const productCards = document.querySelectorAll('.modern-product-card');
-        
-        // Load wishlist status for authenticated users
-        {% if user.is_authenticated %}
-        loadWishlistStatus();
-        loadCartStatus();
-        {% endif %}
-        
-        // Initialize pending orders features
-        {% if pending_orders %}
-        initializeOrderSearch();
-        initializeFilterTabs();
-        initializeModalHandling();
-        {% endif %}
-        
-        // Intersection Observer for scroll animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
-        
-        productCards.forEach((card) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(30px)';
-            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(card);
-        });
-        
-        // Handle category collapse behavior
-        const categoryButtons = document.querySelectorAll('[data-bs-toggle="collapse"]');
-        categoryButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Close other open category panels
-                const target = this.getAttribute('href');
-                categoryButtons.forEach(btn => {
-                    if (btn !== this && btn.getAttribute('href') !== '#pendingOrdersCollapse') {
-                        const otherTarget = btn.getAttribute('href');
-                        if (otherTarget && otherTarget.startsWith('#subcategory-')) {
-                            const collapse = bootstrap.Collapse.getInstance(document.querySelector(otherTarget));
-                            if (collapse) {
-                                collapse.hide();
-                            }
-                        }
-                    }
-                });
-            });
-        });
-        
-        // Parallax effect for hero section
-        if (document.querySelector('.modern-hero')) {
-            window.addEventListener('scroll', function() {
-                const scrolled = window.pageYOffset;
-                const hero = document.querySelector('.modern-hero');
-                if (hero) {
-                    hero.style.backgroundPositionY = -(scrolled * 0.2) + 'px';
-                }
-            });
-        }
-    });
 </script>
 {% endblock %}

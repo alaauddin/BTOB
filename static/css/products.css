@@ -256,27 +256,26 @@
 
 /* Category Navigation v3.0 - Floating Pill Design */
 .modern-category-nav {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 100px;
-    /* Perfect Pill */
-    padding: 0.5rem 1.5rem;
-    box-shadow:
-        0 4px 6px -1px rgba(0, 0, 0, 0.1),
-        0 2px 4px -1px rgba(0, 0, 0, 0.06),
-        inset 0 0 20px rgba(255, 255, 255, 0.5);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 0;
+    padding: 0.75rem 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     display: flex;
     align-items: center;
     gap: 1.25rem;
     position: sticky;
-    top: 80px;
-    /* Offset from navbar */
+    top: 70px;
+    /* Adjusted for standard navbar */
     z-index: 100;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    max-width: fit-content;
-    margin: 0 auto;
+    width: 100%;
+    margin: 0;
+    will-change: transform;
+    /* Performance Optimization */
 }
 
 .modern-category-title {
@@ -373,6 +372,8 @@
     overflow: hidden;
     transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     height: 100%;
+    will-change: transform;
+    /* Performance Optimization */
     display: flex;
     flex-direction: column;
     position: relative;
@@ -2251,7 +2252,7 @@
 
     /* Enhanced Category Nav for Mobile */
     .modern-category-nav {
-        top: 60px;
+        top: 70px;
         padding: 0.5rem 1rem;
         margin-bottom: 0 !important;
         width: 100%;
@@ -2307,9 +2308,97 @@
         display: none;
     }
 
-    .modern-hero {
-        padding: 0.5rem 0;
+    /* Modern Store Header - SaaS Style */
+    .modern-store-header {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, var(--bg-soft) 100%);
+        padding: 3rem 0 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .modern-store-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, rgba(43, 88, 118, 0.03) 0%, transparent 70%);
+        z-index: 0;
+    }
+
+    .store-brand-container {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .store-logo-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border-soft);
         margin-bottom: 0.5rem;
+    }
+
+    .store-logo-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 20px;
+    }
+
+    .store-title-large {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--brand-primary);
+        margin: 0;
+        letter-spacing: -0.5px;
+    }
+
+    .store-verified-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: rgba(139, 184, 209, 0.1);
+        /* brand-accent tint */
+        color: var(--brand-primary);
+        padding: 0.25rem 0.75rem;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    /* Updated Nav for SaaS Look */
+    @media (max-width: 768px) {
+        .modern-store-header {
+            padding: 2rem 0;
+        }
+
+        .store-title-large {
+            font-size: 1.5rem;
+        }
+
+        .store-logo-wrapper {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+        }
+    }
+
+    .modern-hero {
+        padding: 1.5rem 0;
+        margin-bottom: 1rem;
     }
 
     .hero-title {

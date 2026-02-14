@@ -17,6 +17,14 @@
                     <span class="nav-text">متجري</span>
                 </a>
             </li>
+            {% else %}
+            {# Authenticated user without merchant - show join business link #}
+            <li class="liquid-nav-item {% if request.resolver_match.url_name == 'join_business' %}active{% endif %}" data-index="0">
+                <a href="{% url 'join_business' %}">
+                    <span class="nav-icon"><i class="fas fa-store-alt"></i></span>
+                    <span class="nav-text">أنشئ متجر</span>
+                </a>
+            </li>
             {% endif %}
             <li class="liquid-nav-item" data-index="1">
                 <a href="javascript:void(0)" onclick="const s = document.getElementById('productSearch'); if(s) { s.scrollIntoView(); s.focus(); }">

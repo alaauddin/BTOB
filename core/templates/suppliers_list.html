@@ -175,7 +175,7 @@
         background: #e2e8f0;
     }
     .tour-dot.active {
-        background: #3b82f6;
+        background: #2B5876;
         width: 12px;
         border-radius: 3px;
     }
@@ -417,7 +417,7 @@
         transform: translateX(-50%);
         width: 60px;
         height: 4px;
-        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        background: linear-gradient(90deg, #2B5876, #8BB8D1);
         border-radius: 2px;
     }
     
@@ -458,8 +458,8 @@
     
     .promo-card:hover {
         transform: translateY(-8px);
-        box-shadow: 0 20px 40px -12px rgba(59, 130, 246, 0.2);
-        border-color: rgba(59, 130, 246, 0.3);
+        box-shadow: 0 20px 40px -12px rgba(43, 88, 118, 0.2);
+        border-color: rgba(43, 88, 118, 0.3);
     }
     
     .promo-image-wrapper {
@@ -567,17 +567,7 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        color: #F58231;
-        font-weight: 700;
-        font-size: 0.95rem;
-        transition: gap 0.2s ease;
-    }
-    
-    .promo-cta {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: #F58231;
+        color: #D48231;
         font-weight: 700;
         font-size: 0.95rem;
         transition: gap 0.2s ease;
@@ -623,7 +613,7 @@
                     
                     {% if ad.supplier %}
                     <div class="supplier-badge absolute top-4 left-4 z-10">
-                        <img src="{% if ad.supplier.profile_picture %}{{ ad.supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ ad.supplier.name }}">
+                        <img src="{% if ad.supplier.profile_picture %}{{ ad.supplier.profile_picture.url }}{% elif system_settings.logo %}{{ system_settings.logo.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ ad.supplier.name }}">
                         <span>{{ ad.supplier.name }}</span>
                     </div>
                     {% endif %}
@@ -730,7 +720,7 @@
                                 {% endif %}
                                 <div class="supplier-cover" style="{% if supplier.panal_picture %}background-image: url('{{ supplier.panal_picture.url }}'); background-size: cover; background-position: center;{% else %}background-color: {{ supplier.primary_color }}22;{% endif %}"></div>
                                 <div class="supplier-logo-wrapper">
-                                    <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}" loading="lazy">
+                                    <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% elif system_settings.logo %}{{ system_settings.logo.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}" loading="lazy">
                                 </div>
                                 
                                 <div class="supplier-content">
@@ -781,7 +771,7 @@
                                 {% endif %}
                                 <div class="supplier-cover" style="{% if supplier.panal_picture %}background-image: url('{{ supplier.panal_picture.url }}'); background-size: cover; background-position: center;{% else %}background-color: {{ supplier.primary_color }}22;{% endif %}"></div>
                                 <div class="supplier-logo-wrapper">
-                                    <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}" loading="lazy">
+                                    <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% elif system_settings.logo %}{{ system_settings.logo.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}" loading="lazy">
                                 </div>
                                 
                                 <div class="supplier-content">
@@ -838,7 +828,7 @@
                         <i class="fas fa-home"></i>
                     </div>
                     <div class="supplier-logo-container">
-                        <img src="{% if s.profile_picture %}{{ s.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ s.name }}" loading="lazy">
+                        <img src="{% if s.profile_picture %}{{ s.profile_picture.url }}{% elif system_settings.logo %}{{ system_settings.logo.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ s.name }}" loading="lazy">
                     </div>
                     <div class="supplier-info-glass">
                         <div class="supplier-name-premium">{{ s.name }}</div>

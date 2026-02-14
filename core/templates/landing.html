@@ -14,148 +14,967 @@
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <!-- Hero Content -->
             <div class="hero-content text-center lg:text-right" data-aos="fade-left">
-                <h1 class="hero-title">
-                    لا تبدأ من الصفر، ابدأ من متجر جاهز
+                <h1 class="hero-title text-white font-black mb-6">
+                    متجرك الإلكتروني... جاهز من أول يوم
                 </h1>
-                <p class="hero-subtitle">
-                    ابدأ تجربتك مع متجر جاهز بالكامل بسهولة البديات بتصميم احترافي، منتجات مضافة، وربط مع بوابة دفع وحلول شحن.
+                <p class="hero-subtitle text-lg mb-8 leading-relaxed">
+                    ما تحتاج تبدأ من الصفر. احنا جهزنا لك كل شي: تصميم احترافي، منتجات جاهزة، وربط الدفع والشحن. <strong>كل اللي عليك... تبدأ البيع</strong>
                 </p>
-                <div class="hero-cta">
-                    <a href="{% url 'join_business' %}" class="btn-primary">
+                <div class="hero-cta flex flex-wrap gap-4 justify-center lg:justify-start">
+                    <a href="{% url 'join_business' %}" class="btn btn-primary shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
                         <i class="fas fa-rocket ml-2"></i>
                         انطلق الآن
                     </a>
-                    <a href="#features" class="btn-secondary">
+                    <a href="#features" class="btn btn-secondary">
                         اكتشف المزايا
                         <i class="fas fa-arrow-down mr-2"></i>
                     </a>
                 </div>
             </div>
 
-            <!-- Hero Image/Mockups -->
+            <!-- Dashboard Mockup Preview -->
             <div class="hero-mockups" data-aos="fade-right">
-                <div class="mockup-container">
-                    <div class="mockup-card mockup-1">
-                        <i class="fas fa-store text-4xl text-primary mb-3"></i>
-                        <p class="text-sm font-bold">إدارة كاملة للمتجر</p>
+                <div class="dashboard-mockup glass-card-hero">
+                    <!-- Browser Window Header -->
+                    <div class="mockup-header">
+                        <div class="mockup-dot bg-red-400"></div>
+                        <div class="mockup-dot bg-yellow-400"></div>
+                        <div class="mockup-dot bg-green-400"></div>
                     </div>
-                    <div class="mockup-card mockup-2">
-                        <i class="fas fa-chart-line text-4xl text-success mb-3"></i>
-                        <p class="text-sm font-bold">تحليلات دقيقة</p>
+
+                    <!-- Stats Cards -->
+                    <div class="mockup-stats-grid">
+                        <div class="mockup-stat-card">
+                            <div class="mockup-stat-value">1,247</div>
+                            <div class="mockup-stat-label">إجمالي الطلبات</div>
+                        </div>
+                        <div class="mockup-stat-card">
+                            <div class="mockup-stat-value">23,450</div>
+                            <div class="mockup-stat-label">المبيعات (ر.س)</div>
+                        </div>
+                        <div class="mockup-stat-card">
+                            <div class="mockup-stat-value">156</div>
+                            <div class="mockup-stat-label">المنتجات</div>
+                        </div>
                     </div>
-                    <div class="mockup-card mockup-3">
-                        <i class="fas fa-mobile-alt text-4xl text-info mb-3"></i>
-                        <p class="text-sm font-bold">متوافق مع الجوال</p>
-                    </div>
+
+                    <!-- Orders Table -->
+                    <table class="mockup-table">
+                        <thead class="mockup-table-header">
+                            <tr>
+                                <th>الحالة</th>
+                                <th>المبلغ</th>
+                                <th>العميل</th>
+                                <th>رقم الطلب</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="mockup-table-row">
+                                <td><span class="mockup-status success">مكتمل</span></td>
+                                <td>450 ر.س</td>
+                                <td>أحمد محمد</td>
+                                <td>#1024</td>
+                            </tr>
+                            <tr class="mockup-table-row">
+                                <td><span class="mockup-status pending">قيد التنفيذ</span></td>
+                                <td>320 ر.س</td>
+                                <td>سارة خالد</td>
+                                <td>#1023</td>
+                            </tr>
+                            <tr class="mockup-table-row">
+                                <td><span class="mockup-status success">مكتمل</span></td>
+                                <td>890 ر.س</td>
+                                <td>فهد عبدالله</td>
+                                <td>#1022</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
+<!-- Trust Bar Section -->
+<section class="trust-bar">
+    <div class="container mx-auto px-4">
+        <h3 class="text-center text-lg font-bold text-muted mb-8">موثوق من شركاء الدفع والشحن الرائدين</h3>
+        <div class="trust-logo-grid">
+            <div class="trust-logo-item">
+                <span class="text-xs font-bold text-muted">بوابة الدفع 1</span>
+            </div>
+            <div class="trust-logo-item">
+                <span class="text-xs font-bold text-muted">شركة الشحن 1</span>
+            </div>
+            <div class="trust-logo-item">
+                <span class="text-xs font-bold text-muted">بوابة الدفع 2</span>
+            </div>
+            <div class="trust-logo-item">
+                <span class="text-xs font-bold text-muted">شركة الشحن 2</span>
+            </div>
+            <div class="trust-logo-item">
+                <span class="text-xs font-bold text-muted">خدمة التوصيل</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Dashboard Mockup Carousel Section -->
+<section class="dashboard-mockup-section py-24 bg-gradient-to-b from-white to-blue-50/30 overflow-hidden">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="section-title text-4xl font-black text-brand-primary mb-4">لوحة تحكم احترافية لإدارة متجرك</h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">نظام إدارة متكامل يمكنك من متابعة مبيعاتك، طلباتك، ومنتجاتك بكل سهولة</p>
+            <div class="h-1 w-20 bg-brand-secondary mx-auto rounded-full mt-6"></div>
+        </div>
+
+        <!-- Interactive Carousel Container -->
+        <div class="relative max-w-6xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+            <!-- Carousel Wrapper -->
+            <div class="dashboard-carousel-wrapper relative">
+                <!-- Navigation Dots -->
+                <div class="flex justify-center gap-3 mb-8">
+                    <button class="carousel-dot active" data-slide="0">
+                        <i class="fas fa-boxes text-sm"></i>
+                        <span class="dot-label">المنتجات</span>
+                    </button>
+                    <button class="carousel-dot" data-slide="1">
+                        <i class="fas fa-shopping-cart text-sm"></i>
+                        <span class="dot-label">الطلبات</span>
+                    </button>
+                    <button class="carousel-dot" data-slide="2">
+                        <i class="fas fa-chart-line text-sm"></i>
+                        <span class="dot-label">التحليلات</span>
+                    </button>
+                </div>
+
+                <!-- Slides Container -->
+                <div class="carousel-slides-container relative">
+                    <!-- Slide 1: Dashboard Overview Mockup -->
+                    <div class="carousel-slide active">
+                        <div class="glass-card-mockup" dir="rtl">
+                            <div class="mockup-browser-bar">
+                                <div class="browser-dots">
+                                    <span class="dot red"></span>
+                                    <span class="dot yellow"></span>
+                                    <span class="dot green"></span>
+                                </div>
+                                <div class="browser-address">
+                                    <i class="fas fa-lock text-green-500"></i>
+                                    <span>127.0.0.1:8001/dashboard/</span>
+                                </div>
+                            </div>
+                            <div class="mockup-content bg-gray-50 p-8 overflow-hidden" style="height: 500px;">
+                                <!-- Dashboard Overview Mockup -->
+                                <div class="space-y-6">
+                                    <!-- Header Card -->
+                                    <div class="bg-white rounded-2xl p-6 shadow-sm">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                                                م
+                                            </div>
+                                            <div>
+                                                <h2 class="text-xl font-bold text-gray-800">متجر العينة</h2>
+                                                <div class="flex gap-3 text-sm text-gray-500 mt-1">
+                                                    <span><i class="fas fa-map-marker-alt text-blue-500"></i> صنعاء</span>
+                                                    <span><i class="fas fa-phone text-green-500"></i> 777123456</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Stats Row -->
+                                    <div class="bg-white rounded-2xl p-4 shadow-sm">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <div class="flex flex-col items-center px-3">
+                                                <span class="text-xs font-semibold text-gray-400 mb-1">المنتجات</span>
+                                                <div class="flex items-center gap-1.5 text-blue-600">
+                                                    <i class="fas fa-box text-sm"></i>
+                                                    <span class="text-lg font-bold">24</span>
+                                                </div>
+                                            </div>
+                                            <div class="w-px h-8 bg-gray-200"></div>
+                                            <div class="flex flex-col items-center px-3">
+                                                <span class="text-xs font-semibold text-gray-400 mb-1">الطلبات</span>
+                                                <div class="flex items-center gap-1.5 text-green-600">
+                                                    <i class="fas fa-shopping-cart text-sm"></i>
+                                                    <span class="text-lg font-bold">156</span>
+                                                </div>
+                                            </div>
+                                            <div class="w-px h-8 bg-gray-200"></div>
+                                            <div class="flex flex-col items-center px-3">
+                                                <span class="text-xs font-semibold text-gray-400 mb-1">المعلقة</span>
+                                                <div class="flex items-center gap-1.5 text-orange-600">
+                                                    <i class="fas fa-clock text-sm"></i>
+                                                    <span class="text-lg font-bold">8</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Router Tiles -->
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                                            <div class="flex items-start gap-3">
+                                                <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
+                                                    <i class="fas fa-shopping-cart text-xl"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <h4 class="font-bold text-gray-800 mb-1">إدارة الطلبات</h4>
+                                                    <p class="text-xs text-gray-500">متابعة وتحديث الطلبات</p>
+                                                    <span class="inline-block mt-2 text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full">8 معلق</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                                            <div class="flex items-start gap-3">
+                                                <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center text-green-600">
+                                                    <i class="fas fa-box text-xl"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <h4 class="font-bold text-gray-800 mb-1">المنتجات</h4>
+                                                    <p class="text-xs text-gray-500">إضافة وإدارة المنتجات</p>
+                                                    <span class="inline-block mt-2 text-xs bg-emerald-100 text-emerald-600 px-2 py-1 rounded-full">24 منتج</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2: Products Dashboard Mockup -->
+                    <div class="carousel-slide">
+                        <div class="glass-card-mockup" dir="rtl">
+                            <div class="mockup-browser-bar">
+                                <div class="browser-dots">
+                                    <span class="dot red"></span>
+                                    <span class="dot yellow"></span>
+                                    <span class="dot green"></span>
+                                </div>
+                                <div class="browser-address">
+                                    <i class="fas fa-lock text-green-500"></i>
+                                    <span>127.0.0.1:8001/dashboard/products/</span>
+                                </div>
+                            </div>
+                            <div class="mockup-content bg-gray-50 p-6 overflow-hidden" style="height: 500px;">
+                                <!-- Products Page Mockup -->
+                                <div class="space-y-4">
+                                    <!-- Header -->
+                                    <div class="flex items-center justify-between">
+                                        <h2 class="text-2xl font-bold text-gray-800">إدارة المنتجات</h2>
+                                        <button class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-green-600 transition">
+                                            <i class="fas fa-plus"></i>
+                                            إضافة منتج جديد
+                                        </button>
+                                    </div>
+
+                                    <!-- Filters -->
+                                    <div class="flex gap-3">
+                                        <select class="px-4 py-2 border border-gray-200 rounded-lg text-sm bg-white">
+                                            <option>كل الفئات</option>
+                                        </select>
+                                        <select class="px-4 py-2 border border-gray-200 rounded-lg text-sm bg-white">
+                                            <option>حالة المخزون</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Products Grid -->
+                                    <div class="grid grid-cols-3 gap-4">
+                                        <!-- Product Card 1 -->
+                                        <div class="bg-white rounded-xl p-3 shadow-sm">
+                                            <div class="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-3 flex items-center justify-center">
+                                                <i class="fas fa-image text-gray-400 text-3xl"></i>
+                                            </div>
+                                            <h4 class="font-bold text-sm text-gray-800 mb-1">عامل المنتجات</h4>
+                                            <p class="text-xs text-gray-500 mb-2">الإلكترونيات</p>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-blue-600 font-bold text-sm">1,500 ر.ي</span>
+                                                <span class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">متوفر</span>
+                                            </div>
+                                            <div class="flex gap-2 mt-3">
+                                                <button class="flex-1 bg-blue-50 text-blue-600 py-1.5 rounded text-xs font-bold hover:bg-blue-100">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="flex-1 bg-red-50 text-red-600 py-1.5 rounded text-xs font-bold hover:bg-red-100">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Product Card 2 -->
+                                        <div class="bg-white rounded-xl p-3 shadow-sm">
+                                            <div class="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-3 flex items-center justify-center">
+                                                <i class="fas fa-image text-gray-400 text-3xl"></i>
+                                            </div>
+                                            <h4 class="font-bold text-sm text-gray-800 mb-1">ساعة ذكية</h4>
+                                            <p class="text-xs text-gray-500 mb-2">الإلكترونيات</p>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-blue-600 font-bold text-sm">190 ر.ي</span>
+                                                <span class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">متوفر</span>
+                                            </div>
+                                            <div class="flex gap-2 mt-3">
+                                                <button class="flex-1 bg-blue-50 text-blue-600 py-1.5 rounded text-xs font-bold hover:bg-blue-100">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="flex-1 bg-red-50 text-red-600 py-1.5 rounded text-xs font-bold hover:bg-red-100">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Product Card 3 -->
+                                        <div class="bg-white rounded-xl p-3 shadow-sm">
+                                            <div class="w-full h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-3 flex items-center justify-center">
+                                                <i class="fas fa-image text-gray-400 text-3xl"></i>
+                                            </div>
+                                            <h4 class="font-bold text-sm text-gray-800 mb-1">هاتف ذكي</h4>
+                                            <p class="text-xs text-gray-500 mb-2">الإلكترونيات</p>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-blue-600 font-bold text-sm">1,800 ر.ي</span>
+                                                <span class="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">قليل</span>
+                                            </div>
+                                            <div class="flex gap-2 mt-3">
+                                                <button class="flex-1 bg-blue-50 text-blue-600 py-1.5 rounded text-xs font-bold hover:bg-blue-100">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="flex-1 bg-red-50 text-red-600 py-1.5 rounded text-xs font-bold hover:bg-red-100">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 3: Orders Dashboard Mockup -->
+                    <div class="carousel-slide">
+                        <div class="glass-card-mockup" dir="rtl">
+                            <div class="mockup-browser-bar">
+                                <div class="browser-dots">
+                                    <span class="dot red"></span>
+                                    <span class="dot yellow"></span>
+                                    <span class="dot green"></span>
+                                </div>
+                                <div class="browser-address">
+                                    <i class="fas fa-lock text-green-500"></i>
+                                    <span>127.0.0.1:8001/dashboard/orders/</span>
+                                </div>
+                            </div>
+                            <div class="mockup-content bg-gray-50 p-6 overflow-hidden" style="height: 500px;">
+                                <!-- Orders Page Mockup -->
+                                <div class="space-y-4">
+                                    <!-- Header -->
+                                    <h2 class="text-2xl font-bold text-gray-800">إدارة الطلبات</h2>
+
+                                    <!-- Status Tabs -->
+                                    <div class="flex gap-2">
+                                        <button class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-bold">كل الطلبات</button>
+                                        <button class="px-4 py-2 bg-orange-100 text-orange-600 rounded-lg text-sm font-bold">قيد الانتظار</button>
+                                        <button class="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg text-sm font-bold">جاري التجهيز</button>
+                                        <button class="px-4 py-2 bg-green-100 text-green-600 rounded-lg text-sm font-bold">مكتملة</button>
+                                    </div>
+
+                                    <!-- Orders Table -->
+                                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full text-sm">
+                                                <thead class="bg-gray-50 border-b">
+                                                    <tr>
+                                                        <th class="px-4 py-3 text-right font-bold text-gray-700">رقم الطلب</th>
+                                                        <th class="px-4 py-3 text-right font-bold text-gray-700">العميل</th>
+                                                        <th class="px-4 py-3 text-right font-bold text-gray-700">التاريخ</th>
+                                                        <th class="px-4 py-3 text-right font-bold text-gray-700">المبلغ</th>
+                                                        <th class="px-4 py-3 text-right font-bold text-gray-700">الحالة</th>
+                                                        <th class="px-4 py-3 text-right font-bold text-gray-700">إجراءات</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y">
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="px-4 py-3 font-mono text-blue-600">#5000001</td>
+                                                        <td class="px-4 py-3">أحمد العميل</td>
+                                                        <td class="px-4 py-3 text-gray-500">2024-9-12 13:00</td>
+                                                        <td class="px-4 py-3 font-bold">30 ر.ي</td>
+                                                        <td class="px-4 py-3">
+                                                            <span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-bold">قيد الانتظار</span>
+                                                        </td>
+                                                        <td class="px-4 py-3">
+                                                            <button class="text-blue-600 hover:text-blue-700 font-bold">عرض التفاصيل</button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="px-4 py-3 font-mono text-blue-600">#5000002</td>
+                                                        <td class="px-4 py-3">أشرف صالح</td>
+                                                        <td class="px-4 py-3 text-gray-500">2024-9-12 13:00</td>
+                                                        <td class="px-4 py-3 font-bold">20 ر.ي</td>
+                                                        <td class="px-4 py-3">
+                                                            <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-bold">جاري التجهيز</span>
+                                                        </td>
+                                                        <td class="px-4 py-3">
+                                                            <button class="text-blue-600 hover:text-blue-700 font-bold">عرض التفاصيل</button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="px-4 py-3 font-mono text-blue-600">#5000003</td>
+                                                        <td class="px-4 py-3">إبراهيم التنتيبي</td>
+                                                        <td class="px-4 py-3 text-gray-500">2024-9-12 15:00</td>
+                                                        <td class="px-4 py-3 font-bold">20 ر.ي</td>
+                                                        <td class="px-4 py-3">
+                                                            <span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs font-bold">مكتملة</span>
+                                                        </td>
+                                                        <td class="px-4 py-3">
+                                                            <button class="text-blue-600 hover:text-blue-700 font-bold">عرض التفاصيل</button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="px-4 py-3 font-mono text-blue-600">#5000004</td>
+                                                        <td class="px-4 py-3">أيمن الفومي</td>
+                                                        <td class="px-4 py-3 text-gray-500">2024-9-12 13:00</td>
+                                                        <td class="px-4 py-3 font-bold">10 ر.ي</td>
+                                                        <td class="px-4 py-3">
+                                                            <span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-bold">قيد الانتظار</span>
+                                                        </td>
+                                                        <td class="px-4 py-3">
+                                                            <button class="text-blue-600 hover:text-blue-700 font-bold">عرض التفاصيل</button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Arrow Navigation -->
+                <button class="carousel-arrow prev" onclick="prevSlide()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="carousel-arrow next" onclick="nextSlide()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <!-- Feature Highlights Below Carousel -->
+            <div class="grid md:grid-cols-3 gap-6 mt-16" data-aos="fade-up" data-aos-delay="400">
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-bolt text-blue-600 text-2xl"></i>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">سريع وسلس</h4>
+                    <p class="text-sm text-gray-600">واجهة عالية الأداء تحميل فوري</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-mobile-alt text-green-600 text-2xl"></i>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">متجاوب تماماً</h4>
+                    <p class="text-sm text-gray-600">يعمل بشكل مثالي على جميع الأجهزة</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-paint-brush text-purple-600 text-2xl"></i>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">تصميم حديث</h4>
+                    <p class="text-sm text-gray-600">واجهة جميلة وسهلة الاستخدام</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+/* Dashboard Mockup Carousel Styles */
+.dashboard-mockup-section {
+    position: relative;
+}
+
+.dashboard-carousel-wrapper {
+    perspective: 1200px;
+}
+
+/* Navigation Dots */
+.carousel-dot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.carousel-dot:hover {
+    border-color: #2B5876;
+    color: #2B5876;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(43, 88, 118, 0.15);
+}
+
+.carousel-dot.active {
+    background: linear-gradient(135deg, #2B5876, #4682B4);
+    color: white;
+    border-color: #2B5876;
+    box-shadow: 0 6px 20px rgba(43, 88, 118, 0.3);
+}
+
+.dot-label {
+    font-size: 0.875rem;
+}
+
+/* Slides Container */
+.carousel-slides-container {
+    position: relative;
+    height: 600px;
+}
+
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.carousel-slide.active {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    pointer-events: auto;
+    z-index: 10;
+}
+
+.carousel-slide.prev {
+    transform: translateX(-100%) scale(0.9);
+}
+
+/* Glass Card Mockup */
+.glass-card-mockup {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 8px;
+    box-shadow: 
+        0 30px 60px -12px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+        0 0 100px rgba(43, 88, 118, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
+}
+
+.glass-card-mockup:hover {
+    transform: translateY(-8px) rotateX(2deg);
+    box-shadow: 
+        0 40px 80px -15px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.6) inset,
+        0 0 120px rgba(43, 88, 118, 0.15);
+}
+
+/* Browser Bar */
+.mockup-browser-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px 16px 0 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.browser-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.browser-dots .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.browser-dots .dot.red { background: #ff5f57; }
+.browser-dots .dot.yellow { background: #ffbd2e; }
+.browser-dots .dot.green { background: #28ca42; }
+
+.browser-address {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: white;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+}
+
+/* Mockup Content */
+.mockup-content {
+    position: relative;
+    border-radius: 0 0 16px 16px;
+    overflow: hidden;
+    background: #f9fafb;
+}
+
+.mockup-screenshot {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.glass-card-mockup:hover .mockup-screenshot {
+    transform: scale(1.02);
+}
+
+.mockup-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+    padding: 32px 24px 24px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.glass-card-mockup:hover .mockup-overlay {
+    opacity: 1;
+}
+
+.overlay-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    color: #2B5876;
+    font-weight: 700;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Arrow Navigation */
+.carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    background: white;
+    border-radius: 50%;
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 20;
+}
+
+.carousel-arrow:hover {
+    background: #2B5876;
+    color: white;
+    border-color: #2B5876;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 20px rgba(43, 88, 118, 0.3);
+}
+
+.carousel-arrow.prev {
+    right: -24px;
+}
+
+.carousel-arrow.next {
+    left: -24px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .carousel-slides-container {
+        height: 400px;
+    }
+    
+    .carousel-dot .dot-label {
+        display: none;
+    }
+    
+    .carousel-dot {
+        padding: 10px;
+        width: 44px;
+        height: 44px;
+        justify-content: center;
+    }
+    
+    .carousel-arrow {
+        width: 40px;
+        height: 40px;
+        font-size: 0.875rem;
+    }
+    
+    .carousel-arrow.prev {
+        right: -12px;
+    }
+    
+    .carousel-arrow.next {
+        left: -12px;
+    }
+    
+    .mockup-browser-bar {
+        padding: 8px 12px;
+    }
+    
+    .browser-address span {
+        font-size: 0.65rem;
+    }
+}
+</style>
+
+<script>
+// Dashboard Carousel Functionality
+let currentSlide = 0;
+const slides = document.querySelectorAll('.carousel-slide');
+const dots = document.querySelectorAll('.carousel-dot');
+
+function showSlide(index) {
+    // Remove active classes
+    slides.forEach(slide => {
+        slide.classList.remove('active', 'prev');
+    });
+    dots.forEach(dot => {
+        dot.classList.remove('active');
+    });
+    
+    // Add active class
+    slides[index].classList.add('active');
+    dots[index].classList.add('active');
+    
+    // Add prev class to previous slide
+    const prevIndex = index === 0 ? slides.length - 1 : index - 1;
+    slides[prevIndex].classList.add('prev');
+}
+
+function nextSlide() {
+    currentSlide = (currentSlide + 1) % slides.length;
+    showSlide(currentSlide);
+}
+
+function prevSlide() {
+    currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+    showSlide(currentSlide);
+}
+
+// Dot navigation
+dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+        currentSlide = index;
+        showSlide(currentSlide);
+    });
+});
+
+// Auto-advance carousel
+setInterval(nextSlide, 5000);
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') nextSlide();
+    if (e.key === 'ArrowRight') prevSlide();
+});
+</script>
+
 <!-- Features Section -->
-<section id="features" class="features-section">
-    <div class="container mx-auto px-4 py-16">
-        <div class="text-center mb-12" data-aos="fade-up">
-            <h2 class="section-title">واجهتك واحدة من هالمشاكل؟ إحنا الحل الأمثل لك</h2>
+<section id="features" class="features-section bg-soft py-20">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="section-title text-3xl font-black text-brand-primary mb-4">نعرف إيش اللي يعطلك... وجهزنا الحل</h2>
+            <div class="h-1 w-20 bg-brand-secondary mx-auto rounded-full"></div>
         </div>
 
         <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
-                <div class="feature-icon">
+            <div class="feature-card card-saas p-8 text-center hover:shadow-lg transition-shadow" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-icon w-16 h-16 bg-brand-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-brand-primary text-2xl">
                     <i class="fas fa-clock"></i>
                 </div>
-                <h3 class="feature-title">توفير الوقت والجهد</h3>
-                <p class="feature-desc">ما عندك وقت ولا تشتي تضيع جهودك تبدأ من الصفر</p>
+                <h3 class="feature-title font-bold text-xl mb-3 text-brand-primary">وقتك ثمين</h3>
+                <p class="feature-desc text-muted text-sm leading-relaxed">لا تضيع وقتك في الإعدادات والتجهيزات. كل شي جاهز ومعد لك</p>
             </div>
 
-            <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="feature-icon">
-                    <i class="fas fa-hand-holding-usd"></i>
+            <div class="feature-card card-saas p-8 text-center hover:shadow-lg transition-shadow" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-icon w-16 h-16 bg-brand-secondary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-brand-secondary text-2xl">
+                    <i class="fas fa-graduation-cap"></i>
                 </div>
-                <h3 class="feature-title">ما عندك خبرة</h3>
-                <p class="feature-desc">ما تتطلب منك خبرة في الإدارة الإلكترونية</p>
+                <h3 class="feature-title font-bold text-xl mb-3 text-brand-primary">بدون خبرة تقنية</h3>
+                <p class="feature-desc text-muted text-sm leading-relaxed">حتى لو ما عندك خبرة... كل شي مبسط وواضح وسهل الاستخدام</p>
             </div>
 
-            <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
-                <div class="feature-icon">
+            <div class="feature-card card-saas p-8 text-center hover:shadow-lg transition-shadow" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-icon w-16 h-16 bg-brand-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-brand-accent text-2xl">
                     <i class="fas fa-shipping-fast"></i>
                 </div>
-                <h3 class="feature-title">تشتي تبدأ فوراً</h3>
-                <p class="feature-desc">تستخدم تحاول من البداية</p>
+                <h3 class="feature-title font-bold text-xl mb-3 text-brand-primary">ابدأ فوراً</h3>
+                <p class="feature-desc text-muted text-sm leading-relaxed">ابدأ البيع من أول دقيقة. ما تحتاج تنتظر ولا تتعلم</p>
             </div>
 
-            <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
-                <div class="feature-icon">
+            <div class="feature-card card-saas p-8 text-center hover:shadow-lg transition-shadow" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-icon w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-green-600 text-2xl">
                     <i class="fas fa-headset"></i>
                 </div>
-                <h3 class="feature-title">دعم احترافي</h3>
-                <p class="feature-desc">فريق متاح طوال اليوم لمساعدتك وحل أي مشاكل</p>
+                <h3 class="feature-title font-bold text-xl mb-3 text-brand-primary">دعم احترافي</h3>
+                <p class="feature-desc text-muted text-sm leading-relaxed">فريقنا معاك على طول. أي سؤال أو مشكلة، احنا هنا</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- Everything from Day 1 Section -->
-<section class="everything-section">
-    <div class="container mx-auto px-4 py-16">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
+<section class="everything-section py-20 overflow-hidden">
+    <div class="container mx-auto px-4">
+        <div class="grid lg:grid-cols-2 gap-16 items-center">
             <!-- Illustration -->
-            <div class="everything-visual" data-aos="fade-right">
-                <div class="feature-showcase">
-                    <div class="showcase-item">
-                        <i class="fas fa-palette"></i>
-                        <span>تصميم احترافي مخصص لمتاجرك</span>
-                    </div>
-                    <div class="showcase-item">
-                        <i class="fas fa-truck"></i>
-                        <span>وصف لكل منتج مضاف</span>
-                    </div>
-                    <div class="showcase-item">
-                        <i class="fas fa-credit-card"></i>
-                        <span>متجر سهولة جاهز</span>
-                    </div>
-                    <div class="showcase-item">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>أساسيات جاهزة ومتكاملة</span>
+            <div class="everything-visual relative" data-aos="fade-right">
+                <div class="absolute inset-0 bg-brand-primary/5 rounded-[3rem] transform rotate-3"></div>
+                <div class="feature-showcase relative bg-white rounded-[2.5rem] shadow-2xl p-8 border border-gray-100">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="showcase-item p-4 rounded-xl bg-gray-50 flex flex-col items-center text-center">
+                            <i class="fas fa-palette text-brand-secondary text-2xl mb-2"></i>
+                            <span class="text-xs font-bold text-gray-700">تصميم احترافي</span>
+                        </div>
+                        <div class="showcase-item p-4 rounded-xl bg-gray-50 flex flex-col items-center text-center">
+                            <i class="fas fa-truck text-brand-primary text-2xl mb-2"></i>
+                            <span class="text-xs font-bold text-gray-700">حلول شحن</span>
+                        </div>
+                        <div class="showcase-item p-4 rounded-xl bg-gray-50 flex flex-col items-center text-center">
+                            <i class="fas fa-credit-card text-brand-accent text-2xl mb-2"></i>
+                            <span class="text-xs font-bold text-gray-700">بوابات دفع</span>
+                        </div>
+                        <div class="showcase-item p-4 rounded-xl bg-gray-50 flex flex-col items-center text-center">
+                            <i class="fas fa-chart-bar text-green-500 text-2xl mb-2"></i>
+                            <span class="text-xs font-bold text-gray-700">تقارير نمو</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Content -->
             <div class="everything-content" data-aos="fade-left">
-                <span class="section-tag">
+                <span class="section-tag inline-block bg-brand-secondary/10 text-brand-secondary px-4 py-1.5 rounded-full text-sm font-bold mb-4">
                     <i class="fas fa-rocket ml-2"></i>
-                    تصميم احترافي مخصص لاستقطبك
+                    جاهز للنمو
                 </span>
-                <h2 class="section-title">كل شي تحتاجه... موجود من أول يوم</h2>
-                <p class="section-desc">
-                    كل متجر يجي مع كل ما تحتاجه لإدخار منتجاتك وبدبرة المتجر بريحة وسهولة بنظام الحسابات والوظيفة والمدد.
+                <h2 class="section-title text-4xl font-black text-brand-primary mb-6 leading-tight">كل شي تحتاجه... <br>موجود من أول يوم</h2>
+                <p class="section-desc text-muted text-lg mb-8 leading-relaxed">
+                    متجرك يجي مع كل ما تحتاجه: إدارة سهلة للمنتجات، متابعة للطلبات، وتقارير دقيقة تساعدك تنمو وتتطور.
                 </p>
 
-                <div class="benefits-list">
-                    <div class="benefit-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>تصميم احترافي مخصص لمتاجرك</span>
+                <div class="benefits-list space-y-4 mb-10">
+                    <div class="benefit-item flex items-center text-brand-primary font-medium">
+                        <i class="fas fa-check-circle ml-3 text-brand-secondary text-xl"></i>
+                        <span>تصميم احترافي مخصص لمتجرك</span>
                     </div>
-                    <div class="benefit-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>وصف لكل منتج مضاف</span>
+                    <div class="benefit-item flex items-center text-brand-primary font-medium">
+                        <i class="fas fa-check-circle ml-3 text-brand-secondary text-xl"></i>
+                        <span>منتجات جاهزة بأوصاف احترافية</span>
                     </div>
-                    <div class="benefit-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>متجر سهولة جاهز</span>
-                    </div>
-                    <div class="benefit-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>أساسيات جاهزة ومتكاملة</span>
+                    <div class="benefit-item flex items-center text-brand-primary font-medium">
+                        <i class="fas fa-check-circle ml-3 text-brand-secondary text-xl"></i>
+                        <span>جاهز للاستخدام والبيع فوراً</span>
                     </div>
                 </div>
 
-                <a href="{% url 'suppliers_list' %}" class="btn-outline">
+                <a href="{% url 'suppliers_list' %}" class="btn btn-secondary">
                     تصفح المتاجر الجاهزة
                     <i class="fas fa-arrow-left mr-2"></i>
                 </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12" data-aos="fade-up">
+            <h2 class="section-title text-3xl font-black text-brand-primary mb-4">الأسئلة الشائعة</h2>
+            <p class="text-muted text-lg">إجابات سريعة لأهم الأسئلة</p>
+        </div>
+
+        <div class="faq-container" data-aos="fade-up" data-aos-delay="100">
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>هل أحتاج خبرة تقنية لإدارة المتجر؟</span>
+                    <div class="faq-icon">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                </button>
+                <div class="faq-answer">
+                    <p>لا تحتاج لأي خبرة تقنية. المتجر مصمم بطريقة بسيطة وواضحة، وكل العمليات سهلة ومباشرة. حتى لو ما عندك أي خبرة سابقة، راح تقدر تدير متجرك بكل سهولة.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>كم يستغرق إطلاق المتجر والبدء بالبيع؟</span>
+                    <div class="faq-icon">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                </button>
+                <div class="faq-answer">
+                    <p>متجرك جاهز فوراً بعد الاشتراك! المنتجات موجودة، التصميم جاهز، والربط مع بوابات الدفع والشحن معد مسبقاً. تقدر تبدأ البيع من أول دقيقة.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>هل أستطيع تعديل التصميم والمنتجات؟</span>
+                    <div class="faq-icon">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                </button>
+                <div class="faq-answer">
+                    <p>طبعاً! المتجر ملكك بالكامل. تقدر تعدل التصميم، تضيف أو تحذف منتجات، تغير الأسعار، وتخصص كل شي حسب رغبتك.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>هل يوجد دعم فني إذا واجهتني مشكلة؟</span>
+                    <div class="faq-icon">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                </button>
+                <div class="faq-answer">
+                    <p>نعم، فريق الدعم الفني متاح على مدار الساعة لمساعدتك. سواء عندك سؤال بسيط أو تواجه مشكلة تقنية، احنا هنا لمساعدتك.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>هل المتجر جاهز للربط مع الدفع والشحن؟</span>
+                    <div class="faq-icon">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                </button>
+                <div class="faq-answer">
+                    <p>نعم، المتجر مربوط مع أفضل بوابات الدفع وشركات الشحن في المنطقة. كل شي معد ومجهز، ما تحتاج تسوي أي شي إضافي.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -185,6 +1004,29 @@
         duration: 800,
         easing: 'ease-in-out',
         once: true
+    });
+
+    // FAQ Accordion
+    document.addEventListener('DOMContentLoaded', function() {
+        const faqItems = document.querySelectorAll('.faq-item');
+        
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            
+            question.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                
+                // Close all items
+                faqItems.forEach(faqItem => {
+                    faqItem.classList.remove('active');
+                });
+                
+                // Open clicked item if it wasn't active
+                if (!isActive) {
+                    item.classList.add('active');
+                }
+            });
+        });
     });
 </script>
 {% endblock %}

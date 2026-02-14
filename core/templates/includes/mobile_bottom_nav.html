@@ -1,0 +1,28 @@
+<nav class="mobile-bottom-nav">
+    <a href="{% url 'my_merchant' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'my_merchant' %}active{% endif %}">
+        <i class="fas fa-home"></i>
+        <span>الرئيسية</span>
+    </a>
+
+    <a href="{% url 'merchant_orders' %}" class="mobile-nav-item {% if 'merchant-orders' in request.path %}active{% endif %}">
+        <i class="fas fa-shopping-cart"></i>
+        <span>الطلبات</span>
+    </a>
+
+    <!-- Quick Action Floating FAB -->
+    <div class="mobile-fab-container">
+        <button class="mobile-fab" onclick="document.getElementById('quickCreateBtn').click()">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+
+    <a href="{% url 'merchant_products' %}" class="mobile-nav-item {% if 'merchant-products' in request.path %}active{% endif %}">
+        <i class="fas fa-box"></i>
+        <span>المنتجات</span>
+    </a>
+
+    <button onclick="toggleSidebar()" class="mobile-nav-item">
+        <i class="fas fa-bars"></i>
+        <span>المزيد</span>
+    </button>
+</nav>

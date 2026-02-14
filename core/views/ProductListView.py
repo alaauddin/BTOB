@@ -2,24 +2,34 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 import logging
 import math
 from decimal import Decimal
-from django.shortcuts import get_object_or_404
-from django.views.generic import ListView
-from core.models import Product, Category, ProductCategory, Cart, Order, SupplierAds, Supplier, Address, ProductOffer, CartItem
-from datetime import datetime, timedelta
-from django.utils import timezone
-from django.db.models import Exists, OuterRef, Subquery
-
 from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.views.generic import ListView
+from django.db.models import Exists, OuterRef, Subquery
 from django.utils import timezone
 from datetime import timedelta
+from django.http import Http404
+
+from core.models import (
+    Product, Category, ProductCategory, Cart, Order, 
+    SupplierAds, Supplier, Address, ProductOffer, CartItem
+)
 
 logger = logging.getLogger(__name__)
 
-# @login_required <-- Removed for public access
-def product_list(request, store_id, category_id=None, subcategory_id=None):
-    # Base queryset
-    supplier = get_object_or_404(Supplier, store_id=store_id, is_active=True)
+def product_list(request, store_id=None, store_slug=None, category_id=None, subcategory_id=None):
+    # Determine the effective slug/id
+    target_slug = store_slug or store_id
+    if not target_slug:
+        raise Http404("Store identifier missing")
+
+    # Use middleware-injected store if available and matching
+    if hasattr(request, 'current_store') and request.current_store.store_id == target_slug:
+        supplier = request.current_store
+    else:
+        supplier = get_object_or_404(Supplier, store_id=target_slug, is_active=True)
+    
+    # Ensure store_id variable is consistent for template
+    store_id = supplier.store_id
     today = timezone.now().date()
     
     # Visit tracking (session based)
@@ -82,11 +92,11 @@ def product_list(request, store_id, category_id=None, subcategory_id=None):
         else:
             other_products.append(product)
 
-    supplier_ads = SupplierAds.objects.filter(supplier=supplier,is_active = True)
+    supplier_ads = SupplierAds.objects.filter(supplier=supplier, is_active=True)
 
     # Context dictionary
     context = {
-        'products': queryset, # Keep for backward compat if needed, or remove
+        'products': queryset,
         'offer_products': offer_products,
         'new_products': new_products,
         'other_products': other_products,
@@ -97,13 +107,14 @@ def product_list(request, store_id, category_id=None, subcategory_id=None):
         'categories': Category.objects.filter(productcategory__products__supplier=supplier).distinct(),
         'product_categories': ProductCategory.objects.filter(category_id=category_id, products__supplier=supplier).distinct() if category_id else None,
         'suppliers': Product.objects.values('supplier_id').distinct(),
-        'supplier_ads':supplier_ads
+        'supplier_ads': supplier_ads,
+        'nav_state': 'visitor',  # Force visitor layout (no sidebar) for storefront
     }
 
     # Cart and pending orders
     if request.user.is_authenticated:
         user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
-        logger.info(user_cart)
+        
         one_day_ago = timezone.now() - timedelta(days=3)
         context['pending_orders'] = Order.objects.filter(
             user=request.user, created_at__gte=one_day_ago, pipeline_status__slug='pending'
@@ -114,19 +125,22 @@ def product_list(request, store_id, category_id=None, subcategory_id=None):
         address = Address.objects.filter(user=request.user).first()
         estimated_fee = Decimal('0')
         if supplier.enable_delivery_fees and address and address.latitude and address.longitude and supplier.latitude and supplier.longitude:
-            R = 6371
-            phi1, phi2 = math.radians(float(supplier.latitude)), math.radians(float(address.latitude))
-            dphi = math.radians(float(address.latitude) - float(supplier.latitude))
-            dlambda = math.radians(float(address.longitude) - float(supplier.longitude))
-            a = math.sin(dphi / 2)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2)**2
-            estimated_distance = R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-            fee = float(estimated_distance) * float(supplier.delivery_fee_ratio or 0)
-            estimated_fee = Decimal(str(fee)).quantize(Decimal('0.01'))
+            try:
+                R = 6371
+                phi1, phi2 = math.radians(float(supplier.latitude)), math.radians(float(address.latitude))
+                dphi = math.radians(float(address.latitude) - float(supplier.latitude))
+                dlambda = math.radians(float(address.longitude) - float(supplier.longitude))
+                a = math.sin(dphi / 2)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2)**2
+                estimated_distance = R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+                fee = float(estimated_distance) * float(supplier.delivery_fee_ratio or 0)
+                estimated_fee = Decimal(str(fee)).quantize(Decimal('0.01'))
+            except (ValueError, TypeError):
+                estimated_fee = Decimal('0')
+                
         context['estimated_fee'] = estimated_fee
     else:
         context['cart'] = None
         context['pending_orders'] = None
         context['estimated_fee'] = 0
-
 
     return render(request, 'product_list.html', context)

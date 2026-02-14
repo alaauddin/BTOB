@@ -1,38 +1,54 @@
+/* =====================================================
+   PREMIUM FLOATING BOTTOM NAVIGATION - Native App Quality
+   ===================================================== */
+
 :root {
-    --liquid-primary: #f1f5f9;
-    /* Active Icon/Text Color (Bright Grey) */
-    --liquid-bg: #111827;
-    /* Dark Charcoal Background */
-    --liquid-unselected: rgba(255, 255, 255, 0.4);
-    /* Unselected Icons */
-    --liquid-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    /* Brand Colors - Aligned with Identity */
+    --nav-active-icon: #2B5876;
+    /* Brand primary blue */
+    --nav-inactive-icon: #94a3b8;
+    /* Muted grey */
+    --nav-indicator-bg: #D48231;
+    /* Brand orange */
+    --nav-indicator-glow: rgba(212, 130, 49, 0.3);
+    --nav-glass-bg: rgba(255, 255, 255, 0.95);
+    --nav-border: rgba(0, 0, 0, 0.05);
+    --nav-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
+/* Floating Container - Native iOS Style */
 .liquid-nav-wrapper {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 16px;
+    /* Float above edge */
+    left: 16px;
+    right: 16px;
     z-index: 9999;
-    /* Ensure on top */
-    width: 100%;
+    width: auto;
+    max-width: 500px;
+    margin: 0 auto;
     padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* The Gooey Effect Container */
+/* Glass-Morphism Navigation Bar */
 .liquid-nav {
     position: relative;
-    background: var(--liquid-bg);
-    height: 70px;
-    border-radius: 25px 25px 0 0;
-    /* Slightly less rounded corners for the bar itself */
+    background: var(--nav-glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    height: 64px;
+    border-radius: 24px;
+    /* Fully rounded pill */
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: var(--liquid-shadow);
-    /* No filter - clean vectors */
+    box-shadow: var(--nav-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: transform 0.2s ease;
 }
 
+/* Items List */
 .nav-items-list {
     display: flex;
     width: 100%;
@@ -44,12 +60,15 @@
     z-index: 100;
 }
 
+/* Navigation Item */
 .liquid-nav-item {
     position: relative;
     flex: 1;
     z-index: 10;
+    transition: transform 0.1s ease;
 }
 
+/* Item Link */
 .liquid-nav-item a {
     position: relative;
     display: flex;
@@ -59,116 +78,81 @@
     width: 100%;
     height: 100%;
     text-decoration: none;
+    cursor: pointer;
 }
 
+/* Icon Styling */
 .nav-icon {
     position: relative;
     display: block;
     line-height: normal;
-    font-size: 1.4rem;
-    color: var(--liquid-unselected);
-    transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-size: 1.3rem;
+    color: var(--nav-inactive-icon);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 100;
-    margin-bottom: 12px;
-    /* Push icon up slightly to make room for text */
+    margin-bottom: 10px;
 }
 
+/* Active Icon State - Refined Movement */
 .liquid-nav-item.active .nav-icon {
-    transform: translateY(-38px);
-    color: var(--liquid-primary);
-    font-size: 1.6rem;
-    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.2));
+    transform: translateY(-24px);
+    /* Reduced from -38px */
+    color: white;
+    font-size: 2rem;
+    padding-bottom: 17px;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
     margin-bottom: 0;
-    /* Reset margin when popped */
 }
 
+/* Text Label */
 .nav-text {
     position: absolute;
-    bottom: 8px;
-    /* Anchor to bottom */
+    bottom: 10px;
     width: 100%;
     text-align: center;
-    color: var(--liquid-unselected);
-    font-weight: 800;
+    color: var(--nav-inactive-icon);
+    font-weight: 700;
     font-size: 0.65rem;
-    /* Slightly smaller for fit */
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    transition: 0.5s;
+    transition: all 0.4s ease;
     opacity: 1;
-    /* Always visible */
     transform: translateY(0);
-    /* Reset transform */
     pointer-events: none;
-    font-weight: 700;
 }
 
+/* Active Text State */
 .liquid-nav-item.active .nav-text {
+    color: var(--nav-active-icon);
     opacity: 1;
-    color: var(--liquid-primary);
-    /* Highlight active text */
-    transform: translateY(0);
-    /* Stay in place */
+    font-weight: 800;
 }
 
-/* Moving Indicator - The Liquid Bubble */
+/* Floating Indicator Bubble - Brand Orange */
 .nav-indicator {
     position: absolute;
-    top: -55%;
-    /* Pop up higher */
-    width: 65px;
-    height: 65px;
-    background: linear-gradient(to left, #FBD042, #FF6B35);
-    /* background: #F58231; */
-    /* Use Brand Orange for the bubble */
+    top: -50%;
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #D48231 0%, #E89A4E 100%);
     border-radius: 50%;
-
-    /* Clean border to separate from page content if needed, or none for pure liquid */
-    border: 5px solid #e8f4f5;
-    /* Circular gradient effect using box-shadow */
-    /* Use body background color (usually gray-50/100) to fake a cutout */
-
-    transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 3px solid white;
+    box-shadow: 0 8px 20px var(--nav-indicator-glow),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 1;
-    /* Behind items */
 }
 
-/* 
-   The Magic Curves (CSS Box Shadow Hack)
-   These create the "webbed" connection between the circle and the bar.
-*/
-/* Wings removed as per user request */
-/*
-.nav-indicator::before,
-.nav-indicator::after {
-    content: '';
-    position: absolute;
-    top: 55%;
-    width: 20px;
-    height: 20px;
-    background: transparent;
-    z-index: -1;
+/* Tap Feedback Animation */
+.liquid-nav-item:active {
+    transform: scale(0.92);
 }
 
-.nav-indicator::before {
-    left: -22px;
-    border-top-right-radius: 20px;
-    box-shadow: 4px -6px 0 2px var(--liquid-bg);
-}
-
-.nav-indicator::after {
-    right: -22px;
-    border-top-left-radius: 20px;
-    box-shadow: -4px -6px 0 2px var(--liquid-bg);
-}
-*/
-
-/* Additional Polish */
 .liquid-nav-item:active .nav-icon {
     transform: scale(0.9);
 }
 
-/* Desktop Adjustment */
+/* Desktop/Tablet Optimizations */
 @media (min-width: 768px) {
     .liquid-nav-wrapper {
         width: 100%;
@@ -176,15 +160,50 @@
         left: 50%;
         right: auto;
         transform: translateX(-50%);
-        bottom: 20px;
-        border-radius: 30px;
+        bottom: 24px;
     }
 
     .liquid-nav {
-        border-radius: 30px;
+        border-radius: 28px;
+        height: 68px;
+    }
+
+    .nav-icon {
+        font-size: 1.4rem;
+    }
+
+    .liquid-nav-item.active .nav-icon {
+        font-size: 1.5rem;
     }
 }
 
+/* Smooth Hover States for Pointer Devices */
+@media (hover: hover) and (pointer: fine) {
+    .liquid-nav-item:not(.active):hover .nav-icon {
+        color: var(--nav-active-icon);
+        transform: scale(1.1);
+    }
 
-/* Ensure content spacing for bottom navigation */
-.main-content {}
+    .liquid-nav-item:not(.active):hover .nav-text {
+        color: var(--nav-active-icon);
+    }
+}
+
+/* Large Screens - Maintain Compact Size */
+@media (min-width: 1024px) {
+    .liquid-nav-wrapper {
+        max-width: 480px;
+    }
+}
+
+/* Safe Area Adjustments for Notched Devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .liquid-nav-wrapper {
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Ensure Content Spacing - Add padding to main content */
+.main-content {
+    padding-bottom: calc(64px + 32px + env(safe-area-inset-bottom, 0px));
+}

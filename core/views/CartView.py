@@ -26,7 +26,8 @@ class CartView(DetailView):
     context_object_name = 'cart'
 
     def get_object(self, queryset=None):
-        supplier = get_object_or_404(Supplier, store_id=self.kwargs.get('store_id'))
+        store_id = self.kwargs.get('store_slug') or self.kwargs.get('store_id')
+        supplier = get_object_or_404(Supplier, store_id=store_id)
         cart = Cart.objects.filter(user=self.request.user, supplier=supplier).prefetch_related('cart_items__product__additional_images').first()
         if not cart:
             cart = Cart.objects.create(user=self.request.user, supplier=supplier)
@@ -34,7 +35,8 @@ class CartView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        supplier = get_object_or_404(Supplier, store_id=self.kwargs.get('store_id'))
+        store_id = self.kwargs.get('store_slug') or self.kwargs.get('store_id')
+        supplier = get_object_or_404(Supplier, store_id=store_id)
         
         # Checkout Context
         context['supplier'] = supplier
@@ -61,7 +63,8 @@ class CartView(DetailView):
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        supplier = get_object_or_404(Supplier, store_id=self.kwargs.get('store_id'))
+        store_id = self.kwargs.get('store_slug') or self.kwargs.get('store_id')
+        supplier = get_object_or_404(Supplier, store_id=store_id)
         form = ShippingAddressForm(request.POST)
 
         if form.is_valid():
@@ -142,14 +145,15 @@ class CartView(DetailView):
 
 
 # @login_required
-def add_to_cart(request, product_id, store_id):
+def add_to_cart(request, product_id, store_id=None, store_slug=None):
+    target_store_id = store_slug or store_id
     product = get_object_or_404(Product, pk=product_id)
     
     # Stock Check
     if product.stock <= 0:
         return JsonResponse({'success': False, 'message': 'عذراً، هذا المنتج غير متوفر حالياً'}, status=400)
         
-    supplier = get_object_or_404(Supplier, store_id=store_id)
+    supplier = get_object_or_404(Supplier, store_id=target_store_id)
     user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
 
     # Determine quantity to add (default 1)
@@ -200,8 +204,9 @@ def add_to_cart(request, product_id, store_id):
 
 
 @login_required
-def sub_to_cart(request, product_id, store_id):
-    supplier = get_object_or_404(Supplier, store_id=store_id)
+def sub_to_cart(request, product_id, store_id=None, store_slug=None):
+    target_store_id = store_slug or store_id
+    supplier = get_object_or_404(Supplier, store_id=target_store_id)
     product = get_object_or_404(Product, pk=product_id)
     user_cart = Cart.objects.get(user=request.user, supplier=supplier)
 
@@ -238,7 +243,8 @@ def sub_to_cart(request, product_id, store_id):
 @method_decorator(login_required, name='dispatch')
 class IncreaseQuantityView(View):
     def post(self, request, item_id, *args, **kwargs):
-        supplier = get_object_or_404(Supplier, store_id=self.kwargs.get('store_id'))
+        store_id = self.kwargs.get('store_slug') or self.kwargs.get('store_id')
+        supplier = get_object_or_404(Supplier, store_id=store_id)
         cart = get_object_or_404(Cart, user=request.user, supplier=supplier)
         cart_item = get_object_or_404(CartItem, pk=item_id, cart=cart)
         
@@ -264,7 +270,8 @@ class IncreaseQuantityView(View):
 @method_decorator(login_required, name='dispatch')
 class DecreaseQuantityView(View):
     def post(self, request, item_id, *args, **kwargs):
-        supplier = get_object_or_404(Supplier, store_id=self.kwargs.get('store_id'))
+        store_id = self.kwargs.get('store_slug') or self.kwargs.get('store_id')
+        supplier = get_object_or_404(Supplier, store_id=store_id)
         cart = get_object_or_404(Cart, user=request.user, supplier=supplier)
         
         cart_item = get_object_or_404(CartItem, pk=item_id, cart__user=request.user)
@@ -290,7 +297,8 @@ class DecreaseQuantityView(View):
 @method_decorator(login_required, name='dispatch')
 class RemoveItemView(View):
     def post(self, request, item_id, *args, **kwargs):
-        supplier= get_object_or_404(Supplier, store_id=self.kwargs.get('store_id'))
+        store_id = self.kwargs.get('store_slug') or self.kwargs.get('store_id')
+        supplier= get_object_or_404(Supplier, store_id=store_id)
         cart_item = get_object_or_404(CartItem, pk=item_id, cart__user=request.user)
         cart = get_object_or_404(Cart, user=request.user, supplier=supplier)
         # Implement the logic to remove the item
@@ -306,8 +314,9 @@ class RemoveItemView(View):
         return JsonResponse({'success': True, 'cart_total': cart_total, 'cart_items_count': cart_items_count, 'new_total_discout': new_total_discout})
 
 @login_required
-def get_cart_status(request, store_id):
-    supplier = get_object_or_404(Supplier, store_id=store_id)
+def get_cart_status(request, store_id=None, store_slug=None):
+    target_store_id = store_slug or store_id
+    supplier = get_object_or_404(Supplier, store_id=target_store_id)
     try:
         cart = Cart.objects.get(user=request.user, supplier=supplier)
         items = [

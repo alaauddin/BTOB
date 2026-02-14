@@ -54,6 +54,22 @@ urlpatterns = [
     path('stores', SuppliersListView, name='suppliers_list'),
     path('join-business/', join_business, name='join_business'),
     path('verify-signup-otp/', verify_signup_otp, name='verify_signup_otp'),
+    # ==========================
+    # 1. STOREFRONT (Buyer)
+    # ==========================
+    # Note: Middleware injects 'current_store' based on <store_slug>
+    path('store/<slug:store_slug>/', product_list, name='store_home'), # Home redirect to shop for now or landing
+    path('store/<slug:store_slug>/shop/', product_list, name='store_catalog'),
+    path('store/<slug:store_slug>/p/<int:pk>/', product_detail, name='product_canonical'),
+    path('store/<slug:store_slug>/cart/', CartView.as_view(), name='store_cart'),
+    path('store/<slug:store_slug>/checkout/', ConvertCartToOrder.checkout_select_address_or_custom_address, name='store_checkout'),
+    path('store/<slug:store_slug>/track/<int:pk>/', order_detail_view, name='store_order_track'),
+    
+    # Category filters for Storefront
+    path('store/<slug:store_slug>/c/<int:category_id>/', product_list, name='store_category'),
+    path('store/<slug:store_slug>/sc/<int:subcategory_id>/', product_list, name='store_subcategory'),
+
+
     path('merchant/login/', MerchantLoginView.as_view(), name='merchant_login'),
 
 
@@ -108,7 +124,28 @@ urlpatterns = [
     path('edit-platform-ad/<int:ad_id>/', edit_platform_ad, name='edit_platform_ad'),
     path('toggle-platform-ad-status/<int:ad_id>/', toggle_platform_ad_status, name='toggle_platform_ad_status'),
     
-    # Merchant Order Management
+    # ==========================
+    # 2. DASHBOARD (Merchant)
+    # ==========================
+    path('dashboard/', my_merchant, name='dashboard_overview'),
+    path('dashboard/metrics/', merchant_analytics, name='dashboard_analytics'),
+    path('dashboard/products/', merchant_products, name='dashboard_products'),
+    path('dashboard/products/new/', add_product, name='dashboard_product_create'),
+    path('dashboard/products/<int:product_id>/', edit_product, name='dashboard_product_edit'),
+    path('dashboard/orders/', merchant_orders, name='dashboard_orders'),
+    path('dashboard/orders/<int:order_id>/', merchant_order_detail, name='dashboard_order_detail'),
+    path('dashboard/settings/', update_merchant_settings, name='dashboard_settings'),
+    path('dashboard/marketing/', merchant_marketing, name='dashboard_marketing'),
+    path('dashboard/ads/new/', add_ads, name='dashboard_ads_create'),
+    path('dashboard/ads/<int:ad_id>/', edit_ads, name='dashboard_ads_edit'),
+    path('dashboard/tutorial/', merchant_tutorial, name='dashboard_tutorial'),
+
+    # ==========================
+    # 3. ONBOARDING
+    # ==========================
+    path('start/setup/', join_business, name='onboarding_setup'),
+
+    # Legacy Routes (To be deprecated/redirected)
     path('merchant-orders/', merchant_orders, name='merchant_orders'),
     path('merchant-order/<int:order_id>/', merchant_order_detail, name='merchant_order_detail'),
     path('update-order-status/<int:order_id>/', update_order_status, name='update_order_status'),

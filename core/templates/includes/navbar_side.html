@@ -1,0 +1,108 @@
+{% load static %}
+<div class="sidebar-wrapper custom-scrollbar">
+    <!-- Sidebar Header / Logo -->
+    <div class="sidebar-header">
+        <a href="/" class="flex items-center gap-3 text-gray-800 no-underline">
+            <div class="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white shadow-lg">
+                {% if system_settings.logo %}
+                    <img src="{{ system_settings.logo.url }}" alt="Rawaaj" class="w-8 h-8 object-contain">
+                {% else %}
+                    <i class="fas fa-store text-xl"></i>
+                {% endif %}
+            </div>
+            <div class="flex flex-col">
+                <span class="font-black text-lg leading-tight tracking-tight text-brand-primary">رواج</span>
+                <span class="text-[10px] text-gray-400 font-bold tracking-widest">RAWAAJ</span>
+            </div>
+        </a>
+    </div>
+
+    <!-- Navigation Content -->
+    <div class="flex-1 py-4">
+        
+        <!-- START Group -->
+        <div class="nav-group">
+            <div class="nav-group-title">البداية</div>
+            <a href="{% url 'dashboard_overview' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard_overview' %}active{% endif %}">
+                <i class="fas fa-home"></i>
+                <span>نظرة عامة</span>
+            </a>
+        </div>
+
+        <!-- SELL Group -->
+        <div class="nav-group">
+            <div class="nav-group-title">البيع والمنتجات</div>
+            <a href="{% url 'dashboard_products' %}" class="nav-item {% if 'dashboard/products' in request.path %}active{% endif %}">
+                <i class="fas fa-box"></i>
+                <span>المنتجات</span>
+            </a>
+            <a href="#" class="nav-item opacity-50 cursor-not-allowed" title="قريباً">
+                <i class="fas fa-tags"></i>
+                <span>التصنيفات</span>
+            </a>
+            <a href="#" class="nav-item opacity-50 cursor-not-allowed" title="قريباً">
+                <i class="fas fa-warehouse"></i>
+                <span>المخزون</span>
+            </a>
+        </div>
+
+        <!-- ORDERS Group -->
+        <div class="nav-group">
+            <div class="nav-group-title">الطلبات والعملاء</div>
+            <a href="{% url 'dashboard_orders' %}" class="nav-item {% if 'dashboard/orders' in request.path %}active{% endif %}">
+                <i class="fas fa-shopping-cart"></i>
+                <span>الطلبات</span>
+                {% if pending_orders_count > 0 %}
+                <span class="nav-badge">{{ pending_orders_count }}</span>
+                {% endif %}
+            </a>
+            <a href="#" class="nav-item opacity-50 cursor-not-allowed">
+                <i class="fas fa-users"></i>
+                <span>العملاء</span>
+            </a>
+        </div>
+
+        <!-- MARKETING Group -->
+        <div class="nav-group">
+            <div class="nav-group-title">التسويق</div>
+            <a href="{% url 'dashboard_marketing' %}" class="nav-item {% if 'dashboard/marketing' in request.path %}active{% endif %}">
+                <i class="fas fa-bullhorn"></i>
+                <span>الحملات</span>
+            </a>
+            <a href="{% url 'dashboard_ads_create' %}" class="nav-item {% if 'dashboard/ads' in request.path %}active{% endif %}">
+                <i class="fas fa-ad"></i>
+                <span>الإعلانات</span>
+            </a>
+        </div>
+
+        <!-- FINANCE & GROWTH Group -->
+        <div class="nav-group">
+            <div class="nav-group-title">النمو والمالية</div>
+            <a href="{% url 'dashboard_analytics' %}" class="nav-item {% if 'dashboard/metrics' in request.path %}active{% endif %}">
+                <i class="fas fa-chart-pie"></i>
+                <span>التقارير والمالية</span>
+            </a>
+            <a href="{% url 'dashboard_tutorial' %}" class="nav-item {% if 'dashboard/tutorial' in request.path %}active{% endif %}">
+                <i class="fas fa-graduation-cap"></i>
+                <span>مركز التعليم</span>
+            </a>
+        </div>
+        
+        <!-- STORE Group -->
+        <div class="nav-group">
+            <div class="nav-group-title">الإعدادات</div>
+            <a href="{% url 'dashboard_settings' %}" class="nav-item {% if 'dashboard/settings' in request.path %}active{% endif %}">
+                <i class="fas fa-cog"></i>
+                <span>إعدادات المتجر</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="p-4 border-t border-gray-100">
+        <a href="{% url 'logout' %}" class="flex items-center gap-2 text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors text-sm font-bold">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>تسجيل الخروج</span>
+        </a>
+    </div>
+</div>
