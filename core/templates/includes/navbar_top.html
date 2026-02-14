@@ -31,7 +31,7 @@
     <div class="flex items-center gap-4">
         
         <!-- === STATE 1: VISITOR === -->
-        {% if nav_state == 'visitor' and not user.is_authenticated %}
+        {% if nav_state == 'visitor' and not user.is_authenticated and not supplier %}
              <button onclick="openLoginModal()" 
                 class="hidden md:inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-bold rounded-lg text-brand-primary bg-blue-50 hover:bg-blue-100 transition-all">
                 تسجيل الدخول
