@@ -33,13 +33,17 @@
         <!-- === STATE 1: VISITOR === -->
         {% if nav_state == 'visitor' and not user.is_authenticated and not supplier %}
              <button onclick="openLoginModal()" 
-                class="hidden md:inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-bold rounded-lg text-brand-primary bg-blue-50 hover:bg-blue-100 transition-all">
+                class="hidden lg:inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-bold rounded-lg text-brand-primary bg-blue-50 hover:bg-blue-100 transition-all">
                 تسجيل الدخول
             </button>
+            <a href="{% url 'suppliers_list' %}" 
+               class="inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-sm font-bold rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-all shadow-sm">
+                تسوق الآن
+            </a>
             <a href="{% url 'join_business' %}" 
                class="inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-bold rounded-lg text-white hover:brightness-110 transition-all shadow-lg"
                style="background-color: var(--color-action); box-shadow: 0 10px 25px -5px rgba(212, 130, 49, 0.3);">
-                ابدأ البيع الآن
+                افتح متجرك
             </a>
         {% endif %}
 

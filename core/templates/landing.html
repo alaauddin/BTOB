@@ -70,9 +70,13 @@
                 </div>
 
                 <div class="hero-cta flex flex-wrap gap-4 justify-center lg:justify-start">
-                    <a href="{% url 'join_business' %}" class="btn btn-primary shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
-                        <i class="fas fa-rocket ml-2"></i>
-                        انطلق الآن
+                    <a href="{% url 'suppliers_list' %}" class="btn btn-secondary shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
+                        <i class="fas fa-shopping-bag ml-2"></i>
+                        تسوق الآن
+                    </a>
+                    <a href="{% if user.is_authenticated and active_store %}{% url 'dashboard_overview' %}{% else %}{% url 'join_business' %}{% endif %}" class="btn btn-primary shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
+                        <i class="fas fa-store ml-2"></i>
+                        {% if user.is_authenticated and active_store %}إلى متجرك{% else %}افتح متجرك{% endif %}
                     </a>
                 </div>
             </div>
@@ -1027,12 +1031,18 @@ document.addEventListener('keydown', (e) => {
             </div>
             
             <h2 class="cta-title">جاهز تبدأ رحلة نجاحك؟</h2>
-            <p class="cta-desc">انضم لآلاف التجار الناجحين وافتح متجرك الإلكتروني اليوم</p>
-            <a href="{% url 'join_business' %}" class="btn-cta">
-                <i class="fas fa-rocket ml-2"></i>
-                ابدأ الآن مجاناً
-            </a>
-            <p class="cta-note">لا تحتاج بطاقة ائتمان • دعم فني على مدار الساعة</p>
+            <p class="cta-desc">انضم لآلاف التجار الناجحين وافتح متجرك الإلكتروني اليوم، أو اكتشف شركائنا المتميزين</p>
+            <div class="flex flex-wrap gap-4 justify-center mt-8">
+                <a href="{% url 'suppliers_list' %}" class="btn-cta bg-white/20 text-white border border-white/30 hover:bg-white/30">
+                    <i class="fas fa-shopping-bag ml-2"></i>
+                    تسوق الآن
+                </a>
+                <a href="{% if user.is_authenticated and active_store %}{% url 'dashboard_overview' %}{% else %}{% url 'join_business' %}{% endif %}" class="btn-cta">
+                    <i class="fas fa-store ml-2"></i>
+                    {% if user.is_authenticated and active_store %}إلى متجرك{% else %}افتح متجرك الآن{% endif %}
+                </a>
+            </div>
+            <p class="cta-note">دعم فني على مدار الساعة • انضم لآلاف التجار</p>
         </div>
     </div>
 </section>
