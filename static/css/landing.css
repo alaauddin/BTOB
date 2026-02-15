@@ -55,8 +55,52 @@
     margin-bottom: 2.5rem;
     line-height: 1.8;
     max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+}
+
+/* Interactive Highlights */
+.interactive-highlights {
+    max-width: 600px;
+    margin-bottom: 2.5rem;
+}
+
+.highlight-trigger {
+    background: none;
+    border: none;
+    outline: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.highlight-trigger i {
+    transition: transform 0.3s ease;
+}
+
+.highlight-item.active .highlight-trigger {
+    color: var(--brand-secondary);
+    border-bottom-color: var(--brand-secondary);
+}
+
+.highlight-item.active .highlight-trigger i {
+    color: var(--brand-secondary);
+}
+
+.highlight-details p {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding-right: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+@media (min-width: 1024px) {
+
+    .hero-subtitle,
+    .interactive-highlights {
+        margin-right: 0;
+        margin-left: 0;
+        text-align: right;
+    }
 }
 
 .hero-cta {

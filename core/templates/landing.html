@@ -24,19 +24,55 @@
             <!-- Hero Content -->
             <div class="hero-content text-center lg:text-right" data-aos="fade-left">
                 <h1 class="hero-title text-white font-black mb-6">
-                    متجرك الإلكتروني... جاهز من أول يوم
+                    سهلنا لك النجاح
                 </h1>
                 <p class="hero-subtitle text-lg mb-8 leading-relaxed">
-                    ما تحتاج تبدأ من الصفر. احنا جهزنا لك كل شي: تصميم احترافي، منتجات جاهزة، وربط الدفع والشحن. <strong>كل اللي عليك... تبدأ البيع</strong>
+                    مع منصة رواج انشئ متجرك الإلكتروني بسهولة وتحكم في إدارة تجارتك من خلال مجموعة متكاملة من الحلول الرقمية الذكية :
                 </p>
+                
+                <!-- Interactive Highlights -->
+                <div class="interactive-highlights space-y-4 mb-10">
+                    <div class="highlight-item" data-aos="fade-up" data-aos-delay="100">
+                        <button class="highlight-trigger w-full flex justify-between items-center text-right font-bold text-xl py-4 border-b border-white/20 hover:text-white/80 transition-all">
+                            <span>- تجارة سهلة :</span>
+                            <i class="fas fa-plus text-sm"></i>
+                        </button>
+                        <div class="highlight-details overflow-hidden max-h-0 transition-all duration-300">
+                            <p class="py-4 text-white/90 leading-relaxed">
+                                سجل الاستخدام & بيع مباشر & بدون عمولات & تصميم جاهز & اعلانات وترويج.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-item" data-aos="fade-up" data-aos-delay="200">
+                        <button class="highlight-trigger w-full flex justify-between items-center text-right font-bold text-xl py-4 border-b border-white/20 hover:text-white/80 transition-all">
+                            <span>- إدارة متكاملة :</span>
+                            <i class="fas fa-plus text-sm"></i>
+                        </button>
+                        <div class="highlight-details overflow-hidden max-h-0 transition-all duration-300">
+                            <p class="py-4 text-white/90 leading-relaxed">
+                                المخزون & الطلبات & التوصيل & الدفع & خدمة عملاء & عروض ومبيعات & تنظيم الحسابات.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-item" data-aos="fade-up" data-aos-delay="300">
+                        <button class="highlight-trigger w-full flex justify-between items-center text-right font-bold text-xl py-4 border-b border-white/20 hover:text-white/80 transition-all">
+                            <span>- ارشفة وتحليل :</span>
+                            <i class="fas fa-plus text-sm"></i>
+                        </button>
+                        <div class="highlight-details overflow-hidden max-h-0 transition-all duration-300">
+                            <p class="py-4 text-white/90 leading-relaxed">
+                                توثيق آمن للبيانات & تحليل وإحصائيات & تقارير عند الطلب & خصوصية تامة.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="hero-cta flex flex-wrap gap-4 justify-center lg:justify-start">
                     <a href="{% url 'join_business' %}" class="btn btn-primary shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
                         <i class="fas fa-rocket ml-2"></i>
                         انطلق الآن
-                    </a>
-                    <a href="#features" class="btn btn-secondary">
-                        اكتشف المزايا
-                        <i class="fas fa-arrow-down mr-2"></i>
                     </a>
                 </div>
             </div>
@@ -104,29 +140,25 @@
     </div>
 </section>
 
-<!-- Trust Bar Section -->
-<section class="trust-bar">
+{% comment %} <section class="trust-bar">
     <div class="container mx-auto px-4">
-        <h3 class="text-center text-lg font-bold text-muted mb-8">موثوق من شركاء الدفع والشحن الرائدين</h3>
+        <h3 class="text-center text-lg font-bold text-muted mb-8">موثوق من شركاء الدفع والتوصيل الرائدين</h3>
         <div class="trust-logo-grid">
             <div class="trust-logo-item">
                 <span class="text-xs font-bold text-muted">بوابة الدفع 1</span>
             </div>
             <div class="trust-logo-item">
-                <span class="text-xs font-bold text-muted">شركة الشحن 1</span>
-            </div>
-            <div class="trust-logo-item">
                 <span class="text-xs font-bold text-muted">بوابة الدفع 2</span>
             </div>
             <div class="trust-logo-item">
-                <span class="text-xs font-bold text-muted">شركة الشحن 2</span>
+                <span class="text-xs font-bold text-muted">خدمة التوصيل 1</span>
             </div>
             <div class="trust-logo-item">
-                <span class="text-xs font-bold text-muted">خدمة التوصيل</span>
+                <span class="text-xs font-bold text-muted">خدمة التوصيل 2</span>
             </div>
         </div>
     </div>
-</section>
+</section> {% endcomment %}
 
 <!-- Dashboard Mockup Carousel Section -->
 <section class="dashboard-mockup-section py-24 bg-gradient-to-b from-white to-blue-50/30 overflow-hidden">
@@ -860,7 +892,7 @@ document.addEventListener('keydown', (e) => {
                         </div>
                         <div class="showcase-item p-4 rounded-xl bg-gray-50 flex flex-col items-center text-center">
                             <i class="fas fa-truck text-brand-primary text-2xl mb-2"></i>
-                            <span class="text-xs font-bold text-gray-700">حلول شحن</span>
+                            <span class="text-xs font-bold text-gray-700">حلول التوصيل</span>
                         </div>
                         <div class="showcase-item p-4 rounded-xl bg-gray-50 flex flex-col items-center text-center">
                             <i class="fas fa-credit-card text-brand-accent text-2xl mb-2"></i>
@@ -968,13 +1000,13 @@ document.addEventListener('keydown', (e) => {
 
             <div class="faq-item">
                 <button class="faq-question">
-                    <span>هل المتجر جاهز للربط مع الدفع والشحن؟</span>
+                    <span>هل المتجر جاهز للربط مع الدفع والتوصيل؟</span>
                     <div class="faq-icon">
                         <i class="fas fa-plus"></i>
                     </div>
                 </button>
                 <div class="faq-answer">
-                    <p>نعم، المتجر مربوط مع أفضل بوابات الدفع وشركات الشحن في المنطقة. كل شي معد ومجهز، ما تحتاج تسوي أي شي إضافي.</p>
+                    <p>نعم، المتجر مربوط مع أفضل بوابات الدفع وخدمات التوصيل في المنطقة. كل شي معد ومجهز، ما تحتاج تسوي أي شي إضافي.</p>
                 </div>
             </div>
         </div>
@@ -1097,6 +1129,37 @@ document.addEventListener('keydown', (e) => {
                 // Open clicked item if it wasn't active
                 if (!isActive) {
                     item.classList.add('active');
+                }
+            });
+        });
+
+        // Hero Highlights Accordion
+        const highlightItems = document.querySelectorAll('.highlight-item');
+        highlightItems.forEach(item => {
+            const trigger = item.querySelector('.highlight-trigger');
+            const details = item.querySelector('.highlight-details');
+            const icon = trigger.querySelector('i');
+
+            trigger.addEventListener('click', () => {
+                const isOpen = item.classList.contains('active');
+                
+                // Close others if desired (optional, based on design)
+                highlightItems.forEach(other => {
+                    if (other !== item) {
+                        other.classList.remove('active');
+                        other.querySelector('.highlight-details').style.maxHeight = '0';
+                        other.querySelector('i').classList.replace('fa-minus', 'fa-plus');
+                    }
+                });
+
+                if (isOpen) {
+                    item.classList.remove('active');
+                    details.style.maxHeight = '0';
+                    icon.classList.replace('fa-minus', 'fa-plus');
+                } else {
+                    item.classList.add('active');
+                    details.style.maxHeight = details.scrollHeight + 'px';
+                    icon.classList.replace('fa-plus', 'fa-minus');
                 }
             });
         });
