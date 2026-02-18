@@ -34,7 +34,8 @@ def _send_whatsapp_message_sync(phone, message):
                 'phone': phone,
                 'message': message
             },
-            timeout=20
+            timeout=20,
+            verify=False
         )
         
         if response.status_code == 200:
