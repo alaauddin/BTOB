@@ -120,7 +120,7 @@ class SupplierAdmin(admin.ModelAdmin):
             'description': 'إدارة تسلسل استلام وتوصيل الطلبات لهذا المورد.'
         }),
         ('تخصيص الألوان', {
-            'fields': ('primary_color', 'secondary_color', 'navbar_color', 'footer_color', 'text_color', 'accent_color'),
+            'fields': ('design_template','primary_color', 'secondary_color', 'navbar_color', 'footer_color', 'text_color', 'accent_color'),
             'description': 'استخدم منتقي الألوان لتحديد ألوان متناسقة لمتجرك.'
         }),
         ('اعدادات الفئات', {

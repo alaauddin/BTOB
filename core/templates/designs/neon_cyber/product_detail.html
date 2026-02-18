@@ -1,0 +1,335 @@
+{% extends 'designs/neon_cyber/base_neon.html' %}
+{% load static %}
+{% load cart_filters %}
+
+{% block title %}{{ product.name }} | Data Node{% endblock %}
+
+{% block neon_extra_css %}
+<style>
+    .node-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        margin-top: 3rem;
+    }
+    @media (max-width: 992px) {
+        .node-container { grid-template-columns: 1fr; }
+    }
+    .main-media-box {
+        border: 3px solid var(--neon-cyan);
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+        padding: 5px;
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 1;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .node-scanner {
+        height: 2px;
+        background: var(--neon-cyan);
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        box-shadow: 0 0 10px var(--neon-cyan);
+        animation: scannerMove 4s infinite linear;
+        z-index: 5;
+    }
+    @keyframes scannerMove {
+        0% { top: 0; }
+        100% { top: 100%; }
+    }
+    .detail-main-media {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .neon-thumb {
+        width: 60px;
+        height: 60px;
+        border: 1px solid var(--cyber-border);
+        cursor: pointer;
+        opacity: 0.5;
+        transition: 0.3s;
+    }
+    .neon-thumb.active {
+        opacity: 1;
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 10px var(--neon-cyan);
+    }
+    .neon-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .node-title {
+        font-size: 3.5rem;
+        background: linear-gradient(to right, var(--neon-cyan), var(--neon-magenta));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 2rem;
+    }
+    
+    /* Tabs */
+    .neon-tabs {
+        display: flex;
+        gap: 1rem;
+        margin: 3rem 0;
+    }
+    .neon-tab-btn {
+        background: transparent;
+        border: 1px solid var(--cyber-border);
+        color: var(--text-3);
+        padding: 10px 30px;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.8rem;
+        transition: 0.3s;
+    }
+    .neon-tab-btn.active {
+        border-color: var(--neon-cyan);
+        color: var(--neon-cyan);
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+    }
+    .neon-tab-pane { display: none; }
+    .neon-tab-pane.active { display: block; }
+
+    /* Review Card */
+    .neon-review {
+        border: 1px solid var(--cyber-border);
+        background: rgba(0, 243, 255, 0.02);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block neon_content %}
+<div class="container py-5">
+    <div class="node-container">
+        <!-- Visuals -->
+        <div>
+            <div class="main-media-box cyber-card mb-3">
+                <div class="node-scanner"></div>
+                <img src="{{ product.image.url }}" class="detail-main-media" id="mainMediaDisplay" alt="">
+                {% if product.video %}
+                <video id="productVideoPlayer" class="detail-main-media d-none" controls>
+                    <source src="{{ product.video.url }}" type="video/mp4">
+                </video>
+                {% endif %}
+                
+                <button class="wishlist-btn" onclick="toggleWishlist({{ product.id }}, this)" data-product-id="{{ product.id }}" style="position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.7); border: 2px solid var(--neon-cyan); color: white; width: 40px; height: 40px; border-radius: 5px; z-index: 10;">
+                    <i class="far fa-heart"></i>
+                </button>
+            </div>
+
+            {% if product.video or product.additional_images.exists %}
+            <div class="d-flex gap-2 overflow-auto py-2">
+                <div class="neon-thumb active" onclick="switchMedia('image', '{{ product.image.url }}', this)">
+                    <img src="{{ product.image.url }}" alt="">
+                </div>
+                {% if product.video %}
+                <div class="neon-thumb position-relative" onclick="switchMedia('video', '{{ product.video.url }}', this)">
+                    <div class="position-absolute top-50 start-50 translate-middle text-cyan"><i class="fas fa-play"></i></div>
+                    <img src="{{ product.image.url }}" style="opacity: 0.3" alt="">
+                </div>
+                {% endif %}
+                {% for img in product.additional_images.all %}
+                <div class="neon-thumb" onclick="switchMedia('image', '{{ img.image.url }}', this)">
+                    <img src="{{ img.image.url }}" alt="">
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- System Data -->
+        <div class="node-info">
+                <div class="font-monospace text-3 mb-1">> فحص المنتج_</div>
+                <h1 class="cyber-font h2 mb-2">{{ product.name|upper }}</h1>
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <span class="badge bg-soft-cyan glow-cyan">السعر: {{ product.get_price_with_offer }}</span>
+                    <span class="text-soft small">> النوع: {{ product.category.name|upper }}</span>
+                </div>
+            <div class="d-flex align-items-center gap-3 mb-4">
+               <div class="text-cyan">
+                    {% for i in '12345'|make_list %}
+                        {% if forloop.counter <= product.get_average_rating %}
+                            <i class="fas fa-star"></i>
+                        {% else %}
+                            <i class="far fa-star opacity-20"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <span class="text-3 small font-monospace">سجلات: {{ product.get_total_reviews }}</span>
+            </div>
+
+            <div class="mb-5">
+                <span class="display-5 glow-cyan">{{ product.get_price_with_offer }}</span>
+                <span class="text-3 h5">{{ supplier.currency }}</span>
+            </div>
+
+            <div class="system-actions d-grid gap-3">
+                {% if product.stock > 0 %}
+                    <button type="button" class="btn-cyber py-4" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}', event)">
+                        بدء الحيازة
+                    </button>
+                    <div class="text-3 small text-center font-monospace">> مستوى_المخزون: {{ product.stock }} وحدات</div>
+                {% else %}
+                    <button class="btn btn-outline-danger py-4" disabled>الوصول_مرفوض // نفاد_المخزون</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Container -->
+    <div class="neon-tabs">
+        <button class="neon-tab-btn active" onclick="switchTab('desc')">وصف_البيانات</button>
+        <button class="neon-tab-btn" onclick="switchTab('reviews')">ملاحظات_المستخدم ({{ product.get_total_reviews }})</button>
+    </div>
+
+    <div id="tab-desc" class="neon-tab-pane active cyber-card p-4">
+        <p class="lead text-2 font-monospace" style="color: var(--neon-green) !important;">{{ product.description|linebreaks }}</p>
+            <div class="mt-5">
+                <div class="font-monospace text-Soft mb-2">> سجلات_النظام</div>
+                <div class="cyber-card p-3 font-monospace small">
+                    <div class="text-white mb-2 underline">المواصفات_الأساسية:</div>
+                    {{ product.description|linebreaks }}
+                </div>
+            </div>
+    </div>
+
+    <div id="tab-reviews" class="neon-tab-pane">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                 <div class="cyber-card p-4 text-center">
+                    <div class="display-4 glow-cyan mb-2" id="summary-avg">{{ product.get_average_rating|default:"0.0" }}</div>
+                    <p class="text-3 small font-monospace">متوسط_التقييم_العالمي</p>
+                    {% if user.is_authenticated %}
+                    <button onclick="document.getElementById('reviewSection').classList.toggle('d-none')" class="btn-cyber w-100 mt-4">إضافة_سجل</button>
+                    {% endif %}
+                 </div>
+            </div>
+            <div class="col-md-8">
+                <div id="reviewSection" class="d-none mb-4">
+                    <form id="reviewForm" onsubmit="submitReview(event, '{{ product.id }}', '{{ supplier.store_id }}')">
+                        <div class="mb-3 d-flex flex-row-reverse justify-content-end gap-2 text-2xl">
+                             <input type="radio" name="rating" id="s5" value="5" class="d-none"><label for="s5" class="cursor-pointer text-3"><i class="fas fa-star"></i></label>
+                             <input type="radio" name="rating" id="s4" value="4" class="d-none"><label for="s4" class="cursor-pointer text-3"><i class="fas fa-star"></i></label>
+                             <input type="radio" name="rating" id="s3" value="3" class="d-none"><label for="s3" class="cursor-pointer text-3"><i class="fas fa-star"></i></label>
+                             <input type="radio" name="rating" id="s2" value="2" class="d-none"><label for="s2" class="cursor-pointer text-3"><i class="fas fa-star"></i></label>
+                             <input type="radio" name="rating" id="s1" value="1" class="d-none"><label for="s1" class="cursor-pointer text-3"><i class="fas fa-star"></i></label>
+                        </div>
+                        <textarea name="comment" class="form-control bg-dark text-cyan border-cyan mb-3" rows="3" placeholder="Input user feedback..."></textarea>
+                        <button type="submit" class="btn-cyber w-100">TRANSMIT_DATA</button>
+                    </form>
+                </div>
+
+                <div id="reviews-list">
+                    {% for review in product.review_set.all %}
+                    <div class="neon-review">
+                        <div class="d-flex justify-content-between mb-2">
+                             <span class="text-magenta cyber-font small">ID#{{ review.user.username|upper }}</span>
+                             <span class="text-cyan">
+                                {% for i in '12345'|make_list %}<i class="fas fa-star"></i>{% endfor %}
+                             </span>
+                        </div>
+                        <p class="text-2 small mb-0">> {{ review.comment }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-3 italic font-monospace">NO_DATA_LOGS_FOUND_FOR_NODE</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block neon_extra_js %}
+<script>
+    function switchMedia(type, url, element) {
+        const mainImage = document.getElementById('mainMediaDisplay');
+        const videoPlayer = document.getElementById('productVideoPlayer');
+        document.querySelectorAll('.neon-thumb').forEach(t => t.classList.remove('active'));
+        element.classList.add('active');
+
+        if (type === 'video') {
+            mainImage.classList.add('d-none');
+            videoPlayer.classList.remove('d-none');
+            videoPlayer.querySelector('source').src = url;
+            videoPlayer.load(); videoPlayer.play();
+        } else {
+            videoPlayer.classList.add('d-none'); videoPlayer.pause();
+            mainImage.classList.remove('d-none');
+            mainImage.src = url;
+        }
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.neon-tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.neon-tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function toggleWishlist(pid, btn) {
+        const csrf = getCookie('csrftoken');
+        fetch(`/wishlist/toggle/${pid}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrf, 'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                btn.style.borderColor = data.in_wishlist ? 'var(--neon-magenta)' : 'var(--neon-cyan)';
+                btn.querySelector('i').className = data.in_wishlist ? 'fas fa-heart text-magenta' : 'far fa-heart';
+            }
+        });
+    }
+
+    function submitReview(e, pid, sid) {
+        e.preventDefault();
+        const form = e.target;
+        const rating = form.querySelector('input[name="rating"]:checked')?.value;
+        if (!rating) return alert('SELECT_RATING_BIT');
+
+        const data = { rating: rating, comment: form.querySelector('textarea[name="comment"]').value };
+        fetch(`/add_review/${pid}/${sid}/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(res => { if (res.success) location.reload(); else alert(res.message); });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        {% if user.is_authenticated %}
+        const btn = document.querySelector('.wishlist-btn');
+        if(btn) {
+            fetch(`/wishlist/status/${btn.dataset.productId}/`, { headers: {'X-Requested-With': 'XMLHttpRequest'} })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.in_wishlist) {
+                    btn.style.borderColor = 'var(--neon-magenta)';
+                    btn.querySelector('i').className = 'fas fa-heart text-magenta';
+                }
+            });
+        }
+        {% endif %}
+    });
+</script>
+{% endblock %}

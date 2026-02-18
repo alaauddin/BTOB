@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from core.models import Product, Cart, Supplier
+from core.utils.template_utils import get_supplier_template
 from django.contrib.auth.decorators import login_required
 
 # @login_required
@@ -90,4 +91,5 @@ def product_detail(request, pk, store_id=None, store_slug=None):
     else:
         context['estimated_fee'] = 0
 
-    return render(request, 'product_detail.html', context)
+    template_path = get_supplier_template(supplier, 'product_detail.html')
+    return render(request, template_path, context)

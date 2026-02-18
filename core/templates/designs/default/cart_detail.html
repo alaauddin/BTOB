@@ -1,0 +1,989 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}سلة التسوق{% endblock %}
+
+{% block extra_css %}
+    <style>
+    :root {
+        --primary-color: {{ supplier.primary_color|default:'#F58231' }};
+        --secondary-color: {{ supplier.secondary_color|default:'rgb(135, 219, 255)' }};
+        --accent-color: {{ supplier.secondary_color|default:'rgb(135, 219, 255)' }};
+    }
+    
+    .toast-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--success-color);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+    }
+    
+    .toast-notification.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .toast-notification i {
+        margin-left: 10px;
+        font-size: 1.2rem;
+    }
+    .custom-map-marker {
+        background: transparent !important;
+        border: none !important;
+    }
+    /* Modal Enhancements */
+    .selection-card {
+        border: 2px solid #eee;
+        border-radius: 12px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: #fff;
+    }
+    .selection-card:hover {
+        border-color: var(--primary-color);
+        background: #f8f9fa;
+    }
+    .selection-card.active {
+        border-color: var(--primary-color);
+        background: rgba(var(--primary-rgb), 0.05);
+        box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.15);
+    }
+    .selection-card i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        color: #6c757d;
+        transition: color 0.3s ease;
+    }
+    .selection-card.active i {
+        color: var(--primary-color);
+    }
+    .map-fab {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        z-index: 1000;
+        background: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 50px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        font-weight: bold;
+        color: var(--primary-color);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+    .map-fab:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+    }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="{% static 'css/cart.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Simple Header -->
+<div class="container mt-4 mb-3">
+    <div class="d-flex align-items-center justify-content-between">
+        <h1 class="h3 fw-bold mb-0">سلة التسوق</h1>
+        <span class="badge bg-light text-dark border">{{ cart.get_total_items }} منتج</span>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% if cart.cart_items.all %}
+    <div class="row">
+        <!-- Cart Items -->
+        <div class="col-lg-8">
+            <div class="cart-container">
+                <div class="cart-header">
+                    <h3 class="mb-0">منتجاتك</h3>
+                </div>
+                
+                {% for item in cart.cart_items.all %}
+                <div class="cart-item d-flex align-items-center justify-content-between" id="row-{{ item.id }}">
+                    <div class="d-flex align-items-center">
+                    <div class="position-relative">
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image ml-3">
+                        <div class="position-absolute top-0 start-0 p-1 d-flex flex-column gap-1">
+                            {% if item.product.video %}
+                                <div class="bg-blue-600/80 text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 18px; height: 18px;" title="فيديو">
+                                    <i class="fas fa-video" style="font-size: 8px;"></i>
+                                </div>
+                            {% endif %}
+                            {% if item.product.additional_images.exists %}
+                                <div class="bg-slate-800/80 text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 18px; height: 18px;" title="صور إضافية">
+                                    <i class="fas fa-images" style="font-size: 8px;"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                        <div class="ms-4 cart-item-details">
+                            <h4 class="cart-item-name">{{ item.product.name }}</h4>
+                            <div class="cart-item-price">
+                                <span>{{ supplier.currency }} {{ item.product.get_price_with_offer|floatformat:0 }}</span>
+                                {% if item.product.has_discount %}
+                                <span class="text-danger ms-2 text-decoration-line-through small opacity-75" style="font-size: 0.9em;">
+                                    {{ supplier.currency }} {{ item.product.price|floatformat:0 }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="d-flex align-items-center">
+                        <!-- Quantity Controls -->
+                        <div class="quantity-controls me-4">
+                            <button class="qty-btn" onclick="decreaseQuantity('{{ item.id }}', '{{ supplier.store_id }}')">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                    
+                            <span id="quantity-{{ item.id }}" class="qty-display">{{ item.quantity }}</span>
+                    
+                            <button class="qty-btn" onclick="increaseQuantity('{{ item.id }}', '{{ supplier.store_id }}')">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                
+                        <!-- Subtotal -->
+                        <div class="cart-item-subtotal me-4 mx-3 d-none d-md-block" id="subtotal-{{ item.id }}">
+                             {{ supplier.currency }} {{ item.get_subtotal_with_discount|floatformat:0 }}
+                        </div>
+                
+                        <!-- Remove Button -->
+                        <button class="remove-btn" onclick="removeItem('{{ item.id }}', '{{ supplier.store_id }}')">
+                            <i class="fas fa-trash-alt"></i>
+                            <span class="d-none d-md-inline ms-2">حذف</span>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Cart Summary -->
+        <div class="col-lg-4">
+            <div class="cart-summary">
+                <h3 class="summary-title">ملخص الطلب</h3>
+                
+                <div class="summary-item">
+                    <span class="summary-label">عدد المنتجات</span>
+                    <span class="summary-value" >{{ cart.get_total_items }}</span>
+                </div>
+                
+                <div class="summary-item">
+                    <span class="summary-label">مجموع المنتجات</span>
+                    <span class="summary-value" id="total-discount"> {{ supplier.currency }} {{ cart.get_total_amount|floatformat:0 }}</span>
+                </div>
+                {% if cart.has_discount %}
+                <div class="summary-item">
+                    <span class="text-success fw-bold"> الخصم</span>
+                    <span id="total-discount" class="total-discount text-success fw-bold"> {{ supplier.currency }} {{ cart.get_total_ammout_with_discout|floatformat:0 }}</span>
+                </div>
+                {%endif%}
+
+
+                
+                <div class="summary-item">
+                    <span class="summary-label">التوصيل</span>
+                    <span class="summary-value" id="cart-delivery-fee">
+                        {% if supplier.enable_delivery_fees %}
+                            {{ supplier.currency }} {{ estimated_fee|floatformat:2 }}
+                        {% else %}
+                            <span class="small text-muted">سيتم تحديدها مع خدمة العملاء</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="summary-total">
+                    <span class="total-label">المجموع الكلي</span>
+                    <span id="total-amount" class="total-amount"> 
+                        {{ supplier.currency }} 
+                        {% if supplier.enable_delivery_fees %}
+                            {{ cart.get_total_after_discount|add:estimated_fee|floatformat:0 }}
+                        {% else %}
+                            {{ cart.get_total_after_discount|floatformat:0 }}
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <button type="button" class="checkout-btn" data-bs-toggle="modal" data-bs-target="#checkoutModal">
+                    <i class="fas fa-credit-card"></i>
+                    اتمام الشراء
+                </button>
+                
+                <a href="{% url 'product-list' supplier.store_id %}" class="continue-shopping">
+                    <i class="fas fa-arrow-right"></i>
+                    مواصلة التسوق
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty Cart -->
+    <div class="empty-cart">
+        <i class="fas fa-shopping-cart"></i>
+        <h3>سلة التسوق فارغة</h3>
+        <p class="text-muted">لم تقم بإضافة أي منتجات إلى سلة التسوق بعد</p>
+        <a href="{% url 'product-list' supplier.store_id %}" class="continue-shopping">
+            <i class="fas fa-arrow-right"></i>
+            ابدأ التسوق الآن
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Checkout Modal -->
+<div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-center">
+                <h5 class="modal-title fw-bold">اختر عنوان التوصيل</h5>
+                <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close" style="margin-right: auto !important; margin-left: 0 !important;"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Address Options Toggle (Cards) -->
+                <div class="row g-3 mb-4 justify-content-center">
+                    <div class="col-6">
+                        <label class="selection-card active" for="savedAddressOption" id="savedCardLabel">
+                            <input class="form-check-input d-none" type="radio" name="addressOption" id="savedAddressOption" value="saved" checked>
+                            <i class="fas fa-history"></i>
+                            <span class="fw-bold small">العنوان المسجل</span>
+                        </label>
+                    </div>
+                    <div class="col-6">
+                        <label class="selection-card" for="newAddressOption" id="newCardLabel">
+                            <input class="form-check-input d-none" type="radio" name="addressOption" id="newAddressOption" value="new">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <span class="fw-bold small">عنوان جديد</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Saved Address Section -->
+                <div id="savedAddressSection">
+                    {% if user_address %}
+                    <div class="card border-0 bg-light mb-3" style="border-radius: 12px;">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-2 text-primary">عنوانك الحالي:</h6>
+                            <!-- Read-only Map -->
+                            {% if user_address.latitude and user_address.longitude %}
+                            <div id="saved-address-map" style="height: 150px; width: 100%; border-radius: 8px; margin-bottom: 10px; z-index: 0;"></div>
+                            {% endif %}
+                            <p class="mb-1">{{ user_address.address_line1 }}</p>
+                            {% if user_address.address_line2 %}
+                            <p class="mb-1">{{ user_address.address_line2 }}</p>
+                            {% endif %}
+                            <p class="mb-0 text-muted small">{{ user_address.city }}, {{ user_address.country }}</p>
+                            
+                            {% if supplier.enable_delivery_fees and estimated_distance %}
+                            <div class="mt-2 p-2 rounded bg-white border border-dashed small">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">المسافة:</span>
+                                    <span>{{ estimated_distance|floatformat:1 }} كم</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">رسوم التوصيل المقدرة:</span>
+                                    <span class="fw-bold text-primary">{{ estimated_fee|floatformat:2 }} {{ supplier.currency }}</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if supplier.return_policy %}
+                    <div class="alert alert-warning border-0 shadow-sm mb-4" style="border-radius: 12px; background-color: #fffbeb; border-right: 4px solid #f59e0b !important;">
+                        <h6 class="fw-bold text-warning-900 mb-1"><i class="fas fa-info-circle me-1"></i> سياسة الاستبدال والاسترجاع:</h6>
+                        <p class="small mb-0 text-gray-700">{{ supplier.return_policy }}</p>
+                    </div>
+                    {% endif %}
+
+                    <button type="button" onclick="confirmExistingAddress('{{ supplier.store_id }}')" id="confirmSavedBtn" class="btn btn-primary w-100 py-3 rounded-3 fw-bold">
+                        تأكيد وإتمام الطلب
+                    </button>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-map-marker-alt fa-3x mb-3 text-secondary"></i>
+                        <p>لا يوجد عنوان مسجل. يرجى إضافة عنوان جديد.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- New Address Form -->
+                <div id="newAddressSection" style="display: none;">
+                    <form method="post" action="" id="newAddressForm">
+                        {% csrf_token %}
+                        <!-- Map Container -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">تحديد الموقع على الخريطة</label>
+                            <div id="address-map" style="height: 250px; width: 100%; border-radius: 12px; z-index: 1;">
+                                <button type="button" class="map-fab" id="getLocationBtn">
+                                    <i class="fas fa-location-arrow"></i> موقعي
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">الاسم الكامل</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-user text-primary"></i></span>
+                                    <input type="text" name="full_name" class="form-control" placeholder="الاسم الكامل" value="{{ user.get_full_name|default:'' }}" required>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">الموقع (العنوان)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-map-marker-alt text-danger"></i></span>
+                                    {{ shipping_form.address_line1 }}
+                                </div>
+                                {% if shipping_form.address_line1.errors %}
+                                    <div class="text-danger small mt-1">{{ shipping_form.address_line1.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">رقم الهاتف</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-phone text-success"></i></span>
+                                    {{ shipping_form.phone }}
+                                </div>
+                                {% if shipping_form.phone.errors %}
+                                    <div class="text-danger small mt-1">{{ shipping_form.phone.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">ملاحظات</label>
+                                {{ shipping_form.address_line2 }}
+                                {% if shipping_form.address_line2.errors %}
+                                    <div class="text-danger small mt-1">{{ shipping_form.address_line2.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <!-- Hidden Coordinates -->
+                            {{ shipping_form.latitude }}
+                            {{ shipping_form.longitude }}
+                            {% if shipping_form.latitude.errors %}
+                                <div class="text-danger small">{{ shipping_form.latitude.errors }}</div>
+                            {% endif %}
+                            {% if shipping_form.longitude.errors %}
+                                <div class="text-danger small">{{ shipping_form.longitude.errors }}</div>
+                            {% endif %}
+                            
+                            {% if shipping_form.non_field_errors %}
+                                <div class="alert alert-danger small mt-2">{{ shipping_form.non_field_errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        {% if supplier.return_policy %}
+                        <div class="alert alert-warning border-0 shadow-sm mt-4 mb-0" style="border-radius: 12px; background-color: #fffbeb; border-right: 4px solid #f59e0b !important;">
+                            <h6 class="fw-bold text-warning-900 mb-1"><i class="fas fa-info-circle me-1"></i> سياسة الاستبدال والاسترجاع:</h6>
+                            <p class="small mb-0 text-gray-700">{{ supplier.return_policy }}</p>
+                        </div>
+                        {% endif %}
+
+                        <button type="submit" class="btn btn-primary w-100 mt-4 py-3 rounded-3 fw-bold">
+                            حفظ وإتمام الطلب
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Sticky Checkout Bar -->
+<div class="mobile-checkout-bar d-lg-none">
+    <div class="checkout-info">
+        <span class="text-muted small">الإجمالي:</span>
+        <div class="checkout-total">
+            <span id="mobile-total-amount">
+            {% if supplier.enable_delivery_fees %}
+                {{ cart.get_total_after_discount|add:estimated_fee|floatformat:0 }}
+            {% else %}
+                {{ cart.get_total_after_discount|floatformat:0 }}
+            {% endif %}
+        </span>
+            <small>{{ supplier.currency }}</small>
+        </div>
+    </div>
+    <button type="button" class="mobile-checkout-btn border-0" data-bs-toggle="modal" data-bs-target="#checkoutModal">
+        اتمام الشراء <i class="fas fa-arrow-left me-2"></i>
+    </button>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast-notification" id="toastNotification">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage">تم تحديث السلة بنجاح</span>
+</div>
+
+<!-- Order Success Modal -->
+<div class="modal fade" id="orderSuccessModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-body p-5 text-center">
+                <div class="mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                </div>
+                <h3 class="fw-bold mb-3" id="successModalTitle">تم استلام طلبك!</h3>
+                <p class="text-muted mb-4" id="successModalMessage">شكراً لطلبك. سيتواصل معك فريقنا قريباً.</p>
+                
+                <div class="d-grid gap-3">
+                    <a href="#" id="callSupplierBtn" class="btn btn-success py-3 rounded-3 fw-bold">
+                        <i class="fas fa-phone-alt me-2"></i> التواصل بالمتجر
+                    </a>
+                    <a href="#" id="whatsappSupplierBtn" target="_blank" class="btn btn-outline-success py-3 rounded-3 fw-bold">
+                        <i class="fab fa-whatsapp me-2"></i> تواصل عبر واتساب
+                    </a>
+                    <button type="button" class="btn btn-light py-2" onclick="window.location.href='{% url 'product-list' supplier.store_id %}'">
+                        العودة للمتجر
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Show toast notification
+    function showToast(message) {
+        const toast = document.getElementById('toastNotification');
+        const toastMessage = document.getElementById('toastMessage');
+        
+        toastMessage.textContent = message;
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+    
+    // Update cart badge
+    function updateCartBadge(count) {
+        const badge = document.getElementById('total-items');
+        if (badge) {
+            badge.textContent = count;
+        }
+        
+        // Also update the badge in the navbar if it exists
+        const navBadge = document.querySelector('nav #total-items');
+        if (navBadge) {
+            navBadge.textContent = count;
+        }
+    }
+    
+    function increaseQuantity(itemId, supplierId) {
+        var csrftoken = getCookie('csrftoken');
+        let increase_url = `/increase_quantity/${itemId}/${supplierId}/`;
+        $.ajax({
+            url : increase_url,
+            type: "POST",
+            headers: { "X-CSRFToken": csrftoken },
+            success: function (data) {
+                if (data.success) {
+                    const quantityElement = $(`#quantity-${itemId}`);
+                    quantityElement.text(data.new_quantity);
+
+                    const subtotalElement = $(`#subtotal-${itemId}`);
+                    if (subtotalElement.length && typeof data.new_subtotal === 'number' && !isNaN(data.new_subtotal)) {
+                        subtotalElement.text(` {{ supplier.currency }} ${Math.floor(data.new_subtotal)}`);
+                    }
+                    
+                    const totalAmountElement = $('#total-amount');
+                    const estimatedFee = parseFloat('{{ estimated_fee|default:0 }}');
+                    const totalWithShipping = Math.floor(data.cart_total + estimatedFee);
+                    totalAmountElement.text(` {{ supplier.currency }} ${totalWithShipping}`);
+                    $('#mobile-total-amount').text(totalWithShipping); // Update mobile bar
+                    const totalDiscountElement = $('#total-discount');
+                    totalDiscountElement.text(` {{ supplier.currency }} ${data.new_total_discout}`);
+
+                    updateCartBadge(data.cart_items_count);
+                    
+                    // Show success notification
+                    showToast('تم زيادة الكمية بنجاح');
+                } else {
+                    console.error("Failed to increase quantity");
+                    showToast(data.message || 'حدث خطأ أثناء زيادة الكمية');
+                }
+            },
+            error: function (xhr) {
+                console.error("An error occurred while increasing the quantity.");
+                const message = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'حدث خطأ أثناء زيادة الكمية';
+                showToast(message);
+            }
+        });
+    }
+
+    function decreaseQuantity(itemId, supplierId) {
+        var csrftoken = getCookie('csrftoken');
+        let decrease_url = `/decrease_quantity/${itemId}/${supplierId}/`;
+
+
+        $.ajax({
+            url: decrease_url,
+            type: "POST",
+            headers: { "X-CSRFToken": csrftoken },
+            success: function (data) {
+                if (data.success) {
+                    const quantityElement = $(`#quantity-${itemId}`);
+                    quantityElement.text(data.new_quantity);
+
+                    const subtotalElement = $(`#subtotal-${itemId}`);
+                    if (subtotalElement.length && typeof data.new_subtotal === 'number' && !isNaN(data.new_subtotal)) {
+                        subtotalElement.text(` {{ supplier.currency }} ${Math.floor(data.new_subtotal)}`);
+                    }
+
+                    if (data.new_quantity === 0) {
+                        const rowElement = $(`#row-${itemId}`);
+                        rowElement.addClass('cart-item-removed');
+                        setTimeout(() => {
+                            rowElement.remove();
+                            
+                            // Check if cart is empty after removal
+                            if ($('.cart-item').length === 0) {
+                                location.reload();
+                            }
+                        }, 500);
+                    }
+
+                    const totalAmountElement = $('#total-amount');
+                    const estimatedFee = parseFloat('{{ estimated_fee|default:0 }}');
+                    const totalWithShipping = Math.floor(data.cart_total + estimatedFee);
+                    totalAmountElement.text(` {{ supplier.currency }} ${totalWithShipping}`);
+                    $('#mobile-total-amount').text(totalWithShipping); // Update mobile bar
+                    const totalDiscountElement = $('#total-discount');
+                    totalDiscountElement.text(` {{ supplier.currency }} ${data.new_total_discout}`);
+
+                    updateCartBadge(data.cart_items_count);
+                    
+                    // Show success notification
+                    showToast('تم تقليل الكمية بنجاح');
+                } else {
+                    console.error("Failed to decrease quantity");
+                    showToast('حدث خطأ أثناء تقليل الكمية');
+                }
+            },
+            error: function (error) {
+                console.error("An error occurred while decreasing the quantity.");
+                showToast('حدث خطأ أثناء تقليل الكمية');
+            }
+        });
+    }
+
+    function removeItem(itemId, supplierId) {
+        if (!confirm('هل أنت متأكد من حذف هذا المنتج من السلة؟')) {
+            return;
+        }
+        
+        var csrftoken = getCookie('csrftoken');
+
+        $.ajax({
+            url: `{% url 'remove_item' item_id=0 store_id=0 %}`.replace('0', itemId).replace('0', supplierId),
+            type: "POST",
+            headers: { "X-CSRFToken": csrftoken },
+            success: function (data) {
+                if (data.success) {
+                    const rowElement = $(`#row-${itemId}`);
+                    rowElement.addClass('cart-item-removed');
+                    setTimeout(() => {
+                        rowElement.remove();
+                        
+                        // Check if cart is empty after removal
+                        if ($('.cart-item').length === 0) {
+                            location.reload();
+                        }
+                    }, 500);
+
+                    const estimatedFee = parseFloat('{{ estimated_fee|default:0 }}');
+                    const totalWithShipping = Math.floor(data.cart_total + estimatedFee);
+
+                    const totalAmountElement = $('#total-amount');
+                    totalAmountElement.text(` {{ supplier.currency }} ${totalWithShipping}`);
+                    $('#mobile-total-amount').text(totalWithShipping); // Update mobile bar
+                    const totalDiscountElement = $('#total-discount');
+                    totalDiscountElement.text(` {{ supplier.currency }} ${Math.floor(data.new_total_discout)}`);
+                    
+                    updateCartBadge(data.cart_items_count);
+                    
+                    // Show success notification
+                    showToast('تم حذف المنتج من السلة');
+                } else {
+                    console.error("Failed to remove the item");
+                    showToast('حدث خطأ أثناء حذف المنتج');
+                }
+            },
+            error: function (error) {
+                console.error("An error occurred while removing the item.");
+                showToast('حدث خطأ أثناء حذف المنتج');
+            }
+        });
+    }
+    
+    // Add animation to cart items
+    document.addEventListener('DOMContentLoaded', function() {
+        const cartItems = document.querySelectorAll('.cart-item');
+        
+        cartItems.forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(20px)';
+            item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            
+            setTimeout(() => {
+                item.style.opacity = '1';
+                item.style.transform = 'translateX(0)';
+            }, index * 100);
+        });
+        
+        // Checkout Modal Toggle Logic
+        const savedRadio = document.getElementById('savedAddressOption');
+        const newRadio = document.getElementById('newAddressOption');
+        const savedSection = document.getElementById('savedAddressSection');
+        const newSection = document.getElementById('newAddressSection');
+
+        if (savedRadio && newRadio && savedSection && newSection) {
+            savedRadio.addEventListener('change', function() {
+                if (this.checked) {
+                    savedSection.style.display = 'block';
+                    newSection.style.display = 'none';
+                    // Update Active Card Style
+                    document.getElementById('savedCardLabel').classList.add('active');
+                    document.getElementById('newCardLabel').classList.remove('active');
+                }
+            });
+
+            newRadio.addEventListener('change', function() {
+                if (this.checked) {
+                    savedSection.style.display = 'none';
+                    newSection.style.display = 'block';
+                    // Update Active Card Style
+                    document.getElementById('newCardLabel').classList.add('active');
+                    document.getElementById('savedCardLabel').classList.remove('active');
+                }
+            });
+        }
+
+        // Map Logic
+        let map = null;
+        let marker = null;
+        const defaultLat = 15.3694; // Sana'a
+        const defaultLng = 44.1910;
+
+        // Custom Icon Definition
+        const customIcon = L.divIcon({
+            className: 'custom-map-marker',
+            html: `<i class="fas fa-map-marker-alt fa-3x" style="color: ${getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#F58231'}; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 40]
+        });
+
+        function initMap() {
+            if (map !== null) return; // Already initialized
+
+            // Initialize map
+            map = L.map('address-map').setView([defaultLat, defaultLng], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Add draggable marker
+            marker = L.marker([defaultLat, defaultLng], {
+                draggable: true,
+                icon: customIcon
+            }).addTo(map);
+            
+            // Initial input update
+            updateAddressInput(defaultLat, defaultLng);
+
+            // Update input on drag end
+            marker.on('dragend', function(e) {
+                const latlng = marker.getLatLng();
+                updateAddressInput(latlng.lat, latlng.lng);
+            });
+            
+            // Map click to move marker
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                updateAddressInput(e.latlng.lat, e.latlng.lng);
+            });
+        }
+        
+        async function updateAddressInput(lat, lng) {
+            const locationInput = document.querySelector('input[name="address_line1"]');
+            const latInput = document.querySelector('input[name="latitude"]');
+            const lngInput = document.querySelector('input[name="longitude"]');
+
+            if (locationInput) {
+                // Determine if we should fetch address or not (based on step 254 changes, we fetch it)
+                // BUT we also need to set the hidden inputs
+                if (latInput) latInput.value = lat.toFixed(6);
+                if (lngInput) lngInput.value = lng.toFixed(6);
+                
+                // Show loading state
+                locationInput.value = `جاري جلب العنوان (${lat.toFixed(5)}, ${lng.toFixed(5)})...`;
+                
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
+                        headers: {
+                            'Accept-Language': 'ar' // Request Arabic results
+                        }
+                    });
+                    const data = await response.json();
+                    
+                    if (data && data.display_name) {
+                        locationInput.value = data.display_name;
+                    } else {
+                        locationInput.value = `موقع محدد (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+                    }
+                } catch (error) {
+                    console.error('Reverse geocoding error:', error);
+                    locationInput.value = `موقع محدد (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+                }
+            }
+        }
+        
+        // Handle "Get Current Location"
+        const locationBtn = document.getElementById('getLocationBtn');
+        if (locationBtn) {
+            locationBtn.addEventListener('click', function() {
+                if ("geolocation" in navigator) {
+                    locationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تحديد الموقع...';
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        if (map) {
+                            map.setView([lat, lng], 16);
+                            marker.setLatLng([lat, lng]);
+                            updateAddressInput(lat, lng);
+                        }
+                        locationBtn.innerHTML = '<i class="fas fa-location-arrow me-1"></i> استخدام موقعي الحالي';
+                    }, function(error) {
+                        console.error("Error getting location:", error);
+                        alert("تعذر تحديد موقعك. يرجى التحقق من إعدادات الموقع.");
+                        locationBtn.innerHTML = '<i class="fas fa-location-arrow me-1"></i> استخدام موقعي الحالي';
+                    });
+                } else {
+                    alert("المتصفح لا يدعم تحديد الموقع الجغرافي.");
+                }
+            });
+        }
+
+        // Initialize map when the "New Address" radio is selected
+        if (newRadio) {
+            newRadio.addEventListener('change', function() {
+                    // Small timeout to allow the div to become visible before calculating size
+                    setTimeout(() => {
+                        initMap();
+                        map.invalidateSize();
+                    }, 200);
+            });
+        }
+        
+        // Initialize Saved Address Map (Read-only)
+        let savedMap = null;
+        
+        function initSavedMap() {
+            if (savedMap) {
+                setTimeout(() => { savedMap.invalidateSize(); }, 10);
+                return;
+            }
+            
+            const savedMapContainer = document.getElementById('saved-address-map');
+            if (!savedMapContainer) return;
+
+            {% if user_address.latitude and user_address.longitude %}
+            const savedLat = {{ user_address.latitude }};
+            const savedLng = {{ user_address.longitude }};
+            
+            savedMap = L.map('saved-address-map', {
+                zoomControl: false,
+                dragging: false,
+                scrollWheelZoom: false,
+                doubleClickZoom: false,
+                boxZoom: false,
+                keyboard: false
+            }).setView([savedLat, savedLng], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: ''
+            }).addTo(savedMap);
+
+            L.marker([savedLat, savedLng], {
+                interactive: false,
+                icon: customIcon
+            }).addTo(savedMap);
+            {% endif %}
+        }
+
+        // Listen for Modal Show event to fix map rendering (Leaflet grey box issue)
+        const checkoutModal = document.getElementById('checkoutModal');
+        if (checkoutModal) {
+            checkoutModal.addEventListener('shown.bs.modal', function () {
+                // Fix Saved Map
+                initSavedMap();
+                
+                // Fix New Address Map if it exists
+                if (map) {
+                    setTimeout(() => { map.invalidateSize(); }, 10);
+                }
+            });
+        }
+        
+        // Also init if "New Address" is already checked on load (e.g. errors)
+        if (newRadio && newRadio.checked) {
+             setTimeout(() => {
+                initMap();
+                map.invalidateSize();
+            }, 500); // Slightly longer delay on load
+        }
+
+        // --- Ajax Checkout Logic ---
+        
+        const successModal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
+        
+        function handleCheckoutSuccess(data) {
+            const checkoutModalEl = document.getElementById('checkoutModal');
+            let checkoutModalInstance = bootstrap.Modal.getInstance(checkoutModalEl);
+            if (!checkoutModalInstance) {
+                checkoutModalInstance = new bootstrap.Modal(checkoutModalEl);
+            }
+            checkoutModalInstance.hide();
+            
+            // Update Success Modal Content
+            document.getElementById('successModalMessage').textContent = data.message;
+            document.getElementById('callSupplierBtn').href = `tel:${data.supplier_phone}`;
+            document.getElementById('whatsappSupplierBtn').href = data.wa_url;
+            
+            // Show Success Modal
+            successModal.show();
+        }
+
+        // 1. Existing Address Checkout
+        window.confirmExistingAddress = function(storeId) {
+            const btn = document.getElementById('confirmSavedBtn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التنفيذ...';
+            btn.disabled = true;
+
+            const csrftoken = getCookie('csrftoken');
+            
+            $.ajax({
+                url: `{% url 'existing_address' supplier.store_id %}`,
+                type: "POST",
+                headers: { "X-CSRFToken": csrftoken },
+                success: function(data) {
+                    if (data.success) {
+                        handleCheckoutSuccess(data);
+                    } else {
+                        showToast(data.message || 'حدث خطأ ما');
+                        btn.innerHTML = originalContent;
+                        btn.disabled = false;
+                    }
+                },
+                error: function(xhr) {
+                    const data = xhr.responseJSON;
+                    showToast(data && data.message ? data.message : 'حدث خطأ في الاتصال بالسيرفر');
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                }
+            });
+        };
+
+        // 2. New Address Checkout
+        const newAddressForm = document.getElementById('newAddressForm');
+        if (newAddressForm) {
+            newAddressForm.onsubmit = function(e) {
+                e.preventDefault();
+                
+                const btn = newAddressForm.querySelector('button[type="submit"]');
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+                btn.disabled = true;
+                
+                const formData = new FormData(newAddressForm);
+                const csrftoken = getCookie('csrftoken');
+                
+                // Clear previous errors
+                newAddressForm.querySelectorAll('.text-danger.small').forEach(el => el.textContent = '');
+                
+                $.ajax({
+                    url: window.location.href, // Current page handles POST for new address
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: { "X-CSRFToken": csrftoken },
+                    success: function(data) {
+                        if (data.success) {
+                            handleCheckoutSuccess(data);
+                        } else {
+                            showToast(data.message || 'يرجى التأكد من البيانات المدخلة');
+                            btn.innerHTML = originalContent;
+                            btn.disabled = false;
+                        }
+                    },
+                    error: function(xhr) {
+                        const data = xhr.responseJSON;
+                        if (data && data.errors) {
+                            // Show specific form errors if available
+                            try {
+                                const errors = typeof data.errors === 'string' ? JSON.parse(data.errors) : data.errors;
+                                for (const field in errors) {
+                                    const errorMsg = Array.isArray(errors[field]) ? errors[field][0] : errors[field];
+                                    const errorDiv = newAddressForm.querySelector(`[name="${field}"]`)?.closest('.col-12')?.querySelector('.text-danger.small');
+                                    if (errorDiv) errorDiv.textContent = errorMsg;
+                                }
+                            } catch (e) {
+                                console.error('Error parsing form errors:', e);
+                            }
+                        }
+                        showToast(data && data.message ? data.message : 'حدث خطأ في الاتصال بالسيرفر');
+                        btn.innerHTML = originalContent;
+                        btn.disabled = false;
+                    }
+                });
+            };
+        }
+    });
+</script>
+{% endblock %}

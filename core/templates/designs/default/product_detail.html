@@ -185,20 +185,20 @@
                         
                         <!-- Qty Controls (Shown if item in cart) -->
                         <div class="detail-qty-control {% if cart_item_qty == 0 %}d-none{% endif %}" id="qty-ctrl-{{ product.id }}">
-                            <button type="button" class="modern-qty-btn" onclick="subToCart('{{ product.id }}', '{{ supplier.store_id }}', event)">
+                            <button class="modern-qty-btn" onclick="subToCart('{{ product.id }}', '{{ supplier.store_id }}')">
                                 <i class="fas fa-minus"></i>
                             </button>
                             <span class="modern-qty-display" id="quantity-{{ product.id }}">{{ cart_item_qty }}</span>
                             <!-- Hidden Helper for base.html expectations -->
                             <span id="total-qty-items-{{ product.id }}" class="d-none">{{ cart_item_qty }}</span>
 
-                            <button type="button" class="modern-qty-btn" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}', event)" {% if product.stock <= cart_item_qty %}disabled style="opacity: 0.5; cursor: not-allowed;" title="أقصى كمية متاحة"{% endif %}>
+                            <button class="modern-qty-btn" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')" {% if product.stock <= cart_item_qty %}disabled style="opacity: 0.5; cursor: not-allowed;" title="أقصى كمية متاحة"{% endif %}>
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
                         
                         <!-- Add Button (Shown if item NOT in cart) -->
-                        <button type="button" class="detail-add-btn {% if cart_item_qty > 0 %}d-none{% endif %}" id="add-btn-{{ product.id }}" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}', event)">
+                        <button class="detail-add-btn {% if cart_item_qty > 0 %}d-none{% endif %}" id="add-btn-{{ product.id }}" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')">
                             <i class="fas fa-shopping-bag"></i>
                             <span>إضافة للسلة</span>
                         </button>

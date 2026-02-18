@@ -1,0 +1,220 @@
+{% extends 'designs/nature_zen/base_zen.html' %}
+{% load static %}
+{% load cart_filters %}
+
+{% block title %}{{ supplier.name }} | Garden Library{% endblock %}
+
+{% block zen_extra_css %}
+<style>
+    .zen-hero {
+        padding: 6rem 0;
+        background: var(--zen-bg);
+        text-align: center;
+        border-bottom: 1px solid var(--zen-sand);
+        margin-bottom: 3rem;
+    }
+    .zen-nav {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        margin-bottom: 2rem;
+    }
+    .zen-pill {
+        color: var(--zen-text-soft);
+        font-style: italic;
+        text-decoration: none;
+        position: relative;
+        padding-bottom: 8px;
+        transition: 0.4s;
+    }
+    .zen-pill.active, .zen-pill:hover { color: var(--zen-text-main); }
+    .zen-pill.active::after {
+        content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; background: var(--zen-sage);
+    }
+    
+    .zen-sub-flow {
+        display: none;
+        justify-content: center;
+        gap: 1.5rem;
+        padding-bottom: 3rem;
+    }
+    .zen-sub-flow.show { display: flex; animation: fadeIn 1s; }
+    .zen-sub-item { font-size: 0.8rem; color: var(--zen-sage); text-decoration: none; opacity: 0.7; }
+    .zen-sub-item:hover { opacity: 1; text-decoration: underline; }
+
+    .zen-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 4rem;
+    }
+    .zen-card-item {
+        background: white;
+        border-radius: var(--radius-zen);
+        padding: 1.5rem;
+        transition: 0.5s;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        position: relative;
+    }
+    .zen-card-item:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.05); }
+    
+    .zen-card-img {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 20px;
+        margin-bottom: 1.5rem;
+    }
+    .zen-card-title { font-size: 1.25rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .zen-card-price { color: var(--zen-sage); font-style: italic; }
+    
+    .zen-heart {
+        position: absolute;
+        top: 25px;
+        left: 25px;
+        background: rgba(255,255,255,0.8);
+        border: none;
+        color: var(--zen-sand);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+    }
+    .zen-heart.active { color: var(--terracotta); }
+
+    .zen-island {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        padding: 10px 30px;
+        border-radius: 50px;
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        z-index: 1000;
+        border: 1px solid var(--zen-sand);
+    }
+</style>
+{% endblock %}
+
+{% block zen_content %}
+<div class="container py-4">
+    <div class="zen-hero">
+        <span class="zen-font text-sage italic mb-2 d-block">Curated Tranquility</span>
+        <h1 class="display-3 mb-3">{{ supplier.name }}</h1>
+        <p class="text-soft italic" style="max-width: 600px; margin: 0 auto;">{{ supplier.description|default:"Welcome to our peaceful corner of the world." }}</p>
+    </div>
+
+    <div class="zen-nav hide-scrollbar">
+        <a href="{% url 'store_home' supplier.store_id %}" class="zen-pill {% if not active_category_id %}active{% endif %}">The Whole Garden</a>
+        {% for category in categories %}
+            <a href="#cat-{{ category.id }}" class="zen-pill {% if active_category_id == category.id %}active{% endif %}" data-zen-cat="{{ category.id }}">
+                {{ category.name }}
+            </a>
+        {% endfor %}
+    </div>
+
+    {% for category in categories %}
+    <div id="cat-{{ category.id }}-subs" class="zen-sub-flow {% if active_category_id == category.id %}show{% endif %}">
+        {% for sub in category.productcategory_set.all %}
+            <a href="{% url 'store_subcategory' supplier.store_id sub.id %}" class="zen-sub-item">{{ sub.name }}</a>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    <div class="zen-grid">
+        {% for product in products %}
+        <div class="zen-card-item">
+            <button type="button" class="zen-heart" data-pid="{{ product.id }}" onclick="toggleWishlist({{ product.id }}, this)">
+                <i class="far fa-heart"></i>
+            </button>
+            <a href="{% url 'product-detail' supplier.store_id product.id %}" style="text-decoration: none; color: inherit;">
+                <img src="{{ product.image.url }}" class="zen-card-img" alt="">
+                <h3 class="zen-card-title">{{ product.name }}</h3>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="zen-card-price">{{ product.get_price_with_offer }} {{ supplier.currency }}</span>
+                    <button type="button" class="btn-zen px-4" style="padding: 8px;" onclick="event.preventDefault(); addToCart('{{ product.id }}', '{{ supplier.store_id }}', event)">
+                        إضافة
+                    </button>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% if cart.get_total_items > 0 %}
+<div class="zen-island d-lg-none">
+    <div class="text-soft small italic">
+        {{ cart.get_total_items }} elements | {{ cart.get_total_after_discount }} {{ supplier.currency }}
+    </div>
+    <a href="{% url 'cart-detail' supplier.store_id %}" class="btn-zen py-2 px-4 shadow-none" style="font-size: 0.8rem;">Review Collection</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block zen_extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[data-zen-cat]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.zen-pill').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.zen-sub-flow').forEach(f => f.classList.remove('show'));
+                const target = document.getElementById(btn.getAttribute('href').replace('#', '') + '-subs');
+                if(target) target.classList.add('show');
+            });
+        });
+
+        {% if user.is_authenticated %}
+        fetch('/wishlist/all_status/')
+        .then(r => r.json())
+        .then(data => {
+            if(data.ids) {
+                document.querySelectorAll('.zen-heart').forEach(btn => {
+                    if(data.ids.includes(parseInt(btn.dataset.pid))) {
+                        btn.classList.add('active');
+                        btn.querySelector('i').className = 'fas fa-heart';
+                    }
+                });
+            }
+        });
+        {% endif %}
+    });
+
+    function toggleWishlist(pid, btn) {
+        fetch(`/wishlist/toggle/${pid}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                btn.classList.toggle('active', data.in_wishlist);
+                btn.querySelector('i').className = data.in_wishlist ? 'fas fa-heart' : 'far fa-heart';
+            }
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

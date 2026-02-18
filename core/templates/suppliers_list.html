@@ -1500,7 +1500,7 @@
             <div class="swiper-wrapper">
                 {% for ad in platform_ads %}
                 <div class="swiper-slide" style="width: auto; height: auto;">
-                    <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="ad-card-link-block h-full block">
+                    <a href="{% url 'product-detail' ad.product.supplier.store_id ad.product.id %}" class="ad-card-link-block h-full block">
                         <div class="ad-card h-full">
                             {% if ad.product.has_discount %}
                             <div class="ad-badge-discount">

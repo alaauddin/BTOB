@@ -1,0 +1,286 @@
+{% extends 'designs/luxury_dark/base_luxury.html' %}
+{% load static %}
+{% load cart_filters %}
+
+{% block title %}{{ supplier.name }} | Premium Collection{% endblock %}
+
+{% block luxury_extra_css %}
+<style>
+    .luxury-hero {
+        height: 60vh;
+        border-radius: 30px;
+        overflow: hidden;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+    .luxury-hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(0.7);
+    }
+    .luxury-hero-content {
+        position: absolute;
+        bottom: 10%;
+        right: 5%;
+        left: 5%;
+        text-align: center;
+    }
+    .luxury-category-pills {
+        display: flex;
+        gap: 1.5rem;
+        overflow-x: auto;
+        padding: 1.5rem 0;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--luxury-border);
+    }
+    .luxury-pill {
+        color: var(--text-3);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        padding-bottom: 5px;
+        border-bottom: 2px solid transparent;
+        white-space: nowrap;
+    }
+    .luxury-pill.active, .luxury-pill:hover {
+        color: var(--primary-base);
+        border-bottom-color: var(--primary-base);
+    }
+    
+    .subcategory-drawer {
+        padding: 1rem 0 2rem;
+        display: none;
+        animation: fadeIn 0.5s;
+    }
+    .subcategory-drawer.show { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .sub-item {
+        font-size: 0.75rem;
+        color: var(--text-2);
+        text-decoration: none;
+        padding: 5px 15px;
+        border: 1px solid var(--luxury-border);
+        border-radius: 20px;
+    }
+    .sub-item:hover { border-color: var(--primary-base); color: var(--primary-base); }
+
+    .luxury-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 3rem;
+    }
+    .luxury-item-card {
+        background: var(--luxury-surface);
+        border-radius: 20px;
+        padding: 1rem;
+        border: 1px solid var(--luxury-border);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        position: relative;
+    }
+    .luxury-item-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        border-color: rgba(212,175,55,0.3);
+    }
+    .luxury-item-img {
+        width: 100%;
+        aspect-ratio: 1/1;
+        object-fit: cover;
+        border-radius: 15px;
+        margin-bottom: 1.5rem;
+    }
+    .luxury-item-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--text-1);
+    }
+    .luxury-item-price {
+        color: var(--primary-base);
+        font-size: 1.1rem;
+        font-weight: 300;
+        text-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+    }
+    
+    .wishlist-float {
+        position: absolute;
+        top: 25px;
+        right: 25px;
+        background: rgba(0,0,0,0.5);
+        color: white;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(212,175,55,0.2);
+        backdrop-filter: blur(5px);
+        transition: 0.3s;
+        z-index: 5;
+    }
+    .wishlist-float.active { color: var(--primary-base); border-color: var(--primary-base); }
+
+    /* Cart Island */
+    .luxury-cart-island {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(18,18,18,0.9);
+        border: 1px solid var(--luxury-border);
+        padding: 12px 30px;
+        border-radius: 50px;
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+</style>
+{% endblock %}
+
+{% block luxury_content %}
+<div class="container py-4">
+    <!-- Hero -->
+    {% if supplier_ads %}
+    <div class="luxury-hero luxury-card">
+        <div id="luxuryHero" class="carousel slide h-100 carousel-fade" data-bs-ride="carousel">
+            <div class="carousel-inner h-100">
+                {% for ad in supplier_ads %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %} h-100">
+                    <img src="{{ ad.image.url }}" class="luxury-hero-img" alt="">
+                    <div class="luxury-hero-content">
+                        <h2 class="display-3 font-weight-bold mb-0 text-glow-gold" style="letter-spacing: 5px;">{{ ad.title|upper }}</h2>
+                        <div class="text-gold mt-2 italic" style="letter-spacing: 2px;">{{ ad.description|truncatewords:10 }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Nav -->
+    <div class="luxury-category-pills hide-scrollbar">
+        <a href="{% url 'store_home' supplier.store_id %}" class="luxury-pill {% if not active_category_id %}active{% endif %}">The Collection</a>
+        {% for category in categories %}
+            <a href="#cat-{{ category.id }}" class="luxury-pill {% if active_category_id == category.id %}active{% endif %}" data-luxury-cat="{{ category.id }}">
+                {{ category.name }}
+            </a>
+        {% endfor %}
+    </div>
+
+    {% for category in categories %}
+    <div id="cat-{{ category.id }}-subs" class="subcategory-drawer {% if active_category_id == category.id %}show{% endif %}">
+        {% for sub in category.productcategory_set.all %}
+            <a href="{% url 'store_subcategory' supplier.store_id sub.id %}" class="sub-item">{{ sub.name }}</a>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    <!-- Grid -->
+    <div class="luxury-grid mt-4">
+        {% for product in products %}
+        <div class="luxury-item-card luxury-card">
+            <button type="button" class="wishlist-float" data-pid="{{ product.id }}" onclick="toggleWishlist({{ product.id }}, this)">
+                <i class="far fa-heart"></i>
+            </button>
+            <a href="{% url 'product-detail' supplier.store_id product.id %}" style="text-decoration: none; color: inherit;">
+                <img src="{{ product.image.url }}" class="luxury-item-img" alt="">
+                <h3 class="luxury-item-title text-white">{{ product.name|upper }}</h3>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="luxury-item-price">{{ product.get_price_with_offer }} {{ supplier.currency }}</span>
+                    <button type="button" class="btn-luxury py-2 px-3" style="font-size: 0.7rem;" onclick="event.preventDefault(); addToCart('{{ product.id }}', '{{ supplier.store_id }}', event)">
+                        اقتناء
+                    </button>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Cart Island -->
+{% if cart.get_total_items > 0 %}
+<div class="luxury-cart-island d-lg-none">
+    <div class="text-white small">
+        <span class="text-gold">{{ cart.get_total_items }}</span> PIECES | 
+        <span class="font-weight-bold">{{ cart.get_total_after_discount }} {{ supplier.currency }}</span>
+    </div>
+    <a href="{% url 'cart-detail' supplier.store_id %}" class="btn-luxury py-2 px-4" style="font-size: 0.8rem;">VIEW BAG</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block luxury_extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Category Toggles
+        document.querySelectorAll('[data-luxury-cat]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.luxury-pill').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                
+                document.querySelectorAll('.subcategory-drawer').forEach(d => d.classList.remove('show'));
+                const targetId = btn.getAttribute('href').replace('#', '') + '-subs';
+                const drawer = document.getElementById(targetId);
+                if(drawer) drawer.classList.add('show');
+            });
+        });
+
+        // Wishlist Sync
+        {% if user.is_authenticated %}
+        fetch('/wishlist/all_status/')
+        .then(r => r.json())
+        .then(data => {
+            if(data.ids) {
+                document.querySelectorAll('.wishlist-float').forEach(btn => {
+                    if(data.ids.includes(parseInt(btn.dataset.pid))) {
+                        btn.classList.add('active');
+                        btn.querySelector('i').className = 'fas fa-heart';
+                    }
+                });
+            }
+        });
+        {% endif %}
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function toggleWishlist(pid, btn) {
+        fetch(`/wishlist/toggle/${pid}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                btn.classList.toggle('active', data.in_wishlist);
+                btn.querySelector('i').className = data.in_wishlist ? 'fas fa-heart' : 'far fa-heart';
+            }
+        });
+    }
+</script>
+{% endblock %}

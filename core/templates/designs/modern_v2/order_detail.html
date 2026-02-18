@@ -1,0 +1,168 @@
+{% extends 'designs/modern_v2/base_v2.html' %}
+{% load static %}
+
+{% block title %}تفاصيل الطلب #{{ order.id|stringformat:"05d" }} | عرطات{% endblock %}
+
+{% block v2_extra_css %}
+<link rel="stylesheet" href="{% static 'css/order_detail.css' %}?v=1.1">
+{% endblock %}
+
+{% block v2_content %}
+<div class="order-details-wrapper" style="padding-bottom: 100px;"> <!-- Extra padding for bottom nav -->
+    <!-- Sophisticated Header (Compressed) -->
+    <section class="order-header-section">
+        <div class="container" style="max-width: 1000px;">
+            <div class="order-title-group d-flex justify-content-between align-items-end">
+                <div>
+                    <div class="order-badge-pill">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>فاتورة رسمية</span>
+                    </div>
+                    <h1 class="h3 fw-bold mb-0">الطلب #{{ order.id|stringformat:"05d" }}</h1>
+                    <p class="text-muted small mb-0">{{ order.created_at|date:"d F Y, h:i A" }}</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container" style="max-width: 1000px;">
+        <!-- Visual Status Stepper (Compact) -->
+        <div class="order-stepper-container">
+            <!-- Step 1: Order Placed -->
+            <div class="step-item {% if order.pipeline_status.slug == 'pending' or order.pipeline_status.slug == 'confirmed' or order.pipeline_status.slug == 'processing' or order.pipeline_status.slug == 'shipped' or order.pipeline_status.slug == 'out_for_delivery' or order.pipeline_status.slug == 'delivered' or order.pipeline_status.slug == 'completed' %}active{% endif %} {% if order.pipeline_status.slug != 'pending' %}completed{% endif %}">
+                <div class="step-dot"><i class="fas fa-file-invoice"></i></div>
+                <span class="step-label">طلب</span>
+            </div>
+            <!-- Step 2: Processing -->
+            <div class="step-item {% if order.pipeline_status.slug == 'processing' or order.pipeline_status.slug == 'shipped' or order.pipeline_status.slug == 'out_for_delivery' or order.pipeline_status.slug == 'delivered' or order.pipeline_status.slug == 'completed' %}active{% endif %} {% if order.pipeline_status.slug == 'shipped' or order.pipeline_status.slug == 'out_for_delivery' or order.pipeline_status.slug == 'delivered' or order.pipeline_status.slug == 'completed' %}completed{% endif %}">
+                <div class="step-dot"><i class="fas fa-cog"></i></div>
+                <span class="step-label">تجهيز</span>
+            </div>
+            <!-- Step 3: Shipping -->
+            <div class="step-item {% if order.pipeline_status.slug == 'shipped' or order.pipeline_status.slug == 'out_for_delivery' or order.pipeline_status.slug == 'delivered' or order.pipeline_status.slug == 'completed' %}active{% endif %} {% if order.pipeline_status.slug == 'delivered' or order.pipeline_status.slug == 'completed' %}completed{% endif %}">
+                <div class="step-dot"><i class="fas fa-truck"></i></div>
+                <span class="step-label">شحن</span>
+            </div>
+            <!-- Step 4: Arrival -->
+            <div class="step-item {% if order.pipeline_status.slug == 'delivered' or order.pipeline_status.slug == 'completed' %}active{% endif %}">
+                <div class="step-dot"><i class="fas fa-home"></i></div>
+                <span class="step-label">وصول</span>
+            </div>
+        </div>
+
+        <!-- Quick Stats Bar (Centered & Compact) -->
+        <div class="order-stats-bar" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+            <div class="stat-item">
+                <span class="stat-label">الحالة</span>
+                <div class="stat-value d-flex align-items-center gap-2">
+                    <span class="status-dot" style="background: {% if order.pipeline_status.slug == 'pending' %}#f59e0b{% elif order.pipeline_status.slug == 'completed' %}#10b981{% elif order.pipeline_status.slug == 'canceled' %}#ef4444{% else %}#3b82f6{% endif %}; width: 8px; height: 8px;"></span>
+                    {{ order.pipeline_status.name }}
+                </div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">الإجمالي</span>
+                <span class="stat-value" style="color: #F58231;">{{ order.total_amount|floatformat:0 }} {{ supplier.currency|default:"ر.ي" }}</span>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Items Section -->
+            <div class="col-lg-7">
+                <h3 class="items-list-title">
+                    <i class="fas fa-list-ul" style="color: #F58231;"></i>
+                    المشتريات
+                </h3>
+                
+                {% for item in order.order_items.all %}
+                <div class="order-item-row">
+                    <div class="item-img-box">
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                        {% else %}
+                        <div class="h-100 d-flex align-items-center justify-content-center bg-light">
+                            <i class="fas fa-box opacity-10"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="item-details">
+                        <span class="item-name">{{ item.product.name }}</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="item-qty-badge">{{ item.quantity }} قطعة</span>
+                        </div>
+                    </div>
+                    
+                    <div class="item-price-box">
+                        <div class="price-current">{{ item.get_subtotal_with_discount|default:item.product.price|floatformat:0 }} <small>{{ supplier.currency|default:"ر.ي" }}</small></div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Action Promo (More compact) -->
+                <div class="payment-promo-card">
+                    <h4 class="fw-bold mb-2">استفسار سريع؟</h4>
+                    <p class="opacity-75 small mb-3">تواصل معنا عبر واتساب للمساعدة الفورية.</p>
+                    <a href="https://wa.me/+967779923330?text=استفسار%20الطلب%20{{ order.id }}" 
+                       class="wa-btn-premium py-2 px-4" target="_blank">
+                        <i class="fab fa-whatsapp"></i>
+                        دعم واتساب
+                    </a>
+                </div>
+            </div>
+
+            <!-- Summary Sidebar (Receipt Style) -->
+            <div class="col-lg-5">
+                <div class="receipt-widget summary-widget">
+                    <div class="receipt-header">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <h5 class="fw-bold m-0">ملخص الحساب</h5>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span class="text-muted">المجموع الجزئي</span>
+                        <span class="fw-bold">{{ order.get_total_amount|floatformat:0 }}</span>
+                    </div>
+
+                    {% if order.has_discount %}
+                    <div class="summary-row text-success">
+                        <span>إجمالي التوفير</span>
+                        <span class="fw-bold">-{{ order.get_discount_amount|floatformat:0 }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="summary-row">
+                        <span class="text-muted">خدمة التوصيل</span>
+                        <span>
+                            {% if supplier.enable_delivery_fees %}
+                                <span class="fw-bold">{{ order.get_expected_delivery_fee|floatformat:0 }}</span>
+                            {% else %}
+                                <span class="small opacity-50">مجاني</span>
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="summary-total-row">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fs-5 fw-bold">الإجمالي</span>
+                            <div class="text-end">
+                                <span class="total-accent">{{ order.total_amount|floatformat:0 }}</span>
+                                <small class="fs-6 fw-normal text-muted ms-1">{{ supplier.currency|default:"ر.ي" }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Nav Actions (Removed redundant ones) -->
+                    <div class="bottom-actions mt-4">
+                        <a href="{% url 'my_orders' %}" class="btn-neo btn-neo-secondary w-100">
+                            <i class="fas fa-chevron-right"></i>
+                            العودة لطلباتي
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+  

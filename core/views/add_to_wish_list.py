@@ -63,3 +63,19 @@ def get_wishlist_status(request, product_id):
             'success': False,
             'message': 'حدث خطأ أثناء التحقق من حالة المفضلة'
         }, status=500)
+
+
+@login_required
+def get_all_wishlist_status(request):
+    """Return all product IDs in user's wishlist"""
+    try:
+        wishlist_ids = list(WishList.objects.filter(user=request.user).values_list('product_id', flat=True))
+        return JsonResponse({
+            'success': True,
+            'ids': wishlist_ids
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'Error fetching wishlist status'
+        }, status=500)

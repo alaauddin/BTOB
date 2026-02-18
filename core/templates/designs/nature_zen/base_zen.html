@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* 
+     * NATURE ZEN - DESIGN SYSTEM
+     * Organic, minimalist, and ethereal
+     */
+
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+
+    :root {
+        /* Creative Palette: Nature Zen (Organic Serenity) */
+        --zen-bg: #F9F8F5; /* Warmer, softer off-white */
+        --zen-surface: #FFFFFF;
+        --zen-sage: #8A9A5B; /* Sage Green */
+        --zen-terracotta: #E2725B; /* Terracotta Accent */
+        --zen-sand: #F5F5DC; /* Sand Base */
+        --zen-text-main: #2D3436;
+        --zen-text-soft: #636E72;
+        
+        --primary-base: #8A9A5B; /* Direct link to Sage for action */
+        
+        --radius-zen: 40px;
+        --soft-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    }
+
+    body {
+        background-color: var(--zen-bg) !important;
+        color: var(--zen-text-main) !important;
+        font-family: 'Lora', 'Tajawal', serif !important;
+        line-height: 1.8;
+    }
+
+    h1, h2, h3, h4, .zen-font {
+        font-family: 'Playfair Display', serif !important;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    /* Organic Cards */
+    .zen-card {
+        background: var(--zen-surface);
+        border-radius: var(--radius-zen);
+        box-shadow: var(--soft-shadow);
+        border: 1px solid rgba(0,0,0,0.02);
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .zen-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+    }
+
+    /* Soft Buttons */
+    .btn-zen {
+        background: var(--primary-base);
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 14px 32px;
+        font-weight: 600;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(139, 168, 142, 0.2);
+    }
+
+    .btn-zen:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(139, 168, 142, 0.4);
+        opacity: 0.95;
+    }
+
+    .text-sage { color: var(--zen-sage); }
+    .text-terracotta { color: var(--zen-terracotta); }
+</style>
+{% block zen_extra_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="zen-wrapper min-h-screen pt-5 pb-5">
+    {% block zen_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    {% block zen_extra_js %}{% endblock %}
+{% endblock %}

@@ -178,11 +178,9 @@
             {% if supplier %}
             <a href="{% url 'store_cart' supplier.store_id %}" class="relative w-10 h-10 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors">
                 <i class="fas fa-shopping-cart text-lg"></i>
-                {% if cart and cart.get_total_items > 0 %}
-                <span class="absolute top-1 right-1 w-4 h-4 bg-red-500 border-2 border-white rounded-full text-[9px] text-white flex items-center justify-center pointer-events-none">
-                    {{ cart.get_total_items }}
+                <span id="total-items" class="absolute top-1 right-1 w-4 h-4 bg-red-500 border-2 border-white rounded-full text-[9px] text-white flex items-center justify-center pointer-events-none {% if not cart or cart.get_total_items == 0 %}d-none{% endif %}">
+                    {{ cart.get_total_items|default:0 }}
                 </span>
-                {% endif %}
             </a>
             {% endif %}
 

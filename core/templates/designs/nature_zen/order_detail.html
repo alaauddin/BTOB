@@ -1,0 +1,113 @@
+{% extends 'designs/nature_zen/base_zen.html' %}
+{% load static %}
+
+{% block title %}الرحلة #{{ order.id }} | حالة زين{% endblock %}
+
+{% block zen_extra_css %}
+<style>
+    .zen-order-header {
+        text-align: center;
+        margin-bottom: 4rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--zen-sand);
+    }
+    
+    .zen-stepper {
+        display: flex;
+        justify-content: center;
+        gap: 4rem;
+        margin-bottom: 5rem;
+    }
+    .zen-step {
+        text-align: center;
+        position: relative;
+    }
+    .zen-step-circle {
+        width: 12px; height: 12px; border-radius: 50%; background: var(--zen-sand);
+        margin: 0 auto 15px; transition: 0.8s;
+    }
+    .zen-step.active .zen-step-circle { background: var(--zen-sage); transform: scale(1.5); box-shadow: 0 0 10px rgba(147, 169, 143, 0.3); }
+    .zen-step-label { font-size: 0.75rem; color: var(--zen-text-soft); font-style: italic; }
+    .zen-step.active .zen-step-label { color: var(--zen-text-main); font-weight: 500; }
+</style>
+{% endblock %}
+
+{% block zen_content %}
+<div class="container py-5">
+    <div class="zen-card p-5" style="max-width: 900px; margin: 0 auto;">
+        <div class="zen-order-header">
+            <span class="zen-font text-sage italic small">رحلة اختيارك</span>
+            <h1 class="display-6 mt-2 mb-0">طلب #{{ order.id|stringformat:"05d" }}</h1>
+            <p class="text-soft italic mt-2">{{ order.created_at|date:"d F Y" }}</p>
+        </div>
+
+        <div class="zen-stepper">
+            {% with s=order.pipeline_status.slug %}
+            <div class="zen-step {% if s != 'canceled' %}active{% endif %}">
+                <div class="zen-step-circle"></div>
+                <div class="zen-step-label">مغروس</div>
+            </div>
+            <div class="zen-step {% if s == 'processing' or s == 'shipped' or s == 'delivered' or s == 'completed' %}active{% endif %}">
+                <div class="zen-step-circle"></div>
+                <div class="zen-step-label">في العناية</div>
+            </div>
+            <div class="zen-step {% if s == 'shipped' or s == 'delivered' or s == 'completed' %}active{% endif %}">
+                <div class="zen-step-circle"></div>
+                <div class="zen-step-label">في التدفق</div>
+            </div>
+            <div class="zen-step {% if s == 'delivered' or s == 'completed' %}active{% endif %}">
+                <div class="zen-step-circle"></div>
+                <div class="zen-step-label">متجذر</div>
+            </div>
+            {% endwith %}
+        </div>
+
+        <div class="row g-5">
+            <div class="col-lg-7">
+                <h5 class="text-sage italic mb-4">العناصر المختارة</h5>
+                {% for item in order.order_items.all %}
+                <div class="d-flex align-items-center gap-4 mb-4">
+                    <img src="{{ item.product.image.url }}" width="80" class="rounded-4" alt="">
+                    <div class="flex-grow-1">
+                        <p class="mb-0 font-weight-medium">{{ item.product.name }}</p>
+                        <small class="text-soft italic">{{ item.quantity }} عنصر</small>
+                    </div>
+                    <div class="text-sage italic">{{ item.get_subtotal_with_discount|floatformat:0 }} {{ supplier.currency }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="col-lg-5">
+                <div class="bg-light p-4 rounded-4">
+                    <h5 class="italic mb-4">ملخص التوازن</h5>
+                    <div class="d-flex justify-content-between mb-2 text-soft small">
+                        <span>قيمة الاختيار</span>
+                        <span>{{ order.get_total_amount|floatformat:0 }}</span>
+                    </div>
+                    {% if order.get_discount_amount > 0 %}
+                    <div class="d-flex justify-content-between mb-2 text-sage italic small">
+                        <span>هدية الطبيعة</span>
+                        <span>-{{ order.get_discount_amount|floatformat:0 }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between mb-4 text-soft small">
+                        <span>قربان السفر</span>
+                        <span>{{ order.get_expected_delivery_fee|floatformat:0 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between h4 border-top pt-3">
+                        <span class="italic">وحدة المجموع</span>
+                        <span class="text-sage">{{ order.total_amount|floatformat:0 }} {{ supplier.currency }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-5 text-center">
+                    <p class="text-soft italic small mb-3">هل تبحث عن إرشاد؟</p>
+                    <a href="https://wa.me/{{ supplier.phone }}?text=Guidance%20on%20Journey%20{{ order.id }}" class="btn-zen px-5 py-3 shadow-none">
+                        تواصل عبر واتساب
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

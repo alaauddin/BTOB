@@ -295,7 +295,8 @@ function waitForJQuery(callback) {
 }
 
 waitForJQuery(function () {
-    window.performAddToCart = function (productId, supplierId) {
+    window.performAddToCart = function (productId, supplierId, event) {
+        if (event) event.preventDefault();
         const csrftoken = getCookie('csrftoken');
 
         // --- Optimistic Update ---
@@ -309,8 +310,8 @@ waitForJQuery(function () {
         const prevItemQty = parseInt(itemQtyEl.first().text()) || 0;
 
         // Update UI immediately
-        totalItemsEl.text(prevTotal + 1);
-        totalItemsMobileEl.text(prevTotal + 1);
+        totalItemsEl.text(prevTotal + 1).removeClass('d-none');
+        totalItemsMobileEl.text(prevTotal + 1).removeClass('d-none');
         mobileCartCountEl.text(prevTotal + 1);
         itemQtyEl.text(prevItemQty + 1);
         quantityLabelEl.html(prevItemQty + 1);
@@ -331,9 +332,14 @@ waitForJQuery(function () {
             type: "POST",
             headers: { "X-CSRFToken": csrftoken },
             success: function (response) {
+                if (window.hidePageLoader) window.hidePageLoader();
                 // Sync with server state
-                $('#total-items').text(response.cart_items_count);
-                $('#total-items-mobile').text(response.cart_items_count);
+                const badgeElements = $('#total-items, #total-items-mobile');
+                if (response.cart_items_count > 0) {
+                    badgeElements.text(response.cart_items_count).removeClass('d-none');
+                } else {
+                    badgeElements.text('0').addClass('d-none');
+                }
                 $('#total-qty-items-' + productId).text(response.cart_item_count);
                 $("#quantity-" + productId).html(response.cart_item_count);
                 $('#mobile-cart-count').text(response.cart_items_count);
@@ -352,9 +358,14 @@ waitForJQuery(function () {
                 showNotification('تمت إضافة المنتج إلى السلة بنجاح', 'success');
             },
             error: function (xhr) {
+                if (window.hidePageLoader) window.hidePageLoader();
                 // --- Rollback ---
                 totalItemsEl.text(prevTotal);
                 totalItemsMobileEl.text(prevTotal);
+                if (prevTotal === 0) {
+                    totalItemsEl.addClass('d-none');
+                    totalItemsMobileEl.addClass('d-none');
+                }
                 mobileCartCountEl.text(prevTotal);
                 itemQtyEl.text(prevItemQty);
                 quantityLabelEl.html(prevItemQty);
@@ -375,17 +386,19 @@ waitForJQuery(function () {
         });
     };
 
-    window.addToCart = function (productId, supplierId) {
+    window.addToCart = function (productId, supplierId, event) {
+        if (event) event.preventDefault();
         if (!window.siteConfig.isAuthenticated) {
             openLoginModal(function () {
-                return window.performAddToCart(productId, supplierId);
+                return window.performAddToCart(productId, supplierId, event);
             });
         } else {
-            window.performAddToCart(productId, supplierId);
+            window.performAddToCart(productId, supplierId, event);
         }
     };
 
-    window.subToCart = function (productId, supplierId) {
+    window.subToCart = function (productId, supplierId, event) {
+        if (event) event.preventDefault();
         const csrftoken = getCookie('csrftoken');
 
         // --- Optimistic Update ---
@@ -406,6 +419,10 @@ waitForJQuery(function () {
 
         totalItemsEl.text(newTotal);
         totalItemsMobileEl.text(newTotal);
+        if (newTotal === 0) {
+            totalItemsEl.addClass('d-none');
+            totalItemsMobileEl.addClass('d-none');
+        }
         mobileCartCountEl.text(newTotal);
         itemQtyEl.text(newItemQty);
         quantityLabelEl.html(newItemQty);
@@ -431,9 +448,14 @@ waitForJQuery(function () {
             type: "POST",
             headers: { "X-CSRFToken": csrftoken },
             success: function (response) {
+                if (window.hidePageLoader) window.hidePageLoader();
                 // Sync with server state
-                $('#total-items').text(response.cart_items_count);
-                $('#total-items-mobile').text(response.cart_items_count);
+                const badgeElements = $('#total-items, #total-items-mobile');
+                if (response.cart_items_count > 0) {
+                    badgeElements.text(response.cart_items_count).removeClass('d-none');
+                } else {
+                    badgeElements.text('0').addClass('d-none');
+                }
                 $('#total-qty-items-' + productId).text(response.cart_item_count);
                 $("#quantity-" + productId).html(response.cart_item_count);
                 $('#mobile-cart-count').text(response.cart_items_count);
@@ -452,9 +474,14 @@ waitForJQuery(function () {
                 showNotification('تم تحديث الكمية في السلة', 'success');
             },
             error: function (xhr) {
+                if (window.hidePageLoader) window.hidePageLoader();
                 // --- Rollback ---
                 totalItemsEl.text(prevTotal);
                 totalItemsMobileEl.text(prevTotal);
+                if (prevTotal > 0) {
+                    totalItemsEl.removeClass('d-none');
+                    totalItemsMobileEl.removeClass('d-none');
+                }
                 mobileCartCountEl.text(prevTotal);
                 itemQtyEl.text(prevItemQty);
                 quantityLabelEl.html(prevItemQty);
@@ -612,6 +639,12 @@ document.addEventListener('DOMContentLoaded', function () {
     window.showPageLoader = function () {
         if (loader) loader.classList.remove('hidden-loader');
         if (typeof NProgress !== 'undefined') NProgress.start();
+    };
+
+    // Function to hide loader
+    window.hidePageLoader = function () {
+        if (loader) loader.classList.add('hidden-loader');
+        if (typeof NProgress !== 'undefined') NProgress.done();
     };
 
     // Trigger on internal link clicks

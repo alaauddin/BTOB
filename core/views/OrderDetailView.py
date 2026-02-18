@@ -2,6 +2,7 @@ from core.models import Order, Cart
 import logging
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from core.utils.template_utils import get_supplier_template
 
 logger = logging.getLogger(__name__)
 
@@ -11,12 +12,10 @@ def order_detail_view(request, pk):
     supplier = order.get_supplier()
     logger.info(supplier)
     cart = Cart.objects.get(user=request.user, supplier=supplier)
-
-
-
     context = {
         'order': order,
         'cart': cart,
         'supplier': supplier,
     }
-    return render(request, 'order_detail.html', context)
+    template_path = get_supplier_template(supplier, 'order_detail.html')
+    return render(request, template_path, context)

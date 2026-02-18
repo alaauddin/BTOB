@@ -1,0 +1,125 @@
+{% extends 'designs/neon_cyber/base_neon.html' %}
+{% load static %}
+
+{% block title %}بيان البيانات #{{ order.id }} | حالة السايبر{% endblock %}
+
+{% block neon_extra_css %}
+<style>
+    .order-glow-bar {
+        border-bottom: 1px solid var(--cyber-border);
+        padding-bottom: 2rem;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+    .order-glow-bar::after {
+        content: ''; position: absolute; bottom: -1px; left: 0; width: 100px; height: 1px; background: var(--neon-magenta); box-shadow: 0 0 10px var(--neon-magenta);
+    }
+    
+    .cyber-stepper {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 4rem;
+        font-family: 'Orbitron', sans-serif;
+    }
+    .cyber-step {
+        text-align: center;
+        opacity: 0.3;
+        transition: 0.5s;
+    }
+    .cyber-step.active { opacity: 1; }
+    .cyber-step-box {
+        width: 50px; height: 50px; border: 1px solid var(--cyber-border);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 10px; position: relative;
+    }
+    .cyber-step.active .cyber-step-box { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0, 243, 255, 0.4); color: var(--neon-cyan); }
+    .cyber-step.completed .cyber-step-box { background: var(--neon-cyan); color: #000; }
+    .cyber-step-label { font-size: 0.6rem; letter-spacing: 2px; }
+</style>
+{% endblock %}
+
+{% block neon_content %}
+<div class="container py-5">
+    <div class="cyber-card p-5">
+        <div class="order-glow-bar d-flex justify-content-between align-items-end flex-wrap gap-4">
+            <div>
+                <div class="font-monospace text-magenta small mb-1">// إيصال_الارسال_نشط</div>
+                <h1 class="font-weight-bold mb-0 glow-cyan">بيان_حمولة #{{ order.id|stringformat:"05d" }}</h1>
+                <div class="text-3 small font-monospace mt-1">البصمة_الزمنية: {{ order.created_at|date:"Y-m-d H:i" }}</div>
+            </div>
+            <div class="text-end">
+                <div class="text-3 small font-monospace mb-1">حالة_العقدة</div>
+                <div class="h5 glow-magenta font-weight-bold mb-0">[{{ order.pipeline_status.name|upper }}]</div>
+            </div>
+        </div>
+
+        <div class="cyber-stepper">
+            {% with s=order.pipeline_status.slug %}
+            <div class="cyber-step {% if s != 'canceled' %}active{% endif %} {% if s != 'pending' and s != 'canceled' %}completed{% endif %}">
+                <div class="cyber-step-box"><i class="fas fa-terminal"></i></div>
+                <div class="cyber-step-label">بدء</div>
+            </div>
+            <div class="cyber-step {% if s == 'processing' or s == 'shipped' or s == 'delivered' or s == 'completed' %}active{% endif %} {% if s == 'shipped' or s == 'delivered' or s == 'completed' %}completed{% endif %}">
+                <div class="cyber-step-box"><i class="fas fa-microchip"></i></div>
+                <div class="cyber-step-label">معالجة</div>
+            </div>
+            <div class="cyber-step {% if s == 'shipped' or s == 'delivered' or s == 'completed' %}active{% endif %} {% if s == 'delivered' or s == 'completed' %}completed{% endif %}">
+                <div class="cyber-step-box"><i class="fas fa-satellite-dish"></i></div>
+                <div class="cyber-step-label">نقل</div>
+            </div>
+            <div class="cyber-step {% if s == 'delivered' or s == 'completed' %}active{% endif %}">
+                <div class="cyber-step-box"><i class="fas fa-broadcast-tower"></i></div>
+                <div class="cyber-step-label">استلام</div>
+            </div>
+            {% endwith %}
+        </div>
+
+        <div class="row g-5">
+            <div class="col-lg-7">
+                <h5 class="glow-cyan mb-4 font-monospace">>> قائمة_الأصول</h5>
+                {% for item in order.order_items.all %}
+                <div class="d-flex align-items-center gap-4 mb-3 p-3 cyber-card" style="border-style: dashed;">
+                    <img src="{{ item.product.image.url }}" width="70" class="border-cyan" alt="">
+                    <div class="flex-grow-1">
+                        <div class="text-3 small font-monospace">#معرف_{{ item.product.id }}</div>
+                        <p class="mb-0 font-weight-bold text-white">{{ item.product.name|upper }}</p>
+                        <small class="text-cyan font-monospace">{{ item.quantity }} وحدة_X</small>
+                    </div>
+                    <div class="glow-cyan font-monospace">{{ item.get_subtotal_with_discount|floatformat:0 }} {{ supplier.currency }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="col-lg-5">
+                <div class="p-4 cyber-card" style="border-color: var(--neon-magenta);">
+                    <h5 class="glow-magenta mb-4 font-monospace">// كشف_الميزان</h5>
+                    <div class="d-flex justify-content-between mb-2 font-monospace text-3 small">
+                        <span>قيمة_أولية</span>
+                        <span>{{ order.get_total_amount|floatformat:0 }}</span>
+                    </div>
+                    {% if order.get_discount_amount > 0 %}
+                    <div class="d-flex justify-content-between mb-2 glow-magenta font-monospace small">
+                        <span>صافي_توفير</span>
+                        <span>-{{ order.get_discount_amount|floatformat:0 }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between mb-4 font-monospace text-3 small">
+                        <span>رسوم_الارسال</span>
+                        <span>{{ order.get_expected_delivery_fee|floatformat:0 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between h3 glow-cyan font-monospace">
+                        <span>الإجمالي</span>
+                        <span>{{ order.total_amount|floatformat:0 }} {{ supplier.currency }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <a href="https://wa.me/{{ supplier.phone }}?text=UPLINK_ERROR_ORDER_{{ order.id }}" class="btn-cyber w-100 py-3">
+                        فتح_قناة_فرعية [واتساب]
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

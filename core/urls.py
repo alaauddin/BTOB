@@ -16,7 +16,7 @@ from core.views.AddReview import AddReviewView
 from core.views.ProductListView import product_list
 from core.views.ConvertCartToOrder import checkout_select_address_or_custom_address
 from core.views.SuppliersListView import SuppliersListView
-from core.views.add_to_wish_list import toggle_wishlist, get_wishlist_status
+from core.views.add_to_wish_list import toggle_wishlist, get_wishlist_status, get_all_wishlist_status
 from core.views.MyMerchant import my_merchant, update_merchant_settings, merchant_products, merchant_marketing, merchant_analytics, merchant_tutorial, quick_update_stock
 from core.views.agree_to_terms import agree_to_terms
 from core.views.add_product import add_product
@@ -50,7 +50,7 @@ urlpatterns = [
     path('products/<str:store_id>/', product_list, name='product-list'),
     path('products/category/<int:category_id>/<str:store_id>/', product_list, name='product_list_category'),
     path('products/category/product_list_subcategory/<int:subcategory_id>/<str:store_id>/', product_list, name='product_list_subcategory'),
-    path('<str:store_id>/details/<int:pk>/', product_detail, name='product_detail'),
+    path('<str:store_id>/details/<int:pk>/', product_detail, name='product-detail'),
     path('stores', SuppliersListView, name='suppliers_list'),
     path('join-business/', join_business, name='join_business'),
     path('verify-signup-otp/', verify_signup_otp, name='verify_signup_otp'),
@@ -98,6 +98,7 @@ urlpatterns = [
     # Wishlist URLs
     path('wishlist/toggle/<int:product_id>/', toggle_wishlist, name='toggle_wishlist'),
     path('wishlist/status/<int:product_id>/', get_wishlist_status, name='wishlist_status'),
+    path('wishlist/all_status/', get_all_wishlist_status, name='wishlist_all_status'),
     
     # Merchant Dashboard
     path('my-merchant/', my_merchant, name='my_merchant'),

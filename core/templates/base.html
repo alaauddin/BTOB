@@ -54,40 +54,23 @@
                2. Action (Buttons/Links) defaults to Orange, but can be overridden by Tenant Primary Color.
             */
 
-            /* Default Rawaaj Palette */
-            --brand-primary: #2B5876;
-            --brand-secondary: #D48231;
-            --brand-accent: #8BB8D1;
+            /* Creative Palette: Modern Corporate (Indigo/Slate) */
+            --brand-primary: #1E293B; /* Slate 800 */
+            --brand-secondary: #4F46E5; /* Indigo 600 */
+            --brand-accent: #818CF8; /* Indigo 400 */
 
-            /* 
-               Tenant Mapping:
-               - If supplier has a color, it overrides the ACTION color (Secondary slot), not the Structural one.
-               - Unless explicitly overridden, we expect tenants to want their brand on buttons/CTAs.
-            */
-            --color-structure: var(--brand-primary); /* Always Blue for structure */
-            
-            {% if supplier.primary_color %}
-            --color-action: {{ supplier.primary_color }}; /* Tenant Brand = Action (Buttons/Links) */
-            --navbar-bg: {{ supplier.navbar_color|default:supplier.primary_color }};    /* Tenant Brand = Top Bar Color (لون الشريط العلوي) */
-            --navbar-text: #ffffff;                       /* White text for branded headers */
-            --navbar-text-muted: rgba(255, 255, 255, 0.7);
-            {% else %}
-            --color-action: var(--brand-secondary); /* Default Orange Action */
-            --navbar-bg: #ffffff;                   /* Default White Header */
-            --navbar-text: var(--text-main);        /* Default Dark Text */
-            --navbar-text-muted: var(--text-muted);
-            {% endif %}
-
-            {% if supplier.secondary_color %}
-            --color-highlight: {{ supplier.secondary_color }};
-            {% else %}
+            --color-structure: var(--brand-primary);
+            --color-action: var(--brand-secondary);
             --color-highlight: var(--brand-accent);
-            {% endif %}
+
+            --navbar-bg: #ffffff;
+            --navbar-text: #1E293B;
+            --navbar-text-muted: #64748B;
             
             /* Legacy support & fallback */
             --primary-color: var(--color-action); 
             --secondary-color: var(--color-structure); 
-            --dark-color: #1e293b; /* Adding missing dark color for cart.css compatibility */
+            --dark-color: #0F172A;
 
             /* Layout Colors */
 

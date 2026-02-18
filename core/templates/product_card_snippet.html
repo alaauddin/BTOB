@@ -29,11 +29,11 @@
             <!-- Wishlist (Top Right) -->
             <!-- Authenticated Check handled by JS/click event if complicated, but simple toggle here -->
             {% if user.is_authenticated %}
-            <button class="wishlist-btn-float" onclick="toggleWishlist({{ product.id }})" aria-label="Add to wishlist">
+            <button type="button" class="wishlist-btn-float" onclick="toggleWishlist({{ product.id }}, event)" aria-label="Add to wishlist">
                 <i class="far fa-heart"></i>
             </button>
             {% else %}
-            <button class="wishlist-btn-float" onclick="window.location.href='{% url 'login' %}'" aria-label="Login for wishlist">
+            <button type="button" class="wishlist-btn-float" onclick="window.location.href='{% url 'login' %}'" aria-label="Login for wishlist">
                 <i class="far fa-heart"></i>
             </button>
             {% endif %}
@@ -82,17 +82,17 @@
                      id="qty-ctrl-{{ product.id }}" 
                      style="border: 1px solid var(--surface-3);">
                     
-                    <button class="btn btn-sm btn-white rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0" 
+                    <button type="button" class="btn btn-sm btn-white rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0" 
                             style="width: 32px; height: 32px;"
-                            onclick="subToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                            onclick="subToCart('{{ product.id }}', '{{ supplier.store_id }}', event)">
                         <i class="fas fa-minus fs-7"></i>
                     </button>
                     
                     <span class="fw-bold px-2" id="total-qty-items-{{ product.id }}">{{ cart_item_qty }}</span>
                     
-                    <button class="btn btn-sm btn-white rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0" 
+                    <button type="button" class="btn btn-sm btn-white rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0" 
                             style="width: 32px; height: 32px;"
-                            onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')"
+                            onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}', event)"
                             {% if product.stock <= cart_item_qty %}disabled style="opacity: 0.5"{% endif %}>
                         <i class="fas fa-plus fs-7"></i>
                     </button>
@@ -100,9 +100,9 @@
 
                 <!-- Add Button (If NOT in cart) -->
                 {% if product.stock > 0 %}
-                <button class="btn-add-cart {% if cart_item_qty > 0 %}d-none{% endif %}" 
+                <button type="button" class="btn-add-cart {% if cart_item_qty > 0 %}d-none{% endif %}" 
                         id="add-btn-{{ product.id }}" 
-                        onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                        onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}', event)">
                     <i class="fas fa-shopping-bag"></i>
                     إضافة
                 </button>

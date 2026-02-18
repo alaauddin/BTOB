@@ -10,9 +10,12 @@ from datetime import timedelta
 from django.http import Http404
 
 from core.models import (
-    Product, Category, ProductCategory, Cart, Order, 
     SupplierAds, Supplier, Address, ProductOffer, CartItem
 )
+from core.utils.template_utils import get_supplier_template
+from core.models import Product, Category, ProductCategory
+from core.models import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -143,4 +146,5 @@ def product_list(request, store_id=None, store_slug=None, category_id=None, subc
         context['pending_orders'] = None
         context['estimated_fee'] = 0
 
-    return render(request, 'product_list.html', context)
+    template_path = get_supplier_template(supplier, 'product_list.html')
+    return render(request, template_path, context)

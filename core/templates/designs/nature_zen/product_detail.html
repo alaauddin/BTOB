@@ -1,0 +1,318 @@
+{% extends 'designs/nature_zen/base_zen.html' %}
+{% load static %}
+{% load cart_filters %}
+
+{% block title %}{{ product.name }} | تفاصيل المنتج{% endblock %}
+
+{% block zen_extra_css %}
+<style>
+    .zen-detail-layout {
+        display: flex;
+        align-items: center;
+        gap: 6rem;
+        padding: 4rem 0;
+    }
+    @media (max-width: 992px) {
+        .zen-detail-layout { flex-direction: column; gap: 3rem; }
+    }
+    .main-visual-box {
+        position: relative;
+        width: 100%;
+        max-width: 500px;
+        border-radius: var(--radius-zen);
+        box-shadow: var(--soft-shadow);
+        overflow: hidden;
+        aspect-ratio: 1;
+        background: white;
+    }
+    .zen-detail-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .zen-thumb {
+        width: 65px;
+        height: 65px;
+        border-radius: 15px;
+        overflow: hidden;
+        opacity: 0.4;
+        cursor: pointer;
+        transition: 0.4s;
+        border: 2px solid transparent;
+    }
+    .zen-thumb.active {
+        opacity: 1;
+        border-color: var(--zen-sage);
+        transform: scale(1.1);
+    }
+    .zen-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .zen-detail-info {
+        max-width: 600px;
+    }
+    .zen-meta-item {
+        margin-bottom: 2rem;
+        padding-left: 20px;
+        border-left: 2px solid var(--zen-sand);
+    }
+    
+    /* Tabs */
+    .zen-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 4rem;
+        margin-bottom: 4rem;
+        border-bottom: 1px solid var(--zen-sand);
+    }
+    .zen-tab-btn {
+        background: none;
+        border: none;
+        padding: 1rem 0;
+        color: var(--zen-text-soft);
+        font-style: italic;
+        position: relative;
+    }
+    .zen-tab-btn.active {
+        color: var(--zen-text-main);
+    }
+    .zen-tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 1px;
+        background: var(--zen-sage);
+    }
+    .zen-tab-pane { display: none; }
+    .zen-tab-pane.active { display: block; }
+    
+    .zen-review-card {
+        padding: 2.5rem;
+        background: white;
+        border-radius: 30px;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+    }
+</style>
+{% endblock %}
+
+{% block zen_content %}
+<div class="container overflow-hidden">
+    <div class="zen-detail-layout">
+        <!-- Visuals Pack -->
+        <div class="zen-detail-visual">
+            <div class="main-visual-box mb-4">
+                <img src="{{ product.image.url }}" class="zen-detail-img" id="mainMediaDisplay" alt="">
+                {% if product.video %}
+                <video id="productVideoPlayer" class="zen-detail-img d-none" controls>
+                    <source src="{{ product.video.url }}" type="video/mp4">
+                </video>
+                {% endif %}
+                
+                <button class="wishlist-btn" onclick="toggleWishlist({{ product.id }}, this)" data-product-id="{{ product.id }}" style="position: absolute; top: 25px; right: 25px; background: white; border: none; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+                    <i class="far fa-heart"></i>
+                </button>
+            </div>
+
+            {% if product.video or product.additional_images.exists %}
+            <div class="d-flex justify-content-center gap-3">
+                <div class="zen-thumb active" onclick="switchMedia('image', '{{ product.image.url }}', this)">
+                    <img src="{{ product.image.url }}" alt="">
+                </div>
+                {% if product.video %}
+                <div class="zen-thumb position-relative" onclick="switchMedia('video', '{{ product.video.url }}', this)">
+                    <div class="position-absolute top-50 start-50 translate-middle text-sage"><i class="fas fa-play"></i></div>
+                    <img src="{{ product.image.url }}" style="opacity: 0.3" alt="">
+                </div>
+                {% endif %}
+                {% for img in product.additional_images.all %}
+                <div class="zen-thumb" onclick="switchMedia('image', '{{ img.image.url }}', this)">
+                    <img src="{{ img.image.url }}" alt="">
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Descriptive Info -->
+        <div class="zen-detail-info">
+            <span class="text-terracotta small zen-font italic mb-3 d-block">مجموعة نقية</span>
+            <h1 class="display-4 mb-4">{{ product.name }}</h1>
+            
+            <div class="d-flex align-items-center gap-3 mb-4">
+                 <div class="text-sage">
+                    {% for i in '12345'|make_list %}
+                        {% if forloop.counter <= product.get_average_rating %}
+                            <i class="fas fa-star"></i>
+                        {% else %}
+                            <i class="far fa-star opacity-30"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <span class="text-soft small italic">({{ product.get_total_reviews }} تأملات)</span>
+            </div>
+
+            <div class="mb-5">
+                <span class="h2 text-sage">{{ product.get_price_with_offer }} {{ supplier.currency }}</span>
+            </div>
+
+            <div class="d-flex gap-4 align-items-center mb-5">
+                {% if product.stock > 0 %}
+                    <button type="button" class="btn-zen btn-lg px-5" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}', event)">
+                        إضافة للمجموعة
+                    </button>
+                    <span class="text-soft small italic">{{ product.stock }} قطع متبقية في الحديقة</span>
+                {% else %}
+                    <span class="text-terracotta lead italic">بانتظار التجديد... (نفذت الكمية)</span>
+                {% endif %}
+            </div>
+            
+            <div class="zen-meta-item">
+                <p class="text-soft small mb-0 italic">"تم التعامل معه بلطف، وقدم بعناية."</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Flow -->
+    <div class="mt-5 pb-5">
+        <div class="zen-tabs">
+            <button class="zen-tab-btn active" onclick="switchTab('desc')">القصة</button>
+            <button class="zen-tab-btn" onclick="switchTab('reviews')">تأملات ({{ product.get_total_reviews }})</button>
+        </div>
+
+        <div id="tab-desc" class="zen-tab-pane active text-center">
+            <p class="lead text-soft italic mx-auto" style="max-width: 800px; line-height: 2;">{{ product.description|linebreaks }}</p>
+        </div>
+
+        <div id="tab-reviews" class="zen-tab-pane">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="text-center mb-5">
+                        <div class="display-3 text-sage mb-2" id="summary-avg">{{ product.get_average_rating|default:"0.0" }}</div>
+                        <p class="text-soft italic">تقييم تناغم الحديقة</p>
+                        {% if user.is_authenticated %}
+                        <button onclick="document.getElementById('feedbackForm').classList.toggle('d-none')" class="btn btn-link text-terracotta">شاركنا تأملك</button>
+                        {% endif %}
+                    </div>
+
+                    <div id="feedbackForm" class="d-none mb-5">
+                        <form id="reviewForm" class="zen-card p-5" onsubmit="submitReview(event, '{{ product.id }}', '{{ supplier.store_id }}')">
+                            <h4 class="text-center mb-4">نقدك الهادئ</h4>
+                            <div class="mb-4 d-flex flex-row-reverse justify-content-center gap-3">
+                                <input type="radio" name="rating" id="z5" value="5" class="d-none"><label for="z5" class="cursor-pointer text-soft"><i class="fas fa-star fa-2x"></i></label>
+                                <input type="radio" name="rating" id="z4" value="4" class="d-none"><label for="z4" class="cursor-pointer text-soft"><i class="fas fa-star fa-2x"></i></label>
+                                <input type="radio" name="rating" id="z3" value="3" class="d-none"><label for="z3" class="cursor-pointer text-soft"><i class="fas fa-star fa-2x"></i></label>
+                                <input type="radio" name="rating" id="z2" value="2" class="d-none"><label for="z2" class="cursor-pointer text-soft"><i class="fas fa-star fa-2x"></i></label>
+                                <input type="radio" name="rating" id="z1" value="1" class="d-none"><label for="z1" class="cursor-pointer text-soft"><i class="fas fa-star fa-2x"></i></label>
+                            </div>
+                            <textarea name="comment" class="form-control border-0 bg-light p-4 rounded-4 mb-4" rows="3" placeholder="اهمس بأفكارك..."></textarea>
+                            <button type="submit" class="btn-zen w-100 py-3">إرسال التأمل</button>
+                        </form>
+                    </div>
+
+                    <div id="reviews-list">
+                        {% for review in product.review_set.all %}
+                        <div class="zen-review-card text-center">
+                            <p class="text-sand small zen-font mb-1">بواسطة {{ review.user.username|upper }}</p>
+                            <p class="lead italic mb-3">"{{ review.comment }}"</p>
+                            <div class="text-sage">
+                                {% for i in '12345'|make_list %}<i class="fas fa-star small"></i>{% endfor %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-center text-soft italic pt-4">الحديقة بانتظار تأملها الأول.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block zen_extra_js %}
+<script>
+    function switchMedia(type, url, element) {
+        const img = document.getElementById('mainMediaDisplay');
+        const vid = document.getElementById('productVideoPlayer');
+        document.querySelectorAll('.zen-thumb').forEach(t => t.classList.remove('active'));
+        element.classList.add('active');
+
+        if (type === 'video') {
+            img.classList.add('d-none'); vid.classList.remove('d-none');
+            vid.querySelector('source').src = url; vid.load(); vid.play();
+        } else {
+            vid.classList.add('d-none'); vid.pause(); img.classList.remove('d-none');
+            img.src = url;
+            img.style.opacity = '0'; setTimeout(() => img.style.opacity = '1', 100);
+        }
+    }
+
+    function switchTab(t) {
+        document.querySelectorAll('.zen-tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.zen-tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`tab-${t}`).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function toggleWishlist(pid, btn) {
+        const csrf = getCookie('csrftoken');
+        fetch(`/wishlist/toggle/${pid}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrf, 'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                btn.querySelector('i').className = data.in_wishlist ? 'fas fa-heart text-terracotta' : 'far fa-heart';
+            }
+        });
+    }
+
+    function submitReview(e, pid, sid) {
+        e.preventDefault();
+        const rating = e.target.querySelector('input[name="rating"]:checked')?.value;
+        if (!rating) return alert('Select your peace level (rating).');
+        
+        const data = { rating: rating, comment: e.target.querySelector('textarea[name="comment"]').value };
+        fetch(`/add_review/${pid}/${sid}/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(res => { if (res.success) location.reload(); else alert(res.message); });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        {% if user.is_authenticated %}
+        const btn = document.querySelector('.wishlist-btn');
+        if(btn) {
+            fetch(`/wishlist/status/${btn.dataset.productId}/`, { headers: {'X-Requested-With': 'XMLHttpRequest'} })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.in_wishlist) {
+                    btn.querySelector('i').className = 'fas fa-heart text-terracotta';
+                }
+            });
+        }
+        {% endif %}
+    });
+</script>
+{% endblock %}

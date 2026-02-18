@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* 
+     * LUXURY DARK MODE - DESIGN SYSTEM
+     * Obsidian & Gold Aesthetics with Glassmorphism
+     */
+
+    :root {
+        /* Creative Palette: Luxury Dark (Elite Obsidian) */
+        --primary-base: #D4AF37; /* True Gold */
+        --luxury-bg: #0D0D0D;    /* Rich Obsidian Black */
+        --luxury-surface: rgba(255, 255, 255, 0.05);
+        --luxury-surface-bright: rgba(255, 255, 255, 0.1);
+        --luxury-border: rgba(212, 175, 55, 0.15);
+        --luxury-gold: #D4AF37;
+        
+        --text-1: #F8F8F2;      /* Cream White for better readability */
+        --text-2: #D1D5DB;      /* Light Grey for clarity */
+        --text-3: #9CA3AF;      /* Medium Grey for secondary info */
+        
+        --radius-luxury: 24px;
+        --glass-blur: blur(16px);
+    }
+
+    body {
+        background-color: var(--luxury-bg) !important;
+        color: var(--text-1) !important;
+        font-family: 'Tajawal', sans-serif !important;
+        background-image: radial-gradient(circle at top right, rgba(212, 175, 55, 0.05), transparent 400px),
+                          radial-gradient(circle at bottom left, rgba(212, 175, 55, 0.03), transparent 300px);
+        background-attachment: fixed;
+    }
+
+    /* Premium Glass Cards */
+    .luxury-card {
+        background: var(--luxury-surface);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--luxury-border);
+        border-radius: var(--radius-luxury);
+        transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+    }
+
+    .luxury-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        border-color: rgba(212, 175, 55, 0.3);
+    }
+
+    /* Custom Scrollbar for Dark Mode */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--luxury-bg); }
+    ::-webkit-scrollbar-thumb { background: var(--luxury-surface-bright); border-radius: 10px; }
+
+    /* Luxury Buttons */
+    .btn-luxury {
+        background: linear-gradient(135deg, var(--primary-base), #b8860b);
+        color: #000;
+        font-weight: 700;
+        border: none;
+        border-radius: 14px;
+        padding: 12px 24px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+    }
+
+    .btn-luxury:hover {
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        transform: scale(1.02);
+    }
+
+    .text-gold { 
+        color: var(--luxury-gold) !important;
+        text-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+    }
+
+    .text-glow-gold {
+        color: var(--primary-base);
+        text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    }
+</style>
+{% block luxury_extra_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="luxury-wrapper min-h-screen pt-4 pb-5">
+    {% block luxury_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    {% block luxury_extra_js %}{% endblock %}
+{% endblock %}

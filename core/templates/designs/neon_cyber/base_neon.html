@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* 
+     * NEON CYBER - DESIGN SYSTEM
+     * High-contrast, vibrant, and futuristic
+     */
+
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+
+    :root {
+        /* Creative Palette: Neon Cyber (Cyberpunk Edge) */
+        --neon-cyan: #00F3FF;
+        --neon-magenta: #FF00FF;
+        --neon-green: #39FF14;
+        --cyber-bg: #050505;
+        --cyber-surface: #0a0a0f;
+        --cyber-border: #1a1a2a;
+        
+        --primary-base: #00F3FF; /* Direct link to Cyan for action */
+        
+        --text-1: #FFFFFF;
+        --text-2: #8A8A9A;
+        --text-3: #5A5A6A;
+    }
+
+    body {
+        background-color: var(--cyber-bg) !important;
+        color: var(--text-1) !important;
+        font-family: 'Rajdhani', 'Tajawal', sans-serif !important;
+        background-image: 
+            linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        background-attachment: fixed;
+    }
+
+    h1, h2, h3, .cyber-font {
+        font-family: 'Orbitron', sans-serif !important;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    /* Neon Borders & Glows */
+    .cyber-card {
+        background: var(--cyber-surface);
+        border: 2px solid var(--cyber-border);
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .cyber-card::before {
+        content: '';
+        position: absolute;
+        top: -2px; left: -2px; right: -2px; bottom: -2px;
+        background: linear-gradient(45deg, var(--neon-cyan), var(--neon-magenta), var(--neon-green));
+        z-index: -1;
+        opacity: 0.1;
+        transition: opacity 0.3s;
+    }
+
+    .cyber-card:hover {
+        border-color: var(--primary-base);
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+        transform: translate(-4px, -4px);
+    }
+
+    .cyber-card:hover::before {
+        opacity: 0.4;
+    }
+
+    /* Neon Buttons */
+    .btn-cyber {
+        background: transparent;
+        border: 2px solid var(--primary-base);
+        color: var(--primary-base);
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 12px 24px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s;
+        box-shadow: 0 0 5px var(--primary-base);
+    }
+
+    .btn-cyber:hover {
+        background: var(--primary-base);
+        color: #000;
+        box-shadow: 0 0 25px var(--primary-base);
+    }
+
+    .glow-cyan { text-shadow: 0 0 10px var(--neon-cyan); }
+    .glow-magenta { text-shadow: 0 0 10px var(--neon-magenta); }
+</style>
+{% block neon_extra_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="neon-wrapper min-h-screen pt-4 pb-5">
+    {% block neon_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    {% block neon_extra_js %}{% endblock %}
+{% endblock %}

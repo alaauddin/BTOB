@@ -15,6 +15,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from core.forms import ShippingAddressForm
 from core.utils.whatsapp_utils import send_whatsapp_message
 from core.utils.order_utils import complete_order_and_notify
+from core.utils.template_utils import get_supplier_template
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +23,13 @@ logger = logging.getLogger(__name__)
 @method_decorator(login_required, name='dispatch')
 class CartView(DetailView):
     model = Cart
-    template_name = 'cart_detail.html'
+    template_name = 'designs/default/cart_detail.html'
     context_object_name = 'cart'
+
+    def get_template_names(self):
+        store_id = self.kwargs.get('store_slug') or self.kwargs.get('store_id')
+        supplier = get_object_or_404(Supplier, store_id=store_id)
+        return [get_supplier_template(supplier, 'cart_detail.html')]
 
     def get_object(self, queryset=None):
         store_id = self.kwargs.get('store_slug') or self.kwargs.get('store_id')

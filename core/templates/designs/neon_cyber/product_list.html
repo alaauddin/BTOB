@@ -1,0 +1,234 @@
+{% extends 'designs/neon_cyber/base_neon.html' %}
+{% load static %}
+{% load cart_filters %}
+
+{% block title %}{{ supplier.name }} | Data Stream{% endblock %}
+
+{% block neon_extra_css %}
+<style>
+    .cyber-hero {
+        height: 50vh;
+        border: 2px solid var(--neon-cyan);
+        background: #000;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .grid-overlay {
+        position: absolute;
+        inset: 0;
+        background-image: 
+            linear-gradient(var(--cyber-border) 1px, transparent 1px),
+            linear-gradient(90deg, var(--cyber-border) 1px, transparent 1px);
+        background-size: 30px 30px;
+        opacity: 0.2;
+    }
+    
+    .neon-nav {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        padding-bottom: 1.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--cyber-border);
+    }
+    .neon-tag {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.75rem;
+        color: var(--text-3);
+        border: 1px solid var(--cyber-border);
+        padding: 8px 20px;
+        text-decoration: none;
+        transition: 0.3s;
+        white-space: nowrap;
+    }
+    .neon-tag.active, .neon-tag:hover {
+        color: var(--neon-cyan);
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+        background: rgba(0, 243, 255, 0.05);
+    }
+    
+    .cyber-sub-bar {
+        background: rgba(0,0,0,0.5);
+        border: 1px solid var(--cyber-border);
+        padding: 1rem;
+        margin-bottom: 2rem;
+        display: none;
+    }
+    .cyber-sub-bar.show { display: flex; flex-wrap: wrap; gap: 1rem; animation: scanline 0.5s; }
+    
+    .cyber-item-card {
+        padding: 10px;
+        position: relative;
+        transition: 0.3s;
+    }
+    .cyber-item-card:hover { transform: scale(1.02); }
+    
+    .cyber-img-box {
+        position: relative;
+        aspect-ratio: 1;
+        overflow: hidden;
+        border-bottom: 2px solid var(--neon-cyan);
+    }
+    .cyber-img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .cyber-wishlist {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: #000;
+        border: 1px solid var(--neon-magenta);
+        color: var(--neon-magenta);
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+        font-size: 0.8rem;
+    }
+    .cyber-wishlist.active { background: var(--neon-magenta); color: #000; }
+
+    /* Cyber Cart Island */
+    .cyber-island {
+        position: fixed;
+        bottom: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #000;
+        border: 2px solid var(--neon-cyan);
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        z-index: 1000;
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block neon_content %}
+<div class="container py-4">
+    <div class="cyber-hero cyber-card">
+        <div class="grid-overlay"></div>
+        <div class="position-absolute bottom-0 p-5 w-100 bg-gradient">
+            <div class="glow-cyan h6 font-monospace mb-2">// UPLINK_ESTABLISHED</div>
+                <h1 class="cyber-font display-4 mb-2">> الشبكة_</h1>
+                <p class="font-monospace">> متصل.. بائع: {{ supplier.name|upper }}</p>
+        </div>
+    </div>
+
+    <div class="neon-nav hide-scrollbar">
+        <a href="{% url 'store_home' supplier.store_id %}" class="neon-tag {% if not active_category_id %}active{% endif %}">ALL_NODES</a>
+        {% for category in categories %}
+            <a href="#cat-{{ category.id }}" class="neon-tag {% if active_category_id == category.id %}active{% endif %}" data-cyber-cat="{{ category.id }}">
+                {{ category.name|upper }}
+            </a>
+        {% endfor %}
+    </div>
+
+    {% for category in categories %}
+    <div id="cat-{{ category.id }}-subs" class="cyber-sub-bar {% if active_category_id == category.id %}show{% endif %}">
+        {% for sub in category.productcategory_set.all %}
+            <a href="{% url 'store_subcategory' supplier.store_id sub.id %}" class="neon-tag py-1 px-3" style="font-size: 0.65rem;">> {{ sub.name|upper }}</a>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    <div class="row g-4">
+        {% for product in products %}
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="cyber-item-card cyber-card h-100">
+                <button type="button" class="cyber-wishlist" data-pid="{{ product.id }}" onclick="toggleWishlist({{ product.id }}, this)">
+                    <i class="far fa-heart"></i>
+                </button>
+                <a href="{% url 'product-detail' supplier.store_id product.id %}" style="text-decoration: none; color: inherit;">
+                    <div class="cyber-img-box mb-3">
+                        <img src="{{ product.image.url }}" class="cyber-img" alt="">
+                    </div>
+                    <div class="font-monospace text-3 small mb-1">#ID_{{ product.id }}</div>
+                    <h3 class="h6 font-weight-bold text-white mb-2">{{ product.name|upper }}</h3>
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <span class="glow-cyan">{{ product.get_price_with_offer }}</span>
+                        <button type="button" class="btn-cyber py-1 px-3 small" onclick="event.preventDefault(); addToCart('{{ product.id }}', '{{ supplier.store_id }}', event)">
+                            مزامنة
+                        </button>
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% if cart.get_total_items > 0 %}
+<div class="cyber-island d-lg-none">
+    <div class="font-monospace text-cyan small">
+        NODES: {{ cart.get_total_items }} | CR: {{ cart.get_total_after_discount }}
+    </div>
+    <a href="{% url 'cart-detail' supplier.store_id %}" class="btn-cyber py-1 px-3" style="font-size: 0.7rem;">ACCESS_BUFFER</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block neon_extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[data-cyber-cat]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.neon-tag').forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.cyber-sub-bar').forEach(b => b.classList.remove('show'));
+                const target = document.getElementById(btn.getAttribute('href').replace('#', '') + '-subs');
+                if(target) target.classList.add('show');
+            });
+        });
+
+        {% if user.is_authenticated %}
+        fetch('/wishlist/all_status/')
+        .then(r => r.json())
+        .then(data => {
+            if(data.ids) {
+                document.querySelectorAll('.cyber-wishlist').forEach(btn => {
+                    if(data.ids.includes(parseInt(btn.dataset.pid))) {
+                        btn.classList.add('active');
+                        btn.querySelector('i').className = 'fas fa-heart';
+                    }
+                });
+            }
+        });
+        {% endif %}
+    });
+
+    function toggleWishlist(pid, btn) {
+        fetch(`/wishlist/toggle/${pid}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                btn.classList.toggle('active', data.in_wishlist);
+                btn.querySelector('i').className = data.in_wishlist ? 'fas fa-heart' : 'far fa-heart';
+            }
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

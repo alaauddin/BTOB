@@ -105,6 +105,14 @@ class Supplier(models.Model):
     footer_color = models.CharField(max_length=7, default='#2B6CB0')
     text_color = models.CharField(max_length=7, default='#4A5568')
     accent_color = models.CharField(max_length=7, default='#00FFFF')
+    DESIGN_CHOICES = [
+        ('default', 'Default Design'),
+        ('modern_v2', 'Modern V2 Design'),
+        ('luxury_dark', 'Luxury Dark Mode'),
+        ('neon_cyber', 'Neon Cyberpunk'),
+        ('nature_zen', 'Nature Zen'),
+    ]
+    design_template = models.CharField(max_length=20, choices=DESIGN_CHOICES, default='default', verbose_name="تصميم المتجر")
     currency = models.ForeignKey(Currency, on_delete=models.SET_NULL, null=True, blank=True)
     profile_picture = models.ImageField(upload_to=upload_to_path, blank=True, null=True)
     panal_picture = models.ImageField(upload_to=upload_to_path, blank=True, null=True)

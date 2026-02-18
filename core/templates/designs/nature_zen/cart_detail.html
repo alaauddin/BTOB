@@ -1,0 +1,210 @@
+{% extends 'designs/nature_zen/base_zen.html' %}
+{% load static %}
+{% load cart_filters %}
+
+{% block title %}المجموعة | سلة زين{% endblock %}
+
+{% block zen_extra_css %}
+<style>
+    .zen-cart-item {
+        background: white;
+        border-radius: 25px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        transition: 0.5s;
+    }
+    .zen-cart-item.removed { opacity: 0; transform: scale(0.9); }
+    .cart-img-zen {
+        width: 110px;
+        height: 110px;
+        object-fit: cover;
+        border-radius: 20px;
+    }
+    .zen-input {
+        background: var(--zen-bg) !important;
+        border: 1px solid var(--zen-sand) !important;
+        color: var(--zen-text-main) !important;
+        border-radius: 15px !important;
+        padding: 12px 20px !important;
+        font-style: italic;
+    }
+    .zen-input::placeholder { color: var(--zen-text-soft); }
+
+    /* Modal */
+    .zen-modal {
+        background: var(--zen-bg);
+        border: none;
+        border-radius: 40px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    }
+    .zen-selection {
+        background: white;
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: 0.4s;
+    }
+    .zen-selection.active { border-color: var(--zen-sage); background: rgba(147, 169, 143, 0.05); }
+
+    #zen-map {
+        height: 300px;
+        border-radius: 30px;
+        margin-bottom: 2rem;
+        border: 1px solid var(--zen-sand);
+    }
+    .zen-toast {
+        position: fixed;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--zen-sage);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 50px;
+        z-index: 2000;
+        display: none;
+    }
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+{% endblock %}
+
+{% block zen_content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <span class="zen-font text-sage italic small">حيازة مدروسة</span>
+        <h2 class="display-5">مراجعة اختيارك</h2>
+    </div>
+
+    {% if cart.cart_items.all %}
+    <div class="row">
+        <div class="col-lg-8">
+            {% for item in cart.cart_items.all %}
+            <div class="zen-cart-item d-flex align-items-center gap-4" id="row-{{ item.id }}">
+                <img src="{{ item.product.image.url }}" class="cart-img-zen" alt="">
+                <div class="flex-grow-1">
+                    <h4 class="mb-1">{{ item.product.name }}</h4>
+                    <p class="text-soft italic mb-0">{{ item.product.get_price_with_offer }} {{ supplier.currency }}</p>
+                </div>
+                <div class="d-flex align-items-center gap-4">
+                    <div class="bg-light d-flex align-items-center gap-4 py-2 px-4 rounded-pill">
+                        <button class="bg-transparent border-0 text-soft" onclick="decreaseQuantity('{{ item.id }}', '{{ supplier.store_id }}')"><i class="fas fa-minus small"></i></button>
+                        <span id="qty-{{ item.id }}" class="text-main">{{ item.quantity }}</span>
+                        <button class="bg-transparent border-0 text-sage" onclick="increaseQuantity('{{ item.id }}', '{{ supplier.store_id }}')"><i class="fas fa-plus small"></i></button>
+                    </div>
+                    <button class="text-terracotta bg-transparent border-0 small italic" onclick="removeItem('{{ item.id }}', '{{ supplier.store_id }}')">
+                        إزالة
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="col-lg-4">
+            <div class="zen-card p-5">
+                <h4 class="italic mb-4">توازن التناغم</h4>
+                <div class="d-flex justify-content-between mb-4 text-soft italic">
+                    <span>المجموع النقي</span>
+                    <span id="total-amount">{{ cart.get_total_after_discount }} {{ supplier.currency }}</span>
+                </div>
+                <button class="btn-zen w-100 py-3 mb-3" data-bs-toggle="modal" data-bs-target="#checkoutModal">
+                    دعوة للوجهة
+                </button>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <p class="text-soft italic lead mb-4">"السلة خفيفة، تنتظر الإلهام."</p>
+        <a href="{% url 'product-list' supplier.store_id %}" class="btn-zen px-5">العودة للحديقة</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="checkoutModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content zen-modal">
+            <div class="modal-body p-5">
+                <h3 class="text-center italic mb-5">وجهة التدفق</h3>
+                
+                <div class="row g-4 mb-5">
+                    <div class="col-6">
+                        <input type="radio" name="addr" id="sz" class="d-none" checked>
+                        <label for="sz" class="zen-selection active" id="szL">جذر معروف</label>
+                    </div>
+                    <div class="col-6">
+                        <input type="radio" name="addr" id="nz" class="d-none">
+                        <label for="nz" class="zen-selection" id="nzL">محمية جديدة</label>
+                    </div>
+                </div>
+
+                <div id="szS">
+                    {% if user_address %}
+                    <div class="bg-light p-4 rounded-4 mb-4 text-center italic text-soft">
+                        "محميتك المعروفة: {{ user_address.address_line1 }}"
+                    </div>
+                    <button class="btn-zen w-100" onclick="confirmExisting()">تأكيد المحمية</button>
+                    {% else %}
+                    <p class="text-center text-soft italic">لم يتم العثور على محمية. يرجى غرس واحدة جديدة.</p>
+                    {% endif %}
+                </div>
+
+                <div id="nzS" style="display: none;">
+                    <form id="nzF">
+                        <div id="zen-map"></div>
+                        <input type="text" name="full_name" class="zen-input w-100 mb-3" placeholder="اسم حارس المحمية">
+                        <input type="text" name="address_line1" class="zen-input w-100 mb-3" id="zen-loc" placeholder="مسار المحمية">
+                        <input type="text" name="phone" class="zen-input w-100 mb-3" placeholder="إشارة المحمية">
+                        <input type="hidden" name="lat" id="z-lat">
+                        <input type="hidden" name="lng" id="z-lng">
+                        <button type="submit" class="btn-zen w-100 mt-3">تأكيد الاختيار</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="zen-toast" id="zenToast">تم توازن التناغم.</div>
+{% endblock %}
+
+{% block zen_extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    function showToast(m) { const t=document.getElementById('zenToast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',3000); }
+
+    function increaseQuantity(id, sid) {
+        fetch(`/increase_quantity/${id}/${sid}/`, { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'} })
+        .then(r=>r.json()).then(d=>{ if(d.success){ document.getElementById(`qty-${id}`).textContent=d.new_quantity; document.getElementById('total-amount').textContent=Math.floor(d.cart_total)+' {{ supplier.currency }}'; showToast("Abundance increased"); }});
+    }
+
+    function decreaseQuantity(id, sid) {
+        fetch(`/decrease_quantity/${id}/${sid}/`, { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'} })
+        .then(r=>r.json()).then(d=>{ if(d.success){ if(d.new_quantity===0) location.reload(); else {document.getElementById(`qty-${id}`).textContent=d.new_quantity; document.getElementById('total-amount').textContent=Math.floor(d.cart_total)+' {{ supplier.currency }}'; showToast("Simplicity maintained");}}});
+    }
+
+    function removeItem(id, sid) {
+        fetch(`/remove_item/${id}/${sid}/`, { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'} })
+        .then(r=>r.json()).then(d=>{ if(d.success) location.reload(); });
+    }
+
+    document.getElementById('sz')?.addEventListener('change', () => {
+        document.getElementById('szS').style.display='block'; document.getElementById('nzS').style.display='none';
+        document.getElementById('szL').classList.add('active'); document.getElementById('nzL').classList.remove('active');
+    });
+    document.getElementById('nz')?.addEventListener('change', () => {
+        document.getElementById('szS').style.display='none'; document.getElementById('nzS').style.display='block';
+        document.getElementById('nzL').classList.add('active'); document.getElementById('szL').classList.remove('active');
+        initMap();
+    });
+
+    let map, marker;
+    function initMap() { if(map) return; map=L.map('zen-map').setView([15.3,44.2],13); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); marker=L.marker([15.3,44.2],{draggable:true}).addTo(map); marker.on('dragend', updateZenAddr); map.on('click', e=>{marker.setLatLng(e.latlng); updateZenAddr();}); }
+    function updateZenAddr() { const ll=marker.getLatLng(); document.getElementById('z-lat').value=ll.lat; document.getElementById('z-lng').value=ll.lng; fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${ll.lat}&lon=${ll.lng}`).then(r=>r.json()).then(d=>document.getElementById('zen-loc').value=d.display_name); }
+
+    function confirmExisting() { fetch(`/checkout/{{ supplier.store_id }}/`, { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json'}, body: JSON.stringify({address_option: 'saved'}) }).then(r=>r.json()).then(d=>{ if(d.success) location.href=d.redirect_url; }); }
+</script>
+{% endblock %}

@@ -1,0 +1,342 @@
+{% extends 'designs/luxury_dark/base_luxury.html' %}
+{% load static %}
+{% load cart_filters %}
+
+{% block title %}Your Repository | Luxury Cart{% endblock %}
+
+{% block luxury_extra_css %}
+<style>
+    .cart-luxury-item {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+    .cart-luxury-item.removed {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    .cart-img-luxury {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 15px;
+        border: 1px solid var(--luxury-border);
+    }
+    .cart-summary-luxury {
+        padding: 2.5rem;
+        position: sticky;
+        top: 2rem;
+    }
+    .luxury-input {
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid var(--luxury-border) !important;
+        color: white !important;
+        border-radius: 10px !important;
+        padding: 12px 15px !important;
+    }
+    .luxury-input::placeholder { color: var(--text-3); opacity: 0.5; }
+
+    /* Modal Styling */
+    .modal-content.luxury-modal {
+        background: var(--luxury-bg);
+        border: 1px solid var(--primary-base);
+        border-radius: 30px;
+        color: white;
+    }
+    .selection-card-luxury {
+        border: 1px solid var(--luxury-border);
+        background: var(--luxury-surface);
+        padding: 20px;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: 0.3s;
+        text-align: center;
+        width: 100%;
+        display: block;
+    }
+    .selection-card-luxury.active {
+        border-color: var(--primary-base);
+        background: rgba(212,175,55,0.05);
+        color: var(--primary-base);
+    }
+    .selection-card-luxury i { font-size: 1.5rem; margin-bottom: 10px; display: block; }
+
+    /* Map Box */
+    .luxury-map-box {
+        height: 250px;
+        border-radius: 20px;
+        border: 1px solid var(--luxury-border);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .toast-luxury {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: rgba(18,18,18,0.95);
+        border: 1px solid var(--primary-base);
+        color: white;
+        padding: 15px 30px;
+        border-radius: 50px;
+        z-index: 2000;
+        backdrop-filter: blur(10px);
+        display: none;
+    }
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+{% endblock %}
+
+{% block luxury_content %}
+<div class="container py-5">
+    <h2 class="text-center mb-5 luxury-card p-4 d-inline-block text-glow-gold" style="letter-spacing: 3px;">مختاراتك المنسقة</h2>
+    
+    {% if cart.cart_items.all %}
+    <div class="row">
+        <div class="col-lg-8">
+            <div id="cart-items-container">
+            {% for item in cart.cart_items.all %}
+            <div class="cart-luxury-item luxury-card" id="row-{{ item.id }}">
+                <img src="{{ item.product.image.url }}" class="cart-img-luxury" alt="">
+                <div class="flex-grow-1">
+                    <h4 class="mb-1 text-white" style="letter-spacing: 1px;">{{ item.product.name|upper }}</h4>
+                    <p class="text-gold mb-0">{{ item.product.get_price_with_offer }} {{ supplier.currency }}</p>
+                </div>
+                <div class="d-flex align-items-center gap-4">
+                    <div class="luxury-card d-flex align-items-center py-2 px-3 gap-4" style="border-radius: 50px;">
+                        <button class="bg-transparent border-0 text-white p-0" onclick="decreaseQuantity('{{ item.id }}', '{{ supplier.store_id }}')"><i class="fas fa-minus small"></i></button>
+                        <span id="quantity-{{ item.id }}" class="font-weight-bold">{{ item.quantity }}</span>
+                        <button class="bg-transparent border-0 text-gold p-0" onclick="increaseQuantity('{{ item.id }}', '{{ supplier.store_id }}')"><i class="fas fa-plus small"></i></button>
+                    </div>
+                    <div class="text-white font-weight-bold d-none d-md-block" style="min-width: 80px;" id="subtotal-{{ item.id }}">
+                        {{ item.get_subtotal_with_discount|floatformat:0 }}
+                    </div>
+                    <button class="text-3 bg-transparent border-0 p-0" onclick="removeItem('{{ item.id }}', '{{ supplier.store_id }}')" title="إزالة القطعة">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="cart-summary-luxury luxury-card">
+                <h3 class="text-gold mb-4" style="letter-spacing: 2px;">الحساب الإجمالي</h3>
+                <div class="d-flex justify-content-between mb-3 text-3 small">
+                    <span>قيمة المجموعة</span>
+                    <span id="subtotal-all">{{ cart.get_total_amount|floatformat:0 }} {{ supplier.currency }}</span>
+                </div>
+                {% if cart.has_discount %}
+                <div class="d-flex justify-content-between mb-3 text-gold small">
+                    <span>خصم حصري</span>
+                    <span id="total-discount">-{{ cart.get_total_ammout_with_discout|floatformat:0 }} {{ supplier.currency }}</span>
+                </div>
+                {% endif %}
+                <div class="d-flex justify-content-between mb-4 h4 font-weight-bold">
+                    <span>المبلغ النهائي</span>
+                    <span class="text-gold" id="total-amount">{{ cart.get_total_after_discount|floatformat:0 }} {{ supplier.currency }}</span>
+                </div>
+                
+                <button class="btn-luxury w-100 py-3 mb-4" data-bs-toggle="modal" data-bs-target="#checkoutModal">
+                    المتابعة للاقتناء
+                </button>
+                
+                <div class="text-center">
+                    <a href="{% url 'product-list' supplier.store_id %}" class="text-3 small italic" style="text-decoration: none;">← مواصلة الاستكشاف</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5 luxury-card">
+        <div class="display-1 text-gold mb-4" style="opacity: 0.2;">✧</div>
+        <p class="text-2 lead mb-4 italic">"مجموعتك فارغة حالياً، بانتظار خياراتك الرفيعة."</p>
+        <a href="{% url 'product-list' supplier.store_id %}" class="btn-luxury px-5 py-3">استكشاف المجموعة</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Checkout Modal -->
+<div class="modal fade" id="checkoutModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content luxury-modal">
+            <div class="modal-body p-5">
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <h2 class="text-gold mb-0" style="letter-spacing: 3px;">تفاصيل الاقتناء</h2>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-6">
+                        <input type="radio" name="addr" id="savedAddr" class="d-none" checked>
+                        <label for="savedAddr" class="selection-card-luxury active" id="savedLabel">
+                            <i class="fas fa-history"></i>
+                            <span class="small font-weight-bold">العنوان المسجل</span>
+                        </label>
+                    </div>
+                    <div class="col-6">
+                        <input type="radio" name="addr" id="newAddr" class="d-none">
+                        <label for="newAddr" class="selection-card-luxury" id="newLabel">
+                            <i class="fas fa-map-pin"></i>
+                            <span class="small font-weight-bold">موقع جديد</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Saved -->
+                <div id="savedSection">
+                    {% if user_address %}
+                    <div class="luxury-card p-4 mb-4 border-gold" style="border-color: rgba(212,175,55,0.2) !important;">
+                        <h6 class="text-gold mb-3 small">الوجهة الحالية</h6>
+                        <p class="mb-1">{{ user_address.address_line1 }}</p>
+                        <p class="text-3 small mb-0">{{ user_address.city }}, {{ user_address.country }}</p>
+                    </div>
+                    <button class="btn-luxury w-100 py-3" onclick="confirmExisting()">تأكيد واقتناء</button>
+                    {% else %}
+                    <p class="text-center text-3 py-4 italic">لا يوجد عنوان مسجل. يرجى تقديم موقع جديد.</p>
+                    {% endif %}
+                </div>
+
+                <!-- New -->
+                <div id="newSection" style="display: none;">
+                    <form id="newAddrForm">
+                        <div class="luxury-map-box" id="map-container"></div>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <input type="text" name="full_name" class="luxury-input w-100" placeholder="الاسم الكامل" required>
+                            </div>
+                            <div class="col-12">
+                                <input type="text" name="address_line1" class="luxury-input w-100" placeholder="عنوان الموقع" id="loc-display" required>
+                            </div>
+                            <div class="col-12">
+                                <input type="text" name="phone" class="luxury-input w-100" placeholder="رقم التواصل" required>
+                            </div>
+                        </div>
+                        <input type="hidden" name="lat" id="lat-in">
+                        <input type="hidden" name="lng" id="lng-in">
+                        <button type="submit" class="btn-luxury w-100 mt-5 py-3">اقتناء القطع</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-luxury" id="luxuryToast">تم تحديث القطعة في المجموعة.</div>
+
+{% endblock %}
+
+{% block luxury_extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    function showToast(msg) {
+        const t = document.getElementById('luxuryToast');
+        t.textContent = msg; t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    function updateCartUI(data) {
+        if(data.cart_total !== undefined) {
+             document.getElementById('total-amount').textContent = Math.floor(data.cart_total) + ' {{ supplier.currency }}';
+        }
+        if(data.cart_items_count !== undefined) {
+            // Update any quantity badges if they exist
+        }
+    }
+
+    function increaseQuantity(itemId, sid) {
+        fetch(`/increase_quantity/${itemId}/${sid}/`, { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'} })
+        .then(r => r.json()).then(data => {
+            if(data.success) {
+                document.getElementById(`quantity-${itemId}`).textContent = data.new_quantity;
+                document.getElementById(`subtotal-${itemId}`).textContent = Math.floor(data.new_subtotal);
+                updateCartUI(data);
+                showToast("Quantity enhanced.");
+            }
+        });
+    }
+
+    function decreaseQuantity(itemId, sid) {
+        fetch(`/decrease_quantity/${itemId}/${sid}/`, { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'} })
+        .then(r => r.json()).then(data => {
+            if(data.success) {
+                if(data.new_quantity === 0) {
+                    document.getElementById(`row-${itemId}`).classList.add('removed');
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    document.getElementById(`quantity-${itemId}`).textContent = data.new_quantity;
+                    document.getElementById(`subtotal-${itemId}`).textContent = Math.floor(data.new_subtotal);
+                    updateCartUI(data);
+                    showToast("Quantity reduced.");
+                }
+            }
+        });
+    }
+
+    function removeItem(itemId, sid) {
+        if(!confirm("Release this piece from curation?")) return;
+        fetch(`/remove_item/${itemId}/${sid}/`, { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'} })
+        .then(r => r.json()).then(data => {
+            if(data.success) {
+                document.getElementById(`row-${itemId}`).classList.add('removed');
+                setTimeout(() => location.reload(), 500);
+            }
+        });
+    }
+
+    // Modal Logic
+    document.getElementById('savedAddr')?.addEventListener('change', () => {
+        document.getElementById('savedSection').style.display = 'block';
+        document.getElementById('newSection').style.display = 'none';
+        document.getElementById('savedLabel').classList.add('active');
+        document.getElementById('newLabel').classList.remove('active');
+    });
+
+    document.getElementById('newAddr')?.addEventListener('change', () => {
+        document.getElementById('savedSection').style.display = 'none';
+        document.getElementById('newSection').style.display = 'block';
+        document.getElementById('newLabel').classList.add('active');
+        document.getElementById('savedLabel').classList.remove('active');
+        initMap();
+    });
+
+    let map = null, marker = null;
+    function initMap() {
+        if(map) return;
+        map = L.map('map-container').setView([15.3, 44.2], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        marker = L.marker([15.3, 44.2], {draggable: true}).addTo(map);
+        marker.on('dragend', () => updateAddr(marker.getLatLng()));
+        map.on('click', (e) => { marker.setLatLng(e.latlng); updateAddr(e.latlng); });
+    }
+
+    function updateAddr(ll) {
+        document.getElementById('lat-in').value = ll.lat;
+        document.getElementById('lng-in').value = ll.lng;
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${ll.lat}&lon=${ll.lng}&addressdetails=1`)
+        .then(r => r.json()).then(data => {
+            document.getElementById('loc-display').value = data.display_name || "Custom Piece Destination";
+        });
+    }
+
+    function confirmExisting() {
+         fetch(`/checkout/{{ supplier.store_id }}/`, { 
+            method: 'POST', 
+            headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json'},
+            body: JSON.stringify({address_option: 'saved'})
+        }).then(r => r.json()).then(d => { if(d.success) location.href = d.redirect_url; });
+    }
+
+    document.getElementById('newAddrForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        fd.append('address_option', 'new');
+        // Convert FormData to JSON for the view expecting it, or handle as POST form
+        fetch(location.href, { method: 'POST', body: fd }).then(r => { if(r.ok) location.reload(); });
+    });
+</script>
+{% endblock %}

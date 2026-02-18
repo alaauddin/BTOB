@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* 
+     * PREMIUM STOREFRONT UI SYSTEM - BASE V2
+     * This template centralizes modern UI design tokens and shared layout logic.
+     */
+
+    :root {
+        /* Creative Palette: Modern V2 (High-Tech Glass) */
+        --primary-base: #8B5CF6; /* Electric Violet */
+        --primary-glow: rgba(139, 92, 246, 0.4);
+        --accent-color: #06B6D4; /* Electric Cyan */
+        
+        --primary-bg-soft: rgba(139, 92, 246, 0.05); 
+        --primary-bg-medium: rgba(139, 92, 246, 0.1);
+        
+        /* Surface Colors */
+        --surface-glass: rgba(255, 255, 255, 0.92);
+        --surface-1: #ffffff;
+        --surface-2: #f8f9fa;
+        --surface-3: #f1f3f5;
+        
+        /* Text Colors */
+        --text-1: #1a1a1a;
+        --text-2: #4a5568;
+        --text-3: #718096;
+        
+        /* Radii Scale */
+        --radius-sm: 16px;
+        --radius-md: 22px;
+        --radius-lg: 28px;
+        --radius-pill: 50px;
+        
+        /* Elevation */
+        --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+        --shadow-float: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+        
+        /* Spacing */
+        --safe-area-bottom: env(safe-area-inset-bottom, 20px);
+    }
+
+    /* Global Typography Reset for V2 */
+    body {
+        font-family: 'Tajawal', 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif !important;
+        background-color: #fafbfc;
+        color: var(--text-1);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* SCROLLBAR HIDING Global */
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* Animations Shared */
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUpIsland {
+        from { opacity: 0; transform: translateY(100%); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+{% block v2_extra_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+    <div class="v2-page-container">
+        {% block v2_content %}{% endblock %}
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    {% block v2_extra_js %}{% endblock %}
+{% endblock %}

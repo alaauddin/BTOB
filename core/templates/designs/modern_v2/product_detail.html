@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'designs/modern_v2/base_v2.html' %}
 {% load static %}
 {% load cart_filters %}
 
@@ -17,11 +17,11 @@
 <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}">
 {% endblock %}
 
-{% block extra_css %}
+{% block v2_extra_css %}
 <link rel="stylesheet" href="{% static 'css/products.css' %}?v={{ css_version }}">
 {% endblock %}
 
-{% block content %}
+{% block v2_content %}
 <div class="container container-products {% if supplier.show_platform_ads and platform_ads %}has-fixed-mobile-ads{% endif %}">
     <!-- Mini Platform Ads (Mobile only, above everything else in content) -->
     {% if supplier.show_platform_ads and platform_ads %}
@@ -185,20 +185,20 @@
                         
                         <!-- Qty Controls (Shown if item in cart) -->
                         <div class="detail-qty-control {% if cart_item_qty == 0 %}d-none{% endif %}" id="qty-ctrl-{{ product.id }}">
-                            <button type="button" class="modern-qty-btn" onclick="subToCart('{{ product.id }}', '{{ supplier.store_id }}', event)">
+                            <button class="modern-qty-btn" onclick="subToCart('{{ product.id }}', '{{ supplier.store_id }}')">
                                 <i class="fas fa-minus"></i>
                             </button>
                             <span class="modern-qty-display" id="quantity-{{ product.id }}">{{ cart_item_qty }}</span>
                             <!-- Hidden Helper for base.html expectations -->
                             <span id="total-qty-items-{{ product.id }}" class="d-none">{{ cart_item_qty }}</span>
 
-                            <button type="button" class="modern-qty-btn" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}', event)" {% if product.stock <= cart_item_qty %}disabled style="opacity: 0.5; cursor: not-allowed;" title="أقصى كمية متاحة"{% endif %}>
+                            <button class="modern-qty-btn" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')" {% if product.stock <= cart_item_qty %}disabled style="opacity: 0.5; cursor: not-allowed;" title="أقصى كمية متاحة"{% endif %}>
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
                         
                         <!-- Add Button (Shown if item NOT in cart) -->
-                        <button type="button" class="detail-add-btn {% if cart_item_qty > 0 %}d-none{% endif %}" id="add-btn-{{ product.id }}" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}', event)">
+                        <button class="detail-add-btn {% if cart_item_qty > 0 %}d-none{% endif %}" id="add-btn-{{ product.id }}" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')">
                             <i class="fas fa-shopping-bag"></i>
                             <span>إضافة للسلة</span>
                         </button>
@@ -356,7 +356,7 @@
 
 {% endblock %}
 
-{% block extra_js %}
+{% block v2_extra_js %}
 <script>
     function switchMedia(type, url, element) {
         const container = document.querySelector('.main-media-container');
