@@ -27,16 +27,9 @@
             </div>
             
             <!-- Wishlist (Top Right) -->
-            <!-- Authenticated Check handled by JS/click event if complicated, but simple toggle here -->
-            {% if user.is_authenticated %}
             <button class="wishlist-btn-float" onclick="toggleWishlist({{ product.id }})" aria-label="Add to wishlist">
                 <i class="far fa-heart"></i>
             </button>
-            {% else %}
-            <button class="wishlist-btn-float" onclick="window.location.href='{% url 'login' %}'" aria-label="Login for wishlist">
-                <i class="far fa-heart"></i>
-            </button>
-            {% endif %}
             
             <!-- Media Indicators (Bottom Left) -->
             <div class="position-absolute bottom-0 start-0 p-2 d-flex gap-1 z-2">

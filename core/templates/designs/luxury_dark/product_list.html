@@ -269,18 +269,5 @@
         return cookieValue;
     }
 
-    function toggleWishlist(pid, btn) {
-        fetch(`/wishlist/toggle/${pid}/`, {
-            method: 'POST',
-            headers: {'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest'}
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                btn.classList.toggle('active', data.in_wishlist);
-                btn.querySelector('i').className = data.in_wishlist ? 'fas fa-heart' : 'far fa-heart';
-            }
-        });
-    }
 </script>
 {% endblock %}

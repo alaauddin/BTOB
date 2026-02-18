@@ -357,6 +357,7 @@
 {% endblock %}
 
 {% block v2_extra_js %}
+<script src="{% static 'js/main_base.js' %}?v={{ css_version }}"></script>
 <script>
     function switchMedia(type, url, element) {
         const container = document.querySelector('.main-media-container');
@@ -426,36 +427,6 @@
             }
         }
         return cookieValue;
-    }
-    
-    // Wishlist Toggle (reusing logic from product_list if possible, or simple version)
-     function toggleWishlist(productId, btn) {
-        const icon = btn.querySelector('i');
-        btn.disabled = true;
-        
-        const csrfToken = getCookie('csrftoken');
-        
-        fetch(`/wishlist/toggle/${productId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                if (data.in_wishlist) {
-                    btn.classList.add('active');
-                    icon.className = 'fas fa-heart text-white';
-                } else {
-                    btn.classList.remove('active');
-                    icon.className = 'far fa-heart';
-                }
-            }
-        })
-        .finally(() => btn.disabled = false);
     }
     
     // Review Submission

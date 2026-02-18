@@ -116,7 +116,7 @@ def verify_signup_otp(request):
             # User Welcoming Notification
             try:
                 welcome_msg = (
-                    f"أهلاً بك يا *{signup_data['owner_name']}* في عائلة عرطات! 🌟\n\n"
+                    f"أهلاً بك يا *{signup_data['owner_name']}* في عائلة رواج! 🌟\n\n"
                     f"لقد تم تفعيل رقمك وإنشاء حسابك لمتجر *({supplier.name})*.\n\n"
                     f"🔹 *اسم المستخدم:* {user.username}\n"
                     f"🔹 *الحالة:* قيد المراجعة حالياً\n\n"

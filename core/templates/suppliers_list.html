@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}عرطات دوتكم{% endblock %}
+{% block title %}رواج دوتكم{% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/suppliers.css' %}?v={{ css_version }}">
@@ -1494,7 +1494,7 @@
     <!-- Platform Offers Ads Section -->
     {% if platform_ads %}
     <div class="platform-ads-section mb-6">
-        <h2 class="section-title mb-3">عروض عرطات</h2>
+        <h2 class="section-title mb-3">عروض رواج</h2>
         <!-- Swiper Container for Platform Ads -->
         <div class="swiper platform-offers-swiper" style="padding: 10px; margin: -10px;">
             <div class="swiper-wrapper">
@@ -1830,7 +1830,7 @@ function applyFilters() {
         // 2. Platform Ads
         if (document.querySelector('.platform-ads-section')) {
             steps.push({
-                title: "عروض عرطات",
+                title: "عروض رواج",
                 desc: "شاهد أحدث العروض الحصرية والمميزة من مختلف المتاجر في مكان واحد.",
                 target: ".platform-ads-section",
                 pos: "bottom"

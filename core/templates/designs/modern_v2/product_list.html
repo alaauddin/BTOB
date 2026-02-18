@@ -711,6 +711,7 @@
 
 
 {% block v2_extra_js %}
+<script src="{% static 'js/main_base.js' %}?v={{ css_version }}"></script>
 <script>
     // --- UI INTERACTIONS ---
 
@@ -743,7 +744,9 @@
         });
         
         // Wishlist Init
+         {% if user.is_authenticated %}
          loadWishlistStatus();
+         {% endif %}
          
          // Cart Status
          {% if user.is_authenticated %}
@@ -787,50 +790,6 @@
             }
         }
         return cookieValue;
-    }
-
-    // Wishlist Toggle
-    function toggleWishlist(productId) {
-        const btn = document.querySelector(`[data-product-id="${productId}"] .wishlist-btn-float`);
-        const icon = btn.querySelector('i');
-        
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
-        
-        // Optimistic UI update
-        const isCurrentlyActive = btn.classList.contains('active');
-        
-        // Toggle visual state immediately
-        btn.classList.toggle('active');
-        icon.className = isCurrentlyActive ? 'far fa-heart' : 'fas fa-heart';
-        
-        // Add subtle pop animation
-        btn.style.transform = 'scale(1.2)';
-        setTimeout(() => btn.style.transform = 'scale(1)', 200);
-
-        fetch(`/wishlist/toggle/${productId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // showToast(data.message, 'success'); // Optional: reduce noise
-            } else {
-                // Revert if failed
-                btn.classList.toggle('active');
-                icon.className = isCurrentlyActive ? 'fas fa-heart' : 'far fa-heart';
-                console.error('Wishlist toggle failed');
-            }
-        })
-        .catch(err => {
-            console.error(err);
-             // Revert
-            btn.classList.toggle('active');
-        });
     }
 
     // Load Wishlist Status

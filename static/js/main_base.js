@@ -471,6 +471,99 @@ waitForJQuery(function () {
     };
 });
 
+window.performToggleWishlist = function (productId) {
+    const btn = document.querySelector(`[data-product-id="${productId}"] .wishlist-btn-float`) ||
+        document.querySelector(`[data-product-id="${productId}"] .wishlist-btn`) ||
+        document.querySelector(`.wishlist-btn[data-product-id="${productId}"]`);
+
+    if (!btn) {
+        console.error('Wishlist button not found for product:', productId);
+        return;
+    }
+
+    const icon = btn.querySelector('i');
+    const csrftoken = getCookie('csrftoken');
+
+    // Optimistic UI update
+    const isCurrentlyActive = btn.classList.contains('active');
+
+    // Toggle visual state immediately
+    btn.classList.toggle('active');
+    if (icon) {
+        icon.className = isCurrentlyActive ? 'far fa-heart' : 'fas fa-heart';
+    }
+
+    // Add subtle pop animation
+    btn.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    btn.style.transform = 'scale(1.25)';
+    setTimeout(() => btn.style.transform = 'scale(1)', 200);
+
+    // Use jQuery if available, fallback to fetch if not (though performToggle is usually called after login which implies page load)
+    if (typeof $ !== 'undefined') {
+        return $.ajax({
+            url: `/wishlist/toggle/${productId}/`,
+            type: "POST",
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function (response) {
+                if (response.success) {
+                    if (response.message) showNotification(response.message, 'success');
+                } else {
+                    btn.classList.toggle('active');
+                    if (icon) icon.className = isCurrentlyActive ? 'fas fa-heart' : 'far fa-heart';
+                    showNotification(response.message || 'حدث خطأ أثناء تحديث قائمة الأمنيات', 'error');
+                }
+            },
+            error: function (xhr) {
+                btn.classList.toggle('active');
+                if (icon) icon.className = isCurrentlyActive ? 'fas fa-heart' : 'far fa-heart';
+                const message = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'حدث خطأ في الاتصال';
+                showNotification(message, 'error');
+            }
+        });
+    } else {
+        return fetch(`/wishlist/toggle/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.message) showNotification(data.message, 'success');
+                } else {
+                    btn.classList.toggle('active');
+                    if (icon) icon.className = isCurrentlyActive ? 'fas fa-heart' : 'far fa-heart';
+                    showNotification(data.message || 'حدث خطأ أثناء تحديث قائمة الأمنيات', 'error');
+                }
+            })
+            .catch(err => {
+                btn.classList.toggle('active');
+                if (icon) icon.className = isCurrentlyActive ? 'fas fa-heart' : 'far fa-heart';
+                showNotification('حدث خطأ في الاتصال', 'error');
+            });
+    }
+};
+
+window.toggleWishlist = function (productId) {
+    if (!window.siteConfig.isAuthenticated) {
+        if (typeof openLoginModal === 'function') {
+            openLoginModal(function () {
+                return window.performToggleWishlist(productId);
+            });
+        } else {
+            window.location.href = '/login/';
+        }
+    } else {
+        window.performToggleWishlist(productId);
+    }
+};
+
 // Helper to get CSRF token
 function getCookie(name) {
     let cookieValue = null;

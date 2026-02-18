@@ -352,7 +352,7 @@ class BusinessRequestForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400',
-                'placeholder': 'اسم النشاط التجاري (مثال: متجر عرطات)'
+                'placeholder': 'اسم النشاط التجاري (مثال: متجر )'
             }),
             'owner_name': forms.TextInput(attrs={
                 'class': 'w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all placeholder-gray-400',

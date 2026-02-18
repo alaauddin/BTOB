@@ -61,7 +61,7 @@ def system_settings(request):
 
     return {
         'system_settings': settings,
-        'css_version': '2.8.0', # Bump version for nav changes
+        'css_version': '2.8.2', # Bump version for nav changes AND JS cache bust
         'nav_state': nav_state,
         'active_store': active_store,
         'user_stores_count': user_stores_count,

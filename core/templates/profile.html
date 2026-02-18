@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}الملف الشخصي | عرطات{% endblock %}
+{% block title %}الملف الشخصي | رواج{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/user_profile.css' %}?v=1.1">
@@ -18,7 +18,7 @@
                 </div>
             </div>
             
-            <h1 class="profile-name">{% if user.get_full_name %}{{ user.get_full_name }}{% else %}مستخدم عرطات{% endif %}</h1>
+            <h1 class="profile-name">{% if user.get_full_name %}{{ user.get_full_name }}{% else %}مستخدم رواج{% endif %}</h1>
             <div class="profile-phone" dir="ltr">
                 <i class="fas fa-phone-alt"></i>
                 <span>+967 {{ user.username }}</span>
