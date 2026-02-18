@@ -353,7 +353,10 @@
     }
 
     function toggleAdStatus(adId) {
-        fetch(`/toggle-ad-status/${adId}/`, {
+        const supplierParam = new URLSearchParams(window.location.search).get('supplier_id');
+        const url = `/toggle-ad-status/${adId}/` + (supplierParam ? `?supplier_id=${supplierParam}` : '');
+        
+        fetch(url, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
@@ -377,7 +380,10 @@
         const originalClass = icon.className;
         icon.className = 'fas fa-spinner fa-spin';
         
-        fetch(`/edit-ad/${adId}/`, {
+        const supplierParam = new URLSearchParams(window.location.search).get('supplier_id');
+        const url = `/edit-ad/${adId}/` + (supplierParam ? `?supplier_id=${supplierParam}` : '');
+        
+        fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(response => response.json())

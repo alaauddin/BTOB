@@ -186,7 +186,8 @@
         const adId = document.getElementById('edit-ad-id').value;
         
         // Determine URL
-        const url = adId ? `/edit-ad/${adId}/` : '/add-ad/';
+        const supplierParam = new URLSearchParams(window.location.search).get('supplier_id');
+        const url = (adId ? `/edit-ad/${adId}/` : '/add-ad/') + (supplierParam ? `?supplier_id=${supplierParam}` : '');
         
         // UI Feedback
         spinner.classList.remove('hidden');

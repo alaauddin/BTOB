@@ -46,12 +46,8 @@ def edit_product_offer(request, offer_id):
             try:
                 form = ProductOfferForm(request.POST, instance=offer, supplier=supplier)
                 if form.is_valid():
-                    updated_offer = form.save(commit=True)
+                    updated_offer = form.save(commit=False)
                     updated_offer.created_by = request.user
-                    # Ensure discount is recalculated if needed from form clean
-                    if hasattr(form, 'clean_discount_precentage'):
-                         updated_offer.discount_precentage = form.clean_discount_precentage()
-                    
                     updated_offer.save()
                     return JsonResponse({
                         'success': True,
@@ -95,6 +91,9 @@ def edit_product_offer(request, offer_id):
                 updated_offer.created_by = request.user
                 updated_offer.save()
                 messages.success(request, 'تم تحديث العرض بنجاح!')
+                next_url = request.GET.get('next')
+                if next_url:
+                    return redirect(next_url)
                 if request.user.is_superuser:
                     return redirect(f'/my-merchant/?supplier_id={supplier.id}')
                 return redirect('my_merchant')
@@ -112,7 +111,8 @@ def edit_product_offer(request, offer_id):
         'offer': offer,
         'supplier': supplier,
         'available_products': available_products,
-        'is_edit': True
+        'is_edit': True,
+        'next': request.GET.get('next', '')
     }
     
     return render(request, 'edit_product_offer.html', context)

@@ -614,6 +614,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (typeof NProgress !== 'undefined') NProgress.start();
     };
 
+    // Function to hide loader
+    window.hidePageLoader = function () {
+        if (loader) loader.classList.add('hidden-loader');
+        if (typeof NProgress !== 'undefined') NProgress.done();
+    };
+
     // Trigger on internal link clicks
     document.body.addEventListener('click', function (e) {
         const link = e.target.closest('a');

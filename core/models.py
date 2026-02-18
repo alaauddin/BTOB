@@ -297,16 +297,7 @@ class ProductOffer(models.Model):
 
     
     def save(self, *args, **kwargs):
-        # check if it is edit the it is fine and save it
-        if not self.pk:
-            if self.is_active:
-                other_offers = ProductOffer.objects.filter(product=self.product,is_active=True).exists()
-                if not other_offers:
-                    super().save(*args, **kwargs)
-            else:
-                super().save(*args, **kwargs)
-        else:
-            super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
             
         
 

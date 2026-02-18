@@ -253,7 +253,7 @@
             </div>
         </div>
 
-        <form id="editOfferForm" method="post" novalidate>
+        <form id="editOfferForm" method="post" novalidate data-no-loader>
             {% csrf_token %}
             
             <!-- Product Selection -->
@@ -294,7 +294,7 @@
                         <i class="fas fa-exclamation-circle"></i>
                         <span></span>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">أدخل القيمة كعدد عشري (مثال: 0.20 للخصم 20%)</p>
+                    <p class="text-xs text-gray-500 mt-1">أدخل نسبة الخصم كرقم صحيح (مثال: 20 للخصم 20%)</p>
                 </div>
 
                 <!-- From Date -->
@@ -431,9 +431,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedProductId && productData[selectedProductId] && discountPercentage > 0) {
             const product = productData[selectedProductId];
             const originalPrice = product.price;
-            const discountAmount = originalPrice * discountPercentage;
+            const discountAmount = originalPrice * (discountPercentage / 100);
             const discountedPrice = originalPrice - discountAmount;
-            const discountPercent = Math.round(discountPercentage * 100);
+            const discountPercent = Math.round(discountPercentage);
             
             document.getElementById('originalPrice').textContent = originalPrice + ' {{ supplier.currency }}';
             document.getElementById('discountedPrice').textContent = discountedPrice.toFixed(2) + ' {{ supplier.currency }}';
@@ -477,7 +477,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Redirect after delay
                     setTimeout(() => {
-                        window.location.href = '/my-merchant/';
+                        const nextUrl = "{{ next }}";
+                        if (nextUrl) {
+                            window.location.href = nextUrl;
+                        } else if (document.referrer && document.referrer.includes(window.location.host)) {
+                            window.location.href = document.referrer;
+                        } else {
+                            window.location.href = '/my-merchant/';
+                        }
                     }, 1500);
                     
                 } else {
@@ -497,6 +504,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Hide loading state
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('loading');
+                if (typeof window.hidePageLoader === 'function') {
+                    window.hidePageLoader();
+                }
             });
         });
     }

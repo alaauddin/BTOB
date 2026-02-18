@@ -1,0 +1,580 @@
+{% extends 'designs/modern_v2/base_v2.html' %}
+{% load static %}
+{% load cart_filters %}
+
+{% block title %}{{ product.name }} - {{ supplier.name }}{% endblock %}
+
+{% block extra_meta %}
+<meta property="og:title" content="{{ product.name }}{% if product.has_discount %} - خصم {{ product.get_discount_precentage }}%!{% endif %}" />
+<meta property="og:description" content="{% if product.has_discount %}عرطة مميزة! خصم {{ product.get_discount_precentage }}% لفترة محدودة. {% endif %}{{ product.description|striptags|truncatechars:160 }}" />
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}" />
+<meta property="og:url" content="{{ request.build_absolute_uri }}" />
+<meta property="og:type" content="product" />
+<meta property="product:condition" content="new">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ product.name }}{% if product.has_discount %} - خصم {{ product.get_discount_precentage }}%!{% endif %}">
+<meta name="twitter:description" content="{% if product.has_discount %}عرطة مميزة! خصم {{ product.get_discount_precentage }}% لفترة محدودة. {% endif %}{{ product.description|striptags|truncatechars:160 }}">
+<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}">
+{% endblock %}
+
+{% block v2_extra_css %}
+<link rel="stylesheet" href="{% static 'css/products.css' %}?v={{ css_version }}">
+{% endblock %}
+
+{% block v2_content %}
+<div class="container container-products {% if supplier.show_platform_ads and platform_ads %}has-fixed-mobile-ads{% endif %}">
+    <!-- Mini Platform Ads (Mobile only, above everything else in content) -->
+    {% if supplier.show_platform_ads and platform_ads %}
+    <div class="detail-ads-wrapper d-lg-none">
+        {% for ad in platform_ads|slice:":4" %}
+        <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="mini-ad-card">
+            <span class="mini-ad-badge">عرطة</span>
+            <img src="{{ ad.product.image.url }}" class="mini-ad-img" alt="{{ ad.product.name }}" loading="lazy">
+            <div class="mini-ad-info">
+                <h5 class="mini-ad-name">{{ ad.product.name }}</h5>
+                <div class="mini-ad-price">{{ ad.product.get_price_with_offer|floatformat:0 }} {{ ad.product.supplier.currency }}</div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Back Button -->
+    <a href="{% url 'product-list' supplier.store_id %}" class="back-to-store-btn mb-1">
+        <i class="fas fa-arrow-right"></i>
+        <span>العودة للمتجر</span>
+    </a>
+
+    <!-- Modern Detail Card -->
+    <div class="modern-detail-container mb-4">
+        <div class="modern-detail-wrapper">
+            <!-- Image Section -->
+            <div class="modern-detail-image-sec">
+                <div class="gallery-main-wrapper">
+                    <div class="main-media-container position-relative">
+                        <!-- Main Image Display -->
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="modern-detail-main-img" id="mainMediaDisplay" loading="lazy">
+                        
+                        <!-- Video Player Display (Hidden by default) -->
+                        {% if product.video %}
+                        <video id="productVideoPlayer" class="modern-detail-main-img d-none" controls>
+                            <source src="{{ product.video.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        {% endif %}
+
+                        <!-- Floating Wishlist -->
+                        <button class="wishlist-btn detail-mode" onclick="toggleWishlist({{ product.id }}, this)" data-product-id="{{ product.id }}">
+                            <i class="far fa-heart"></i>
+                        </button>
+                        
+                        <!-- Stock Badges -->
+                        {% if product.stock <= 0 %}
+                        <span class="modern-product-badge out-of-stock" style="top: 25px; left: 25px; font-size: 0.85rem; padding: 8px 16px;">
+                            نفذت الكمية
+                        </span>
+                        {% elif product.stock < 10 %}
+                        <span class="modern-product-badge low-stock" style="top: 25px; left: 25px; font-size: 0.85rem; padding: 8px 16px;">
+                            كمية محدودة
+                        </span>
+                        {% endif %}
+
+                        {% if product.has_discount %}
+                        <span class="modern-product-badge hot" style="top: {% if product.stock < 10 %}70px{% else %}25px{% endif %}; left: 25px; font-size: 0.85rem; padding: 8px 16px;">
+                            <i class="fas fa-fire me-1"></i> خصم {{ product.get_discount_precentage }}%
+                        </span>
+                        {% elif product.is_new %}
+                        <span class="modern-product-badge" style="top: {% if product.stock < 10 %}70px{% else %}25px{% endif %}; left: 25px; font-size: 0.85rem; padding: 8px 16px;">
+                            جديد
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Media Thumbnails -->
+                    {% if product.video or product.additional_images.exists %}
+                    <div class="media-thumbnails-container d-flex gap-2 overflow-auto py-1 custom-scrollbar">
+                        <!-- Main Image Thumb -->
+                        <div class="thumb-item active" onclick="switchMedia('image', '{{ product.image.url }}', this)">
+                            <img src="{{ product.image.url }}" alt="Main image thumb">
+                        </div>
+
+                        <!-- Video Thumb -->
+                        {% if product.video %}
+                        <div class="thumb-item video-thumb" onclick="switchMedia('video', '{{ product.video.url }}', this)">
+                            <div class="video-icon-overlay">
+                                <i class="fas fa-play"></i>
+                            </div>
+                            <img src="{{ product.image.url }}" alt="Video preview thumb">
+                        </div>
+                        {% endif %}
+
+                        <!-- Additional Images Thumbs -->
+                        {% for img in product.additional_images.all %}
+                        <div class="thumb-item" onclick="switchMedia('image', '{{ img.image.url }}', this)">
+                            <img src="{{ img.image.url }}" alt="Additional image {{ forloop.counter }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Info Section -->
+            <div class="modern-detail-info-sec">
+
+                <h1 class="detail-product-title">{{ product.name }}</h1>
+                
+                <!-- Rating -->
+                <div class="product-rating mb-4 d-flex align-items-center flex-wrap gap-3">
+                    <div class="d-flex align-items-center">
+                        <div class="stars" style="font-size: 1.1rem;">
+                            {% for i in '12345'|make_list %}
+                                {% if forloop.counter <= product.get_average_rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star text-gray-300"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="rating-value ms-2">{{ product.get_average_rating|default:"0.0" }}</span>
+                        <span class="rating-count ms-1">({{ product.get_total_reviews }} تقييم)</span>
+                    </div>
+                    
+                    <div class="detail-views-badge">
+                        <i class="fas fa-eye ml-2 text-primary"></i>
+                        <span class="font-bold text-gray-700">{{ product.views_count|default:"0" }}</span>
+                        <span class="text-gray-400 text-xs mr-1">مشاهدة</span>
+                    </div>
+                </div>
+
+                <div class="detail-description-preview">
+                    {{ product.description|truncatewords:25 }}
+                </div>
+
+                <!-- Price & Stock -->
+                <div class="flex items-center justify-between flex-wrap gap-4 mb-4">
+                    <div class="detail-price-box mb-0">
+                        {% if product.has_discount %}
+                            <span class="detail-current-price">{{ product.get_price_with_offer|floatformat:0 }} {{ supplier.currency }}</span>
+                            <span class="detail-old-price">{{ product.price|floatformat:0 }} {{ supplier.currency }}</span>
+                        {% else %}
+                            <span class="detail-current-price">{{ product.price|floatformat:0 }} {{ supplier.currency }}</span>
+                        {% endif %}
+                    </div>
+
+                    {% if product.stock > 0 %}
+                    <div class="stock-status-indicator flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-600 rounded-full text-sm font-bold">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        <span>متوفر {% if product.stock < 20 %}({{ product.stock }}){% endif %}</span>
+                    </div>
+                    {% else %}
+                    <div class="stock-status-indicator flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 rounded-full text-sm font-bold">
+                        <i class="fas fa-times-circle"></i>
+                        <span>نفذت الكمية</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="detail-actions">
+                    {% if product.stock > 0 %}
+                        {% with cart_item_qty=product.quantity_in_cart|default:0 %}
+                        
+                        <!-- Qty Controls (Shown if item in cart) -->
+                        <div class="detail-qty-control {% if cart_item_qty == 0 %}d-none{% endif %}" id="qty-ctrl-{{ product.id }}">
+                            <button class="modern-qty-btn" onclick="subToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span class="modern-qty-display" id="quantity-{{ product.id }}">{{ cart_item_qty }}</span>
+                            <!-- Hidden Helper for base.html expectations -->
+                            <span id="total-qty-items-{{ product.id }}" class="d-none">{{ cart_item_qty }}</span>
+
+                            <button class="modern-qty-btn" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')" {% if product.stock <= cart_item_qty %}disabled style="opacity: 0.5; cursor: not-allowed;" title="أقصى كمية متاحة"{% endif %}>
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Add Button (Shown if item NOT in cart) -->
+                        <button class="detail-add-btn {% if cart_item_qty > 0 %}d-none{% endif %}" id="add-btn-{{ product.id }}" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span>إضافة للسلة</span>
+                        </button>
+                        {% endwith %}
+                    {% else %}
+                        <button class="detail-add-btn out-of-stock-btn" disabled style="background: #94a3b8; cursor: not-allowed; width: 100%;">
+                            <i class="fas fa-info-circle"></i>
+                            <span>عذراً، المنتج غير متوفر حالياً</span>
+                        </button>
+                    {% endif %}
+                </div>
+
+                <!-- Features Grid -->
+                {% comment %} <div class="grid grid-cols-2 gap-4 mt-auto">
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <i class="fas fa-truck text-blue-500"></i>
+                        <span>شحن سريع</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <i class="fas fa-shield-alt text-green-500"></i>
+                        <span>ضمان الجودة</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <i class="fas fa-undo text-orange-500"></i>
+                        <span>استرجاع سهل</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <i class="fas fa-headset text-purple-500"></i>
+                        <span>دعم فني</span>
+                    </div>
+                </div> {% endcomment %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Section -->
+    <div class="modern-detail-container" style="padding: 2rem; min-height: 400px;">
+        <div class="modern-tabs-nav">
+            <button class="modern-tab-link active" onclick="switchTab('desc')">الوصف</button>
+            <button class="modern-tab-link" onclick="switchTab('reviews')">التقييمات ({{ product.get_total_reviews }})</button>
+        </div>
+
+        <div id="tab-desc" class="modern-tab-content active">
+            <div class="prose max-w-none text-gray-600 leading-loose">
+                {{ product.description|linebreaks }}
+            </div>
+        </div>
+
+        <div id="tab-reviews" class="modern-tab-content">
+            <!-- Review Stats Summary -->
+            <div class="bg-gray-50 rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="text-center md:text-right">
+                    <div class="text-5xl font-bold text-gray-900 mb-1" id="summary-avg">{{ product.get_average_rating|default:"0.0" }}</div>
+                    <div class="flex text-yellow-400 text-lg justify-center md:justify-start mb-2" id="summary-stars">
+                        {% for i in '12345'|make_list %}
+                            {% if forloop.counter <= product.get_average_rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star text-gray-300"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <p class="text-gray-500 text-sm" id="summary-count">بناءً على {{ product.get_total_reviews }} تقييم</p>
+                </div>
+                
+                {% if user.is_authenticated %}
+                <button onclick="document.getElementById('addReviewForm').classList.toggle('hidden')" class="px-6 py-3 bg-white border border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
+                    <i class="fas fa-pen me-2"></i> أكتب تقييمك
+                </button>
+                {% else %}
+                <button onclick="showLoginPrompt()" class="px-6 py-3 bg-gray-100 border border-transparent rounded-xl font-bold text-gray-500 hover:bg-gray-200 transition-all">
+                    سجل دخول للتقييم
+                </button>
+                {% endif %}
+            </div>
+
+            <!-- Add Review Form -->
+            <div id="addReviewForm" class="hidden mb-10 animate-fade-in-up">
+                <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                    <h3 class="font-bold text-lg mb-4">أضف تقييمك للمنتج</h3>
+                    <form id="reviewForm" onsubmit="submitReview(event, '{{ product.id }}', '{{ supplier.store_id }}')">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">تقييمك</label>
+                            <div class="star-rating-input flex flex-row-reverse justify-end gap-1">
+                                <input type="radio" name="rating" id="star5" value="5" class="hidden"><label for="star5" class="cursor-pointer text-gray-300 hover:text-yellow-400 text-2xl transition-colors"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" id="star4" value="4" class="hidden"><label for="star4" class="cursor-pointer text-gray-300 hover:text-yellow-400 text-2xl transition-colors"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" id="star3" value="3" class="hidden"><label for="star3" class="cursor-pointer text-gray-300 hover:text-yellow-400 text-2xl transition-colors"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" id="star2" value="2" class="hidden"><label for="star2" class="cursor-pointer text-gray-300 hover:text-yellow-400 text-2xl transition-colors"><i class="fas fa-star"></i></label>
+                                <input type="radio" name="rating" id="star1" value="1" class="hidden"><label for="star1" class="cursor-pointer text-gray-300 hover:text-yellow-400 text-2xl transition-colors"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">تعليقك</label>
+                            <textarea name="comment" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="شاركنا تجربتك مع المنتج..." required></textarea>
+                        </div>
+                        <button type="submit" class="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30">
+                            نشر التقييم
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Reviews List -->
+            <div class="space-y-6" id="reviews-list">
+                {% for review in product.review_set.all %}
+                <div class="flex gap-4 p-4 bg-gray-50 rounded-2xl">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                        {{ review.user.username|slice:":1" }}
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h4 class="font-bold text-gray-800">{{ review.user.username }}</h4>
+                            <div class="flex text-yellow-400 text-xs">
+                                {% for i in '12345'|make_list %}
+                                    <i class="fas fa-star"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm">{{ review.comment }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-8 text-gray-400">
+                    <i class="far fa-comment-dots text-4xl mb-3"></i>
+                    <p>لا توجد تقييمات بعد</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Bottom Cart Bar -->
+<div class="mobile-cart-bar d-lg-none {% if cart.get_total_items == 0 %}d-none{% endif %}" id="mobileCartBar">
+    <div class="cart-info">
+        <div class="cart-count">
+            <i class="fas fa-shopping-basket"></i>
+            <span id="mobile-cart-count">{{ cart.get_total_items }}</span> منتجات
+        </div>
+        <div class="cart-total">
+            <span class="text-muted small">المجموع:</span>
+            <span class="total-price" id="mobile-cart-total">
+                {% if supplier.enable_delivery_fees %}
+                    {{ cart.get_total_after_discount|add:estimated_fee|floatformat:0 }}
+                {% else %}
+                    {{ cart.get_total_after_discount|floatformat:0 }}
+                {% endif %}
+            </span> {{ supplier.currency }}
+        </div>
+    </div>
+    <a href="{% url 'cart-detail' supplier.store_id %}" class="cart-action-btn">
+        مشاهدة السلة <i class="fas fa-arrow-left me-2"></i>
+    </a>
+</div>
+
+{% endblock %}
+
+{% block v2_extra_js %}
+<script>
+    function switchMedia(type, url, element) {
+        const container = document.querySelector('.main-media-container');
+        const mainImage = document.getElementById('mainMediaDisplay');
+        const videoPlayer = document.getElementById('productVideoPlayer');
+        const thumbs = document.querySelectorAll('.thumb-item');
+
+        if (element.classList.contains('active')) return;
+
+        // Add switching class for transition
+        container.classList.add('switching');
+
+        setTimeout(() => {
+            // Update active thumb
+            thumbs.forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+
+            if (type === 'video') {
+                if (mainImage) mainImage.classList.add('d-none');
+                if (videoPlayer) {
+                    videoPlayer.classList.remove('d-none');
+                    videoPlayer.querySelector('source').src = url;
+                    videoPlayer.load();
+                    videoPlayer.play().catch(e => console.log("Auto-play blocked"));
+                }
+            } else {
+                if (videoPlayer) {
+                    videoPlayer.classList.add('d-none');
+                    videoPlayer.pause();
+                }
+                if (mainImage) {
+                    mainImage.classList.remove('d-none');
+                    mainImage.src = url;
+                }
+            }
+
+            // Remove switching class after content update
+            setTimeout(() => {
+                container.classList.remove('switching');
+            }, 50);
+        }, 300);
+    }
+
+    function switchTab(tabName) {
+        // Hide all
+        document.querySelectorAll('.modern-tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.modern-tab-link').forEach(el => el.classList.remove('active'));
+        
+        // Show target
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        
+        // Update nav
+        event.currentTarget.classList.add('active');
+    }
+    
+    // Cookie Helper
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Wishlist Toggle (reusing logic from product_list if possible, or simple version)
+     function toggleWishlist(productId, btn) {
+        const icon = btn.querySelector('i');
+        btn.disabled = true;
+        
+        const csrfToken = getCookie('csrftoken');
+        
+        fetch(`/wishlist/toggle/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                if (data.in_wishlist) {
+                    btn.classList.add('active');
+                    icon.className = 'fas fa-heart text-white';
+                } else {
+                    btn.classList.remove('active');
+                    icon.className = 'far fa-heart';
+                }
+            }
+        })
+        .finally(() => btn.disabled = false);
+    }
+    
+    // Review Submission
+    function submitReview(e, productId, storeId) {
+        e.preventDefault();
+        const form = e.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        // Get rating
+        const ratingInput = form.querySelector('input[name="rating"]:checked');
+        if (!ratingInput) {
+            alert('الرجاء اختيار تقييم');
+            return;
+        }
+        
+        // UI Loading
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري النشر...';
+        submitBtn.disabled = true;
+
+        const data = {
+            rating: ratingInput.value,
+            comment: form.querySelector('textarea[name="comment"]').value
+        };
+
+        const csrfToken = getCookie('csrftoken');
+
+        fetch(`/add_review/${productId}/${storeId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(response => {
+            if (response.success) {
+                // Hide form
+                document.getElementById('addReviewForm').classList.add('hidden');
+                form.reset();
+                
+                // Show success message
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-xl shadow-2xl z-50 flex items-center gap-3 animate-fade-in-up';
+                toast.innerHTML = `<i class="fas fa-check-circle"></i> ${response.message}`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+                
+                // Dynamic UI Update
+                // 1. Prepend new review
+                const reviewsList = document.getElementById('reviews-list');
+                const newReviewHTML = `
+                <div class="flex gap-4 p-4 bg-gray-50 rounded-2xl animate-fade-in-up border-r-4 border-blue-500">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                        ${response.review.initial}
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h4 class="font-bold text-gray-800">${response.review.user}</h4>
+                            <div class="flex text-yellow-400 text-xs">
+                                ${Array(5).fill(0).map((_, i) => 
+                                    i < response.review.rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star text-gray-300"></i>'
+                                ).join('')}
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm">${response.review.comment}</p>
+                        <span class="text-xs text-gray-400 mt-2 block">الآن</span>
+                    </div>
+                </div>`;
+                
+                // Remove "no reviews" placeholder if exists
+                if(reviewsList.querySelector('.text-center')) {
+                    reviewsList.innerHTML = '';
+                }
+                reviewsList.insertAdjacentHTML('afterbegin', newReviewHTML);
+                
+                // 2. Update Stats
+                document.getElementById('summary-avg').textContent = response.new_stats.average;
+                document.getElementById('summary-count').textContent = `بناءً على ${response.new_stats.total} تقييم`;
+                
+                // Update summary stars
+                const summaryStars = document.getElementById('summary-stars');
+                summaryStars.innerHTML = Array(5).fill(0).map((_, i) => 
+                    i < response.new_stats.average ? '<i class="fas fa-star"></i>' : '<i class="far fa-star text-gray-300"></i>'
+                ).join('');
+                
+            } else {
+                alert(response.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('حدث خطأ أثناء النشر. حاول مرة أخرى.');
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
+        });
+    }
+
+    // Load initial wishlist state
+    document.addEventListener('DOMContentLoaded', () => {
+        {% if user.is_authenticated %}
+        const btn = document.querySelector('.wishlist-btn');
+        if(btn) {
+            const pid = btn.dataset.productId;
+             fetch(`/wishlist/status/${pid}/`, {
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.in_wishlist) {
+                    btn.classList.add('active');
+                    btn.querySelector('i').className = 'fas fa-heart text-white';
+                }
+            });
+        }
+        {% endif %}
+    });
+</script>
+{% endblock %}

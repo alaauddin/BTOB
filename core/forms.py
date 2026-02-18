@@ -114,10 +114,10 @@ class ProductOfferForm(forms.ModelForm):
             }),
             'discount_precentage': forms.NumberInput(attrs={
                 'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all',
-                'placeholder': '0.00',
-                'step': '0.01',
-                'min': '0.01',
-                'max': '0.99'
+                'placeholder': 'مثال: 20',
+                'step': '1',
+                'min': '1',
+                'max': '99'
             }),
             'from_date': forms.DateInput(attrs={
                 'class': 'w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all',
@@ -143,12 +143,17 @@ class ProductOfferForm(forms.ModelForm):
         supplier = kwargs.pop('supplier', None)
         super().__init__(*args, **kwargs)
         
+        # Scale discount_precentage for display (0.2 -> 20)
+        if self.instance and self.instance.pk:
+            self.initial['discount_precentage'] = int(self.instance.discount_precentage * 100)
+        
         if supplier:
             # Filter products to only show those belonging to the supplier
-            # and exclude products that already have active offers
             from django.utils import timezone
             today = timezone.now().date()
             
+            # Products that DONT have a CURRENT active offer
+            # (where current means is_active=True and today is within date range)
             self.fields['product'].queryset = Product.objects.filter(
                 supplier=supplier
             ).distinct()
@@ -165,10 +170,13 @@ class ProductOfferForm(forms.ModelForm):
     def clean_discount_precentage(self):
         discount = self.cleaned_data.get('discount_precentage')
         if discount is not None:
-            if discount <= 0:
-                raise forms.ValidationError('نسبة الخصم يجب أن تكون أكبر من صفر')
-            if discount >= 1:
+            if discount < 1:
+                raise forms.ValidationError('نسبة الخصم يجب أن تكون 1% على الأقل')
+            if discount > 99:
                 raise forms.ValidationError('نسبة الخصم يجب أن تكون أقل من 100%')
+            
+            # Convert to decimal for storage (e.g. 20 -> 0.2)
+            return discount / 100
             
         return discount
 
@@ -186,9 +194,13 @@ class ProductOfferForm(forms.ModelForm):
             # Check for overlapping offers for the same product
             if product:
                 from django.utils import timezone
+                today = timezone.now().date()
+                
+                # An offer is truly "active" if is_active is True AND it hasn't expired yet
                 overlapping_offers = ProductOffer.objects.filter(
                     product=product,
-                    is_active=True
+                    is_active=True,
+                    to_date__gte=today # Not expired
                 ).filter(
                     models.Q(from_date__lte=to_date) & models.Q(to_date__gte=from_date)
                 )
@@ -197,7 +209,7 @@ class ProductOfferForm(forms.ModelForm):
                     overlapping_offers = overlapping_offers.exclude(pk=self.instance.pk)
                 
                 if overlapping_offers.exists():
-                    raise forms.ValidationError('يوجد عرض نشط آخر لهذا المنتج في نفس الفترة الزمنية')
+                    raise forms.ValidationError('يوجد عرض نشط حالياً أو عرض مجدول لهذا المنتج خلال هذه الفترة')
         
         return cleaned_data
 

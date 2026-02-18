@@ -211,8 +211,8 @@
             }
         }
         
-        const adId = document.getElementById('edit-platform-ad-id').value;
-        const url = adId ? `/edit-platform-ad/${adId}/` : '/add-platform-ad/';
+        const supplierParam = new URLSearchParams(window.location.search).get('supplier_id');
+        const url = (adId ? `/edit-platform-ad/${adId}/` : '/add-platform-ad/') + (supplierParam ? `?supplier_id=${supplierParam}` : '');
         
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
 
@@ -254,7 +254,10 @@
         const originalClass = icon.className;
         icon.className = 'fas fa-spinner fa-spin';
 
-        fetch(`/edit-platform-ad/${adId}/`, {
+        const supplierParam = new URLSearchParams(window.location.search).get('supplier_id');
+        const url = `/edit-platform-ad/${adId}/` + (supplierParam ? `?supplier_id=${supplierParam}` : '');
+
+        fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(res => res.json())
@@ -307,7 +310,10 @@
     }
 
     function togglePlatformAdStatus(adId) {
-        fetch(`/toggle-platform-ad-status/${adId}/`, {
+        const supplierParam = new URLSearchParams(window.location.search).get('supplier_id');
+        const url = `/toggle-platform-ad-status/${adId}/` + (supplierParam ? `?supplier_id=${supplierParam}` : '');
+
+        fetch(url, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',

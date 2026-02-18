@@ -199,8 +199,20 @@
             <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i class="fas fa-tags text-white text-2xl"></i>
             </div>
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">إضافة عرض جديد</h1>
-            <p class="text-gray-600">أضف عرض خصم لمنتجاتك لجذب المزيد من العملاء</p>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                {% if pre_selected_product %}
+                    إضافة عرض لـ {{ pre_selected_product.name }}
+                {% else %}
+                    إضافة عرض جديد
+                {% endif %}
+            </h1>
+            <p class="text-gray-600">
+                {% if pre_selected_product %}
+                    تحديد تفاصيل الخصم والمدة لهذا المنتج
+                {% else %}
+                    أضف عرض خصم لمنتجاتك لجذب المزيد من العملاء
+                {% endif %}
+            </p>
         </div>
 
         <!-- Stats Card -->
@@ -227,11 +239,11 @@
                 </a>
             </div>
         {% else %}
-            <form id="addOfferForm" method="post" novalidate>
+            <form id="addOfferForm" method="post" novalidate data-no-loader>
                 {% csrf_token %}
                 
                 <!-- Product Selection -->
-                <div class="form-group">
+                <div class="form-group" {% if pre_selected_product %}style="display: none;"{% endif %}>
                     <label class="form-label">
                         <i class="fas fa-box text-green-500 ml-2"></i>
                         {{ form.product.label }}
@@ -242,6 +254,18 @@
                         <span></span>
                     </div>
                 </div>
+
+                {% if pre_selected_product %}
+                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl flex items-center">
+                    <img src="{{ pre_selected_product.image.url|default:'' }}" alt="" class="w-16 h-16 rounded-xl object-cover border-2 border-white shadow-sm">
+                    <div class="mr-4">
+                        <h4 class="font-bold text-gray-800">{{ pre_selected_product.name }}</h4>
+                        <p class="text-green-600 font-semibold">{{ pre_selected_product.price }} {{ supplier.currency }}</p>
+                        <span class="text-xs text-gray-500">جاري إضافة عرض لهذا المنتج</span>
+                    </div>
+                    <a href="/add-offer/" class="mr-auto text-xs text-blue-600 hover:underline">تغيير المنتج</a>
+                </div>
+                {% endif %}
 
                 <!-- Product Preview -->
                 <div id="productPreview" class="product-preview">
@@ -268,7 +292,7 @@
                             <i class="fas fa-exclamation-circle"></i>
                             <span></span>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">أدخل القيمة كعدد عشري (مثال: 0.20 للخصم 20%)</p>
+                        <p class="text-xs text-gray-500 mt-1">أدخل نسبة الخصم كرقم صحيح (مثال: 20 للخصم 20%)</p>
                     </div>
 
                     <!-- From Date -->
@@ -377,6 +401,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (productSelect) {
         productSelect.addEventListener('change', updateProductPreview);
+        // Trigger preview on load if a product is already selected (e.g. from query param)
+        updateProductPreview();
     }
     
     if (discountInput) {
@@ -408,9 +434,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedProductId && productData[selectedProductId] && discountPercentage > 0) {
             const product = productData[selectedProductId];
             const originalPrice = product.price;
-            const discountAmount = originalPrice * discountPercentage;
+            const discountAmount = originalPrice * (discountPercentage / 100);
             const discountedPrice = originalPrice - discountAmount;
-            const discountPercent = Math.round(discountPercentage * 100);
+            const discountPercent = Math.round(discountPercentage);
             
             document.getElementById('originalPrice').textContent = originalPrice + ' {{ supplier.currency }}';
             document.getElementById('discountedPrice').textContent = discountedPrice.toFixed(2) + ' {{ supplier.currency }}';
@@ -458,7 +484,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Redirect after delay
                     setTimeout(() => {
-                        window.location.href = '/my-merchant/';
+                        const nextUrl = "{{ next }}";
+                        if (nextUrl) {
+                            window.location.href = nextUrl;
+                        } else if (document.referrer && document.referrer.includes(window.location.host)) {
+                            window.location.href = document.referrer;
+                        } else {
+                            window.location.href = '/my-merchant/';
+                        }
                     }, 1500);
                     
                 } else {
@@ -478,6 +511,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Hide loading state
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('loading');
+                if (typeof window.hidePageLoader === 'function') {
+                    window.hidePageLoader();
+                }
             });
         });
     }

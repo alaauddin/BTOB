@@ -235,12 +235,12 @@
                                 <div class="price-container-row">
                                     <div class="price-now">
                                         {% if product.has_discount %}
-                                            <span class="price-old text-gray-300 line-through text-[10px] ml-1">{{ product.price }}</span>
-                                            {{ product.get_price_with_offer }}
+                                            <span class="price-old text-gray-300 line-through text-[10px] ml-1">{{ product.price|floatformat:0 }} {{ supplier.currency.symbol }}</span>
+                                            {{ product.get_price_with_offer|floatformat:0 }} {{ supplier.currency.symbol }}
                                         {% else %}
-                                            {{ product.price }}
+                                            {{ product.price|floatformat:0 }} {{ supplier.currency.symbol }}
                                         {% endif %}
-                                        <small class="text-[10px] text-gray-400 font-bold ml-1">{{ supplier.currency.symbol }}</small>
+                                        
                                     </div>
                                     {% if product.has_discount %}
                                     <span class="price-badge-discount">خصم {{ product.get_discount_precentage }}%</span>
@@ -663,13 +663,21 @@
     }
 
     function openAddOfferModal(productId) {
-        // Redirect to add offer page with product context
-        window.location.href = `/add-offer/?product_id=${productId}`;
+        // Redirect to add offer page with product context and return URL
+        const next = encodeURIComponent(window.location.pathname + window.location.search);
+        let url = `/add-offer/?product_id=${productId}&next=${next}`;
+        const urlParams = new URLSearchParams(window.location.search);
+        const supplierId = urlParams.get('supplier_id');
+        if (supplierId) {
+            url += `&supplier_id=${supplierId}`;
+        }
+        window.location.href = url;
     }
 
     function editOffer(offerId) {
-        // Redirect to edit offer page
-        window.location.href = `/edit-offer/${offerId}/`;
+        // Redirect to edit offer page with return URL
+        const next = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = `/edit-offer/${offerId}/?next=${next}`;
     }
 
     function openPromotionModal() {

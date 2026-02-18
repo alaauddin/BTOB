@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 import logging
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -83,7 +83,9 @@ def add_ads(request):
                 ad.created_by = request.user
                 ad.save()
                 messages.success(request, 'تم إضافة الإعلان بنجاح!')
-                return redirect('my_merchant')
+                if request.user.is_superuser and supplier.user != request.user:
+                    return redirect(f"{reverse('merchant_marketing')}?supplier_id={supplier.id}")
+                return redirect('merchant_marketing')
             else:
                 messages.error(request, 'يرجى تصحيح الأخطاء في النموذج')
     
