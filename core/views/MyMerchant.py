@@ -92,6 +92,7 @@ def merchant_products(request):
         'platform_promotions': platform_promotions,
         'categories': categories,
         'product_form': ProductForm(supplier=supplier),
+        'has_seen_products_tour': supplier.has_seen_products_tour,
     }
     
     return render(request, template_name, context)

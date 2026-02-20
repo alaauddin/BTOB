@@ -34,6 +34,7 @@ from core.views.manage_platform_ads import add_platform_ad, edit_platform_ad, to
 from core.views.join_business import join_business, verify_signup_otp
 from core.views.merchant_auth import MerchantLoginView
 from core.views.privacy_policy import privacy_policy
+from core.views.tour_views import mark_tour_complete
 from core.views.profile import profile_view, address_list_view, set_current_address
 from core.views.landing import landing_page
 
@@ -153,6 +154,9 @@ urlpatterns = [
     path('add-payment-reference/<int:order_id>/', add_payment_reference, name='add_payment_reference'),
     path('merchant-order-quick-view/<int:order_id>/', merchant_order_quick_view, name='merchant_order_quick_view'),
     path('update-order-status-ajax/<int:order_id>/', update_order_status_ajax, name='update_order_status_ajax'),
+
+    # Tour API
+    path('api/tour-complete/', mark_tour_complete, name='tour_complete'),
 
 ]
 

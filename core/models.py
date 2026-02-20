@@ -126,6 +126,7 @@ class Supplier(models.Model):
     terms_agreed_at = models.DateTimeField(null=True, blank=True, verbose_name="تاريخ الموافقة على الشروط")
     return_policy = models.TextField(blank=True, null=True, verbose_name="سياسة الاستبدال والاسترجاع")
     is_active = models.BooleanField(default=True, verbose_name="نشط")
+    has_seen_products_tour = models.BooleanField(default=False, verbose_name="شاهد جولة المنتجات")
     
     def __str__(self):
         return self.name

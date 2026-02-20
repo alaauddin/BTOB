@@ -476,6 +476,12 @@
 </script>
 <script src="{% static 'js/merchant_products.js' %}?v={{css_version}}"></script>
 
+{% if not has_seen_products_tour %}
+<!-- Product Tour — First-Time User Experience -->
+<link rel="stylesheet" href="{% static 'css/product_tour.css' %}?v={{ css_version }}">
+<script src="{% static 'js/product_tour.js' %}?v={{ css_version }}"></script>
+{% endif %}
+
 <!-- Note: We should ideally move common product management scripts to a separate file, 
      but for now, I will ensure they are available in this template. -->
 {% endblock %}
