@@ -4,7 +4,7 @@
 {% block title %}إدارة الطلبات - {{ supplier.name }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/merchant_orders.css' %}">
+<link rel="stylesheet" href="{% static 'css/merchant_orders.css' %}?v={{ css_version }}">
 <style>
     :root {
         --primary-color: {{ supplier.primary_color|default:'#F58231' }};

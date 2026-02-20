@@ -137,16 +137,16 @@
     </div>
     <!-- Login Modal -->
     <div id="loginModal" class="fixed inset-0 z-[2000000] hidden" style="z-index: 9999999 !important;" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen p-4 text-center">
+        <div class="flex items-end sm:items-center justify-center min-h-screen p-4 sm:p-0 text-center">
             <div class="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-opacity" aria-hidden="true" onclick="closeLoginModal()"></div>
             
-            <div class="rounded-[42px] text-right overflow-hidden transform transition-all w-full max-w-[420px] max-h-[calc(100dvh-2rem)] flex flex-col modal-glass animate-modal-fade relative z-10 shadow-2xl">
+            <div class="rounded-t-[32px] sm:rounded-[42px] text-right overflow-hidden transform transition-all w-full sm:max-w-md lg:max-w-lg max-h-[85vh] sm:max-h-[calc(100dvh-2rem)] mt-auto sm:mt-0 flex flex-col modal-glass animate-modal-fade relative z-10 shadow-2xl">
                 <!-- Decorative Background Decorations -->
                 <div class="absolute -top-10 -right-10 w-40 h-40 bg-gray-200 opacity-[0.1] rounded-full blur-3xl pointer-events-none"></div>
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gray-200  rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute top-1/2 left-1/10 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gray-200  rounded-full blur-3xl pointer-events-none"></div>
 
                 <!-- Logo Header -->
-                <div class="pt-8 pb-2 text-center flex-shrink-0">
+                <div class="pt-2 pb-2 text-center flex-shrink-0">
                     <div class="flex items-center justify-center gap-3">
                         {% if supplier.profile_picture %}
                             <div class="w-14 h-14 rounded-2xl bg-white shadow-lg p-2 flex items-center justify-center transform -rotate-3 hover:rotate-0 transition-all border border-gray-50">
@@ -167,31 +167,31 @@
                 </div>
 
                 <!-- Scrollable Body -->
-                <div class="px-6 py-4 flex-grow overflow-y-auto custom-scrollbar">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 flex-grow overflow-y-auto custom-scrollbar relative z-20">
                     
                     <!-- New Refined Tab Switcher -->
-                    <div class="flex gap-2 mb-4">
-                        <button onclick="switchLoginTab('client')" id="tab-client" class="tab-card active flex-1 flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all">
+                    <div class="flex gap-2 mb-3 sm:mb-4">
+                        <button onclick="switchLoginTab('client')" id="tab-client" class="tab-card active flex-1 flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border-2 transition-all">
                             <div class="icon-box transition-colors scale-90 -mb-2">
                                 <i class="fas fa-user-tie text-lg text-gray-400"></i>
                             </div>
-                            <span class="text-[10px] font-bold text-gray-400">العملاء</span>
+                            <span class="text-[10px] sm:text-xs font-bold text-gray-400 mt-1">العملاء</span>
                         </button>
-                        <button onclick="switchLoginTab('merchant')" id="tab-merchant" class="tab-card flex-1 flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all">
+                        <button onclick="switchLoginTab('merchant')" id="tab-merchant" class="tab-card flex-1 flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border-2 transition-all">
                             <div class="icon-box transition-colors scale-90 -mb-2">
                                 <i class="fas fa-store text-lg text-gray-400"></i>
                             </div>
-                            <span class="text-[10px] font-bold text-gray-400">التجار</span>
+                            <span class="text-[10px] sm:text-xs font-bold text-gray-400 mt-1">التجار</span>
                         </button>
                     </div>
 
                     <!-- Client Login -->
                     <div id="client-login-content" class="text-center fade-in-section">
-                        <h3 class="text-sm font-bold text-gray-900 mb-4" id="modal-title">مرحباً بعودتك.. قم بتسجيل الدخول</h3>
+                        <h3 class="text-xs sm:text-sm font-bold text-gray-900 mb-3 sm:mb-4" id="modal-title">مرحباً بعودتك.. قم بتسجيل الدخول</h3>
                         
-                        <form id="unifiedAuthForm" class="space-y-4 text-right">
+                        <form id="unifiedAuthForm" class="space-y-3 sm:space-y-4 text-right">
                             <!-- Google Login -->
-                            <a href="{% provider_login_url 'google' %}" class="w-full text-xs font-bold text-gray-700 hover:bg-gray-50 bg-white py-4 rounded-2xl transition-all flex items-center justify-center gap-3 border border-gray-100 mb-1 shadow-sm">
+                            <a href="{% provider_login_url 'google' %}" class="w-full text-xs font-bold text-gray-700 hover:bg-gray-50 bg-white py-3.5 sm:py-4 rounded-2xl transition-all flex items-center justify-center gap-3 border border-gray-100 mb-1 shadow-sm">
                                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-4 h-4" alt="Google Logo">
                                 <span>المتابعة باستخدام Google</span>
                             </a>
@@ -203,22 +203,22 @@
                             </div>
 
                             <div class="floating-field-wrapper" dir="ltr">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-700 font-bold text-xs border-r border-gray-100 pr-3 my-3 bg-gray-50/20 rounded-l-xl z-20">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-700 font-bold text-xs border-r border-gray-100 pr-3 my-2 sm:my-3 bg-gray-50/20 rounded-l-xl z-20">
                                     +967
                                 </div>
                                 <input type="tel" name="phone" id="auth_phone" required 
                                     maxlength="9"
                                     onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                     oninput="this.value = this.value.replace(/[^0-9]/g, ''); handlePhoneValidation(this);"
-                                    class="block w-full pl-20 pr-4 py-3.5 rounded-2xl text-gray-900 text-left input-premium outline-none text-sm font-medium">
+                                    class="block w-full pl-20 pr-4 py-3 sm:py-3.5 rounded-2xl text-gray-900 text-left input-premium outline-none text-sm font-medium">
                                 <label class="floating-label">رقم الموبايل</label>
                             </div>
                             <p id="phone-validation-msg" class="text-[10px] text-red-500 mt-1 hidden"></p>
 
                             <!-- Privacy Policy Checkbox (Client Only) -->
-                            <div class="flex items-center gap-2 mt-4 justify-start">
+                            <div class="flex items-center gap-2 mt-3 sm:mt-4 justify-start">
                                 <input type="checkbox" id="privacy_policy_checkbox" class="w-4 h-4 rounded border-gray-300 text-[var(--primary-color)] cursor-pointer">
-                                <label for="privacy_policy_checkbox" class="text-[10px] text-gray-500 font-medium cursor-pointer">
+                                <label for="privacy_policy_checkbox" class="text-[10px] text-gray-500 font-medium cursor-pointer flex-1">
                                     أوافق على <a href="{% url 'privacy_policy' %}" class="text-[var(--primary-color)] hover:underline" onclick="event.stopPropagation()">سياسة الخصوصية</a>
                                 </label>
                             </div>
@@ -227,7 +227,7 @@
 
                     <!-- Merchant Login -->
                     <div id="merchant-login-content" class="hidden text-center fade-in-section">
-                        <form id="merchantAuthForm" class="space-y-4 text-right pt-2 border-t border-gray-50">
+                        <form id="merchantAuthForm" class="space-y-3 sm:space-y-4 text-right pt-2 border-t border-gray-50">
                             <div class="floating-field-wrapper">
                                 <input id="merchant_username" name="username" type="text" required 
                                     class="w-full px-4 py-3.5 rounded-2xl input-premium text-sm">
@@ -272,7 +272,7 @@
                 </div>
 
                 <!-- Fixed Footer -->
-                <div class="p-4 bg-gray-50/50 border-t border-gray-100 flex-shrink-0">
+                <div class="p-4 bg-gray-50/50 border-t border-gray-100 flex-shrink-0 relative z-20">
                     <div id="loginError" class="hidden mb-3 p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 animate-shake">
                         <i class="fas fa-exclamation-circle text-red-500 text-sm"></i>
                         <p class="error-text text-[10px] text-red-600 font-bold text-right flex-1"></p>

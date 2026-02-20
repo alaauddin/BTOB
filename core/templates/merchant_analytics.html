@@ -4,7 +4,7 @@
 {% block title %}التحليلات والتقارير - {{ supplier.name }}{% block title_suffix %}{% endblock %}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/merchant_dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/merchant_dashboard.css' %}?v={{ css_version }}">
 <style>
     .analytics-card {
         background: white;

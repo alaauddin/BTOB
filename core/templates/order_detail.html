@@ -4,7 +4,7 @@
 {% block title %}تفاصيل الطلب #{{ order.id|stringformat:"05d" }} | رواج{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/order_detail.css' %}?v=1.1">
+<link rel="stylesheet" href="{% static 'css/order_detail.css' %}?v={{ css_version }}">
 {% endblock %}
 
 {% block content %}

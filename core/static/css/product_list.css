@@ -1,0 +1,483 @@
+/* 
+ * PREMIUM STOREFRONT UI SYSTEM
+ * Designed for high-conversion mobile commerce
+ */
+
+:root {
+    /* Base Palette generated from Supplier Color */
+    /* Note: CSS variables derived from Django templates need to be handled either inline or via JS if they are dynamic.
+       Since this is a static CSS file, we provide fallback values. The actual dynamic values should be set inline in the template. */
+    --primary-base: #F58231;
+    --primary-bg-soft: #F582310D; /* 5% opacity */
+    --primary-bg-medium: #F582311A; /* 10% opacity */
+    
+    /* Surface Colors */
+    --surface-glass: rgba(255, 255, 255, 0.92);
+    --surface-1: #ffffff;
+    --surface-2: #f8f9fa;
+    --surface-3: #f1f3f5;
+    
+    /* Text Colors */
+    --text-1: #1a1a1a;
+    --text-2: #4a5568;
+    --text-3: #718096;
+    
+    /* Radii Scale */
+    --radius-sm: 16px;
+    --radius-md: 22px;
+    --radius-lg: 28px;
+    --radius-pill: 50px;
+    
+    /* Elevation */
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+    --shadow-float: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+    
+    /* Spacing */
+    --safe-area-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+/* Global Typography Reset */
+body {
+    font-family: 'Tajawal', 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
+    background-color: #fafbfc;
+    color: var(--text-1);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* SCROLLBAR HIDING */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* 
+ * HERO SECTION
+ * Immersive, edge-to-edge
+ */
+.hero-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    background: var(--surface-1);
+    box-shadow: var(--shadow-md);
+    margin-top: -20px; /* Pull up into topbar area if needed */
+    z-index: 10;
+    margin-bottom: 2rem;
+}
+
+.hero-carousel-item {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .hero-carousel-item {
+        aspect-ratio: 4/3; /* Taller on mobile */
+    }
+}
+
+.hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.01);
+    transition: transform 0.5s ease-out;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 2rem;
+}
+
+.hero-glass-badge {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+    color: white;
+    max-width: 400px;
+    animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 
+ * CATEGORY NAVIGATION
+ * Floating Pill Style
+ */
+.category-nav-wrapper {
+    position: sticky;
+    top: 60px; /* Adjust based on topbar height */
+    z-index: 99;
+    background: rgba(250, 251, 252, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+
+.category-pills-container {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    padding: 0 1.5rem;
+    scroll-padding-left: 1.5rem;
+    scroll-behavior: smooth;
+}
+
+.nav-pill-item {
+    white-space: nowrap;
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-2);
+    background: var(--surface-1);
+    border: 1px solid transparent;
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+.nav-pill-item.active {
+    background: var(--primary-base);
+    color: white;
+    box-shadow: 0 8px 16px -4px rgba(0,0,0,0.2);
+    transform: scale(1.02);
+}
+
+.nav-pill-item:active {
+    transform: scale(0.96);
+}
+
+.subcategory-bar {
+    background: var(--surface-2);
+    font-size: 0.85rem;
+    padding: 0.5rem 1.5rem;
+    display: none; /* Toggled via collapse */
+}
+
+.subcategory-bar.show {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+/* 
+ * PRODUCT CARDS - APPLE WALLET STYLE
+ */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Desktop default */
+    gap: 1.25rem;
+    padding: 0 0 2rem 0;
+}
+
+@media (max-width: 576px) {
+    /* Mobile specific grid */
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
+.store-card {
+    background: var(--surface-1);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.03);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.store-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.card-image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1/1; /* Square for consistency */
+    background: var(--surface-2);
+    overflow: hidden;
+}
+
+.card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.store-card:hover .card-img {
+    transform: scale(1.08); /* Subtle zoom */
+}
+
+.wishlist-btn-float {
+    position: absolute;
+    top: 10px;
+    right: 10px; /* LTR, will be left if RTL */
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    color: var(--text-3);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    z-index: 5;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+/* RTL Fix for absolute positioning */
+[dir="rtl"] .wishlist-btn-float {
+    right: auto;
+    left: 10px;
+}
+
+.wishlist-btn-float:active {
+    transform: scale(0.9);
+}
+
+.wishlist-btn-float.active {
+    color: #e53e3e;
+    background: #fff5f5;
+}
+
+.card-content {
+    padding: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.prod-category {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-3);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.prod-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-1);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex-grow: 1;
+}
+
+@media (max-width: 576px) {
+    .prod-title {
+        font-size: 0.9rem;
+    }
+    .card-content {
+        padding: 0.75rem;
+    }
+}
+
+.price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.current-price {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-1);
+}
+
+.old-price {
+    font-size: 0.85rem;
+    text-decoration: line-through;
+    color: var(--text-3);
+    font-weight: 500;
+}
+
+.btn-add-cart {
+    margin-top: 0.75rem;
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 14px;
+    background: var(--surface-2);
+    color: var(--text-1);
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: none;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-add-cart:hover {
+    background: var(--primary-base);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-add-cart:active {
+    transform: scale(0.98);
+}
+
+/* 
+ * MOBILE FLOATING CART BAR
+ * "Island" Design
+ */
+.cart-island-wrapper {
+    position: fixed;
+    bottom: calc(20px + var(--safe-area-bottom));
+    left: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    pointer-events: none; /* Let clicks pass through outside the island */
+}
+
+.cart-island {
+    pointer-events: auto;
+    background: var(--text-1); /* Dark background usually looks premium */
+    color: white;
+    width: 100%;
+    max-width: 500px;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-pill);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    animation: slideUpIsland 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cart-island-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-island-count {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: rgba(255,255,255,0.7);
+}
+
+.cart-island-total {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.cart-island-btn {
+    background: white;
+    color: var(--text-1);
+    padding: 0.6rem 1.25rem;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.2s;
+}
+
+.cart-island-btn:active {
+    transform: scale(0.95);
+}
+
+/*
+ * PENDING ORDERS SIDEBAR / SHEET
+ */
+.sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.sheet-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.order-sheet {
+    position: fixed;
+    top: 0;
+    right: 0; /* RTL: left? No, usually sidebars are direction aware */
+    bottom: 0;
+    width: 100%;
+    max-width: 400px;
+    background: var(--surface-1);
+    z-index: 2001;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    transform: translateX(100%); /* RTL: -100% logic usually handled by dir */
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+[dir="rtl"] .order-sheet {
+    right: auto;
+    left: 0;
+    transform: translateX(-100%);
+}
+
+.order-sheet.active {
+    transform: translateX(0);
+}
+
+@media (max-width: 576px) {
+    /* On mobile, can act more like bottom sheet if desired, 
+       but side drawer is also standard in refined apps */
+    .order-sheet {
+        max-width: 100%;
+    }
+}
+
+/* Animations */
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUpIsland {
+    from { opacity: 0; transform: translateY(100%); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
