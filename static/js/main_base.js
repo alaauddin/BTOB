@@ -687,58 +687,10 @@ window.showNotification = function (message, type = 'info') {
     }, 4000);
 };
 
-// Global Page Loader Logic
+// No-op loader stubs (loader removed)
 document.addEventListener('DOMContentLoaded', function () {
-    const loader = document.getElementById('page-loader');
-
-    // Hide loader immediately on DOM content ready (doesn't wait for images)
-    if (loader) {
-        setTimeout(() => {
-            loader.classList.add('hidden-loader');
-            if (typeof NProgress !== 'undefined') NProgress.done();
-        }, 100);
-    } else {
-        if (typeof NProgress !== 'undefined') NProgress.done();
-    }
-
-    // Function to show loader
-    window.showPageLoader = function () {
-        if (loader) loader.classList.remove('hidden-loader');
-        if (typeof NProgress !== 'undefined') NProgress.start();
-    };
-
-    // Function to hide loader
-    window.hidePageLoader = function () {
-        if (loader) loader.classList.add('hidden-loader');
-        if (typeof NProgress !== 'undefined') NProgress.done();
-    };
-
-    // Trigger on internal link clicks
-    document.body.addEventListener('click', function (e) {
-        const link = e.target.closest('a');
-        if (!link) return;
-
-        const href = link.getAttribute('href');
-        if (href &&
-            !href.startsWith('#') &&
-            !href.startsWith('javascript:') &&
-            !href.startsWith('mailto:') &&
-            !href.startsWith('tel:') &&
-            !link.hasAttribute('download') &&
-            link.target !== '_blank' &&
-            !e.ctrlKey && !e.shiftKey && !e.metaKey && !e.altKey) {
-
-            window.showPageLoader();
-        }
-    });
-
-    // Trigger on all form submissions (except those with remote/ajax flags if any)
-    document.addEventListener('submit', function (e) {
-        const form = e.target;
-        if (!form.hasAttribute('data-no-loader')) {
-            window.showPageLoader();
-        }
-    });
+    window.showPageLoader = function () { };
+    window.hidePageLoader = function () { };
 
     function setupDropdown(btnId, dropdownId) {
         const btn = document.getElementById(btnId);
@@ -914,12 +866,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, { passive: true });
     }
 
-    // Handle browser back button (pageshow event)
-    window.addEventListener('pageshow', function (event) {
-        if (event.persisted && loader) {
-            loader.classList.add('hidden-loader');
-        }
-    });
 });
 
 // Intercept Google Login in Modal

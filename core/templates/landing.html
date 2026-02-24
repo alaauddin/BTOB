@@ -78,6 +78,12 @@
                         <i class="fas fa-store ml-2"></i>
                         {% if user.is_authenticated and active_store %}إلى متجرك{% else %}افتح متجرك{% endif %}
                     </a>
+                    {% if not user.is_authenticated %}
+                    <button onclick="openLoginModal()" class="btn btn-outline-light shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
+                        <i class="fas fa-sign-in-alt ml-2"></i>
+                        تسجيل الدخول
+                    </button>
+                    {% endif %}
                 </div>
             </div>
 

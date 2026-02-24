@@ -23,9 +23,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://unpkg.com/nprogress@0.2.0/nprogress.css" rel="stylesheet">
-    <script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
-    <script>NProgress.configure({ showSpinner: true, trickleSpeed: 200 });</script>
+
 
     <!-- Arabic web fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -114,27 +112,7 @@
             csrfToken: "{{ csrf_token }}"
         };
     </script>
-    <script>NProgress.start();</script>
-    <!-- Page Loader -->
-    <div id="page-loader">
-        <div class="loader-content">
-            <div class="loader-ring"></div>
-            <div class="loader-logo-container">
-                {% if system_settings.laoder_image %}
-                    <img src="{{ system_settings.laoder_image.url }}" alt="{{ system_settings.site_name }}" class="h-24 w-auto loader-logo">
-                {% elif supplier.profile_picture %}
-                    <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="h-24 w-auto loader-logo">
-                {% else %}
-                    {% if system_settings.logo %}
-                        <img src="{{ system_settings.logo.url }}" alt="{{ system_settings.site_name }}" class="h-24 w-auto loader-logo">
-                    {% else %}
-                        <img src="{% static 'logo.png' %}" alt="{{ system_settings.site_name|default:'متجرك' }}" class="h-24 w-auto loader-logo">
-                    {% endif %}
-                {% endif %}
-                <div class="logo-glimmer"></div>
-            </div>
-        </div>
-    </div>
+
     <!-- Login Modal -->
     <div id="loginModal" class="fixed inset-0 z-[2000000] hidden" style="z-index: 9999999 !important;" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end sm:items-center justify-center  p-4 sm:p-0 text-center">
