@@ -955,7 +955,7 @@ fbq('track', 'InitiateCheckout', {
                 newAddressForm.querySelectorAll('.text-danger.small').forEach(el => el.textContent = '');
                 
                 $.ajax({
-                    url: window.location.href, // Current page handles POST for new address
+                    url: "{% url 'checkout_select_address_or_custom_address' supplier.store_id %}",
                     type: "POST",
                     data: formData,
                     processData: false,
