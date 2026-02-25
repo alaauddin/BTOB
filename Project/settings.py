@@ -20,14 +20,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '3piw9%i!eoy!2l$ab%02%hu^t#k&nvv(i5dhul6^-n*s6w9*_j'
+SECRET_KEY = os.getenv(
+    'SECRET_KEY',
+    '3piw9%i!eoy!2l$ab%02%hu^t#k&nvv(i5dhul6^-n*s6w9*_j',  # dev fallback only
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # Ensure you run 'python manage.py collectstatic' for static files to work!
+DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 # Multi-tenant: the root domain under which subdomains are created.
 # Suppliers get <subdomain>.PLATFORM_DOMAIN  (e.g. store1.rawaaj.com)
@@ -136,29 +138,29 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Project.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
+# Database — env-driven (PostgreSQL in production, SQLite for local dev)
+_db_engine = os.getenv('DB_ENGINE', '')
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME','aratfbjj_aratat_db'),
-        'USER': os.getenv('DB_USER','aratfbjj_aratat_db_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD','wr94$43URhE4'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '3306'),
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-        },
+if _db_engine:
+    # Production: PostgreSQL (or any engine set via DB_ENGINE env var)
+    DATABASES = {
+        'default': {
+            'ENGINE': _db_engine,
+            'NAME': os.getenv('DB_NAME', 'btob_db'),
+            'USER': os.getenv('DB_USER', 'btob_user'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'db'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
     }
-}
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+else:
+    # Local development: SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
     }
-}
 
 
 # Password validation
