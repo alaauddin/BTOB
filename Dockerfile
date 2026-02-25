@@ -43,8 +43,9 @@ COPY --chown=app:app . .
 # Collect static files (uses whitenoise)
 RUN python manage.py collectstatic --noinput 2>/dev/null || true
 
-# Make entrypoint executable
-RUN chmod +x /app/entrypoint.sh
+# Make entrypoint executable + create writable dir for gunicorn control socket
+RUN chmod +x /app/entrypoint.sh && \
+    mkdir -p /run/gunicorn && chown app:app /run/gunicorn
 
 # Switch to non-root user
 USER app
