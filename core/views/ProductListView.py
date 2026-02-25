@@ -17,17 +17,23 @@ from core.models import (
 logger = logging.getLogger(__name__)
 
 def product_list(request, store_id=None, store_slug=None, category_id=None, subcategory_id=None):
-    # Determine the effective slug/id
-    target_slug = store_slug or store_id
-    if not target_slug:
-        raise Http404("Store identifier missing")
+    # --- Tenant resolution (subdomain-first, URL-param fallback) ---
+    tenant = getattr(request, 'tenant', None)
 
-    # Use middleware-injected store if available and matching
-    if hasattr(request, 'current_store') and request.current_store.store_id == target_slug:
-        supplier = request.current_store
+    if tenant:
+        # Subdomain middleware already resolved the supplier
+        supplier = tenant
     else:
-        supplier = get_object_or_404(Supplier, store_id=target_slug, is_active=True)
-    
+        # Legacy URL-based resolution
+        target_slug = store_slug or store_id
+        if not target_slug:
+            raise Http404("Store identifier missing")
+
+        if hasattr(request, 'current_store') and request.current_store.store_id == target_slug:
+            supplier = request.current_store
+        else:
+            supplier = get_object_or_404(Supplier, store_id=target_slug, is_active=True)
+
     # Ensure store_id variable is consistent for template
     store_id = supplier.store_id
     today = timezone.now().date()

@@ -24,10 +24,14 @@ SECRET_KEY = '3piw9%i!eoy!2l$ab%02%hu^t#k&nvv(i5dhul6^-n*s6w9*_j'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False  # Ensure you run 'python manage.py collectstatic' for static files to work!
+DEBUG = True  # Ensure you run 'python manage.py collectstatic' for static files to work!
 
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['*']
+
+# Multi-tenant: the root domain under which subdomains are created.
+# Suppliers get <subdomain>.PLATFORM_DOMAIN  (e.g. store1.rawaaj.com)
+PLATFORM_DOMAIN = os.getenv('PLATFORM_DOMAIN', 'localhost')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
@@ -92,6 +96,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'core.tenant_middleware.SubdomainMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -148,12 +153,12 @@ DATABASES = {
     }
 }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
 
 
 # Password validation
