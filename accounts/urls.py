@@ -1,4 +1,5 @@
 from django.urls import path
+from django.shortcuts import redirect
 from accounts import views
 from django.contrib.auth import views as auth_views
 from accounts.forms import UserLoginForm
@@ -7,7 +8,7 @@ urlpatterns = [
 
     # Redirect standalone pages to home (using modal instead)
     path('signup/', lambda request: redirect('/'), name='signup'),
-    path('login/', lambda request: redirect('/'), name='login'),
+    path('login/', views.login_view, name='login'),
     path('settings/change_password/', auth_views.PasswordChangeView.as_view(template_name='change_password.html'),name='password_change'),
     path('settings/change_password/done',auth_views.PasswordChangeDoneView.as_view(template_name='change_password_done.html'),name='password_change_done'),
     path('account/', views.UserUpdateView.as_view(), name ='my_account'),

@@ -41,6 +41,28 @@ def signup (request):
     return render(request, 'signup.html', {'form':form})
 
 
+def login_view(request):
+    """
+    Render the standalone login page using login.html template.
+    Redirects authenticated users to the homepage.
+    """
+    if request.user.is_authenticated:
+        return redirect(request.GET.get('next', '/'))
+
+    from .forms import UserLoginForm
+    form = UserLoginForm()
+
+    if request.method == 'POST':
+        form = UserLoginForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            auth_login(request, user)
+            next_url = request.POST.get('next') or request.GET.get('next', '/')
+            return redirect(next_url)
+
+    return render(request, 'login.html', {'form': form})
+
+
 
     
 class UserUpdateView(UpdateView):

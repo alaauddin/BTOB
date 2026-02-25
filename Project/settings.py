@@ -213,7 +213,7 @@ MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 
 
 
-LOGOUT_REDIRECT_URL = 'suppliers_list'
+LOGOUT_REDIRECT_URL = 'landing_page'
 
 LOGIN_REDIRECT_URL = 'suppliers_list'
 
