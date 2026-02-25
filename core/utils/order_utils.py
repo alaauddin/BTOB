@@ -22,7 +22,7 @@ def complete_order_and_notify(request, order, cart, shipping_address, supplier):
             f"للمزيد من العروض الرائعة، زورونا دائماً: https://{domain}\n"
             f"في خدمتك دائماً، الدعم الفني: 779923330"
         )
-        send_whatsapp_message(shipping_address.phone, user_msg)
+        send_whatsapp_message(str(shipping_address.phone), str(user_msg))
         
         # 2. Supplier Notification
         location_link = f"https://www.google.com/maps?q={shipping_address.latitude},{shipping_address.longitude}" if shipping_address.latitude and shipping_address.longitude else "غير متوفر"
@@ -39,7 +39,7 @@ def complete_order_and_notify(request, order, cart, shipping_address, supplier):
             f"ملاحظات: {shipping_address.address_line2 or 'لا يوجد'}\n"
             f"رابط الطلب: https://{domain}/merchant-order/{order.id}/"
         )
-        send_whatsapp_message(supplier.phone, supp_msg)
+        send_whatsapp_message(str(supplier.phone), str(supp_msg))
         
         # 3. Platform Support Notification
         send_whatsapp_message("779923330", f"طلب جديد رقم #{order.id} من {supplier.name} لصالح العميل {shipping_address.phone}")

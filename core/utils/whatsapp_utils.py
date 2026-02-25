@@ -53,7 +53,7 @@ def send_whatsapp_message(phone, message):
     """
     Asynchronously send a WhatsApp message using a background thread.
     """
-    thread = threading.Thread(target=_send_whatsapp_message_sync, args=(phone, message))
+    thread = threading.Thread(target=_send_whatsapp_message_sync, args=(str(phone), str(message)))
     thread.daemon = True
     thread.start()
     return True # Return true immediately as it's running in background
