@@ -1,19 +1,49 @@
 # ==================================
 # BTOB Platform — Python Dependencies
 # ==================================
-# Core
-Django>=4.2,<7.0
+
+# Core Framework
+Django>=6.0,<7.0
 gunicorn>=21.2.0
+
+# Database
 psycopg2-binary>=2.9.9
+PyMySQL>=1.1.0
 
 # Static Files
 whitenoise>=6.5.0
 
-# Auth
-django-allauth>=0.56.0
+# Auth & Social Login
+django-allauth>=0.54.0
+oauthlib>=3.3.0
+requests-oauthlib>=2.0.0
+PyJWT>=2.10.0
+python3-openid>=3.2.0
+cryptography>=46.0.0
+defusedxml>=0.7.1
 
-# Templates
+# Templates & Admin
 django-widget-tweaks>=1.5.0
+django-unfold>=0.75.0
+
+# AI / Generative
+google-genai>=1.0.0
+google-generativeai>=0.8.0
+openai>=2.0.0
+
+# Google APIs
+google-api-python-client>=2.100.0
+google-auth>=2.0.0
+google-auth-httplib2>=0.3.0
+
+# Media Processing
+Pillow>=12.0.0
+
+# HTTP
+requests>=2.32.0
+httpx>=0.28.0
 
 # Utils
-Pillow>=10.0.0
+python-dotenv>=1.0.0
+tenacity>=9.0.0
+tqdm>=4.60.0
