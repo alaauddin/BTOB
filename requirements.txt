@@ -4,7 +4,7 @@
 
 # Core Framework
 Django>=6.0,<7.0
-gunicorn>=21.2.0
+gunicorn>=21.2.0,<25.0.0
 
 # Database
 psycopg2-binary>=2.9.9
