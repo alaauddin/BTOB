@@ -3,6 +3,15 @@
 
 {% block title %}تفاصيل الطلب #{{ order.id }}{% endblock %}
 
+{% block meta_pixel_events %}
+fbq('track', 'Purchase', {
+    value: {{ order.total_amount|default:0 }},
+    currency: '{{ supplier.currency|escapejs }}',
+    content_type: 'product',
+    num_items: {{ order_items|length }}
+});
+{% endblock %}
+
 {% block extra_css %}
 <style>
     /* Enhanced Compact Order Details */

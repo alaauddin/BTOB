@@ -17,6 +17,16 @@
 <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}">
 {% endblock %}
 
+{% block meta_pixel_events %}
+fbq('track', 'ViewContent', {
+    content_name: '{{ product.name|escapejs }}',
+    content_ids: ['{{ product.id }}'],
+    content_type: 'product',
+    value: {{ product.get_price_with_offer }},
+    currency: '{{ supplier.currency|escapejs }}'
+});
+{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/products.css' %}?v={{ css_version }}">
 {% endblock %}

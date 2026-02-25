@@ -2,6 +2,12 @@
 {% load static %}
 
 {% block content %}
+
+{% block meta_pixel_events %}
+fbq('track', 'Lead', {
+    content_name: 'انضمام نشاط تجاري'
+});
+{% endblock %}
 <section class="business-join-wrapper py-1 md:py-2 bg-[#f8fafc]">
     <div class="container mx-auto px-4">
         <div class="max-w-3xl mx-auto business-join-card bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">

@@ -350,6 +350,14 @@ waitForJQuery(function () {
                 }
 
                 showNotification('تمت إضافة المنتج إلى السلة بنجاح', 'success');
+
+                // Meta Pixel: AddToCart event
+                if (typeof fbq !== 'undefined') {
+                    fbq('track', 'AddToCart', {
+                        content_ids: [String(productId)],
+                        content_type: 'product'
+                    });
+                }
             },
             error: function (xhr) {
                 // --- Rollback ---

@@ -3,6 +3,14 @@
 
 {% block title %}سلة التسوق{% endblock %}
 
+{% block meta_pixel_events %}
+fbq('track', 'InitiateCheckout', {
+    value: {{ cart.get_total_after_discount|default:0 }},
+    currency: '{{ supplier.currency|escapejs }}',
+    num_items: {{ cart.get_total_items|default:0 }}
+});
+{% endblock %}
+
 {% block extra_css %}
     <style>
     :root {

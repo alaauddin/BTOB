@@ -241,6 +241,10 @@ class SystemSettingsAdmin(admin.ModelAdmin):
             'fields': ('seo_title', 'seo_description', 'seo_keywords'),
             'description': 'تحكم في كيفية ظهور موقعك في نتائج محركات البحث مثل جوجل.'
         }),
+        ('التتبع والتحليلات', {
+            'fields': ('meta_pixel_id',),
+            'description': 'إعدادات أدوات التتبع والتحليلات مثل Meta Pixel (فيسبوك بكسل).'
+        }),
     )
     
     def has_add_permission(self, request):

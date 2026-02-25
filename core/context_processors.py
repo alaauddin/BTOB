@@ -61,7 +61,7 @@ def system_settings(request):
 
     return {
         'system_settings': settings,
-        'css_version': '1.13.0', # Bump version for nav changes AND JS cache bust
+        'css_version': '1.14.0', # Bump version for Meta Pixel integration
         'nav_state': nav_state,
         'active_store': active_store,
         'user_stores_count': user_stores_count,
