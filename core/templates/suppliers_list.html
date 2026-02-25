@@ -334,8 +334,8 @@
         
         /* Premium Card Sizing on Desktop */
         .supplier-card-container {
-            width: 280px; /* Fixed robust width */
-            height: 380px; /* Fixed height for uniformity */
+            width: 280px;
+            height: auto;
         }
         
         .supplier-card {
@@ -345,50 +345,54 @@
         }
 
         /* Enhanced Cover Image */
-        .supplier-cover {
-            height: 120px; /* Taller cover on desktop */
+        .supplier-image-container {
+            height: 130px;
+            z-index: 10;
         }
         
         /* Adjusted Logo Position */
         .supplier-logo-wrapper {
             width: 80px;
             height: 80px;
-            top: 80px; /* Position relative to card top */
-            bottom: auto;
-            transform: translateX(-50%);
+            top: 100%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             border: 4px solid white;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 999;
         }
 
         /* Content Area Adjustments */
         .supplier-content {
-            margin-top: 50px; /* Space for logo */
-            padding: 0 1.5rem 1.5rem;
+            padding: 0 1.5rem 1.25rem;
+            padding-top: 3.75rem;
             text-align: center;
             display: flex;
             flex-direction: column;
             flex-grow: 1;
+            position: relative;
+            z-index: 1;
         }
 
         .supplier-name {
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
+            margin-bottom: 0.25rem;
         }
 
         .supplier-meta {
             justify-content: center;
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
         }
 
         .supplier-tags {
             justify-content: center;
-            margin-bottom: auto; /* Push footer down */
+            margin-bottom: auto;
         }
 
         .supplier-footer {
-            margin-top: 1rem;
-            padding-top: 1rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
             justify-content: space-between;
         }
 
@@ -398,7 +402,7 @@
         }
 
         .rating-box {
-            font-size: 1rem;
+            font-size: 0.875rem;
         }
         
         .platform-offers-swiper .swiper-slide {
@@ -1583,9 +1587,11 @@
                                     <i class="fas fa-cog text-sm"></i>
                                 </a>
                                 {% endif %}
-                                <div class="supplier-cover" style="{% if supplier.panal_picture %}background-image: url('{{ supplier.panal_picture.url }}'); background-size: cover; background-position: center;{% else %}background-color: {{ supplier.primary_color }}22;{% endif %}"></div>
-                                <div class="supplier-logo-wrapper">
-                                    <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% elif system_settings.logo %}{{ system_settings.logo.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}" loading="lazy">
+                                <div class="supplier-image-container">
+                                    <div class="supplier-cover" style="{% if supplier.panal_picture %}background-image: url('{{ supplier.panal_picture.url }}');{% else %}background-color: {{ supplier.primary_color }}22;{% endif %}"></div>
+                                    <div class="supplier-logo-wrapper">
+                                        <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% elif system_settings.logo %}{{ system_settings.logo.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}" loading="lazy">
+                                    </div>
                                 </div>
                                 
                                 <div class="supplier-content">
@@ -1634,9 +1640,11 @@
                                     <i class="fas fa-cog text-sm"></i>
                                 </a>
                                 {% endif %}
-                                <div class="supplier-cover" style="{% if supplier.panal_picture %}background-image: url('{{ supplier.panal_picture.url }}'); background-size: cover; background-position: center;{% else %}background-color: {{ supplier.primary_color }}22;{% endif %}"></div>
-                                <div class="supplier-logo-wrapper">
-                                    <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% elif system_settings.logo %}{{ system_settings.logo.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}" loading="lazy">
+                                <div class="supplier-image-container">
+                                    <div class="supplier-cover" style="{% if supplier.panal_picture %}background-image: url('{{ supplier.panal_picture.url }}');{% else %}background-color: {{ supplier.primary_color }}22;{% endif %}"></div>
+                                    <div class="supplier-logo-wrapper">
+                                        <img src="{% if supplier.profile_picture %}{{ supplier.profile_picture.url }}{% elif system_settings.logo %}{{ system_settings.logo.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ supplier.name }}" loading="lazy">
+                                    </div>
                                 </div>
                                 
                                 <div class="supplier-content">

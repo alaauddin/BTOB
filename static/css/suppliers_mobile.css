@@ -1,47 +1,50 @@
-/* Mobile Optimizations for Supplier Cards - 2.5 Cards Per Row */
+/* Mobile Optimizations for Supplier Cards */
 @media (max-width: 768px) {
 
-    /* Very small cards to fit 2.5 in viewport */
-    .supplier-horizontal-scroll {
-        grid-auto-columns: 150px !important;
-        /* 2.5 cards visible on ~375px screen */
-        gap: 10px !important;
-        padding: 10px 15px 30px !important;
+    /* Compact cover area */
+    .supplier-image-container {
+        height: 110px !important;
+        z-index: 10 !important;
+        overflow: visible !important;
     }
 
-    /* Minimal cover area */
     .supplier-cover {
-        height: 60px !important;
-        /* Very compact */
+        height: 100% !important;
     }
 
-    /* Tiny logo */
+    /* Centered logo on the line */
     .supplier-logo-wrapper {
-        width: 40px !important;
-        height: 40px !important;
-        top: 40px !important;
-        /* Adjusted for tiny cover */
-        right: 10px !important;
-        border-width: 2px !important;
+        width: 56px !important;
+        height: 56px !important;
+        top: 100% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        bottom: auto !important;
+        right: auto !important;
+        border-width: 3px !important;
+        z-index: 999 !important;
+        background-color: white !important;
     }
 
-    /* Minimal content padding */
+    /* Content padding for logo clearance */
     .supplier-content {
-        padding: 1.5rem 0.65rem 0.65rem !important;
+        padding: 2.5rem 0.65rem 0.65rem !important;
+        position: relative !important;
+        z-index: 1 !important;
     }
 
-    /* Small name */
+    /* Name */
     .supplier-name {
         font-size: 0.85rem !important;
-        margin-bottom: 0.25rem !important;
+        margin-bottom: 0.15rem !important;
         font-weight: 700 !important;
         line-height: 1.2 !important;
     }
 
-    /* Tiny meta */
+    /* Meta */
     .supplier-meta {
         font-size: 0.7rem !important;
-        margin-bottom: 0.4rem !important;
+        margin-bottom: 0.3rem !important;
     }
 
     .supplier-meta i {
@@ -50,10 +53,10 @@
         margin-left: 4px !important;
     }
 
-    /* Tiny tags */
+    /* Tags */
     .supplier-tags {
         gap: 3px !important;
-        margin-top: 0.3rem !important;
+        margin-top: 0.2rem !important;
     }
 
     .supplier-tag {
@@ -61,13 +64,13 @@
         padding: 2px 5px !important;
     }
 
-    /* Minimal footer */
+    /* Footer */
     .supplier-footer {
-        padding-top: 0.85rem !important;
+        padding-top: 0.5rem !important;
         gap: 5px !important;
     }
 
-    /* Tiny button */
+    /* Button */
     .btn-visit {
         min-height: 34px !important;
         padding: 6px 10px !important;
@@ -81,7 +84,7 @@
         font-size: 0.75rem !important;
     }
 
-    /* Tiny rating */
+    /* Rating */
     .rating-box {
         padding: 4px 6px !important;
         font-size: 0.7rem !important;
