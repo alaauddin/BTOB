@@ -127,10 +127,13 @@ def verify_signup_otp(request):
 
             # User Welcoming Notification
             try:
+                login_url = request.build_absolute_uri('/login/')
                 welcome_msg = (
                     f"أهلاً بك يا *{signup_data['owner_name']}* في عائلة رواج! 🌟\n\n"
                     f"لقد تم تفعيل رقمك وإنشاء حسابك لمتجر *({supplier.name})*.\n\n"
+                    f"🔹 *رابط تسجيل الدخول:* {login_url}\n"
                     f"🔹 *اسم المستخدم:* {user.username}\n"
+                    f"🔹 *كلمة المرور:* {signup_data['password']}\n"
                     f"🔹 *الحالة:* قيد المراجعة حالياً\n\n"
                     f"سيقوم فريقنا بتنشيط حسابك قريباً جداً. تصفح لوحة التحكم الآن! 🚀"
                 )
