@@ -212,7 +212,12 @@ class VisitTrackingMiddleware:
         ua = ua_string.lower()
 
         # --- Detect Bots ---
-        bot_keywords = ['bot', 'crawl', 'spider', 'slurp', 'mediapartners', 'headless']
+        bot_keywords = [
+            'bot', 'crawl', 'spider', 'slurp', 'mediapartners', 'headless',
+            'externalhit', 'facebookexternalhit', 'whatsapp', 'twitterbot',
+            'linkedinbot', 'googlebot', 'bingbot', 'yandex', 'semrush',
+            'preview', 'fetch', 'scraper', 'curl', 'wget', 'python-requests',
+        ]
         if any(kw in ua for kw in bot_keywords):
             return 'bot', '', ''
 
