@@ -252,3 +252,114 @@ class SystemSettingsAdmin(admin.ModelAdmin):
         if self.model.objects.exists():
             return False
         return super().has_add_permission(request)
+
+
+@admin.register(WebsiteStatistic)
+class WebsiteStatisticAdmin(admin.ModelAdmin):
+    """Admin dashboard for website visit statistics with summary analytics."""
+
+    list_display = (
+        'visited_at', 'page_type_badge', 'device_type_badge', 'browser',
+        'operating_system', 'ip_address', 'user', 'supplier',
+        'response_status',
+    )
+    list_filter = (
+        'visited_at', 'page_type', 'device_type', 'browser',
+        'operating_system', 'supplier', 'response_status',
+    )
+    search_fields = ('url', 'ip_address', 'user__username', 'referrer')
+    readonly_fields = (
+        'url', 'page_type', 'method', 'ip_address', 'user_agent',
+        'device_type', 'browser', 'operating_system', 'referrer',
+        'user', 'session_key', 'supplier', 'response_status', 'visited_at',
+    )
+    list_per_page = 50
+    date_hierarchy = 'visited_at'
+    list_select_related = ('user', 'supplier')
+
+    fieldsets = (
+        ('معلومات الزيارة', {
+            'fields': ('url', 'page_type', 'method', 'response_status', 'visited_at'),
+        }),
+        ('معلومات الزائر', {
+            'fields': ('ip_address', 'user_agent', 'device_type', 'browser', 'operating_system'),
+        }),
+        ('المرجع', {
+            'fields': ('referrer',),
+        }),
+        ('المستخدم والجلسة', {
+            'fields': ('user', 'session_key'),
+        }),
+        ('المتجر', {
+            'fields': ('supplier',),
+        }),
+    )
+
+    def has_add_permission(self, request):
+        """Visits are created automatically by middleware, not manually."""
+        return False
+
+    def page_type_badge(self, obj):
+        """Return a colored badge for the page type."""
+        from django.utils.html import format_html
+        colors = {
+            'landing': '#3b82f6',
+            'product_list': '#8b5cf6',
+            'product_detail': '#10b981',
+            'cart': '#f59e0b',
+            'checkout': '#ef4444',
+            'order_detail': '#06b6d4',
+            'join_business': '#ec4899',
+            'profile': '#6366f1',
+            'merchant_dashboard': '#14b8a6',
+            'other': '#6b7280',
+        }
+        color = colors.get(obj.page_type, '#6b7280')
+        label = obj.get_page_type_display()
+        return format_html(
+            '<span style="background:{}; color:#fff; padding:3px 8px; '
+            'border-radius:12px; font-size:11px; white-space:nowrap;">{}</span>',
+            color, label
+        )
+    page_type_badge.short_description = 'نوع الصفحة'
+    page_type_badge.admin_order_field = 'page_type'
+
+    def device_type_badge(self, obj):
+        """Return an icon + colored badge for the device type."""
+        from django.utils.html import format_html
+        icons = {
+            'mobile': '📱', 'tablet': '📟', 'desktop': '🖥️',
+            'bot': '🤖', 'unknown': '❓',
+        }
+        icon = icons.get(obj.device_type, '❓')
+        label = obj.get_device_type_display()
+        return format_html('{} {}', icon, label)
+    device_type_badge.short_description = 'الجهاز'
+    device_type_badge.admin_order_field = 'device_type'
+
+    def changelist_view(self, request, extra_context=None):
+        """Add summary statistics to the top of the change list."""
+        from django.utils import timezone
+        from django.db.models import Count, Q
+
+        extra_context = extra_context or {}
+        today = timezone.now().date()
+
+        today_qs = WebsiteStatistic.objects.filter(visited_at__date=today)
+        total_today = today_qs.count()
+        unique_ips_today = today_qs.values('ip_address').distinct().count()
+        device_breakdown = dict(
+            today_qs.values_list('device_type')
+            .annotate(count=Count('id'))
+            .values_list('device_type', 'count')
+        )
+
+        extra_context['visit_summary'] = {
+            'total_today': total_today,
+            'unique_ips_today': unique_ips_today,
+            'mobile_today': device_breakdown.get('mobile', 0),
+            'desktop_today': device_breakdown.get('desktop', 0),
+            'tablet_today': device_breakdown.get('tablet', 0),
+        }
+
+        return super().changelist_view(request, extra_context=extra_context)

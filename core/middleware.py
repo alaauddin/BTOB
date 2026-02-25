@@ -56,3 +56,197 @@ class NavigationMiddleware:
                 pass 
         
         return None
+
+
+class VisitTrackingMiddleware:
+    """
+    Middleware to record every page visit into the WebsiteStatistic table.
+    Skips static files, media, admin, and AJAX requests for efficiency.
+    """
+
+    # URL prefixes to ignore (static assets, admin, API internals)
+    SKIP_PREFIXES = (
+        '/static/', '/media/', '/admin/', '/favicon.ico',
+        '/__debug__/', '/api/',
+    )
+
+    # Map URL names → page_type values
+    PAGE_TYPE_MAP = {
+        'landing': 'landing',
+        'suppliers_list': 'landing',
+        'product-list': 'product_list',
+        'product_list_category': 'product_list',
+        'product_list_subcategory': 'product_list',
+        'product_detail': 'product_detail',
+        'product_canonical': 'product_detail',
+        'cart-detail': 'cart',
+        'store_cart': 'cart',
+        'checkout': 'checkout',
+        'store_checkout': 'checkout',
+        'order_detail': 'order_detail',
+        'my_orders': 'order_detail',
+        'join_business': 'join_business',
+        'profile': 'profile',
+        'edit_profile': 'profile',
+    }
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
+        # Skip non-page requests
+        path = request.path_info
+        if any(path.startswith(prefix) for prefix in self.SKIP_PREFIXES):
+            return response
+
+        # Skip AJAX / fetch requests
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return response
+
+        # Only track GET requests (page views)
+        if request.method != 'GET':
+            return response
+
+        # Skip non-HTML responses
+        content_type = response.get('Content-Type', '')
+        if 'text/html' not in content_type:
+            return response
+
+        try:
+            self._record_visit(request, response)
+        except Exception:
+            # Never let tracking break the site
+            import logging
+            logging.getLogger(__name__).exception("Visit tracking error")
+
+        return response
+
+    def _record_visit(self, request, response):
+        """Create a WebsiteStatistic record for this page visit."""
+        from core.models import WebsiteStatistic, Supplier
+
+        ua_string = request.META.get('HTTP_USER_AGENT', '')
+        device_type, browser, operating_system = self._parse_user_agent(ua_string)
+
+        # Skip bots to keep data clean
+        if device_type == 'bot':
+            return
+
+        # Determine page type from URL name
+        page_type = 'other'
+        supplier = None
+        if request.resolver_match:
+            url_name = request.resolver_match.url_name or ''
+            page_type = self.PAGE_TYPE_MAP.get(url_name, 'other')
+
+            # Check for dashboard views
+            if request.path_info.startswith('/dashboard/'):
+                page_type = 'merchant_dashboard'
+
+            # Extract supplier from URL kwargs
+            store_id = (
+                request.resolver_match.kwargs.get('store_id')
+                or request.resolver_match.kwargs.get('store_slug')
+            )
+            if store_id:
+                try:
+                    supplier = Supplier.objects.get(store_id=store_id)
+                except Supplier.DoesNotExist:
+                    pass
+
+        # Build absolute URL
+        url = request.build_absolute_uri()[:2048]
+
+        # Get referrer
+        referrer = request.META.get('HTTP_REFERER', '')[:2048]
+
+        # Get IP
+        ip_address = self._get_client_ip(request)
+
+        # Get session key
+        session_key = ''
+        if hasattr(request, 'session') and request.session.session_key:
+            session_key = request.session.session_key
+
+        # Get user
+        user = request.user if request.user.is_authenticated else None
+
+        WebsiteStatistic.objects.create(
+            url=url,
+            page_type=page_type,
+            method=request.method,
+            ip_address=ip_address,
+            user_agent=ua_string[:500],
+            device_type=device_type,
+            browser=browser,
+            operating_system=operating_system,
+            referrer=referrer,
+            user=user,
+            session_key=session_key,
+            supplier=supplier,
+            response_status=response.status_code,
+        )
+
+    @staticmethod
+    def _get_client_ip(request):
+        """Extract the real client IP, accounting for proxies."""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0].strip()
+        return request.META.get('REMOTE_ADDR')
+
+    @staticmethod
+    def _parse_user_agent(ua_string):
+        """
+        Parse a user-agent string to extract device type, browser, and OS.
+        Lightweight implementation — no external dependencies required.
+
+        Parameters:
+            ua_string: The raw user-agent header string.
+
+        Returns:
+            Tuple of (device_type, browser, operating_system).
+        """
+        ua = ua_string.lower()
+
+        # --- Detect Bots ---
+        bot_keywords = ['bot', 'crawl', 'spider', 'slurp', 'mediapartners', 'headless']
+        if any(kw in ua for kw in bot_keywords):
+            return 'bot', '', ''
+
+        # --- Detect OS ---
+        operating_system = 'غير معروف'
+        if 'windows' in ua:
+            operating_system = 'Windows'
+        elif 'mac os' in ua or 'macintosh' in ua:
+            operating_system = 'macOS'
+        elif 'iphone' in ua or 'ipad' in ua:
+            operating_system = 'iOS'
+        elif 'android' in ua:
+            operating_system = 'Android'
+        elif 'linux' in ua:
+            operating_system = 'Linux'
+
+        # --- Detect Device ---
+        device_type = 'desktop'
+        if 'ipad' in ua or 'tablet' in ua:
+            device_type = 'tablet'
+        elif any(kw in ua for kw in ['iphone', 'android', 'mobile', 'phone']):
+            device_type = 'mobile'
+
+        # --- Detect Browser ---
+        browser = 'غير معروف'
+        if 'edg/' in ua or 'edge/' in ua:
+            browser = 'Edge'
+        elif 'opr/' in ua or 'opera' in ua:
+            browser = 'Opera'
+        elif 'chrome/' in ua and 'chromium' not in ua:
+            browser = 'Chrome'
+        elif 'safari/' in ua and 'chrome' not in ua:
+            browser = 'Safari'
+        elif 'firefox/' in ua:
+            browser = 'Firefox'
+
+        return device_type, browser, operating_system
