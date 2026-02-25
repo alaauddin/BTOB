@@ -9,6 +9,12 @@ from core.models import SystemSettings, Supplier, OTPVerification
 from core.utils.whatsapp_utils import send_whatsapp_message
 
 def join_business(request):
+    # Redirect authenticated users
+    if request.user.is_authenticated:
+        if hasattr(request.user, 'supplier'):
+            return redirect('my_merchant')
+        return redirect('suppliers_list')
+
     if request.method == 'POST':
         form = MerchantSignupForm(request.POST)
         if form.is_valid():
@@ -38,6 +44,12 @@ def join_business(request):
     return render(request, 'join_business.html', {'business_form': form})
 
 def verify_signup_otp(request):
+    # Redirect authenticated users
+    if request.user.is_authenticated:
+        if hasattr(request.user, 'supplier'):
+            return redirect('my_merchant')
+        return redirect('suppliers_list')
+
     signup_data = request.session.get('merchant_signup_data')
     if not signup_data:
         messages.error(request, "جلسة التسجيل انتهت صلاحيتها.")

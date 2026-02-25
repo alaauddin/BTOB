@@ -13,21 +13,14 @@
 <div class="container mx-auto" dir="rtl">
     <!-- Header Section -->
     <div class="merchant-card p-6 mb-3 relative overflow-hidden group">
-        <!-- Settings Gear -->
-        <div class="absolute top-4 left-4 z-20">
-            <button class="bg-white/90 hover:bg-white text-gray-700 px-4 py-2 rounded-full flex items-center justify-center gap-2 transition-all shadow-md backdrop-blur-sm border border-gray-200" onclick="openSettingsModal()" title="إعدادات المتجر">
-                <i class="fas fa-cog"></i>
-                <span class="text-sm font-bold">تعديل المتجر</span>
-            </button>
-        </div>
-
-        <!-- Hidden input for copying -->
-
-
-
         <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
             <!-- Profile Info -->
             <div class="flex items-center w-full lg:w-auto">
+                <!-- Settings Gear (inline, not overlapping) -->
+                <button class="bg-white/90 hover:bg-white text-gray-700 px-3 py-2 rounded-full flex items-center justify-center gap-2 transition-all shadow-md backdrop-blur-sm border border-gray-200 ml-auto lg:hidden" onclick="openSettingsModal()" title="إعدادات المتجر">
+                    <i class="fas fa-cog"></i>
+                    <span class="text-sm font-bold">اعدادات المتجر</span>
+                </button>
                 <div class="relative flex-shrink-0">
                     {% if supplier.profile_picture %}
                         <img src="{{ supplier.profile_picture.url }}" alt="{{ supplier.name }}" class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md">
@@ -59,6 +52,11 @@
 
             <!-- Integrated Stats Row & Link Container -->
             <div class="flex flex-col gap-3 w-full lg:w-auto">
+                <!-- Settings Button (desktop only) -->
+                <button class="hidden lg:flex bg-white/90 hover:bg-white text-gray-700 px-4 py-2 rounded-full items-center justify-center gap-2 transition-all shadow-md backdrop-blur-sm border border-gray-200 self-end" onclick="openSettingsModal()" title="إعدادات المتجر">
+                    <i class="fas fa-cog"></i>
+                    <span class="text-sm font-bold">تعديل المتجر</span>
+                </button>
                 <!-- Integrated Stats Row -->
                 <div class="flex items-center justify-between w-full bg-gray-50/80 rounded-2xl p-2 gap-2 lg:gap-6 border border-gray-100/50 backdrop-blur-sm">
                     <!-- Products Stat -->
