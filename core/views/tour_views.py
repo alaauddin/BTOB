@@ -8,6 +8,7 @@ import json
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from core.utils.merchant_utils import get_active_supplier
 
 
 @login_required
@@ -29,7 +30,7 @@ def mark_tour_complete(request):
     JsonResponse
         ``{"status": "ok"}`` on success, or an error with status 400/403.
     """
-    supplier = getattr(request.user, 'supplier', None)
+    supplier = get_active_supplier(request)
     if not supplier:
         return JsonResponse({'status': 'error', 'message': 'ليس لديك متجر.'}, status=403)
 

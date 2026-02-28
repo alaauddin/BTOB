@@ -8,6 +8,7 @@ import json
 
 from core.forms import ProductOfferForm
 from core.models import Supplier, Product, ProductOffer
+from core.utils.merchant_utils import get_active_supplier
 
 
 @login_required
@@ -19,7 +20,7 @@ def edit_product_offer(request, offer_id):
         
         # Check permissions
         if not request.user.is_superuser:
-            supplier = Supplier.objects.get(user=request.user)
+            supplier = get_active_supplier(request)
             if offer.product.supplier != supplier:
                 raise PermissionError("You do not have permission to edit this offer")
         else:

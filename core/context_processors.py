@@ -1,5 +1,6 @@
-from .models import SystemSettings
+from .models import SystemSettings, Supplier
 from django.urls import resolve
+from core.utils.merchant_utils import get_active_supplier
 
 
 def system_settings(request):
@@ -18,25 +19,22 @@ def system_settings(request):
     user_stores_count = 0
 
     if user.is_authenticated:
-        # Check if user has a supplier profile (OneToOne)
-        # In a multi-tenant future, this might check a ManyToMany or ForeignKey reverse relation
-        try:
-            if hasattr(user, 'supplier') and user.supplier:
-                # User IS a merchant
-                active_store = user.supplier
-                user_stores_count = 1 
-                # If we had a way to check for multiple stores:
-                # user_stores_count = user.suppliers.count() 
-                
-                if user_stores_count > 1:
-                    nav_state = 'multi_merchant'
-                else:
-                    nav_state = 'merchant'
+        # Use our new utility to get the active context
+        active_store = get_active_supplier(request)
+        
+        # Calculate how many stores this user is involved in
+        owned_count = 1 if hasattr(user, 'supplier') and user.supplier else 0
+        managed_count = user.managed_suppliers.count()
+        user_stores_count = owned_count + managed_count
+        
+        if user_stores_count > 0:
+            if user_stores_count > 1:
+                nav_state = 'multi_merchant'
             else:
-                # User logged in but NO store
-                nav_state = 'onboarding'
-        except Exception:
-             nav_state = 'onboarding' # Fallback if DB error on accessing relation
+                nav_state = 'merchant'
+        else:
+            # User logged in but NO store association
+            nav_state = 'onboarding'
              
         # --- Context Override for Storefront Views ---
         # If a merchant is viewing a store page (buying mode), force visitor state

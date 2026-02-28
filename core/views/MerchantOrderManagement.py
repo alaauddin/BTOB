@@ -8,6 +8,7 @@ from django.db.models import Q, Sum, Count
 from django.utils import timezone
 from core.models import Supplier, Order, OrderItem, ShippingAddress, OrderStatus, OrderNote, OrderPaymentReference
 from django.core.paginator import Paginator
+from core.utils.merchant_utils import get_active_supplier
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ def merchant_orders(request):
         supplier_id = request.GET.get('supplier_id')
         supplier = get_object_or_404(Supplier, id=supplier_id)
     else:
-        supplier = Supplier.objects.filter(user=request.user).first()
+        supplier = get_active_supplier(request)
     
     if not supplier:
         messages.error(request, 'You are not registered as a supplier.')
@@ -128,7 +129,7 @@ def merchant_order_detail(request, order_id):
         supplier_id = request.GET.get('supplier_id')
         supplier = get_object_or_404(Supplier, id=supplier_id)
     else:
-        supplier = Supplier.objects.filter(user=request.user).first()
+        supplier = get_active_supplier(request)
     
     if not supplier:
         messages.error(request, 'You are not registered as a supplier.')
@@ -268,7 +269,7 @@ def update_order_status(request, order_id):
             supplier_id = request.POST.get('supplier_id')
             supplier = get_object_or_404(Supplier, id=supplier_id)
         else:
-            supplier = Supplier.objects.filter(user=request.user).first()
+            supplier = get_active_supplier(request)
         
         if not supplier:
             messages.error(request, 'You are not registered as a supplier.')
@@ -312,7 +313,7 @@ def merchant_order_quick_view(request, order_id):
         supplier_id = request.GET.get('supplier_id')
         supplier = get_object_or_404(Supplier, id=supplier_id)
     else:
-        supplier = Supplier.objects.filter(user=request.user).first()
+        supplier = get_active_supplier(request)
     
     if not supplier:
         return JsonResponse({'success': False, 'message': 'You are not registered as a supplier.'}, status=403)
@@ -393,7 +394,7 @@ def update_order_status_ajax(request, order_id):
         supplier_id = request.POST.get('supplier_id')
         supplier = get_object_or_404(Supplier, id=supplier_id)
     else:
-        supplier = Supplier.objects.filter(user=request.user).first()
+        supplier = get_active_supplier(request)
     
     if not supplier:
         return JsonResponse({'success': False, 'message': 'Access denied.'}, status=403)

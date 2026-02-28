@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from core.models import SupplierAds, Supplier
+from core.utils.merchant_utils import get_active_supplier
 
 @login_required
 @require_POST
@@ -12,7 +13,7 @@ def toggle_ad_status(request, ad_id):
         if request.user.is_superuser:
             ad = SupplierAds.objects.get(id=ad_id)
         else:
-            supplier = Supplier.objects.get(user=request.user)
+            supplier = get_active_supplier(request)
             ad = SupplierAds.objects.get(id=ad_id, supplier=supplier)
         
         # Toggle status

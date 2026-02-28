@@ -7,6 +7,10 @@ from core.forms import ProductForm, SupplierSettingsForm
 from django.db.models import Count, Sum, Avg
 from django.utils import timezone
 from core.models import SupplierAdPlatfrom
+from core.utils.merchant_utils import get_active_supplier
+import logging
+
+logger = logging.getLogger("core.views.MyMerchant")
 
 
 
@@ -18,14 +22,10 @@ def my_merchant(request):
     template_name = 'my_merchant.html'
 
     # Allow superuser to view other suppliers
-    if request.user.is_superuser and request.GET.get('supplier_id'):
-        supplier_id = request.GET.get('supplier_id')
-        supplier = Supplier.objects.filter(id=supplier_id).first()
-    else:
-        # accessing related object safely
-        supplier = getattr(request.user, 'supplier', None)
+    supplier = get_active_supplier(request)
     
     if not supplier:
+        logger.warning(f"No active supplier found for user {request.user} in my_merchant")
         if request.user.is_superuser:
              return redirect('suppliers_list')
         # Should be caught by decorator, but as fallback
@@ -68,11 +68,7 @@ def my_merchant(request):
 def merchant_products(request):
     template_name = 'merchant_products.html'
 
-    if request.user.is_superuser and request.GET.get('supplier_id'):
-        supplier_id = request.GET.get('supplier_id')
-        supplier = Supplier.objects.filter(id=supplier_id).first()
-    else:
-        supplier = getattr(request.user, 'supplier', None)
+    supplier = get_active_supplier(request)
     
     if not supplier:
         return redirect('suppliers_list')
@@ -101,14 +97,7 @@ def merchant_products(request):
 @merchant_required
 def update_merchant_settings(request):
     supplier = None
-    if request.user.is_superuser:
-        if request.POST.get('supplier_id'):
-           supplier = Supplier.objects.filter(id=request.POST.get('supplier_id')).first()
-        elif request.GET.get('supplier_id'):
-            supplier = Supplier.objects.filter(id=request.GET.get('supplier_id')).first()
-
-    if not supplier:
-        supplier = getattr(request.user, 'supplier', None)
+    supplier = get_active_supplier(request)
         
     if not supplier:
         return redirect('suppliers_list')
@@ -117,6 +106,7 @@ def update_merchant_settings(request):
         form = SupplierSettingsForm(request.POST, request.FILES, instance=supplier)
         if form.is_valid():
             form.save()
+            logger.info(f"User {request.user} updated settings for supplier {supplier.name}")
             
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': True})
@@ -137,11 +127,7 @@ def update_merchant_settings(request):
 def merchant_marketing(request):
     template_name = 'merchant_marketing.html'
 
-    if request.user.is_superuser and request.GET.get('supplier_id'):
-        supplier_id = request.GET.get('supplier_id')
-        supplier = Supplier.objects.filter(id=supplier_id).first()
-    else:
-        supplier = getattr(request.user, 'supplier', None)
+    supplier = get_active_supplier(request)
     
     if not supplier:
         return redirect('suppliers_list')
@@ -169,11 +155,7 @@ def merchant_marketing(request):
 def merchant_analytics(request):
     template_name = 'merchant_analytics.html'
 
-    if request.user.is_superuser and request.GET.get('supplier_id'):
-        supplier_id = request.GET.get('supplier_id')
-        supplier = Supplier.objects.filter(id=supplier_id).first()
-    else:
-        supplier = getattr(request.user, 'supplier', None)
+    supplier = get_active_supplier(request)
     
     if not supplier:
         return redirect('suppliers_list')
@@ -206,7 +188,7 @@ def merchant_tutorial(request):
         supplier_id = request.GET.get('supplier_id')
         supplier = Supplier.objects.filter(id=supplier_id).first()
     else:
-        supplier = Supplier.objects.filter(user=request.user).first()
+        supplier = get_active_supplier(request)
     
     if not supplier:
         return redirect('suppliers_list')
@@ -222,11 +204,7 @@ def merchant_tutorial(request):
 def quick_update_stock(request, product_id):
     if request.method == 'POST':
         # Get the supplier
-        if request.user.is_superuser and (request.POST.get('supplier_id') or request.GET.get('supplier_id')):
-            supplier_id = request.POST.get('supplier_id') or request.GET.get('supplier_id')
-            supplier = get_object_or_404(Supplier, id=supplier_id)
-        else:
-            supplier = getattr(request.user, 'supplier', None)
+        supplier = get_active_supplier(request)
             
         if not supplier:
             return JsonResponse({'success': False, 'message': 'You are not registered as a supplier.'}, status=403)

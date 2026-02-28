@@ -9,6 +9,7 @@ import json
 
 from core.forms import ProductOfferForm
 from core.models import Supplier, Product, ProductOffer, PlatformOfferAd
+from core.utils.merchant_utils import get_active_supplier
 
 
 @merchant_required
@@ -20,7 +21,7 @@ def add_product_offer(request):
         supplier = get_object_or_404(Supplier, id=supplier_id)
     else:
         # Get the supplier for the current user
-        supplier = getattr(request.user, 'supplier', None)
+        supplier = get_active_supplier(request)
         
     if not supplier:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':

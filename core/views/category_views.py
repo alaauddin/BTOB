@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404
 from core.models import Supplier, Category, ProductCategory
+from core.utils.merchant_utils import get_active_supplier
 
 @login_required
 @require_POST
@@ -11,7 +12,7 @@ def add_category_ajax(request):
         if request.user.is_superuser and request.POST.get('supplier_id'):
              supplier = get_object_or_404(Supplier, id=request.POST.get('supplier_id'))
         else:
-             supplier = get_object_or_404(Supplier, user=request.user)
+             supplier = get_active_supplier(request)
         
         parent_id = request.POST.get('parent_id')
         new_parent_name = request.POST.get('new_parent_name')

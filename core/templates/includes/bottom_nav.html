@@ -10,7 +10,7 @@
                     <span class="nav-text">لوحة التحكم</span>
                 </a>
             </li>
-            {% elif user.supplier %}
+            {% elif active_store %}
             <li class="liquid-nav-item {% if request.resolver_match.url_name == 'my_merchant' %}active{% endif %}" data-index="0">
                 <a href="{% url 'my_merchant' %}">
                     <span class="nav-icon"><i class="fas fa-store"></i></span>

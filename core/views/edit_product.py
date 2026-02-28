@@ -8,6 +8,7 @@ import json
 
 from core.forms import ProductForm
 from core.models import Supplier, ProductCategory, Product, Category, ProductImage
+from core.utils.merchant_utils import get_active_supplier
 
 
 @login_required
@@ -20,7 +21,7 @@ def edit_product(request, product_id):
         supplier = product.supplier
     else:
         try:
-            supplier = get_object_or_404(Supplier, user=request.user)
+            supplier = get_active_supplier(request)
         except:
              return JsonResponse({
                 'success': False, 

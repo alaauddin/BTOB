@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from core.models import Supplier, PlatformOfferAd, Product
 from core.forms import PlatformOfferAdForm
+from core.utils.merchant_utils import get_active_supplier
 
 @login_required
 @require_http_methods(["POST"])
@@ -16,7 +17,7 @@ def request_promotion(request):
     if request.user.is_superuser and supplier_id:
         supplier = get_object_or_404(Supplier, id=supplier_id)
     else:
-        supplier = Supplier.objects.filter(user=request.user).first()
+        supplier = get_active_supplier(request)
         
     if not supplier:
         return JsonResponse({

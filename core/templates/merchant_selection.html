@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl w-full space-y-8">
+        <div class="text-center">
+            <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+                اختر المتجر للإدارة
+            </h2>
+            <p class="mt-2 text-sm text-gray-600">
+                لديك صلاحية الوصول لإدارة عدة متاجر. يرجى اختيار المتجر الذي ترغب في الدخول إليه.
+            </p>
+        </div>
+
+        <div class="mt-8 grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {% for store in suppliers %}
+            <form method="POST" action="{% url 'select_merchant' %}" class="h-full">
+                {% csrf_token %}
+                <input type="hidden" name="supplier_id" value="{{ store.id }}">
+                <button type="submit" class="w-full h-full bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group text-right flex flex-col focus:outline-none focus:ring-2 focus:ring-brand-primary">
+                    <div class="h-32 w-full bg-gray-100 relative overflow-hidden">
+                        {% if store.panal_picture %}
+                        <img src="{{ store.panal_picture.url }}" alt="{{ store.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        {% else %}
+                        <div class="w-full h-full bg-gradient-to-br from-brand-primary to-blue-500 opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="p-6 flex-1 flex flex-col relative">
+                        <!-- Profile Picture inside Panel -->
+                        <div class="absolute -top-10 right-6 w-16 h-16 rounded-full border-4 border-white shadow-sm overflow-hidden bg-white flex items-center justify-center">
+                            {% if store.profile_picture %}
+                            <img src="{{ store.profile_picture.url }}" alt="{{ store.name }}" class="w-full h-full object-cover">
+                            {% else %}
+                            <span class="text-xl font-bold text-gray-400">{{ store.name|slice:":1" }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-8 flex-1">
+                            <h3 class="text-lg font-bold text-gray-900 group-hover:text-brand-primary transition-colors">{{ store.name }}</h3>
+                            <p class="mt-1 text-sm text-gray-500 line-clamp-2">
+                                {% if store.address %}{{ store.address }}{% else %}لا يوجد عنوان محدد{% endif %}
+                            </p>
+                            
+                            <div class="mt-4 flex items-center gap-2">
+                                {% if store.is_active %}
+                                <span class="bg-green-100 text-green-800 text-xs px-2.5 py-0.5 rounded-full font-medium">نشط</span>
+                                {% else %}
+                                <span class="bg-red-100 text-red-800 text-xs px-2.5 py-0.5 rounded-full font-medium">غير نشط</span>
+                                {% endif %}
+                                
+                                {% if request.user == store.user %}
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2.5 py-0.5 rounded-full font-medium">المالك</span>
+                                {% else %}
+                                <span class="bg-gray-100 text-gray-800 text-xs px-2.5 py-0.5 rounded-full font-medium">مدير</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex items-center justify-between text-sm font-medium text-brand-primary">
+                            <span>الدخول للمتجر</span>
+                            <i class="fas fa-arrow-left transform group-hover:-translate-x-2 transition-transform"></i>
+                        </div>
+                    </div>
+                </button>
+            </form>
+            {% empty %}
+            <div class="col-span-full text-center py-12 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <i class="fas fa-store-alt-slash text-5xl text-gray-300 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900">لا توجد متاجر متاحة</h3>
+                <p class="mt-1 text-sm text-gray-500">ليس لديك صلاحية لإدارة أي متجر حالياً.</p>
+                <a href="{% url 'join_business' %}" class="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand-primary hover:bg-opacity-90">
+                    إنشاء متجر جديد
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

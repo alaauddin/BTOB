@@ -6,6 +6,7 @@ from django.views.decorators.http import require_http_methods
 from core.models import Supplier, SupplierAdPlatfrom
 from core.forms import SupplierAdPlatfromForm
 import logging
+from core.utils.merchant_utils import get_active_supplier
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,7 @@ def add_platform_ad(request):
     if request.user.is_superuser and supplier_id:
         supplier = get_object_or_404(Supplier, id=supplier_id)
     else:
-        supplier = getattr(request.user, 'supplier', None)
+        supplier = get_active_supplier(request)
         
     if not supplier:
         return JsonResponse({'success': False, 'message': 'Supplier not found'}, status=403)

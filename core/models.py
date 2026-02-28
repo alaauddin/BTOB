@@ -127,6 +127,7 @@ class Supplier(models.Model):
     return_policy = models.TextField(blank=True, null=True, verbose_name="سياسة الاستبدال والاسترجاع")
     is_active = models.BooleanField(default=True, verbose_name="نشط")
     has_seen_products_tour = models.BooleanField(default=False, verbose_name="شاهد جولة المنتجات")
+    managing_users = models.ManyToManyField(User, related_name='managed_suppliers', blank=True, verbose_name="المستخدمين المدراء")
     
     def __str__(self):
         return self.name

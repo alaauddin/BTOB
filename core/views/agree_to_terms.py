@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from core.models import Supplier
 import json
+from core.utils.merchant_utils import get_active_supplier
 
 
 @login_required
@@ -15,7 +16,7 @@ def agree_to_terms(request):
             if request.user.is_superuser and request.POST.get('supplier_id'):
                 supplier = get_object_or_404(Supplier, id=request.POST.get('supplier_id'))
             else:
-                supplier = getattr(request.user, 'supplier', None)
+                supplier = get_active_supplier(request)
             
             if not supplier:
                 return JsonResponse({

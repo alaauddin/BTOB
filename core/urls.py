@@ -37,6 +37,7 @@ from core.views.privacy_policy import privacy_policy
 from core.views.tour_views import mark_tour_complete
 from core.views.profile import profile_view, address_list_view, set_current_address
 from core.views.landing import landing_page
+from core.views.merchant_selection import select_merchant
 
 urlpatterns = [
     # Landing Page
@@ -128,6 +129,7 @@ urlpatterns = [
     # ==========================
     # 2. DASHBOARD (Merchant)
     # ==========================
+    path('dashboard/select/', select_merchant, name='select_merchant'),
     path('dashboard/', my_merchant, name='dashboard_overview'),
     path('dashboard/metrics/', merchant_analytics, name='dashboard_analytics'),
     path('dashboard/products/', merchant_products, name='dashboard_products'),

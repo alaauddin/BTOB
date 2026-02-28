@@ -8,6 +8,7 @@ import json
 
 from core.forms import SupplierAdsForm
 from core.models import Supplier, SupplierAds
+from core.utils.merchant_utils import get_active_supplier
 
 
 @login_required
@@ -18,7 +19,7 @@ def edit_ads(request, ad_id):
     if request.user.is_superuser and supplier_id:
         supplier = get_object_or_404(Supplier, id=supplier_id)
     else:
-        supplier = Supplier.objects.filter(user=request.user).first()
+        supplier = get_active_supplier(request)
         
     if not supplier:
         return JsonResponse({
