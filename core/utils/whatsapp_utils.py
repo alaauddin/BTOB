@@ -17,7 +17,7 @@ def _do_send(phone: str, message: str, api_url: str, api_key: str) -> None:
                 headers={"X-API-Key": api_key, "Content-Type": "application/json"},
                 json={"phone": phone, "message": message},
                 timeout=20,
-                verify=True,
+                verify=False,
             )
         if r.status_code == 200:
             logger.info(f"WhatsApp sent to {phone}")
