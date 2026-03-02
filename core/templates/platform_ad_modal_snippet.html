@@ -211,6 +211,7 @@
             }
         }
         
+        const adId = document.getElementById('edit-platform-ad-id').value;
         const supplierParam = new URLSearchParams(window.location.search).get('supplier_id');
         const url = (adId ? `/edit-platform-ad/${adId}/` : '/add-platform-ad/') + (supplierParam ? `?supplier_id=${supplierParam}` : '');
         

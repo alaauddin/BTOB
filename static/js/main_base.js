@@ -309,7 +309,7 @@ waitForJQuery(function () {
         const prevItemQty = parseInt(itemQtyEl.first().text()) || 0;
 
         // Update UI immediately
-        totalItemsEl.text(prevTotal + 1);
+        totalItemsEl.text(prevTotal + 1).removeClass('hidden');
         totalItemsMobileEl.text(prevTotal + 1);
         mobileCartCountEl.text(prevTotal + 1);
         itemQtyEl.text(prevItemQty + 1);
@@ -332,7 +332,13 @@ waitForJQuery(function () {
             headers: { "X-CSRFToken": csrftoken },
             success: function (response) {
                 // Sync with server state
-                $('#total-items').text(response.cart_items_count);
+                const navBadge = $('#total-items');
+                navBadge.text(response.cart_items_count);
+                if (response.cart_items_count > 0) {
+                    navBadge.removeClass('hidden');
+                } else {
+                    navBadge.addClass('hidden');
+                }
                 $('#total-items-mobile').text(response.cart_items_count);
                 $('#total-qty-items-' + productId).text(response.cart_item_count);
                 $("#quantity-" + productId).html(response.cart_item_count);
@@ -440,7 +446,13 @@ waitForJQuery(function () {
             headers: { "X-CSRFToken": csrftoken },
             success: function (response) {
                 // Sync with server state
-                $('#total-items').text(response.cart_items_count);
+                const navBadge2 = $('#total-items');
+                navBadge2.text(response.cart_items_count);
+                if (response.cart_items_count > 0) {
+                    navBadge2.removeClass('hidden');
+                } else {
+                    navBadge2.addClass('hidden');
+                }
                 $('#total-items-mobile').text(response.cart_items_count);
                 $('#total-qty-items-' + productId).text(response.cart_item_count);
                 $("#quantity-" + productId).html(response.cart_item_count);
