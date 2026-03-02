@@ -864,3 +864,31 @@ class WebsiteStatistic(models.Model):
         """Return a human-readable representation of the visit record."""
         user_label = self.user.username if self.user else self.ip_address or 'مجهول'
         return f"{user_label} → {self.page_type} ({self.visited_at:%Y-%m-%d %H:%M})"
+
+
+class WhatsAppInquiryClick(models.Model):
+    """Tracks every click on the WhatsApp inquiry button on product detail pages."""
+
+    product = models.ForeignKey(
+        'Product', on_delete=models.CASCADE,
+        related_name='wa_inquiry_clicks', verbose_name="المنتج"
+    )
+    supplier = models.ForeignKey(
+        'Supplier', on_delete=models.CASCADE,
+        related_name='wa_inquiry_clicks', verbose_name="المتجر"
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='wa_inquiry_clicks', verbose_name="المستخدم"
+    )
+    session_key = models.CharField(max_length=40, blank=True, default='', verbose_name="معرف الجلسة")
+    clicked_at = models.DateTimeField(auto_now_add=True, verbose_name="وقت الضغط")
+
+    class Meta:
+        verbose_name = "نقرة استفسار واتساب"
+        verbose_name_plural = "نقرات استفسار واتساب"
+        ordering = ['-clicked_at']
+
+    def __str__(self):
+        user_label = self.user.username if self.user else 'زائر'
+        return f"{user_label} → {self.product.name} ({self.clicked_at:%Y-%m-%d %H:%M})"

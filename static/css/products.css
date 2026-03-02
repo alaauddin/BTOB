@@ -1905,6 +1905,48 @@
     background: #000;
 }
 
+/* WhatsApp Inquiry Button */
+.detail-wa-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 56px;
+    padding: 0 24px;
+    background: #22c55e;
+    color: white;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 10px 20px -5px rgba(34, 197, 94, 0.35);
+    white-space: nowrap;
+}
+
+.detail-wa-btn:hover {
+    background: #16a34a;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 20px 25px -5px rgba(34, 197, 94, 0.45);
+    text-decoration: none;
+}
+
+.detail-wa-btn i {
+    font-size: 1.25rem;
+}
+
+@media (max-width: 768px) {
+    .detail-wa-btn {
+        width: 100%;
+        height: 42px;
+        font-size: 0.95rem;
+    }
+}
+
+
 /* Tabs */
 .modern-tabs-container {
     margin-top: 2rem;

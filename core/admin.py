@@ -363,3 +363,20 @@ class WebsiteStatisticAdmin(admin.ModelAdmin):
         }
 
         return super().changelist_view(request, extra_context=extra_context)
+
+
+@admin.register(WhatsAppInquiryClick)
+class WhatsAppInquiryClickAdmin(admin.ModelAdmin):
+    """Analytics for WhatsApp inquiry button clicks on product pages."""
+
+    list_display = ('clicked_at', 'product', 'supplier', 'user', 'session_key')
+    list_filter = ('clicked_at', 'supplier')
+    search_fields = ('product__name', 'supplier__name', 'user__username', 'session_key')
+    readonly_fields = ('product', 'supplier', 'user', 'session_key', 'clicked_at')
+    list_per_page = 50
+    date_hierarchy = 'clicked_at'
+    list_select_related = ('product', 'supplier', 'user')
+
+    def has_add_permission(self, request):
+        """Clicks are created automatically; disable manual creation."""
+        return False

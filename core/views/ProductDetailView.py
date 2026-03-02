@@ -90,4 +90,18 @@ def product_detail(request, pk, store_id=None, store_slug=None):
     else:
         context['estimated_fee'] = 0
 
+    # Build WhatsApp inquiry message and normalize supplier phone
+    from urllib.parse import quote
+    product_url = request.build_absolute_uri()
+    wa_message = (
+        f"السلام عليكم 👋\n"
+        f"رأيت هذا المنتج وأود الاستفسار عنه:\n"
+        f"*{product.name}*\n"
+        f"{product_url}\n\n"
+        f"هل هو متوفر؟ 🙏"
+    )
+    context['wa_inquiry_text'] = quote(wa_message)
+    raw_phone = supplier.phone or ''
+    context['wa_phone'] = raw_phone.lstrip('+').replace(' ', '').replace('-', '')
+
     return render(request, 'product_detail.html', context)

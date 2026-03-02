@@ -38,6 +38,7 @@ from core.views.tour_views import mark_tour_complete
 from core.views.profile import profile_view, address_list_view, set_current_address
 from core.views.landing import landing_page
 from core.views.merchant_selection import select_merchant
+from core.views.whatsapp_inquiry_click import track_wa_inquiry_click
 
 urlpatterns = [
     # Landing Page
@@ -159,6 +160,9 @@ urlpatterns = [
 
     # Tour API
     path('api/tour-complete/', mark_tour_complete, name='tour_complete'),
+
+    # WhatsApp Inquiry Tracking
+    path('wa-inquiry-click/<int:product_id>/', track_wa_inquiry_click, name='wa_inquiry_click'),
 
 ]
 

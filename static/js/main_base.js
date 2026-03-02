@@ -602,6 +602,23 @@ function getCookie(name) {
 
 window.getCookie = getCookie;
 
+/**
+ * Track a WhatsApp inquiry button click for analytics.
+ * Fire-and-forget — silently ignores errors so it never blocks navigation.
+ * @param {number} productId - The product being inquired about.
+ */
+function trackWaInquiry(productId) {
+    fetch(`/wa-inquiry-click/${productId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    }).catch(() => { });
+}
+window.trackWaInquiry = trackWaInquiry;
+
+
 window.handlePhoneValidation = function (input) {
     const errorMsg = document.getElementById('phone-validation-msg');
     const submitBtn = document.getElementById('authSubmitBtn');

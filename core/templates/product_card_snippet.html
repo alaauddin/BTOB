@@ -104,9 +104,26 @@
                     غير متوفر
                 </button>
                 {% endif %}
+
+                <!-- WhatsApp Inquiry Button (Card) -->
+                {% with card_phone=supplier.phone|cut:"+" %}
+
+                <a href="https://wa.me/{{ wa_phone|default:card_phone }}?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85+%D8%B9%D9%84%D9%8A%D9%83%D9%85+%F0%9F%91%8B%0A%D8%B1%D8%A3%D9%8A%D8%AA+%D9%87%D8%B0%D8%A7+%D8%A7%D9%84%D9%85%D9%86%D8%AA%D8%AC+%D9%88%D8%A3%D9%88%D8%AF+%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%3A%0A*{{ product.name|urlencode }}*%0A{{ request.scheme }}%3A%2F%2F{{ request.get_host }}{% url 'product_canonical' store_slug=supplier.store_id pk=product.pk %}%0A%0A%D9%87%D9%84+%D9%87%D9%88+%D9%85%D8%AA%D9%88%D9%81%D8%B1%D8%9F+%F0%9F%99%8F"
+
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   onclick="trackWaInquiry({{ product.id }})"
+                   class="card-wa-btn mt-2"
+                   title="استفسر عبر واتساب">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>استفسر</span>
+                </a>
+                {% endwith %}
                 
                 {% endwith %}
             </div>
+
         </div>
     </div>
 </div>
+

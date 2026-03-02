@@ -219,6 +219,19 @@ fbq('track', 'ViewContent', {
                             <span>عذراً، المنتج غير متوفر حالياً</span>
                         </button>
                     {% endif %}
+
+                    <!-- WhatsApp Inquiry Button -->
+                    {% if wa_phone %}
+                    <a href="https://wa.me/{{ wa_phone }}?text={{ wa_inquiry_text }}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       onclick="trackWaInquiry({{ product.id }})"
+                       class="detail-wa-btn"
+                       title="استفسر عن المنتج عبر واتساب">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>استفسر عبر واتساب</span>
+                    </a>
+                    {% endif %}
                 </div>
 
                 <!-- Features Grid -->
@@ -556,5 +569,16 @@ fbq('track', 'ViewContent', {
         }
         {% endif %}
     });
+
+    // WhatsApp Inquiry Click Tracker
+    function trackWaInquiry(productId) {
+        fetch(`/wa-inquiry-click/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).catch(() => {});
+    }
 </script>
 {% endblock %}
