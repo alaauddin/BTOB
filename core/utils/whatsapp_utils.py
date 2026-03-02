@@ -41,9 +41,10 @@ def send_whatsapp_message(phone: str, message: str) -> bool:
     elif not phone.startswith("+") and not phone.startswith("967") and len(phone) == 9:
         phone = "967" + phone
 
-    # skip not yemeni number 
-    if not phone.startswith("967") or len(phone) != 12:
-        logger.warning(f"WhatsApp attempt failed: {phone} is not a Yemeni number.")
+    # skip not yemeni number
+    normalized = phone.lstrip("+")
+    if not normalized.startswith("967") or len(normalized) != 12:
+        logger.warning(f"WhatsApp: skipping non-Yemeni or invalid number '{phone}'.")
         return False
     threading.Thread(
         target=_do_send,
