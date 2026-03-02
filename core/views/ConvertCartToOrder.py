@@ -100,9 +100,12 @@ def existing_address(request, store_id):
     user_address = Address.objects.get(user = request.user)
 
     logger.info(user_address)
+    # Use address phone if available, otherwise fall back to user's account phone
+    address_phone = user_address.phone or getattr(request.user, 'phone_number', None)
+
     shipping_address = ShippingAddress.objects.create(
         order = order,
-        phone = user_address.phone,
+        phone = address_phone,
         address_line1 = user_address.address_line1,
         address_line2 = user_address.address_line2,
         city = user_address.city,

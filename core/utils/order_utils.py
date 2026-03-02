@@ -22,6 +22,7 @@ def complete_order_and_notify(request, order, cart, shipping_address, supplier):
             f"للمزيد من العروض الرائعة، زورونا دائماً: https://{domain}\n"
             f"في خدمتك دائماً، الدعم الفني: 779923330"
         )
+        logger.info(f"[WhatsApp] Sending user notification to phone: '{shipping_address.phone}'")
         send_whatsapp_message(str(shipping_address.phone), str(user_msg))
         
         # 2. Supplier Notification
