@@ -7,21 +7,6 @@ fbq('track', 'Lead', {
 });
 {% endblock %}
 
-{% block og_meta %}
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="انضم إلى منصة رواج - ابدأ رحلة نجاحك في التجارة الإلكترونية">
-    <meta property="og:description" content="سجّل متجرك الآن في منصة رواج واستمتع بمنصة احترافية لإدارة وبيع منتجاتك أونلاين. انضم لآلاف التجار الناجحين!">
-    <meta property="og:image" content="{% static 'og-preview.png' %}">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:locale" content="ar_SA">
-    <meta property="og:site_name" content="منصة رواج">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="انضم إلى منصة رواج - ابدأ رحلة نجاحك في التجارة الإلكترونية">
-    <meta name="twitter:description" content="سجّل متجرك الآن في منصة رواج واستمتع بمنصة احترافية لإدارة وبيع منتجاتك أونلاين.">
-    <meta name="twitter:image" content="{% static 'og-preview.png' %}">
-{% endblock og_meta %}
-
 {% block content %}
 <!-- Force RTL direction for the entire onboarding container -->
 <section class="onboarding-wrapper py-6 md:py-12 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 min-h-screen flex items-center" dir="rtl">
