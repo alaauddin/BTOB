@@ -7,6 +7,10 @@ fbq('track', 'Lead', {
 });
 {% endblock %}
 
+{% block og_title %}انضم إلى منصة رواج - ابدأ رحلة نجاحك في التجارة الإلكترونية{% endblock %}
+{% block og_description %}سجّل متجرك الآن في منصة رواج واستمتع بمنصة احترافية لإدارة وبيع منتجاتك أونلاين. انضم لآلاف التجار الناجحين!{% endblock %}
+{% block og_image %}{% static 'og-preview.png' %}{% endblock %}
+
 {% block content %}
 <!-- Force RTL direction for the entire onboarding container -->
 <section class="onboarding-wrapper py-6 md:py-12 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 min-h-screen flex items-center" dir="rtl">
