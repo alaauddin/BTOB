@@ -57,25 +57,27 @@ async function compressImage(file, maxSizeKB = 150) {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // Iterative compression
+                // Iterative compression using WebP for better size/quality ratio
                 let quality = 0.9;
                 const minQuality = 0.3;
+                const outputType = 'image/webp';
 
                 const processBlob = (blob) => {
                     if (blob.size <= maxSizeKB * 1024 || quality <= minQuality) {
-                        const compressedFile = new File([blob], file.name, {
-                            type: 'image/jpeg',
+                        const compressedName = file.name.replace(/\.[^/.]+$/, '.webp');
+                        const compressedFile = new File([blob], compressedName, {
+                            type: outputType,
                             lastModified: Date.now()
                         });
-                        console.log(`Compressed ${file.name}: ${(file.size / 1024).toFixed(2)}KB -> ${(compressedFile.size / 1024).toFixed(2)}KB`);
+                        console.log(`Compressed ${file.name}: ${(file.size / 1024).toFixed(2)}KB -> ${(compressedFile.size / 1024).toFixed(2)}KB (WebP)`);
                         resolve(compressedFile);
                     } else {
                         quality -= 0.1;
-                        canvas.toBlob(processBlob, 'image/jpeg', quality);
+                        canvas.toBlob(processBlob, outputType, quality);
                     }
                 };
 
-                canvas.toBlob(processBlob, 'image/jpeg', quality);
+                canvas.toBlob(processBlob, outputType, quality);
             };
         };
     });
