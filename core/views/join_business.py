@@ -38,6 +38,8 @@ def join_business(request):
                 return redirect('verify_signup_otp')
             except Exception as e:
                 messages.error(request, f"خطأ في إرسال الرمز: {str(e)}")
+        else:
+            messages.error(request, "يرجى تصحيح الأخطاء أدناه.")
     else:
         form = MerchantSignupForm()
     

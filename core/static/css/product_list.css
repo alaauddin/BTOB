@@ -371,29 +371,93 @@ body {
     width: 100%;
     padding: 0.55rem;
     border-radius: 14px;
-    background: #dcfce7;
-    color: #16a34a;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
     font-weight: 700;
     font-size: 0.85rem;
     text-decoration: none;
-    border: 1px solid rgba(34, 197, 94, 0.2);
-    transition: all 0.2s ease;
+    border: none;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px -2px rgba(34, 197, 94, 0.4);
+    animation: wa-card-entrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Shimmer sweep */
+.card-wa-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -75%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.25) 50%, transparent 100%);
+    animation: wa-card-shimmer 2.5s ease-in-out infinite;
 }
 
 .card-wa-btn:hover {
-    background: #22c55e;
+    background: linear-gradient(135deg, #16a34a, #15803d);
     color: white;
     text-decoration: none;
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px -2px rgba(34, 197, 94, 0.35);
+    box-shadow: 0 8px 16px -3px rgba(34, 197, 94, 0.5);
+}
+
+.card-wa-btn:hover i {
+    animation: wa-icon-bounce 0.4s ease both;
 }
 
 .card-wa-btn:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
 }
 
 .card-wa-btn i {
-    font-size: 1rem;
+    font-size: 1.05rem;
+}
+
+@keyframes wa-card-entrance {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes wa-card-shimmer {
+    0% {
+        left: -75%;
+    }
+
+    50% {
+        left: 125%;
+    }
+
+    100% {
+        left: 125%;
+    }
+}
+
+@keyframes wa-icon-bounce {
+    0% {
+        transform: scale(1);
+    }
+
+    40% {
+        transform: scale(1.3) rotate(-10deg);
+    }
+
+    70% {
+        transform: scale(0.9) rotate(5deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
 }
 
 

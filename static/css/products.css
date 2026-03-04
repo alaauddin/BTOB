@@ -1924,6 +1924,19 @@
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 10px 20px -5px rgba(34, 197, 94, 0.35);
     white-space: nowrap;
+    position: relative;
+    animation: wa-btn-entrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Pulsing ring behind the button */
+.detail-wa-btn::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 19px;
+    background: transparent;
+    border: 2.5px solid rgba(34, 197, 94, 0.5);
+    animation: wa-ring-pulse 2s ease-out infinite;
 }
 
 .detail-wa-btn:hover {
@@ -1932,6 +1945,10 @@
     transform: translateY(-3px);
     box-shadow: 0 20px 25px -5px rgba(34, 197, 94, 0.45);
     text-decoration: none;
+}
+
+.detail-wa-btn:hover i {
+    animation: wa-icon-shake 0.4s ease both;
 }
 
 .detail-wa-btn i {
@@ -1946,6 +1963,57 @@
     }
 }
 
+/* Keyframes */
+@keyframes wa-ring-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+
+    70% {
+        transform: scale(1.12);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1.12);
+        opacity: 0;
+    }
+}
+
+@keyframes wa-btn-entrance {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes wa-icon-shake {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(-15deg);
+    }
+
+    50% {
+        transform: rotate(15deg);
+    }
+
+    75% {
+        transform: rotate(-8deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
+}
 
 /* Tabs */
 .modern-tabs-container {
