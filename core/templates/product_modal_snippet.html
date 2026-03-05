@@ -301,6 +301,23 @@
     document.getElementById('id_video')?.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
+            const MAX_FILE_SIZE_MB = 5;
+            if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'حجم الفيديو كبير جداً',
+                        html: `حجم الفيديو <b>${sizeMB}MB</b>.<br>الحد الأقصى المسموح هو <b>${MAX_FILE_SIZE_MB}MB</b>.`,
+                        confirmButtonText: 'فهمت',
+                        confirmButtonColor: '#ef4444'
+                    });
+                } else {
+                    alert(`حجم الفيديو (${sizeMB}MB) يتجاوز الحد الأقصى ${MAX_FILE_SIZE_MB}MB`);
+                }
+                this.value = '';
+                return;
+            }
             document.getElementById('modalVideoPreview').classList.remove('hidden');
             document.getElementById('modalVideoUploadContent').classList.add('hidden');
         }

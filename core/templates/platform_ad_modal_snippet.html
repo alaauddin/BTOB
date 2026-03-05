@@ -109,7 +109,12 @@
         document.getElementById('id_platform_image').click();
     }
 
-    function previewPlatformAdImage(input) {
+    async function previewPlatformAdImage(input) {
+        if (input._isCompressing) return;
+        // Compress image using the shared WebP compressor
+        if (typeof handleImageUpload === 'function') {
+            await handleImageUpload(input);
+        }
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -129,87 +134,15 @@
         document.getElementById('platform-ad-upload-content').classList.remove('hidden');
     }
 
-    function compressImage(file) {
-        return new Promise((resolve, reject) => {
-            const maxWidth = 1920;
-            const maxHeight = 1920; // Allow square or portrait too, just limit max dimension
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = event => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    let width = img.width;
-                    let height = img.height;
-                    
-                    // Resize if larger than max dimensions
-                    if (width > maxWidth || height > maxHeight) {
-                        if (width > height) {
-                            height *= maxWidth / width;
-                            width = maxWidth;
-                        } else {
-                            width *= maxHeight / height;
-                            height = maxHeight;
-                        }
-                    }
-                    
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Use JPEG for non-transparent images to save space, keep PNG if it was PNG
-                    // But if it was huge PNG, maybe user wants it smaller. 
-                    // Let's stick to original type but if it is capable of lossy compression (jpeg/webp), use 0.7 quality.
-                    let type = file.type;
-                    let quality = 0.7;
-                    
-                    canvas.toBlob((blob) => {
-                        if (!blob) {
-                            reject(new Error('Canvas is empty'));
-                            return;
-                        }
-                        const newFile = new File([blob], file.name, {
-                            type: type,
-                            lastModified: Date.now()
-                        });
-                        resolve(newFile);
-                    }, type, quality);
-                }
-                img.onerror = error => reject(error);
-            };
-            reader.onerror = error => reject(error);
-        });
-    }
-
     async function handlePlatformAdSubmit(event) {
         event.preventDefault();
         const form = event.target;
         
         const btn = document.getElementById('savePlatformAdBtn');
         const originalContent = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-compress fa-pulse"></i> جاري تهيئة الصورة...';
         btn.disabled = true;
 
         const formData = new FormData(form);
-        const fileInput = document.getElementById('id_platform_image');
-
-        // Compress image if selected
-        if (fileInput.files.length > 0) {
-            try {
-                const file = fileInput.files[0];
-                // Only compress if image is > 1MB to avoid processing small images unnecessarily
-                if (file.size > 1024 * 1024) {
-                    const compressedFile = await compressImage(file);
-                    formData.set('image', compressedFile, compressedFile.name);
-                    console.log(`Original: ${(file.size/1024/1024).toFixed(2)}MB, Compressed: ${(compressedFile.size/1024/1024).toFixed(2)}MB`);
-                }
-            } catch (e) {
-                console.error("Compression failed:", e);
-                // Continue with original file if compression fails
-            }
-        }
         
         const adId = document.getElementById('edit-platform-ad-id').value;
         const supplierParam = new URLSearchParams(window.location.search).get('supplier_id');

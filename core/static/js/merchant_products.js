@@ -18,10 +18,15 @@ window.addEventListener('load', () => {
 });
 
 /**
- * Compresses an image file to be under maxSizeKB while maintaining quality.
+ * Compresses an image file to WebP format, resizing if needed.
+ * Always converts to WebP regardless of original size for consistency.
+ *
+ * @param {File} file - The original image file.
+ * @param {number} maxSizeKB - Target max size in KB (default 150).
+ * @returns {Promise<File>} The compressed WebP file.
  */
 async function compressImage(file, maxSizeKB = 150) {
-    if (!file.type.startsWith('image/') || file.size <= maxSizeKB * 1024) {
+    if (!file.type.startsWith('image/')) {
         return file;
     }
 
@@ -84,8 +89,30 @@ async function compressImage(file, maxSizeKB = 150) {
 }
 
 async function handleImageUpload(inputElement, maxSizeKB = 150) {
+    const MAX_FILE_SIZE_MB = 5;
+    const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
     const files = Array.from(inputElement.files);
     if (files.length === 0) return;
+
+    // Check file size limit for all files
+    for (const file of files) {
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'حجم الملف كبير جداً',
+                    html: `الملف <b>${file.name}</b> حجمه <b>${sizeMB}MB</b>.<br>الحد الأقصى المسموح هو <b>${MAX_FILE_SIZE_MB}MB</b>.`,
+                    confirmButtonText: 'فهمت',
+                    confirmButtonColor: '#ef4444'
+                });
+            } else {
+                alert(`حجم الملف ${file.name} (${sizeMB}MB) يتجاوز الحد الأقصى ${MAX_FILE_SIZE_MB}MB`);
+            }
+            inputElement.value = '';
+            return;
+        }
+    }
 
     const dataTransfer = new DataTransfer();
 
@@ -103,7 +130,7 @@ async function handleImageUpload(inputElement, maxSizeKB = 150) {
     if (!inputElement._isCompressing) {
         inputElement._isCompressing = true;
         inputElement.dispatchEvent(new Event('change', { bubbles: true }));
-        setTimeout(() => inputElement._isCompressing = false, 100);
+        setTimeout(() => inputElement._isCompressing = false, 500);
     }
 }
 

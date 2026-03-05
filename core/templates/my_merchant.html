@@ -591,6 +591,19 @@
 
     profileInput.onchange = function() {
         if (this.files && this.files[0]) {
+            const MAX_FILE_SIZE_MB = 5;
+            if (this.files[0].size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                const sizeMB = (this.files[0].size / 1024 / 1024).toFixed(1);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'حجم الصورة كبير جداً',
+                    html: `حجم الصورة <b>${sizeMB}MB</b>.<br>الحد الأقصى المسموح هو <b>${MAX_FILE_SIZE_MB}MB</b>.`,
+                    confirmButtonText: 'فهمت',
+                    confirmButtonColor: '#ef4444'
+                });
+                this.value = '';
+                return;
+            }
             const reader = new FileReader();
             reader.onload = function(e) {
                 croppingImg.src = e.target.result;
@@ -645,7 +658,7 @@
         // 4. Draw the source image into the circle
         ctx.drawImage(sourceCanvas, 0, 0);
         
-        // 5. Convert to blob
+        // 5. Convert to WebP blob for better compression
         roundedCanvas.toBlob((blob) => {
             croppedProfileBlob = blob; // Save blob for submission
             
@@ -654,20 +667,85 @@
             preview.classList.remove('hidden');
             
             // Visual feedback only
-            const file = new File([blob], "cropped_logo.png", {type: "image/png"});
+            const file = new File([blob], "cropped_logo.webp", {type: "image/webp"});
             const container = new DataTransfer();
             container.items.add(file);
             profileInput.files = container.files;
             
             cropperModal.classList.add('hidden');
-        }, 'image/png');
+        }, 'image/webp', 0.85);
     }
 
-    bannerInput.onchange = function() {
+    /**
+     * Compresses an image file to WebP format, used for banner uploads.
+     * This is an inline version since this page doesn't load merchant_products.js.
+     */
+    async function compressImageToWebP(file, maxSizeKB = 150) {
+        if (!file.type.startsWith('image/')) {
+            return file;
+        }
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_DIM = 1600;
+                    if (width > height) {
+                        if (width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
+                    } else {
+                        if (height > MAX_DIM) { width *= MAX_DIM / height; height = MAX_DIM; }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+                    let quality = 0.9;
+                    const minQuality = 0.3;
+                    const processBlob = (blob) => {
+                        if (blob.size <= maxSizeKB * 1024 || quality <= minQuality) {
+                            const compressedName = file.name.replace(/\.[^/.]+$/, '.webp');
+                            resolve(new File([blob], compressedName, { type: 'image/webp', lastModified: Date.now() }));
+                        } else {
+                            quality -= 0.1;
+                            canvas.toBlob(processBlob, 'image/webp', quality);
+                        }
+                    };
+                    canvas.toBlob(processBlob, 'image/webp', quality);
+                };
+            };
+        });
+    }
+
+    bannerInput.onchange = async function() {
         if (this.files && this.files[0]) {
+            const MAX_FILE_SIZE_MB = 5;
+            if (this.files[0].size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                const sizeMB = (this.files[0].size / 1024 / 1024).toFixed(1);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'حجم الصورة كبير جداً',
+                    html: `حجم الصورة <b>${sizeMB}MB</b>.<br>الحد الأقصى المسموح هو <b>${MAX_FILE_SIZE_MB}MB</b>.`,
+                    confirmButtonText: 'فهمت',
+                    confirmButtonColor: '#ef4444'
+                });
+                this.value = '';
+                return;
+            }
+            // Compress banner image to WebP before upload
+            const compressed = await compressImageToWebP(this.files[0]);
+            const dt = new DataTransfer();
+            dt.items.add(compressed);
+            this.files = dt.files;
+
             const preview = document.getElementById('banner_preview');
-            preview.src = URL.createObjectURL(this.files[0]);
+            preview.src = URL.createObjectURL(compressed);
             preview.classList.remove('hidden');
+            console.log(`Banner compressed: ${(this.files[0].size / 1024).toFixed(2)}KB (WebP)`);
         }
     };
 
@@ -678,7 +756,7 @@
         
         // Explicitly append the cropped blob if it exists
         if (croppedProfileBlob) {
-            formData.set('profile_picture', croppedProfileBlob, 'cropped_logo.png');
+            formData.set('profile_picture', croppedProfileBlob, 'cropped_logo.webp');
         }
         
         // Show loader
