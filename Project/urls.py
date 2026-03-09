@@ -28,6 +28,7 @@ urlpatterns = [
     path('', include(accounts_urls)),
     path('service_provider/', include(service_provider_urls)),
     path('accounts/', include('allauth.urls')),
+    path('api/', include('mobile_api.urls')),
 ]
 
 if settings.DEBUG:
