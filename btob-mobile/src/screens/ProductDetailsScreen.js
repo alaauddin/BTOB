@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Image,
   ScrollView,
+  FlatList,
   ActivityIndicator,
   TouchableOpacity,
   Dimensions,
@@ -15,12 +16,14 @@ import {
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Alert } from "react-native";
+import { Video, ResizeMode } from "expo-av";
 import client from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import AuthModal from "../components/AuthModal";
 import CartIconBadge from "../components/CartIconBadge";
 
 const { width, height } = Dimensions.get("window");
+const HERO_HEIGHT = height * 0.45;
 
 export default function ProductDetailsScreen({ route, navigation }) {
   const { productId } = route.params;
@@ -29,11 +32,13 @@ export default function ProductDetailsScreen({ route, navigation }) {
   const [authModalVisible, setAuthModalVisible] = useState(false);
   const { user } = useAuth();
 
-  // Local screen qty selector before adding to cart (if not already strictly tracked by DB)
-  // Or used explicitly if the user is editing it.
   const [quantity, setQuantity] = useState(1);
-  const [cartQty, setCartQty] = useState(0); // Fetched from backend
+  const [cartQty, setCartQty] = useState(0);
   const [addingToCart, setAddingToCart] = useState(false);
+
+  // Media gallery state
+  const [activeSlide, setActiveSlide] = useState(0);
+  const videoRef = useRef(null);
 
   // For scroll animation on header
   const scrollY = new Animated.Value(0);
@@ -47,6 +52,34 @@ export default function ProductDetailsScreen({ route, navigation }) {
       fetchCartQty();
     }
   }, [user, product]);
+
+  /**
+   * Build the ordered list of media slides from the product:
+   *  [primary image, ...extra images, video (if present)]
+   */
+  const buildMediaSlides = (prod) => {
+    if (!prod) return [];
+    const slides = [];
+
+    // Primary image
+    if (prod.image) {
+      slides.push({ type: "image", uri: prod.image });
+    }
+
+    // Extra photos
+    if (Array.isArray(prod.images)) {
+      prod.images.forEach((img) => {
+        if (img.image) slides.push({ type: "image", uri: img.image });
+      });
+    }
+
+    // Video slide last
+    if (prod.video) {
+      slides.push({ type: "video", uri: prod.video });
+    }
+
+    return slides;
+  };
 
   const fetchCartQty = async () => {
     try {
@@ -103,16 +136,13 @@ export default function ProductDetailsScreen({ route, navigation }) {
     if (setToZero) {
       newQty = 0;
     } else if (cartQty === 0) {
-      // First addition from local screen qty
       newQty = quantity;
     } else {
-      // Adjusting an existing cart item
       newQty = cartQty + change;
     }
 
     if (newQty < 0) newQty = 0;
 
-    // Optimistic
     setCartQty(newQty);
 
     try {
@@ -121,7 +151,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
         quantity: newQty,
       });
       if (!response.data.success) {
-        setCartQty(fallbackQty); // Revert
+        setCartQty(fallbackQty);
         Alert.alert("تنبيه", response.data.message || "حدث خطأ ما");
       } else {
         DeviceEventEmitter.emit(
@@ -132,7 +162,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
           Alert.alert("نجاح", "تم إضافة المنتج إلى السلة بنجاح!");
       }
     } catch (error) {
-      setCartQty(fallbackQty); // Revert
+      setCartQty(fallbackQty);
       console.error("Add/Update to cart error", error);
       Alert.alert("خطأ", "فشل في تحديث السلة. تحقق من اتصالك بالإنترنت.");
     } finally {
@@ -169,6 +199,37 @@ export default function ProductDetailsScreen({ route, navigation }) {
     : product.price;
   const totalPrice = (parseFloat(finalPrice) * quantity).toFixed(2);
   const primaryColor = product.supplier?.primary_color || "#2B5876";
+  const mediaSlides = buildMediaSlides(product);
+
+  // ─────────────────────────────────────────────────────────────────
+  // Render a single media slide (image or video)
+  // ─────────────────────────────────────────────────────────────────
+  const renderSlide = ({ item }) => {
+    if (item.type === "video") {
+      return (
+        <View style={styles.slideContainer}>
+          <Video
+            ref={videoRef}
+            source={{ uri: item.uri }}
+            style={styles.heroVideo}
+            resizeMode={ResizeMode.COVER}
+            useNativeControls
+            isLooping={false}
+          />
+          {/* Video label badge */}
+          <View style={styles.videoBadge}>
+            <Ionicons name="play-circle" size={16} color="#fff" />
+            <Text style={styles.videoBadgeText}>فيديو المنتج</Text>
+          </View>
+        </View>
+      );
+    }
+    return (
+      <View style={styles.slideContainer}>
+        <Image source={{ uri: item.uri }} style={styles.heroImage} />
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -208,14 +269,70 @@ export default function ProductDetailsScreen({ route, navigation }) {
         )}
         scrollEventThrottle={16}
       >
-        {/* Hero Image Section */}
+        {/* ── Hero Media Gallery ── */}
         <View style={styles.heroContainer}>
-          <Image source={{ uri: product.image }} style={styles.heroImage} />
-          {product.has_discount && (
-            <View style={styles.premiumDiscountBadge}>
-              <Text style={styles.premiumDiscountText}>
-                خصم {product.discount_percentage}%
-              </Text>
+          {mediaSlides.length > 0 ? (
+            <>
+              <FlatList
+                data={mediaSlides}
+                renderItem={renderSlide}
+                keyExtractor={(_, idx) => String(idx)}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onMomentumScrollEnd={(e) => {
+                  const idx = Math.round(
+                    e.nativeEvent.contentOffset.x / width,
+                  );
+                  setActiveSlide(idx);
+                  // Pause video when user swipes away from it
+                  if (videoRef.current) {
+                    videoRef.current.pauseAsync().catch(() => {});
+                  }
+                }}
+              />
+
+              {/* Discount badge (shown on all slides) */}
+              {product.has_discount && (
+                <View style={styles.premiumDiscountBadge}>
+                  <Text style={styles.premiumDiscountText}>
+                    خصم {product.discount_percentage}%
+                  </Text>
+                </View>
+              )}
+
+              {/* Dot pagination — only shown when there are 2+ slides */}
+              {mediaSlides.length > 1 && (
+                <View style={styles.dotRow}>
+                  {mediaSlides.map((slide, idx) => (
+                    <View
+                      key={idx}
+                      style={[
+                        styles.dot,
+                        idx === activeSlide
+                          ? [styles.dotActive, { backgroundColor: primaryColor }]
+                          : styles.dotInactive,
+                        // Give the video dot a slightly distinct icon-like look
+                        slide.type === "video" && styles.dotVideo,
+                      ]}
+                    />
+                  ))}
+                </View>
+              )}
+
+              {/* Media counter badge (e.g. "2 / 4") */}
+              {mediaSlides.length > 1 && (
+                <View style={styles.counterBadge}>
+                  <Text style={styles.counterText}>
+                    {activeSlide + 1} / {mediaSlides.length}
+                  </Text>
+                </View>
+              )}
+            </>
+          ) : (
+            // Fallback: no media at all
+            <View style={[styles.slideContainer, { backgroundColor: "#f1f5f9" }]}>
+              <Ionicons name="image-outline" size={60} color="#cbd5e1" />
             </View>
           )}
         </View>
@@ -310,7 +427,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
             </TouchableOpacity>
           )}
 
-          {/* Specifications / Highlights (Mock) */}
+          {/* Specifications / Highlights */}
           <View style={styles.highlightsContainer}>
             <View style={styles.highlightItem}>
               <View
@@ -347,7 +464,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
             </View>
           </View>
 
-          {/* Description Paragraph */}
+          {/* Description */}
           {product.description && (
             <View style={styles.descriptionSection}>
               <Text style={styles.sectionTitle}>نظرة عامة على المنتج</Text>
@@ -414,7 +531,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
               { backgroundColor: primaryColor },
               addingToCart && { opacity: 0.7 },
             ]}
-            onPress={() => handleUpdateQuantity(0, false)} // 0 implies change delta logic, but +quantity will fire in logic block
+            onPress={() => handleUpdateQuantity(0, false)}
             disabled={addingToCart}
           >
             {addingToCart ? (
@@ -449,7 +566,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f1f5f9", // Very light cool grey
+    backgroundColor: "#f1f5f9",
   },
   centerMode: {
     flex: 1,
@@ -505,16 +622,87 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+
+  // ── Gallery ──────────────────────────────────────────────────────
   heroContainer: {
     width: width,
-    height: height * 0.45,
+    height: HERO_HEIGHT,
     backgroundColor: "#fff",
     position: "relative",
+    overflow: "hidden",
+  },
+  slideContainer: {
+    width: width,
+    height: HERO_HEIGHT,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
   heroImage: {
     width: "100%",
     height: "100%",
     resizeMode: "cover",
+  },
+  heroVideo: {
+    width: "100%",
+    height: "100%",
+  },
+  videoBadge: {
+    position: "absolute",
+    bottom: 60,
+    left: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.55)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    gap: 4,
+  },
+  videoBadgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  dotRow: {
+    position: "absolute",
+    bottom: 14,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+  },
+  dot: {
+    borderRadius: 5,
+  },
+  dotActive: {
+    width: 20,
+    height: 7,
+  },
+  dotInactive: {
+    width: 7,
+    height: 7,
+    backgroundColor: "rgba(255,255,255,0.5)",
+  },
+  dotVideo: {
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.8)",
+  },
+  counterBadge: {
+    position: "absolute",
+    top: StatusBar.currentHeight + 60 || 100,
+    right: 16,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  counterText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
   },
   premiumDiscountBadge: {
     position: "absolute",
@@ -536,6 +724,8 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 0.5,
   },
+
+  // ── Content ────────────────────────────────────────────────────
   contentContainer: {
     backgroundColor: "#fff",
     borderTopLeftRadius: 32,
@@ -613,6 +803,7 @@ const styles = StyleSheet.create({
     color: "#2B5876",
     letterSpacing: -0.5,
   },
+  quantitySection: {},
   quantityContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -736,6 +927,8 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     textAlign: "left",
   },
+
+  // ── Bottom Bar ─────────────────────────────────────────────────
   bottomBar: {
     position: "absolute",
     bottom: 0,
@@ -763,12 +956,6 @@ const styles = StyleSheet.create({
     color: "#64748b",
     fontWeight: "500",
     marginBottom: 4,
-    textAlign: "left",
-  },
-  totalPriceText: {
-    fontSize: 22,
-    fontWeight: "900",
-    color: "#0f172a",
     textAlign: "left",
   },
   addToCartBtn: {
@@ -799,16 +986,16 @@ const styles = StyleSheet.create({
     height: 52,
     width: 140,
     overflow: "hidden",
-    backgroundColor: "#fff",
   },
   interactiveQtyButton: {
-    width: 48,
+    flex: 1,
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
   },
   interactiveQtyText: {
-    fontSize: 20,
-    fontWeight: "900",
+    fontSize: 18,
+    fontWeight: "bold",
+    paddingHorizontal: 8,
   },
 });

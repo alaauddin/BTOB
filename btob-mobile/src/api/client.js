@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Replace with your machine's local IP address if testing on a physical device,
 // otherwise localhost or 10.0.2.2 (for Android Emulators) works.
 // Using 10.0.2.2 assumes Android Emulator connecting to Django on local machine.
-export const BASE_URL = 'http://rawaage.com/api';
+export const BASE_URL = 'https://rawaage.com/api';
 
 const client = axios.create({
     baseURL: BASE_URL,

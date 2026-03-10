@@ -22,6 +22,35 @@ def get_tokens_for_user(user):
         'access': str(refresh.access_token),
     }
 
+import logging
+logger = logging.getLogger('core')
+
+
+def _get_manageable_merchants(user):
+    """
+    Return the QuerySet of Supplier instances this user can manage.
+    - Superusers can manage every merchant.
+    - Regular users qualify if they are the owner (user.supplier)
+      or listed in Supplier.managing_users.
+    """
+    from core.models import Supplier
+    from django.db.models import Q
+    if user.is_superuser:
+        return Supplier.objects.filter(is_active=True)
+    return Supplier.objects.filter(
+        Q(user=user) | Q(managing_users=user)
+    ).distinct()
+
+
+def _merchant_list_data(user, merchants, request=None):
+    """Serialize the list of manageable merchants into lightweight dicts.
+    Pass `request` so image fields are returned as absolute URLs.
+    """
+    from .serializers import MerchantMiniSerializer
+    context = {'request': request} if request else {}
+    return MerchantMiniSerializer(merchants, many=True, context=context).data
+
+
 class LoginAPIView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -31,19 +60,27 @@ class LoginAPIView(APIView):
                 password=serializer.validated_data['password']
             )
             if user:
-                # Restrict strictly to Merchants (Suppliers) or Superusers
-                if not (hasattr(user, 'supplier') or user.is_superuser):
+                manageable = _get_manageable_merchants(user)
+                is_merchant = user.is_superuser or manageable.exists()
+
+                if not is_merchant:
                     return Response({
-                        'success': False, 
-                        'message': 'Access Denied: You must be a Merchant Manager to login here.'
+                        'success': False,
+                        'message': 'Access Denied: You must be a Merchant or Manager to login here.'
                     }, status=status.HTTP_403_FORBIDDEN)
-                    
+
                 tokens = get_tokens_for_user(user)
+                merchant_data = _merchant_list_data(user, manageable, request)
+                active_merchant_id = merchant_data[0]['id'] if merchant_data else None
+
                 return Response({
                     'success': True,
                     'message': 'Login successful',
                     'tokens': tokens,
-                    'user': UserSerializer(user).data
+                    'user': UserSerializer(user).data,
+                    'user_scope': 'merchant',
+                    'manageable_merchants': merchant_data,
+                    'active_merchant_id': active_merchant_id,
                 })
             return Response({'success': False, 'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -634,3 +671,218 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
+
+# ── Merchant Management Views ─────────────────────────────────────────────────
+
+from .serializers import MerchantMiniSerializer, MerchantOrderSerializer
+from django.core.paginator import Paginator
+
+
+def _assert_merchant_access(user, merchant_id):
+    """
+    Validate that `user` can manage the given merchant.
+    - Superusers have access to any merchant.
+    - Regular users must be the owner or a managing user.
+    Returns (supplier, error_response) — one will be None.
+    """
+    from core.models import Supplier
+    from django.db.models import Q
+    if user.is_superuser:
+        supplier = Supplier.objects.filter(id=merchant_id).first()
+    else:
+        supplier = Supplier.objects.filter(
+            Q(user=user) | Q(managing_users=user), id=merchant_id
+        ).first()
+    if not supplier:
+        return None, Response(
+            {'success': False, 'message': 'Merchant not found or access denied.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    return supplier, None
+
+
+def _build_dashboard_stats(supplier):
+    """Compute KPI dashboard stats for a supplier. Returns a dict."""
+    from django.utils import timezone
+    from django.db.models import Sum
+    from core.models import Order, Product
+
+    today = timezone.now().date()
+    supplier_orders = Order.objects.filter(
+        order_items__product__supplier=supplier
+    ).distinct()
+    revenue = (
+        supplier_orders
+        .filter(created_at__year=today.year, created_at__month=today.month)
+        .aggregate(total=Sum('total_amount'))['total'] or 0
+    )
+    return {
+        'orders_today': supplier_orders.filter(created_at__date=today).count(),
+        'orders_this_month': supplier_orders.filter(
+            created_at__year=today.year, created_at__month=today.month
+        ).count(),
+        'revenue_this_month': str(revenue),
+        'pending_orders': supplier_orders.filter(pipeline_status__slug='pending').count(),
+        'total_products': Product.objects.filter(supplier=supplier, is_active=True).count(),
+        'low_stock_count': Product.objects.filter(
+            supplier=supplier, is_active=True, stock__lt=5
+        ).count(),
+    }
+
+
+def _recent_orders_qs(supplier, limit=10):
+    """Return a QuerySet of the most recent orders for a supplier."""
+    from core.models import Order
+    return (
+        Order.objects
+        .filter(order_items__product__supplier=supplier)
+        .distinct()
+        .select_related('user', 'pipeline_status')
+        .prefetch_related(
+            'order_items__product',
+            'order_items__product__additional_images',
+            'shippingaddress_set',
+        )
+        .order_by('-created_at')[:limit]
+    )
+
+
+class MerchantDashboardAPIView(APIView):
+    """GET /merchant/dashboard/?merchant_id=<id> — KPI stats + recent orders."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        merchant_id = request.query_params.get('merchant_id')
+        if not merchant_id:
+            return Response({'success': False, 'message': 'merchant_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        supplier, err = _assert_merchant_access(request.user, merchant_id)
+        if err:
+            return err
+        all_merchants = _get_manageable_merchants(request.user)
+        return Response({
+            'success': True,
+            'merchant': MerchantMiniSerializer(supplier, context={'request': request}).data,
+            'manageable_merchants': _merchant_list_data(request.user, all_merchants, request),
+            'stats': _build_dashboard_stats(supplier),
+            'recent_orders': MerchantOrderSerializer(
+                _recent_orders_qs(supplier), many=True, context={'request': request}
+            ).data,
+        })
+
+
+class MerchantSwitchAPIView(APIView):
+    """POST /merchant/switch/  {merchant_id} — switch active merchant, return fresh dashboard."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        merchant_id = request.data.get('merchant_id')
+        if not merchant_id:
+            return Response({'success': False, 'message': 'merchant_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        supplier, err = _assert_merchant_access(request.user, merchant_id)
+        if err:
+            return err
+        all_merchants = _get_manageable_merchants(request.user)
+        return Response({
+            'success': True,
+            'active_merchant_id': supplier.id,
+            'merchant': MerchantMiniSerializer(supplier, context={'request': request}).data,
+            'manageable_merchants': _merchant_list_data(request.user, all_merchants, request),
+            'stats': _build_dashboard_stats(supplier),
+            'recent_orders': MerchantOrderSerializer(
+                _recent_orders_qs(supplier), many=True, context={'request': request}
+            ).data,
+        })
+
+
+class MerchantOrdersAPIView(APIView):
+    """GET /merchant/orders/?merchant_id=<id>&status=<slug>&page=<n> — paginated orders."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        merchant_id = request.query_params.get('merchant_id')
+        if not merchant_id:
+            return Response({'success': False, 'message': 'merchant_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        supplier, err = _assert_merchant_access(request.user, merchant_id)
+        if err:
+            return err
+
+        from core.models import Order
+        qs = (
+            Order.objects
+            .filter(order_items__product__supplier=supplier)
+            .distinct()
+            .select_related('user', 'pipeline_status')
+            .prefetch_related(
+                'order_items__product',
+                'order_items__product__additional_images',
+                'shippingaddress_set',
+            )
+            .order_by('-created_at')
+        )
+        status_slug = request.query_params.get('status')
+        if status_slug:
+            qs = qs.filter(pipeline_status__slug=status_slug)
+
+        paginator = Paginator(qs, 20)
+        page = paginator.get_page(request.query_params.get('page', 1))
+        return Response({
+            'success': True,
+            'count': paginator.count,
+            'num_pages': paginator.num_pages,
+            'results': MerchantOrderSerializer(page.object_list, many=True, context={'request': request}).data,
+        })
+
+
+class MerchantOrderDetailAPIView(APIView):
+    """GET /merchant/orders/<order_id>/ — full order detail with access validation."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, order_id):
+        from core.models import Order
+        from django.shortcuts import get_object_or_404
+        order = get_object_or_404(
+            Order.objects.select_related('user', 'pipeline_status')
+            .prefetch_related(
+                'order_items__product',
+                'order_items__product__additional_images',
+                'shippingaddress_set',
+            ),
+            id=order_id,
+        )
+        supplier = order.get_supplier()
+        if not supplier:
+            return Response({'success': False, 'message': 'Order has no associated supplier.'}, status=status.HTTP_404_NOT_FOUND)
+        _, err = _assert_merchant_access(request.user, supplier.id)
+        if err:
+            return err
+        return Response({
+            'success': True,
+            'order': MerchantOrderSerializer(order, context={'request': request}).data,
+        })
+
+
+class MerchantProductsAPIView(APIView):
+    """GET /merchant/products/?merchant_id=X — list all products for the merchant."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from core.models import Product
+        from .serializers import MerchantProductSerializer
+        merchant_id = request.query_params.get('merchant_id')
+        if not merchant_id:
+            return Response({'success': False, 'message': 'merchant_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        supplier, err = _assert_merchant_access(request.user, merchant_id)
+        if err:
+            return err
+
+        products = Product.objects.filter(supplier=supplier).prefetch_related('additional_images').order_by('-id')
+        
+        return Response({
+            'success': True,
+            'products': MerchantProductSerializer(products, many=True, context={'request': request}).data
+        })
