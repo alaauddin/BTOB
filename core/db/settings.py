@@ -36,6 +36,13 @@ class SystemSettings(models.Model):
 
     show_merchant_agreement = models.BooleanField(default=False, verbose_name="عرض اتفاقية التجار")
 
+    # Analytics & Tracking
+    meta_pixel_id = models.CharField(
+        max_length=50, blank=True, default='',
+        verbose_name="معرف Meta Pixel",
+        help_text="أدخل معرف بكسل ميتا (مثال: 1413008573165397)"
+    )
+
     class Meta:
         app_label = 'core'
         verbose_name = "إعدادات النظام"
