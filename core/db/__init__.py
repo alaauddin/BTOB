@@ -31,3 +31,4 @@ from core.db.promotion import Promotion, Discount  # noqa: F401
 from core.db.ads import SupplierAds, PlatformOfferAd  # noqa: F401
 from core.db.settings import SystemSettings  # noqa: F401
 from core.db.business import BusinessRequest  # noqa: F401
+from core.db.analytics import WebsiteStatistic, WhatsAppInquiryClick  # noqa: F401
