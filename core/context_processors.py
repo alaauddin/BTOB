@@ -7,10 +7,9 @@ def system_settings(request):
     """
     Context processor to make system settings and navigation state available in all templates.
     """
-    try:
-        settings = SystemSettings.objects.first()
-    except Exception:
-        settings = None
+    settings = SystemSettings.objects.first()
+    if not settings:
+        settings = SystemSettings()  # Provide defaults from model definition
 
     # --- Adaptive Navigation State Logic ---
     user = request.user
