@@ -47,6 +47,6 @@ def store_url(context, supplier, path=''):
 
     # Fallback: legacy path-based URL
     if supplier and getattr(supplier, 'store_id', None):
-        return f"/products/{supplier.store_id}/{path.lstrip('/')}"
+        return f"/store/{supplier.store_id}/{path.lstrip('/')}"
 
     return '#'
