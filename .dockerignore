@@ -1,0 +1,44 @@
+# Git & version control
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.eggs
+*.egg
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker self-reference
+docker-compose*.yml
+Dockerfile
+
+# Dev/test files
+*.sqlite3
+db.sqlite3
+*.md
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files (secrets)
+.env
+.env.local
+
+# Agent / AI
+.gemini/
+.agents/

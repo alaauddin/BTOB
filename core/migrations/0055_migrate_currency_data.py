@@ -2,6 +2,16 @@
 
 from django.db import migrations
 
+
+def convert_charset_mysql_only(apps, schema_editor):
+    """Convert charset to utf8mb4 — MySQL only, no-op on PostgreSQL."""
+    connection = schema_editor.connection
+    if connection.vendor == 'mysql':
+        schema_editor.execute(
+            "ALTER TABLE core_currency CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
+        )
+
+
 def migrate_currency(apps, schema_editor):
     Currency = apps.get_model('core', 'Currency')
     Supplier = apps.get_model('core', 'Supplier')
@@ -28,8 +38,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            "ALTER TABLE core_currency CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
-        ),
+        migrations.RunPython(convert_charset_mysql_only, migrations.RunPython.noop),
         migrations.RunPython(migrate_currency),
     ]
+

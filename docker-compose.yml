@@ -1,0 +1,61 @@
+# ============================================================
+# BTOB Multi-Tenant SaaS — Docker Compose (Production)
+# ============================================================
+# Services: Nginx (reverse proxy + wildcard subdomains),
+#           Django (gunicorn), PostgreSQL
+# ============================================================
+
+services:
+  # --------------- PostgreSQL ---------------
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:-btob_db}
+      POSTGRES_USER: ${DB_USER:-btob_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-btob_user} -d ${DB_NAME:-btob_db}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --------------- Django (Gunicorn) ---------------
+  web:
+    build: .
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+    volumes:
+      - static_files:/app/staticfiles
+      - media_files:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8000"
+
+  # --------------- Nginx (Reverse Proxy) ---------------
+  nginx:
+    image: nginx:1.25-alpine
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_files:/app/staticfiles:ro
+      - media_files:/app/media:ro
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  static_files:
+  media_files:

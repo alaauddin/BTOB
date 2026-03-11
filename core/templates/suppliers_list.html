@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load tenant_tags %}
 
 {% block title %}رواج دوتكم{% endblock %}
 
@@ -1463,7 +1464,7 @@
         <div class="swiper-wrapper">
             {% for ad in supplier_ads %}
             <div class="swiper-slide">
-                <a href="{% if ad.link %}{{ ad.link }}{% elif ad.supplier %}{% url 'product-list' ad.supplier.store_id %}{% else %}#{% endif %}" 
+                <a href="{% if ad.link %}{{ ad.link }}{% elif ad.supplier %}{% store_url ad.supplier %}{% else %}#{% endif %}" 
                    class="ad-banner" 
                    {% if ad.link %}target="_blank"{% endif %}>
                     
@@ -1504,7 +1505,7 @@
             <div class="swiper-wrapper">
                 {% for ad in platform_ads %}
                 <div class="swiper-slide" style="width: auto; height: auto;">
-                    <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="ad-card-link-block h-full block">
+                    <a href="{% store_url ad.product.supplier path='/p/' %}{{ ad.product.id }}/" class="ad-card-link-block h-full block">
                         <div class="ad-card h-full">
                             {% if ad.product.has_discount %}
                             <div class="ad-badge-discount">
@@ -1581,7 +1582,7 @@
                              data-name="{{ supplier.name|lower }}" 
                              data-categories="{% for cat in supplier.category.all %}{{ cat.id }},{% endfor %}"
                              data-category-names="{% for cat in supplier.category.all %}{{ cat.name|lower }},{% endfor %}">
-                            <div class="supplier-card relative group" style="cursor: pointer;" onclick="if (!event.target.closest('a')) window.location='{% url 'product-list' supplier.store_id %}'">
+                            <div class="supplier-card relative group" style="cursor: pointer;" onclick="if (!event.target.closest('a')) window.location='{% store_url supplier %}'">
                                 {% if request.user.is_superuser %}
                                 <a href="{% url 'my_merchant' %}?supplier_id={{ supplier.id }}" class="absolute top-2 left-2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm text-gray-700 rounded-full shadow-sm hover:bg-red-500 hover:text-white transition-all transform hover:scale-110" title="إدارة المتجر">
                                     <i class="fas fa-cog text-sm"></i>
@@ -1610,7 +1611,7 @@
                                             <i class="fas fa-star text-warning"></i>
                                             <span class="fw-bold ms-1">{{ supplier.get_average_rating|default:"5.0" }}</span>
                                         </div>
-                                        <button class="btn-visit" onclick="window.location='{% url 'product-list' supplier.store_id %}'">
+                                        <button class="btn-visit" onclick="window.location='{% store_url supplier %}'">
                                             <span>زيارة المتجر</span>
                                             <i class="fas fa-arrow-left me-2"></i>
                                         </button>
@@ -1634,7 +1635,7 @@
                              data-name="{{ supplier.name|lower }}" 
                              data-categories="{% for cat in supplier.category.all %}{{ cat.id }},{% endfor %}"
                              data-category-names="{% for cat in supplier.category.all %}{{ cat.name|lower }},{% endfor %}">
-                            <div class="supplier-card relative group" style="cursor: pointer;" onclick="if (!event.target.closest('a')) window.location='{% url 'product-list' supplier.store_id %}'">
+                            <div class="supplier-card relative group" style="cursor: pointer;" onclick="if (!event.target.closest('a')) window.location='{% store_url supplier %}'">
                                 {% if request.user.is_superuser %}
                                 <a href="{% url 'my_merchant' %}?supplier_id={{ supplier.id }}" class="absolute top-2 left-2 z-10 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm text-gray-700 rounded-full shadow-sm hover:bg-red-500 hover:text-white transition-all transform hover:scale-110" title="إدارة المتجر">
                                     <i class="fas fa-cog text-sm"></i>
@@ -1663,7 +1664,7 @@
                                             <i class="fas fa-star text-warning"></i>
                                             <span class="fw-bold ms-1">{{ supplier.get_average_rating|default:"5.0" }}</span>
                                         </div>
-                                        <button class="btn-visit" onclick="window.location='{% url 'product-list' supplier.store_id %}'">
+                                        <button class="btn-visit" onclick="window.location='{% store_url supplier %}'">
                                             <span>زيارة المتجر</span>
                                             <i class="fas fa-arrow-left me-2"></i>
                                         </button>
@@ -1695,7 +1696,7 @@
         </div>
         <div class="suppliers-scroll-container">
             {% for s in producing_family_suppliers %}
-            <a href="{% url 'product-list' s.store_id %}" class="supplier-card-link-premium">
+            <a href="{% store_url s %}" class="supplier-card-link-premium">
                 <div class="supplier-card-premium">
                     <div class="home-badge">
                         <i class="fas fa-home"></i>
