@@ -37,6 +37,24 @@ PLATFORM_DOMAIN = os.getenv('PLATFORM_DOMAIN', 'localhost')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+# ============================================================
+# HTTPS & Security Settings (Project SSL)
+# ============================================================
+# Trusted origins for CSRF (required in Django 4+)
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://aratatt.com,https://*.aratatt.com').split(',')
+
+# Inform Django it's behind a secure proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
+# Secure cookies
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# Redirecting is handled by Nginx, but keep Django aware
+SECURE_SSL_REDIRECT = False 
+# ============================================================
+
 # Application definition
 
 INSTALLED_APPS = [
