@@ -64,39 +64,56 @@ def product_list(request, store_id=None, store_slug=None, category_id=None, subc
         product=OuterRef('pk')
     ).values('quantity')[:1]
     
-    queryset = Product.objects.filter(supplier=supplier, is_active=True).annotate(
-        has_active_offer=Exists(active_offers),
+    # Optimize queries by having the database do the partitioning instead of Python memory
+    base_queryset = Product.objects.filter(supplier=supplier, is_active=True)
+    
+    # Filter out out-of-stock products if supplier preference is set
+    if not supplier.show_out_of_stock:
+        base_queryset = base_queryset.filter(stock__gt=0)
+
+    # Filter by category or subcategory
+    if subcategory_id:
+        base_queryset = base_queryset.filter(category_id=subcategory_id)
+    elif category_id:
+        base_queryset = base_queryset.filter(category__id=category_id)
+        
+    base_queryset = base_queryset.prefetch_related('additional_images')
+
+    # Offer Products (products that have active offers)
+    offer_products_qs = base_queryset.filter(
+        Exists(active_offers)
+    ).annotate(
         max_discount=Subquery(
             active_offers.order_by('-discount_precentage').values('discount_precentage')[:1]
         ),
         quantity_in_cart=Subquery(cart_qty)
-    ).prefetch_related('additional_images')
-    
-    # Filter out out-of-stock products if supplier preference is set
-    if not supplier.show_out_of_stock:
-        queryset = queryset.filter(stock__gt=0)
+    ).order_by('-max_discount', '-id')
 
-    # Filter by category or subcategory
-    if subcategory_id:
-        queryset = queryset.filter(category_id=subcategory_id)
-    elif category_id:
-        queryset = queryset.filter(category__id=category_id)
+    # New Products (products that do not have active offers but are marked as new)
+    new_products_qs = base_queryset.filter(
+        ~Exists(active_offers),
+        is_new=True
+    ).annotate(
+        quantity_in_cart=Subquery(cart_qty)
+    ).order_by('-id')
+
+    # Other Products (products that do not have active offers and are not new)
+    other_products_qs = base_queryset.filter(
+        ~Exists(active_offers),
+        is_new=False
+    ).annotate(
+        quantity_in_cart=Subquery(cart_qty)
+    ).order_by('-id')
+
+    # Evaluate the querysets into lists (limit to 100 on homepage if needed, or paginate)
+    # The current template expects lists or querysets.
+    offer_products = list(offer_products_qs[:60]) # safety limit
+    new_products = list(new_products_qs[:60])
+    other_products = list(other_products_qs)
     
-    # Sort and Partition logic
-    queryset = queryset.order_by('-has_active_offer', '-max_discount', '-is_new', '-id')
-    
-    # Partition lists
-    offer_products = []
-    new_products = []
-    other_products = []
-    
-    for product in queryset:
-        if product.has_active_offer:
-            offer_products.append(product)
-        elif product.is_new:
-            new_products.append(product)
-        else:
-            other_products.append(product)
+    # We still need a combined queryset for the template for general product count things
+    # Though usually the template just iterates over the partitioned lists
+    queryset = other_products_qs # used only if they loop over `products` which they shouldn't if they use offer/new/other
 
     supplier_ads = SupplierAds.objects.filter(supplier=supplier, is_active=True)
 

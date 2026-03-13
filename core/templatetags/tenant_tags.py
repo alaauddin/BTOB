@@ -30,19 +30,22 @@ def store_url(context, supplier, path=''):
     request = context.get('request')
     platform_domain = getattr(settings, 'PLATFORM_DOMAIN', 'localhost')
 
-    # Determine scheme
+    # Cache scheme and port on request to avoid repeated get_host() calls
     if request:
-        scheme = 'https' if request.is_secure() else 'http'
+        if not hasattr(request, '_store_url_cache'):
+            scheme = 'https' if request.is_secure() else 'http'
+            host = request.get_host()
+            port = ':' + host.split(':')[1] if ':' in host else ''
+            request._store_url_cache = {'scheme': scheme, 'port': port}
+        
+        scheme = request._store_url_cache['scheme']
+        port = request._store_url_cache['port']
     else:
         scheme = 'https'
+        port = ''
 
     if supplier and getattr(supplier, 'subdomain', None):
         # Build subdomain URL
-        port = ''
-        if request:
-            host = request.get_host()
-            if ':' in host:
-                port = ':' + host.split(':')[1]
         return f"{scheme}://{supplier.subdomain}.{platform_domain}{port}/{path.lstrip('/')}"
 
     # Fallback: legacy path-based URL
