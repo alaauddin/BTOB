@@ -12,12 +12,12 @@ def system_settings(request):
         settings = SystemSettings()  # Provide defaults from model definition
 
     # --- Adaptive Navigation State Logic ---
-    user = request.user
+    user = getattr(request, 'user', None)
     nav_state = 'visitor' # Default
     active_store = None
     user_stores_count = 0
 
-    if user.is_authenticated:
+    if user and getattr(user, 'is_authenticated', False):
         # Use our new utility to get the active context
         active_store = get_active_supplier(request)
         
