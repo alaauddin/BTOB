@@ -35,16 +35,22 @@ class SubdomainMiddleware:
     def __call__(self, request):
         from core.models import Supplier  # lazy to avoid AppRegistryNotReady
 
-        platform_domain = getattr(settings, 'PLATFORM_DOMAIN', 'localhost')
+        platform_domains = getattr(settings, 'PLATFORM_DOMAINS', [getattr(settings, 'PLATFORM_DOMAIN', 'localhost')])
         host = request.get_host().split(':')[0].lower()  # strip port
 
         # --- Determine if we're on a subdomain ---
-        if host == platform_domain or host == f'www.{platform_domain}':
+        # 1. Check if it's one of the main platform domains
+        if host in platform_domains or any(host == f'www.{pd}' for pd in platform_domains):
             # Main platform domain – no tenant
             request.tenant = None
-        elif host.endswith(f'.{platform_domain}'):
+            return self.get_response(request)
+
+        # 2. Check if it's a subdomain of any platform domain
+        target_pd = next((pd for pd in platform_domains if host.endswith(f'.{pd}')), None)
+        
+        if target_pd:
             # Extract subdomain portion: "store1.rawaaj.com" → "store1"
-            subdomain = host.removesuffix(f'.{platform_domain}')
+            subdomain = host.removesuffix(f'.{target_pd}')
 
             # Guard against multi-level subdomains (e.g. "a.b.rawaaj.com")
             if '.' in subdomain:
@@ -63,7 +69,7 @@ class SubdomainMiddleware:
             # Swap URL conf so storefront URLs are used
             request.urlconf = 'core.urls_storefront'
         else:
-            # Not a sub-domain of our platform (e.g. localhost, IP, other host)
+            # Not a sub-domain of any platform domain (e.g. localhost, IP, other host)
             request.tenant = None
 
         response = self.get_response(request)

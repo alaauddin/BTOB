@@ -33,7 +33,8 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 # Multi-tenant: the root domain under which subdomains are created.
 # Suppliers get <subdomain>.PLATFORM_DOMAIN  (e.g. store1.rawaaj.com)
-PLATFORM_DOMAIN = os.getenv('PLATFORM_DOMAIN', 'localhost')
+PLATFORM_DOMAIN = os.getenv('PLATFORM_DOMAIN', 'rawaage.com')
+PLATFORM_DOMAINS = os.getenv('PLATFORM_DOMAINS', f'{PLATFORM_DOMAIN},aratatt.com').split(',')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
@@ -41,7 +42,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 # HTTPS & Security Settings (Project SSL)
 # ============================================================
 # Trusted origins for CSRF (required in Django 4+)
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://aratatt.com,https://*.aratatt.com').split(',')
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://aratatt.com,https://*.aratatt.com,https://rawaage.com,https://*.rawaage.com').split(',')
 
 # Inform Django it's behind a secure proxy
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
