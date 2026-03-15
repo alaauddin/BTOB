@@ -1,0 +1,94 @@
+<div id="terms-modal-storefront" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-4 overflow-y-auto" style="z-index: 10000 !important;">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeTermsModal()"></div>
+    
+    <div class="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl relative z-10 overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300" style="max-height: 85vh;">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-20">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                    <i class="fas fa-file-contract"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">الشروط والأحكام</h3>
+                    <p class="text-[11px] text-slate-400">يرجى قراءة شروط الاستخدام بعناية</p>
+                </div>
+            </div>
+            <button onclick="closeTermsModal()" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors flex items-center justify-center">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="p-6 md:p-8 overflow-y-auto custom-scrollbar space-y-8 bg-gray-50/30">
+            
+            <section class="space-y-3">
+                <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-check-circle text-purple-500"></i>
+                    ١. القبول بالشروط
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    باستخدامك لهذا المتجر، فإنك توافق على الالتزام بكامل الشروط والأحكام الواردة هنا. إذا كنت لا توافق على أي جزء منها، يرجى التوقف عن استخدام الموقع.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-shopping-cart text-purple-500"></i>
+                    ٢. الطلبات والشراء
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    جميع الطلبات تخضع للتوفر والموافقة من قبل التاجر. نحتفظ بالحق في رفض أي طلب في أي وقت. يتم تأكيد الطلب فقط بعد التواصل مع العميل أو استلام إشعار التأكيد.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-truck text-purple-500"></i>
+                    ٣. التوصيل والاستلام
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    يتم تحديد مواعيد التوصيل بناءً على الموقع والتوفر. نحن لسنا مسؤولين عن أي تأخير خارج عن إرادتنا أو ناتج عن معلومات عنوان غير صحيحة.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-undo text-purple-500"></i>
+                    ٤. الاستبدال والاسترجاع
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    تخضع سياسة الاسترجاع لسياسة المتجر الخاصة والقوانين المحلية. يجب أن تكون المنتجات في حالتها الأصلية مع التغليف الأصلي لطلب الاسترجاع.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-purple-500"></i>
+                    ٥. إخلاء المسؤولية
+                </h4>
+                <p class="text-xs text-slate-600 leading-relaxed italic">
+                    المنصة تعمل كوسيط تقني بين التاجر والمشتري. التاجر هو المسؤول المباشر عن جودة السلع والخدمات المقدمة.
+                </p>
+            </section>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 border-t border-slate-100 bg-white flex justify-end flex-shrink-0">
+            <button onclick="closeTermsModal()" class="px-6 py-2 bg-purple-600 text-white text-sm font-bold rounded-xl hover:bg-purple-700 transition-all">
+                موافق
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openTermsModal() {
+        document.getElementById('terms-modal-storefront').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeTermsModal() {
+        document.getElementById('terms-modal-storefront').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+</script>

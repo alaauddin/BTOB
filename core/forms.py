@@ -528,12 +528,13 @@ class SupplierSettingsForm(forms.ModelForm):
     class Meta:
         model = Supplier
         fields = [
-            'name', 'phone', 'secondary_phone', 'address', 'city', 'country', 
+            'name', 'phone', 'secondary_phone', 'subdomain', 'address', 'city', 'country', 
             'primary_color', 'secondary_color', 'navbar_color', 
             'footer_color', 'text_color', 'accent_color',
             'profile_picture', 'panal_picture', 'latitude', 'longitude', 
             'show_order_amounts', 'show_platform_ads', 'show_system_logo',
-            'return_policy'
+            'return_policy', 'footer_description',
+            'facebook_url', 'instagram_url', 'twitter_url', 'tiktok_url'
         ]
         widgets = {
             'name': forms.TextInput(attrs={
@@ -580,6 +581,32 @@ class SupplierSettingsForm(forms.ModelForm):
                 'placeholder': 'اكتب هنا سياسة الاستبدال والاسترجاع التي ستظهر للعملاء في السلة...',
                 'rows': 4
             }),
+            'subdomain': forms.TextInput(attrs={
+                'class': 'w-full pl-4 pr-32 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm text-left',
+                'placeholder': 'mystore',
+                'dir': 'ltr'
+            }),
+            'footer_description': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm resize-none',
+                'placeholder': 'وصف مختصر يظهر في أسفل المتجر...',
+                'rows': 3
+            }),
+            'facebook_url': forms.URLInput(attrs={
+                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'placeholder': 'https://facebook.com/yourpage'
+            }),
+            'instagram_url': forms.URLInput(attrs={
+                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'placeholder': 'https://instagram.com/yourprofile'
+            }),
+            'twitter_url': forms.URLInput(attrs={
+                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'placeholder': 'https://twitter.com/yourprofile'
+            }),
+            'tiktok_url': forms.URLInput(attrs={
+                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'placeholder': 'https://tiktok.com/@yourprofile'
+            }),
         }
         labels = {
             'name': 'اسم المتجر',
@@ -598,7 +625,34 @@ class SupplierSettingsForm(forms.ModelForm):
             'show_order_amounts': 'عرض مبالغ الطلبات',
             'show_platform_ads': 'عرض إعلانات المنصة',
             'show_system_logo': 'عرض شعار المنصة العام',
-            'return_policy': 'سياسة الاستبدال والاسترجاع'
+            'return_policy': 'سياسة الاستبدال والاسترجاع',
+            'subdomain': 'النطاق الفرعي (Subdomain)',
+            'footer_description': 'وصف التذييل',
+            'facebook_url': 'رابط فيسبوك',
+            'instagram_url': 'رابط انستقرام',
+            'twitter_url': 'رابط تويتر',
+            'tiktok_url': 'رابط تيك توك'
+        }
+
+class DomainOnlyForm(forms.ModelForm):
+    class Meta:
+        model = Supplier
+        fields = ['subdomain']
+        widgets = {
+            'subdomain': forms.TextInput(attrs={
+                'class': 'w-full pl-4 pr-32 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm text-left',
+                'placeholder': 'mystore',
+                'dir': 'ltr'
+            }),
+        }
+
+class BrandingOnlyForm(forms.ModelForm):
+    class Meta:
+        model = Supplier
+        fields = ['profile_picture', 'panal_picture']
+        widgets = {
+            'profile_picture': forms.FileInput(attrs={'class': 'hidden', 'accept': 'image/*', 'id': 'profile_input_branding'}),
+            'panal_picture': forms.FileInput(attrs={'class': 'hidden', 'accept': 'image/*', 'id': 'banner_input_branding'}),
         }
 
 

@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from core.decorators import merchant_required
 from core.models import Supplier, Product, ProductOffer, Promotion, SupplierAds, Order, Category, PlatformOfferAd
-from core.forms import ProductForm, SupplierSettingsForm
+from core.forms import ProductForm, SupplierSettingsForm, DomainOnlyForm, BrandingOnlyForm
 from django.db.models import Count, Sum, Avg
 from django.utils import timezone
 from core.models import SupplierAdPlatfrom
@@ -59,6 +59,8 @@ def my_merchant(request):
         'top_selling_products': top_selling_products,
         'avg_rating': avg_rating,
         'settings_form': SupplierSettingsForm(instance=supplier),
+        'domain_form': DomainOnlyForm(instance=supplier),
+        'branding_form': BrandingOnlyForm(instance=supplier),
     }
     
     return render(request, template_name, context)
@@ -103,15 +105,22 @@ def update_merchant_settings(request):
         return redirect('suppliers_list')
     
     if request.method == 'POST':
-        form = SupplierSettingsForm(request.POST, request.FILES, instance=supplier)
+        form_type = request.POST.get('form_type', 'all')
+        
+        if form_type == 'domain':
+            form = DomainOnlyForm(request.POST, instance=supplier)
+        elif form_type == 'branding':
+            form = BrandingOnlyForm(request.POST, request.FILES, instance=supplier)
+        else:
+            form = SupplierSettingsForm(request.POST, request.FILES, instance=supplier)
+            
         if form.is_valid():
             form.save()
-            logger.info(f"User {request.user} updated settings for supplier {supplier.name}")
+            logger.info(f"User {request.user} updated {form_type} settings for supplier {supplier.name}")
             
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': True})
 
-            # If superuser is editing another merchant, redirect back to that merchant's dashboard
             if request.user.is_superuser and supplier.user != request.user:
                 return redirect(f"/my-merchant/?supplier_id={supplier.id}")
                 
@@ -120,7 +129,13 @@ def update_merchant_settings(request):
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     
-    return render(request, 'my_merchant.html', {'settings_form': SupplierSettingsForm(instance=supplier), 'supplier': supplier})
+    context = {
+        'settings_form': SupplierSettingsForm(instance=supplier),
+        'domain_form': DomainOnlyForm(instance=supplier),
+        'branding_form': BrandingOnlyForm(instance=supplier),
+        'supplier': supplier
+    }
+    return render(request, 'my_merchant.html', context)
 
 
 @merchant_required

@@ -1,4 +1,4 @@
-<div id="settings-modal" class="fixed inset-0 z-[2000000] hidden flex items-center justify-center sm:p-4" style="z-index: 9999999 !important;">
+<div id="settings-modal" class="fixed inset-0 z-[9000] hidden flex items-center justify-center sm:p-4" style="z-index: 9000 !important;">
     <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="closeSettingsModal()"></div>
     
     <div class="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl relative z-10 overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300" style="max-height: 90vh; display: flex; flex-direction: column;">
@@ -152,6 +152,65 @@
                         <div class="space-y-2">
                             <label class="text-xs font-bold text-slate-500 mr-2">موقع المتجر الجغرافي (اسحب لتغيير الموقع)</label>
                             <div id="selection-map" class="group transition-all hover:ring-8 hover:ring-blue-50 ring-0 ring-offset-2 border border-slate-200"></div>
+                        </div>
+                    </section>
+
+                    <hr class="border-slate-100">
+
+                    <!-- Domain Settings Section -->
+                    <section class="space-y-6">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-800">إعدادات النطاق (Domain)</h4>
+                        </div>
+                        
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 mr-2">النطاق الفرعي (Subdomain)</label>
+                            <div class="relative" dir="ltr">
+                                {{ settings_form.subdomain }}
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 text-sm font-medium border-l border-slate-100 pl-3 my-2">
+                                    .{{ PLATFORM_DOMAIN }}
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-1 mr-2 italic">ملاحظة: تغيير النطاق قد يؤدي لتغيير الرابط الذي يزوره عملاؤك.</p>
+                        </div>
+                    </section>
+
+                    <hr class="border-slate-100">
+
+                    <!-- Footer & Social Section -->
+                    <section class="space-y-6">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center shadow-sm">
+                                <i class="fas fa-hashtag"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-800">التذييل وروابط التواصل</h4>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-slate-500 mr-2">وصف التذييل (Footer Description)</label>
+                            {{ settings_form.footer_description }}
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 mr-2"><i class="fab fa-facebook text-blue-600 ml-1"></i>رابط فيسبوك</label>
+                                {{ settings_form.facebook_url }}
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 mr-2"><i class="fab fa-instagram text-pink-600 ml-1"></i>رابط انستقرام</label>
+                                {{ settings_form.instagram_url }}
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 mr-2"><i class="fab fa-twitter text-blue-400 ml-1"></i>رابط تويتر</label>
+                                {{ settings_form.twitter_url }}
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-slate-500 mr-2"><i class="fab fa-tiktok text-black ml-1"></i>رابط تيك توك</label>
+                                {{ settings_form.tiktok_url }}
+                            </div>
                         </div>
                     </section>
 

@@ -1,4 +1,5 @@
 from .models import SystemSettings, Supplier
+from django.conf import settings as dj_settings
 from django.urls import resolve
 from core.utils.merchant_utils import get_active_supplier
 
@@ -62,4 +63,5 @@ def system_settings(request):
         'nav_state': nav_state,
         'active_store': active_store,
         'user_stores_count': user_stores_count,
+        'PLATFORM_DOMAIN': getattr(dj_settings, 'PLATFORM_DOMAIN', 'rawaaj.com'),
     }

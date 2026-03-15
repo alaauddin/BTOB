@@ -106,7 +106,17 @@
 
             /* Layout Colors */
 
+            {% if supplier.footer_color %}
+            --footer-bg: {{ supplier.footer_color }};
+            {% else %}
             --footer-bg: #1e293b;
+            {% endif %}
+
+            {% if supplier.text_color %}
+            --footer-text: {{ supplier.text_color }};
+            {% else %}
+            --footer-text: #ffffff;
+            {% endif %}
 
             /* Visual Effects */
             --glass-bg: rgba(255, 255, 255, 0.95);
@@ -340,14 +350,53 @@
             </main>
 
             {% block footer %}
-            <!-- Footer Content (Same as before) -->
-            <footer class="footer-main py-6 border-t border-gray-100 bg-white">
+            <footer class="footer-main py-10 border-t border-gray-100" style="background-color: var(--footer-bg);">
                  <div class="container mx-auto px-6">
-                    <div class="flex flex-col md:flex-row justify-between items-center text-xs">
-                        <p class="text-gray-400">© {% now "Y" %} {{ system_settings.site_name|default:"متجرك الرقمي" }}. جميع الحقوق محفوظة.</p>
-                        <div class="flex gap-4 mt-2 md:mt-0">
-                           <a href="{% url 'privacy_policy' %}" class="text-gray-400 hover:text-brand-primary">الخصوصية</a>
-                           <a href="#" class="text-gray-400 hover:text-brand-primary">الشروط</a>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 border-b border-white/10 pb-8">
+                        <!-- Branding & Description -->
+                        <div class="md:col-span-2">
+                            <h3 class="text-lg font-bold mb-4" style="color: var(--footer-text);">{{ supplier.name|default:system_settings.site_name }}</h3>
+                            <p class="text-sm max-w-xl" style="color: var(--footer-text); opacity: 0.8;">
+                                {{ supplier.footer_description|default:system_settings.description }}
+                            </p>
+                        </div>
+                        
+                        <!-- Social Links -->
+                        <div>
+                            <h4 class="text-sm font-bold mb-4" style="color: var(--footer-text);">تواصل معنا</h4>
+                            <div class="flex gap-4">
+                                {% if supplier.facebook_url %}
+                                    <a href="{{ supplier.facebook_url }}" target="_blank" class="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-all" style="color: var(--footer-text);">
+                                        <i class="fab fa-facebook-f text-lg"></i>
+                                    </a>
+                                {% endif %}
+                                {% if supplier.instagram_url %}
+                                    <a href="{{ supplier.instagram_url }}" target="_blank" class="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-all" style="color: var(--footer-text);">
+                                        <i class="fab fa-instagram text-lg"></i>
+                                    </a>
+                                {% endif %}
+                                {% if supplier.twitter_url %}
+                                    <a href="{{ supplier.twitter_url }}" target="_blank" class="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-all" style="color: var(--footer-text);">
+                                        <i class="fab fa-twitter text-lg"></i>
+                                    </a>
+                                {% endif %}
+                                {% if supplier.tiktok_url %}
+                                    <a href="{{ supplier.tiktok_url }}" target="_blank" class="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-all" style="color: var(--footer-text);">
+                                        <i class="fab fa-tiktok text-lg"></i>
+                                    </a>
+                                {% endif %}
+                                {% if not supplier.facebook_url and not supplier.instagram_url and not supplier.twitter_url and not supplier.tiktok_url %}
+                                    <p class="text-xs italic opacity-60" style="color: var(--footer-text);">تسوق معنا بسهولة وأمان</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row justify-between items-center text-xs gap-4">
+                        <p style="color: var(--footer-text); opacity: 0.7;">© {% now "Y" %} {{ supplier.name|default:system_settings.site_name }}. جميع الحقوق محفوظة.</p>
+                        <div class="flex items-center gap-6">
+                           <button onclick="openPrivacyModal()" class="hover:underline transition-all font-medium text-right" style="color: var(--footer-text); opacity: 0.9;">الخصوصية</button>
+                           <button onclick="openTermsModal()" class="hover:underline transition-all font-medium text-right" style="color: var(--footer-text); opacity: 0.9;">الشروط والأحكام</button>
                         </div>
                     </div>
                 </div>
@@ -372,6 +421,9 @@
     <!-- Navigation Logic -->
     <script src="{% static 'js/navigation.js' %}?v={{ css_version }}" defer></script>
     
+    {% include 'includes/privacy_modal.html' %}
+    {% include 'includes/terms_modal.html' %}
+
     {% block extra_js %}{% endblock %}
     
 

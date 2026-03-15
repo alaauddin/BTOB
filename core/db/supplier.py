@@ -80,6 +80,14 @@ class Supplier(models.Model):
     agreed_to_terms = models.BooleanField(default=False, verbose_name="الموافقة على الشروط والأحكام")
     terms_agreed_at = models.DateTimeField(null=True, blank=True, verbose_name="تاريخ الموافقة على الشروط")
     return_policy = models.TextField(blank=True, null=True, verbose_name="سياسة الاستبدال والاسترجاع")
+    
+    # Custom Footer & Social Fields
+    footer_description = models.TextField(blank=True, null=True, verbose_name="وصف التذييل (Footer)")
+    facebook_url = models.URLField(blank=True, null=True, verbose_name="رابط فيسبوك")
+    instagram_url = models.URLField(blank=True, null=True, verbose_name="رابط انستقرام")
+    twitter_url = models.URLField(blank=True, null=True, verbose_name="رابط تويتر")
+    tiktok_url = models.URLField(blank=True, null=True, verbose_name="رابط تيك توك")
+
     is_active = models.BooleanField(default=True, verbose_name="نشط")
     has_seen_products_tour = models.BooleanField(default=False, verbose_name="شاهد جولة المنتجات")
     managing_users = models.ManyToManyField(User, related_name='managed_suppliers', blank=True, verbose_name="المستخدمين المدراء")
