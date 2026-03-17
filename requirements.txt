@@ -51,3 +51,7 @@ tqdm>=4.60.0
 # django Rest Framework
 djangorestframework
 djangorestframework-simplejwt
+
+# Task Queue
+celery>=5.3.0
+redis>=5.0.0
