@@ -119,7 +119,9 @@ class VisitTrackingMiddleware:
         except Exception:
             # Never let tracking break the site
             import logging
-            logging.getLogger(__name__).exception("Visit tracking error")
+            import traceback
+            logger = logging.getLogger("core.middleware.VisitTracking")
+            logger.error(f"Visit tracking error: {traceback.format_exc()}")
 
         return response
 
