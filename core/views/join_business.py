@@ -94,6 +94,14 @@ def verify_signup_otp(request):
                 )
                 
                 # 2. Create Supplier
+                # Use username as store_id, but ensure it's ASCII-safe for URLs
+                # If username contains non-ASCII (e.g. Arabic), generate a random string
+                import re
+                store_id = signup_data['username']
+                if not re.match(r'^[a-zA-Z0-9_-]+$', store_id):
+                    # Generate a random string or use phone as fallback to ensure it's English
+                    store_id = f"store-{signup_data['phone'][-6:]}-{random.randint(100, 999)}"
+                
                 supplier = Supplier.objects.create(
                     user=user,
                     name=signup_data['business_name'],
@@ -104,7 +112,7 @@ def verify_signup_otp(request):
                     address=f"نوع النشاط: {signup_data['business_type']}",
                     is_active=False,
                     show_system_logo=False,
-                    store_id=signup_data['username']
+                    store_id=store_id
                 )
                 
                 # Success! Delete OTP and commit
