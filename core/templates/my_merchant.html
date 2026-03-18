@@ -23,6 +23,31 @@
         background-color: #ED7D31 !important; /* Brand Orange */
         border: 2px solid white !important;
     }
+
+    /* Floating Arrow Animation */
+    @keyframes float-arrow {
+        0%, 100% { transform: translateY(0) rotate(-45deg); }
+        50% { transform: translateY(-10px) rotate(-45deg); }
+    }
+    .floating-arrow {
+        animation: float-arrow 2s infinite ease-in-out;
+    }
+
+    @keyframes float-arrow-up {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+    }
+    .floating-arrow-up {
+        animation: float-arrow-up 2s infinite ease-in-out;
+    }
+
+    @keyframes float-arrow-horizontal {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(-10px); }
+    }
+    .floating-arrow-horizontal {
+        animation: float-arrow-horizontal 1.5s infinite ease-in-out;
+    }
 </style>
 {% endblock %}
 
@@ -32,10 +57,10 @@
 
     <div class="container mx-auto px-4 mt-4">
         <!-- 3. Store Profile Card -->
-        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden mb-4">
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative mb-4">
              <!-- Cover Picture Background (if exists) -->
              {% if supplier.panal_picture %}
-             <div class="absolute inset-x-0 top-0 h-24 opacity-20 pointer-events-none">
+             <div class="absolute inset-x-0 top-0 h-24 opacity-20 pointer-events-none overflow-hidden rounded-t-3xl">
                 <img src="{{ supplier.panal_picture.url }}" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-white"></div>
              </div>
@@ -51,8 +76,18 @@
                             <i class="fas fa-camera text-white text-2xl"></i>
                         </button>
                     {% else %}
-                        <div class="w-24 h-24 rounded-full bg-purple-600 flex items-center justify-center shadow-xl border-4 border-white group-hover/logo:scale-105 transition-transform">
-                            <span class="text-white text-4xl font-black">{{ supplier.name|first|upper }}</span>
+                        <div class="w-24 h-24 rounded-full bg-slate-200 flex flex-col items-center justify-center shadow-xl border-4 border-white group-hover/logo:scale-105 transition-transform relative">
+                            <i class="fas fa-store text-slate-400 text-3xl"></i>
+                            <span class="text-[8px] font-black text-slate-500 mt-1">بدون شعار</span>
+                            
+                            <!-- Floating Arrow and Prompt (Left of Logo) -->
+                            <div class="absolute top-1/2 -translate-y-1/2 right-full mr-4 flex items-center z-[50] whitespace-nowrap" dir="rtl">
+                                <div class="floating-arrow-horizontal text-[#ED7D31] ml-1">
+                                    <i class="fas fa-caret-right text-3xl"></i>
+                                </div>
+                                <span class="bg-[#ED7D31] text-gray-900 text-[10px] font-black px-4 py-1.5 rounded-full shadow-xl border-2 border-gray-900">أضف شعار متجرك هنا! ✨</span>
+                            </div>
+
                             <!-- Camera Overlay -->
                             <button onclick="openBrandingModal()" class="absolute inset-0 rounded-full flex items-center justify-center opacity-100 animate-branding-prompt transition-opacity">
                                 <i class="fas fa-camera text-white text-2xl"></i>
@@ -158,10 +193,18 @@
                     {% endif %}
                 </div>
                 {% if not supplier.subdomain %}
-                <button onclick="openDomainModal()" class="bg-orange-50 text-[#ED7D31] px-4 py-2 rounded-2xl text-xs font-black border border-orange-100 hover:bg-orange-100 transition-all flex items-center gap-2">
-                    <i class="fas fa-plus"></i>
-                    ضبط النطاق
-                </button>
+                <div class="flex items-center gap-3">
+                    <div class="flex flex-col items-end">
+                        <span class="bg-blue-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap mb-1">احجز رابط متجرك الخاص!</span>
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-long-arrow-alt-left text-blue-600 text-xl floating-arrow-horizontal"></i>
+                            <button onclick="openDomainModal()" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-2xl text-xs font-black border border-blue-100 hover:bg-blue-100 transition-all flex items-center gap-2 shadow-sm">
+                                <i class="fas fa-plus"></i>
+                                ضبط النطاق
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 {% endif %}
             </div>
 

@@ -32,7 +32,7 @@ DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes')
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 # Multi-tenant: the root domain under which subdomains are created.
-# Suppliers get <subdomain>.PLATFORM_DOMAIN  (e.g. store1.rawaaj.com)
+# Suppliers get <subdomain>.PLATFORM_DOMAIN  (e.g. store1.rawaage.com)
 PLATFORM_DOMAIN = os.getenv('PLATFORM_DOMAIN', 'rawaage.com')
 PLATFORM_DOMAINS = os.getenv('PLATFORM_DOMAINS', f'{PLATFORM_DOMAIN},aratatt.com').split(',')
 

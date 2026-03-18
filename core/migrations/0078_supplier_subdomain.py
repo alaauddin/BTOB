@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='supplier',
             name='subdomain',
-            field=models.CharField(blank=True, db_index=True, help_text="مثال: 'mystore' → mystore.rawaaj.com", max_length=63, null=True, unique=True, validators=[django.core.validators.RegexValidator(message='يجب أن يحتوي النطاق الفرعي على أحرف صغيرة وأرقام وشُرَط فقط، ولا يبدأ أو ينتهي بشرطة.', regex='^[a-z0-9]([a-z0-9-]*[a-z0-9])?$')], verbose_name='النطاق الفرعي'),
+            field=models.CharField(blank=True, db_index=True, help_text="مثال: 'mystore' → mystore.rawaage.com", max_length=63, null=True, unique=True, validators=[django.core.validators.RegexValidator(message='يجب أن يحتوي النطاق الفرعي على أحرف صغيرة وأرقام وشُرَط فقط، ولا يبدأ أو ينتهي بشرطة.', regex='^[a-z0-9]([a-z0-9-]*[a-z0-9])?$')], verbose_name='النطاق الفرعي'),
         ),
     ]

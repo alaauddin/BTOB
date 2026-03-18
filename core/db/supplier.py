@@ -98,7 +98,7 @@ class Supplier(models.Model):
         null=True,
         blank=True,
         verbose_name="النطاق الفرعي",
-        help_text="مثال: 'mystore' → mystore.rawaaj.com",
+        help_text="مثال: 'mystore' → mystore.rawaage.com",
         validators=[
             RegexValidator(
                 regex=r'^[a-z0-9]([a-z0-9-]*[a-z0-9])?$',

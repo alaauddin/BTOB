@@ -8,6 +8,8 @@ from core.forms import MerchantSignupForm
 from core.models import SystemSettings, Supplier, OTPVerification
 from core.utils.whatsapp_utils import send_whatsapp_message
 
+from django.http import JsonResponse
+
 def join_business(request):
     # Redirect authenticated users
     if request.user.is_authenticated:
@@ -15,154 +17,115 @@ def join_business(request):
             return redirect('my_merchant')
         return redirect('suppliers_list')
 
-    if request.method == 'POST':
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        action = request.POST.get('action')
         form = MerchantSignupForm(request.POST)
-        if form.is_valid():
-            # Programmatically generate email from phone number
-            phone = form.cleaned_data['phone']
-            form.cleaned_data['email'] = f"{phone}@aratatt.com"
+
+        if action == 'validate_step':
+            step = int(request.POST.get('step', 1))
+            # Define which fields belong to which step
+            step_fields = {
+                1: ['username', 'password', 'password_confirm'],
+                2: ['business_name', 'owner_name'],
+                3: ['city', 'country'],
+                4: ['business_type', 'phone', 'secondary_phone']
+            }
             
-            # Store data in session
-            request.session['merchant_signup_data'] = form.cleaned_data
+            fields = step_fields.get(step, [])
+            errors = {}
             
-            # Generate OTP
-            otp = str(random.randint(100000, 999999))
-            OTPVerification.objects.filter(phone=phone).delete()
-            OTPVerification.objects.create(phone=phone, otp=otp)
+            # We validate the whole form but only collect errors for the current step's fields
+            form.is_valid()
+            for field in fields:
+                if field in form.errors:
+                    errors[field] = form.errors[field]
             
-            # Send OTP via WhatsApp
+            if errors:
+                return JsonResponse({'success': False, 'errors': errors})
+            return JsonResponse({'success': True})
+
+        elif action == 'send_otp':
+            if form.is_valid():
+                phone = form.cleaned_data['phone']
+                request.session['merchant_signup_data'] = form.cleaned_data
+                
+                otp = str(random.randint(100000, 999999))
+                OTPVerification.objects.filter(phone=phone).delete()
+                OTPVerification.objects.create(phone=phone, otp=otp)
+                
+                try:
+                    msg = f"رمز التحقق الخاص بك هو: {otp}"
+                    send_whatsapp_message(phone, msg)
+                    return JsonResponse({'success': True, 'message': "تم إرسال رمز التحقق بنجاح."})
+                except Exception as e:
+                    return JsonResponse({'success': False, 'error': f"خطأ في إرسال الرمز: {str(e)}"})
+            else:
+                return JsonResponse({'success': False, 'errors': form.errors})
+
+        elif action == 'verify_otp':
+            otp_input = request.POST.get('otp')
+            signup_data = request.session.get('merchant_signup_data')
+            
+            if not signup_data:
+                return JsonResponse({'success': False, 'error': "انتهت جلسة التسجيل، يرجى إعادة المحاولة."})
+            
+            phone = signup_data.get('phone')
+            from django.utils import timezone
+            from datetime import timedelta
+            expiry_time = timezone.now() - timedelta(minutes=10)
+            
             try:
-                msg = f"رمز التحقق الخاص بك هو: {otp}"
-                send_whatsapp_message(phone, msg)
-                messages.info(request, "تم إرسال رمز التحقق إلى الواتساب الخاص بك.")
-                return redirect('verify_signup_otp')
+                with transaction.atomic():
+                    otp_obj = OTPVerification.objects.select_for_update().filter(
+                        phone=phone, 
+                        otp=otp_input,
+                        created_at__gte=expiry_time
+                    ).first()
+                    
+                    if not otp_obj:
+                        return JsonResponse({'success': False, 'error': "رمز التحقق غير صحيح أو انتهت صلاحيته."})
+
+                    if User.objects.filter(username=signup_data['username']).exists():
+                        return JsonResponse({'success': False, 'error': "اسم المستخدم محجوز بالفعل."})
+
+                    # 1. Create User
+                    user = User.objects.create_user(
+                        username=signup_data['username'],
+                        password=signup_data['password'],
+                        email=f"{signup_data['phone']}@aratatt.com"
+                    )
+                    
+                    # 2. Create Supplier
+                    import re
+                    store_id = signup_data['username']
+                    if not re.match(r'^[a-zA-Z0-9_-]+$', store_id):
+                        store_id = f"store-{signup_data['phone'][-6:]}-{random.randint(100, 999)}"
+                    
+                    supplier = Supplier.objects.create(
+                        user=user,
+                        name=signup_data['business_name'],
+                        phone=signup_data['phone'],
+                        secondary_phone=signup_data.get('secondary_phone'),
+                        city=signup_data['city'],
+                        country=signup_data['country'],
+                        address=f"نوع النشاط: {signup_data['business_type']}",
+                        is_active=False,
+                        store_id=store_id
+                    )
+                    
+                    otp_obj.delete()
+                    del request.session['merchant_signup_data']
+
+                auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                return JsonResponse({'success': True, 'redirect_url': '/my-merchant/'})
+
             except Exception as e:
-                messages.error(request, f"خطأ في إرسال الرمز: {str(e)}")
-        else:
-            messages.error(request, "يرجى تصحيح الأخطاء أدناه.")
-    else:
-        form = MerchantSignupForm()
-    
+                return JsonResponse({'success': False, 'error': str(e)})
+
+    # Regular GET request
+    form = MerchantSignupForm()
     return render(request, 'join_business.html', {'business_form': form})
 
 def verify_signup_otp(request):
-    # Redirect authenticated users
-    if request.user.is_authenticated:
-        if hasattr(request.user, 'supplier'):
-            return redirect('my_merchant')
-        return redirect('suppliers_list')
+    return redirect('join_business')
 
-    signup_data = request.session.get('merchant_signup_data')
-    if not signup_data:
-        messages.error(request, "جلسة التسجيل انتهت صلاحيتها.")
-        return redirect('join_business')
-    
-    phone = signup_data.get('phone')
-    
-    if request.method == 'POST':
-        otp_input = request.POST.get('otp')
-        
-        # Check OTP with 10-minute expiration
-        from django.utils import timezone
-        from datetime import timedelta
-        expiry_time = timezone.now() - timedelta(minutes=10)
-        
-        # We use transaction.atomic and select_for_update to handle potential race conditions
-        try:
-            with transaction.atomic():
-                otp_obj = OTPVerification.objects.select_for_update().filter(
-                    phone=phone, 
-                    otp=otp_input,
-                    created_at__gte=expiry_time
-                ).first()
-                
-                if not otp_obj:
-                    messages.error(request, 'رمز التحقق غير صحيح أو انتهت صلاحيته.')
-                    return render(request, 'verify_otp.html', {'phone': phone})
-
-                # Pre-check username uniqueness within the transaction
-                if User.objects.filter(username=signup_data['username']).exists():
-                    otp_obj.delete() # Consumed anyway to prevent bypass
-                    messages.error(request, 'اسم المستخدم هذا تم حجزه بالفعل، يرجى العودة والتسجيل باسم آخر.')
-                    return render(request, 'verify_otp.html', {'phone': phone})
-
-                # 1. Create User
-                user = User.objects.create_user(
-                    username=signup_data['username'],
-                    password=signup_data['password'],
-                    email=signup_data['email']
-                )
-                
-                # 2. Create Supplier
-                # Use username as store_id, but ensure it's ASCII-safe for URLs
-                # If username contains non-ASCII (e.g. Arabic), generate a random string
-                import re
-                store_id = signup_data['username']
-                if not re.match(r'^[a-zA-Z0-9_-]+$', store_id):
-                    # Generate a random string or use phone as fallback to ensure it's English
-                    store_id = f"store-{signup_data['phone'][-6:]}-{random.randint(100, 999)}"
-                
-                supplier = Supplier.objects.create(
-                    user=user,
-                    name=signup_data['business_name'],
-                    phone=signup_data['phone'],
-                    secondary_phone=signup_data.get('secondary_phone'),
-                    city=signup_data['city'],
-                    country=signup_data['country'],
-                    address=f"نوع النشاط: {signup_data['business_type']}",
-                    is_active=False,
-                    show_system_logo=False,
-                    store_id=store_id
-                )
-                
-                # Success! Delete OTP and commit
-                otp_obj.delete()
-
-            # --- Outside Transaction (Side Effects) ---
-            
-            # Admin Notification
-            try:
-                settings = SystemSettings.objects.first()
-                if settings and settings.whatsapp_number:
-                    admin_msg = (
-                        f"*تم إنشاء حساب تاجر جديد وتحقق من هاتفه*\n\n"
-                        f"*اسم النشاط:* {supplier.name}\n"
-                        f"*اسم المالك:* {signup_data['owner_name']}\n"
-                        f"*رقم الهاتف:* {supplier.phone}\n"
-                        f"*البريد الإلكتروني:* {user.email}\n"
-                        f"*نوع النشاط:* {signup_data['business_type']}\n"
-                    )
-                    send_whatsapp_message(settings.whatsapp_number, admin_msg)
-            except: pass
-
-            # User Welcoming Notification
-            try:
-                login_url = request.build_absolute_uri('/login/')
-                welcome_msg = (
-                    f"أهلاً بك يا *{signup_data['owner_name']}* في عائلة رواج! 🌟\n\n"
-                    f"لقد تم تفعيل رقمك وإنشاء حسابك لمتجر *({supplier.name})*.\n\n"
-                    f"🔹 *رابط تسجيل الدخول:* {login_url}\n"
-                    f"🔹 *اسم المستخدم:* {user.username}\n"
-                    f"🔹 *كلمة المرور:* {signup_data['password']}\n"
-                    f"🔹 *الحالة:* قيد المراجعة حالياً\n\n"
-                    f"سيقوم فريقنا بتنشيط حسابك قريباً جداً. تصفح لوحة التحكم الآن! 🚀"
-                )
-                send_whatsapp_message(phone, welcome_msg)
-            except: pass
-            
-            # Log user in (flushes session)
-            auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            
-            messages.success(request, f'مرحباً بك! تم إنشاء حسابك وهو قيد المراجعة حالياً.')
-            return redirect('my_merchant')
-
-        except Exception as e:
-            # Check if it's already created (e.g. concurrent request succeeded)
-            if User.objects.filter(username=signup_data['username']).exists():
-                user = User.objects.get(username=signup_data['username'])
-                auth_login(request, user)
-                return redirect('my_merchant')
-            
-            messages.error(request, f'حدث خطأ أثناء إنشاء الحساب: {str(e)}')
-            
-    return render(request, 'verify_otp.html', {'phone': phone})

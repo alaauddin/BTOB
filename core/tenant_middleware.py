@@ -49,10 +49,10 @@ class SubdomainMiddleware:
         target_pd = next((pd for pd in platform_domains if host.endswith(f'.{pd}')), None)
         
         if target_pd:
-            # Extract subdomain portion: "store1.rawaaj.com" → "store1"
+            # Extract subdomain portion: "store1.rawaage.com" → "store1"
             subdomain = host.removesuffix(f'.{target_pd}')
 
-            # Guard against multi-level subdomains (e.g. "a.b.rawaaj.com")
+            # Guard against multi-level subdomains (e.g. "a.b.rawaage.com")
             if '.' in subdomain:
                 raise Http404("المتجر غير موجود.")
 

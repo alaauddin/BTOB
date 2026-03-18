@@ -63,5 +63,5 @@ def system_settings(request):
         'nav_state': nav_state,
         'active_store': active_store,
         'user_stores_count': user_stores_count,
-        'PLATFORM_DOMAIN': getattr(dj_settings, 'PLATFORM_DOMAIN', 'rawaaj.com'),
+        'PLATFORM_DOMAIN': getattr(dj_settings, 'PLATFORM_DOMAIN', 'rawaage.com'),
     }

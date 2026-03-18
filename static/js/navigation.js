@@ -1,5 +1,5 @@
 /**
- * Rawaaj Navigation Logic
+ * rawaage Navigation Logic
  * Handles sidebar toggling, dropdowns, and active state management.
  */
 

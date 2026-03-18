@@ -18,27 +18,39 @@ fbq('track', 'Lead', {
                 <!-- Decorative pattern -->
                 <div class="absolute inset-0 opacity-[0.04]" style="background-image: url('data:image/svg+xml,%3Csvg width=\&quot;40\&quot; height=\&quot;40\&quot; xmlns=\&quot;http://www.w3.org/2000/svg\&quot;%3E%3Ccircle cx=\&quot;20\&quot; cy=\&quot;20\&quot; r=\&quot;1.5\&quot; fill=\&quot;white\&quot;/%3E%3C/svg\%3E');"></div>
                 <div class="flex items-center justify-between relative">
-                    <!-- Background connecting line (always visible) -->
+                    <!-- Background connecting line -->
                     <div class="absolute left-8 right-8" style="top: 22px; height: 3px; background: rgba(255,255,255,0.3); border-radius: 999px; transform: translateY(-50%); z-index: 0;"></div>
                     <!-- Animated progress bar -->
                     <div id="progress-bar" class="absolute right-8 stepper-progress-bar" style="top: 22px; height: 3px; background: linear-gradient(to left, #D17629, #e8a04d, #D17629); border-radius: 999px; transform: translateY(-50%); z-index: 1; width: 0;"></div>
                     
                     <!-- Step 1 -->
-                    <div class="step-item active relative z-10 flex flex-col items-center gap-2.5 transition-all duration-500" data-step="1">
-                        <div class="step-circle w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500" style="background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.4);">1</div>
-                        <span class="step-label text-[10px] font-bold tracking-wide whitespace-nowrap" style="color: rgba(255,255,255,0.4);">الحساب</span>
+                    <div class="step-item active relative z-10 flex flex-col items-center gap-2.5" data-step="1">
+                        <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs" style="background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.4);">1</div>
+                        <span class="step-label text-[9px] font-bold tracking-wide transition-all duration-300" style="color: rgba(255,255,255,0.4);">الحساب</span>
                     </div>
                     
                     <!-- Step 2 -->
-                    <div class="step-item relative z-10 flex flex-col items-center gap-2.5 transition-all duration-500" data-step="2">
-                        <div class="step-circle w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500" style="background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.4);">2</div>
-                        <span class="step-label text-[10px] font-bold tracking-wide whitespace-nowrap" style="color: rgba(255,255,255,0.4);">النشاط التجاري</span>
+                    <div class="step-item relative z-10 flex flex-col items-center gap-2.5" data-step="2">
+                        <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs" style="background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.4);">2</div>
+                        <span class="step-label text-[9px] font-bold tracking-wide transition-all duration-300" style="color: rgba(255,255,255,0.4);">النشاط</span>
                     </div>
                     
                     <!-- Step 3 -->
-                    <div class="step-item relative z-10 flex flex-col items-center gap-2.5 transition-all duration-500" data-step="3">
-                        <div class="step-circle w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500" style="background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.4);">3</div>
-                        <span class="step-label text-[10px] font-bold tracking-wide whitespace-nowrap" style="color: rgba(255,255,255,0.4);">التواصل</span>
+                    <div class="step-item relative z-10 flex flex-col items-center gap-2.5" data-step="3">
+                        <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs" style="background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.4);">3</div>
+                        <span class="step-label text-[9px] font-bold tracking-wide transition-all duration-300" style="color: rgba(255,255,255,0.4);">الموقع</span>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="step-item relative z-10 flex flex-col items-center gap-2.5" data-step="4">
+                        <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs" style="background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.4);">4</div>
+                        <span class="step-label text-[9px] font-bold tracking-wide transition-all duration-300" style="color: rgba(255,255,255,0.4);">التواصل</span>
+                    </div>
+
+                    <!-- Step 5 -->
+                    <div class="step-item relative z-10 flex flex-col items-center gap-2.5" data-step="5">
+                        <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs" style="background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.4);">5</div>
+                        <span class="step-label text-[9px] font-bold tracking-wide transition-all duration-300" style="color: rgba(255,255,255,0.4);">التحقق</span>
                     </div>
                 </div>
             </div>
@@ -134,7 +146,7 @@ fbq('track', 'Lead', {
                                 </div>
                                 <div>
                                     <h2 class="text-xl font-black text-slate-800 leading-tight">بيانات النشاط التجاري</h2>
-                                    <p class="text-slate-400 text-[11px] font-medium mt-1">أخبرنا باسم متجرك ونوع النشاط الذي ستقدمه للعملاء</p>
+                                    <p class="text-slate-400 text-[11px] font-medium mt-1">أخبرنا باسم متجرك ومن هو الشخص المسؤول</p>
                                 </div>
                             </div>
                         </div>
@@ -148,9 +160,6 @@ fbq('track', 'Lead', {
                                     </div>
                                     {{ business_form.business_name }}
                                 </div>
-                                {% if business_form.business_name.errors %}
-                                <p class="text-red-600 text-[12px] font-bold mt-2.5 px-3 py-2 bg-red-50 border border-red-200 rounded-xl animate-slide-up flex items-center gap-2"><i class="fas fa-exclamation-circle text-red-500"></i>{{ business_form.business_name.errors.0 }}</p>
-                                {% endif %}
                             </div>
 
                             <div class="form-group flex flex-col gap-2 relative">
@@ -161,27 +170,11 @@ fbq('track', 'Lead', {
                                     </div>
                                     {{ business_form.owner_name }}
                                 </div>
-                                {% if business_form.owner_name.errors %}
-                                <p class="text-red-600 text-[12px] font-bold mt-2.5 px-3 py-2 bg-red-50 border border-red-200 rounded-xl animate-slide-up flex items-center gap-2"><i class="fas fa-exclamation-circle text-red-500"></i>{{ business_form.owner_name.errors.0 }}</p>
-                                {% endif %}
-                            </div>
-
-                            <div class="form-group flex flex-col gap-2 relative">
-                                <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest mr-1 mb-1">{{ business_form.business_type.label }}</label>
-                                <div class="relative group input-container">
-                                    <div class="absolute inset-y-0 right-0 flex items-center w-14 justify-center text-slate-300 pointer-events-none group-focus-within:text-[#D17629] transition-colors duration-300 z-10">
-                                        <i class="fas fa-briefcase text-sm"></i>
-                                    </div>
-                                    {{ business_form.business_type }}
-                                </div>
-                                {% if business_form.business_type.errors %}
-                                <p class="text-red-600 text-[12px] font-bold mt-2.5 px-3 py-2 bg-red-50 border border-red-200 rounded-xl animate-slide-up flex items-center gap-2"><i class="fas fa-exclamation-circle text-red-500"></i>{{ business_form.business_type.errors.0 }}</p>
-                                {% endif %}
                             </div>
                         </div>
                     </div>
 
-                    <!-- Step 3: Contact & Location -->
+                    <!-- Step 3: Location -->
                     <div class="step-content hidden animate-fade-in" id="step-3">
                         <div class="header mb-8 text-right">
                             <div class="flex items-center gap-3 mb-3">
@@ -189,41 +182,14 @@ fbq('track', 'Lead', {
                                     <i class="fas fa-map-marked-alt text-emerald-500 text-sm"></i>
                                 </div>
                                 <div>
-                                    <h2 class="text-xl font-black text-slate-800 leading-tight">بيانات التواصل والموقع</h2>
-                                    <p class="text-slate-400 text-[11px] font-medium mt-1">كيف يمكننا والعملاء التواصل معك؟ حدد موقعك الجغرافي</p>
+                                    <h2 class="text-xl font-black text-slate-800 leading-tight">الموقع الجغرافي</h2>
+                                    <p class="text-slate-400 text-[11px] font-medium mt-1">حدد المدينة والدولة لتسهيل وصول العملاء إليك</p>
                                 </div>
                             </div>
                         </div>
 
                         <div class="space-y-5">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div class="form-group flex flex-col gap-2 relative">
-                                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest mr-1 mb-1">{{ business_form.phone.label }}</label>
-                                    <div class="relative group input-container">
-                                        <div class="absolute inset-y-0 right-0 flex items-center w-14 justify-center text-slate-300 pointer-events-none group-focus-within:text-[#D17629] transition-colors duration-300 z-10">
-                                            <i class="fab fa-whatsapp text-sm"></i>
-                                        </div>
-                                        {{ business_form.phone }}
-                                    </div>
-                                    {% if business_form.phone.errors %}
-                                    <p class="text-red-600 text-[12px] font-bold mt-2.5 px-3 py-2 bg-red-50 border border-red-200 rounded-xl animate-slide-up flex items-center gap-2"><i class="fas fa-exclamation-circle text-red-500"></i>{{ business_form.phone.errors.0 }}</p>
-                                    {% endif %}
-                                </div>
-                                <div class="form-group flex flex-col gap-2 relative">
-                                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest mr-1 mb-1">{{ business_form.secondary_phone.label }}</label>
-                                    <div class="relative group input-container">
-                                        <div class="absolute inset-y-0 right-0 flex items-center w-14 justify-center text-slate-300 pointer-events-none group-focus-within:text-[#D17629] transition-colors duration-300 z-10">
-                                            <i class="fas fa-phone-alt text-sm"></i>
-                                        </div>
-                                        {{ business_form.secondary_phone }}
-                                    </div>
-                                    {% if business_form.secondary_phone.errors %}
-                                    <p class="text-red-600 text-[12px] font-bold mt-2.5 px-3 py-2 bg-red-50 border border-red-200 rounded-xl animate-slide-up flex items-center gap-2"><i class="fas fa-exclamation-circle text-red-500"></i>{{ business_form.secondary_phone.errors.0 }}</p>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-5">
                                 <div class="form-group flex flex-col gap-2 relative">
                                     <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest mr-1 mb-1">{{ business_form.city.label }}</label>
                                     <div class="relative group input-container">
@@ -232,9 +198,6 @@ fbq('track', 'Lead', {
                                         </div>
                                         {{ business_form.city }}
                                     </div>
-                                    {% if business_form.city.errors %}
-                                    <p class="text-red-600 text-[12px] font-bold mt-2.5 px-3 py-2 bg-red-50 border border-red-200 rounded-xl animate-slide-up flex items-center gap-2"><i class="fas fa-exclamation-circle text-red-500"></i>{{ business_form.city.errors.0 }}</p>
-                                    {% endif %}
                                 </div>
                                 <div class="form-group flex flex-col gap-2 relative">
                                     <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest mr-1 mb-1">{{ business_form.country.label }}</label>
@@ -244,10 +207,93 @@ fbq('track', 'Lead', {
                                         </div>
                                         {{ business_form.country }}
                                     </div>
-                                    {% if business_form.country.errors %}
-                                    <p class="text-red-600 text-[12px] font-bold mt-2.5 px-3 py-2 bg-red-50 border border-red-200 rounded-xl animate-slide-up flex items-center gap-2"><i class="fas fa-exclamation-circle text-red-500"></i>{{ business_form.country.errors.0 }}</p>
-                                    {% endif %}
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Contact & Type -->
+                    <div class="step-content hidden animate-fade-in" id="step-4">
+                        <div class="header mb-8 text-right">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-phone-alt text-indigo-500 text-sm"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-black text-slate-800 leading-tight">بيانات التواصل والنشاط</h2>
+                                    <p class="text-slate-400 text-[11px] font-medium mt-1">رقم الهاتف المستخدم للواتساب وتصنيف نشاطك</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-5">
+                            <div class="form-group flex flex-col gap-2 relative">
+                                <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest mr-1 mb-1">{{ business_form.business_type.label }}</label>
+                                <div class="relative group input-container">
+                                    <div class="absolute inset-y-0 right-0 flex items-center w-14 justify-center text-slate-300 pointer-events-none group-focus-within:text-[#D17629] transition-colors duration-300 z-10">
+                                        <i class="fas fa-briefcase text-sm"></i>
+                                    </div>
+                                    {{ business_form.business_type }}
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div class="form-group flex flex-col gap-2 relative">
+                                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest mr-1 mb-1">{{ business_form.phone.label }}</label>
+                                    <div class="relative group input-container">
+                                        <div class="absolute inset-y-0 right-0 flex items-center w-14 justify-center text-slate-300 pointer-events-none group-focus-within:text-[#D17629] transition-colors duration-300 z-10">
+                                            <i class="fab fa-whatsapp text-sm"></i>
+                                        </div>
+                                        {{ business_form.phone }}
+                                    </div>
+                                </div>
+                                <div class="form-group flex flex-col gap-2 relative">
+                                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest mr-1 mb-1">{{ business_form.secondary_phone.label }}</label>
+                                    <div class="relative group input-container">
+                                        <div class="absolute inset-y-0 right-0 flex items-center w-14 justify-center text-slate-300 pointer-events-none group-focus-within:text-[#D17629] transition-colors duration-300 z-10">
+                                            <i class="fas fa-phone-alt text-sm"></i>
+                                        </div>
+                                        {{ business_form.secondary_phone }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: OTP Verification -->
+                    <div class="step-content hidden animate-fade-in" id="step-5">
+                        <div class="header mb-8 text-right">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-shield-alt text-orange-500 text-sm"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-black text-slate-800 leading-tight">التحقق من الهاتف</h2>
+                                    <p class="text-slate-400 text-[11px] font-medium mt-1">أدخل الرمز المكون من 6 أرقام المرسل إلى الواتساب</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="form-group flex flex-col gap-2 relative">
+                                <label class="text-[11px] font-black text-slate-500 mb-1 tracking-widest text-center">رمز التحقق (OTP)</label>
+                                <div class="relative group">
+                                    {{ business_form.otp }}
+                                </div>
+                                <div class="flex flex-col items-center gap-2 mt-2">
+                                    <p id="otp-phone-display" class="text-center text-[10px] text-slate-400 font-bold">تم الإرسال إلى: <span dir="ltr" class="text-slate-600"></span></p>
+                                    <button type="button" id="change-phone-btn" class="text-[10px] font-black text-[#D17629] hover:underline flex items-center gap-1 transition-all">
+                                        <i class="fas fa-edit text-[9px]"></i>
+                                        تعديل الرقم
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 p-4 bg-orange-50 rounded-xl border border-orange-100 flex gap-3">
+                                <i class="fab fa-whatsapp text-green-600 text-lg"></i>
+                                <p class="text-[10px] text-orange-800 leading-relaxed font-bold">
+                                    إذا لم يصلك الرمز خلال دقائق، يرجى التأكد من أن الرقم يدعم الواتساب أو تواصل مع الدعم الفني.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -451,127 +497,183 @@ fbq('track', 'Lead', {
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('onboarding-form');
-        const steps = document.querySelectorAll('.step-content');
-        const stepItems = document.querySelectorAll('.step-item');
         const nextBtn = document.getElementById('next-btn');
         const prevBtn = document.getElementById('prev-btn');
         const submitBtn = document.getElementById('submit-btn');
         const progressBar = document.getElementById('progress-bar');
+        const changePhoneBtn = document.getElementById('change-phone-btn');
+        const stepItems = document.querySelectorAll('.step-item');
+        const steps = document.querySelectorAll('.step-content');
         
-        
-        // Password Toggle Logic
+        let currentStep = 1;
+        const totalSteps = 5;
+
+        // Password Toggle
         document.querySelectorAll('.password-toggle').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
-                const container = this.closest('.input-container');
-                const input = container.querySelector('input');
+                const input = this.closest('.input-container').querySelector('input');
                 const icon = this.querySelector('i');
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash');
-                    this.classList.add('text-[#D17629]');
+                input.type = input.type === 'password' ? 'text' : 'password';
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            });
+        });
+
+        async function validateStep(step) {
+            const formData = new FormData(form);
+            formData.append('action', 'validate_step');
+            formData.append('step', step);
+            
+            setLoading(true);
+            try {
+                const response = await fetch('', {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    clearErrors(step);
+                    return true;
                 } else {
-                    input.type = 'password';
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                    this.classList.remove('text-[#D17629]');
+                    showErrors(data.errors);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Validation error:', error);
+                return false;
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function sendOTP() {
+            const formData = new FormData(form);
+            formData.append('action', 'send_otp');
+            
+            setLoading(true);
+            try {
+                const response = await fetch('', {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    const phone = form.querySelector('[name="phone"]').value;
+                    document.querySelector('#otp-phone-display span').textContent = phone;
+                    return true;
+                } else {
+                    if (data.errors) showErrors(data.errors);
+                    else alert(data.error);
+                    return false;
+                }
+            } catch (error) {
+                console.error('OTP error:', error);
+                return false;
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function verifyOTP() {
+            const formData = new FormData(form);
+            formData.append('action', 'verify_otp');
+            
+            setLoading(true);
+            try {
+                const response = await fetch('', {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                console.error('Verify error:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function showErrors(errors) {
+            Object.keys(errors).forEach(field => {
+                const input = form.querySelector(`[name="${field}"]`);
+                if (input) {
+                    const container = input.closest('.form-group');
+                    let errorEl = container.querySelector('.error-msg');
+                    if (!errorEl) {
+                        errorEl = document.createElement('p');
+                        errorEl.className = 'error-msg text-red-600 text-[10px] font-bold mt-1 animate-slide-up';
+                        container.appendChild(errorEl);
+                    }
+                    errorEl.textContent = errors[field][0];
+                    input.style.borderColor = '#ef4444';
                 }
             });
-        });
+        }
 
-        // Clickable Stepper Logic
-        stepItems.forEach((item, idx) => {
-            item.style.cursor = 'pointer';
-            item.addEventListener('click', () => {
-                const targetStep = idx + 1;
-                // Only allow navigating to previous steps, or next if current is valid
-                if (targetStep < currentStep) {
-                    currentStep = targetStep;
-                    updateUI();
-                } else if (targetStep === currentStep + 1 && validateStep(currentStep)) {
-                    currentStep = targetStep;
-                    updateUI();
-                }
-            });
-        });
+        function clearErrors(step) {
+            const stepContent = document.getElementById(`step-${step}`);
+            stepContent.querySelectorAll('.error-msg').forEach(el => el.remove());
+            stepContent.querySelectorAll('input, select').forEach(el => el.style.borderColor = '');
+        }
 
-        let currentStep = 1;
-        const totalSteps = steps.length;
+        function setLoading(isLoading) {
+            nextBtn.disabled = isLoading;
+            submitBtn.disabled = isLoading;
+            const btnText = currentStep === 5 ? submitBtn.querySelector('span') : nextBtn.querySelector('span');
+            if (isLoading) {
+                btnText.dataset.original = btnText.textContent;
+                btnText.textContent = 'جاري التحميل...';
+            } else if (btnText.dataset.original) {
+                btnText.textContent = btnText.dataset.original;
+            }
+        }
 
         function updateUI() {
-            // Update steps visibility
-            steps.forEach(s => {
-                s.classList.add('hidden');
-                s.classList.remove('animate-fade-in');
-            });
-            const activeStep = document.getElementById(`step-${currentStep}`);
-            activeStep.classList.remove('hidden');
-            setTimeout(() => activeStep.classList.add('animate-fade-in'), 10);
-
-            // Update stepper active state
+            steps.forEach(s => s.classList.add('hidden'));
+            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+            
             stepItems.forEach((item, idx) => {
-                const stepIdx = idx + 1;
-                item.classList.toggle('active', stepIdx === currentStep);
-                item.classList.toggle('completed', stepIdx < currentStep);
+                const s = idx + 1;
+                item.classList.toggle('active', s === currentStep);
+                item.classList.toggle('completed', s < currentStep);
             });
 
-            // Update Progress Bar (RTL right-to-left)
             const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
             progressBar.style.width = `${progress}%`;
 
-            // Update buttons & Copy
-            const nextBtnText = document.getElementById('next-btn-text');
-            const stepHint = document.getElementById('step-hint');
-            
-            prevBtn.classList.toggle('hidden', currentStep === 1);
-            
-            if (currentStep === 1) {
-                nextBtnText.textContent = "تابع نحو استكمال بياناتك";
-                stepHint.style.opacity = "0";
-            } else if (currentStep === 2) {
-                nextBtnText.textContent = "استمر لإضافة بيانات التواصل";
-                stepHint.textContent = "اقتربت جداً! خطوة واحدة وتكون جاهزاً";
-                stepHint.style.opacity = "1";
-            }
+            prevBtn.classList.toggle('hidden', currentStep === 1 || currentStep === 5);
+            nextBtn.classList.toggle('hidden', currentStep === 5);
+            submitBtn.classList.toggle('hidden', currentStep !== 5);
 
-            if (currentStep === totalSteps) {
-                nextBtn.classList.add('hidden');
-                submitBtn.classList.remove('hidden');
-                stepHint.textContent = "أنت على بعد نقرة من إطلاق متجرك";
-                stepHint.style.opacity = "1";
-            } else {
-                nextBtn.classList.remove('hidden');
-                submitBtn.classList.add('hidden');
+            const nextTexts = {
+                1: 'استكمال بيانات النشاط',
+                2: 'تحديد موقع المتجر',
+                3: 'إضافة بيانات التواصل',
+                4: 'إرسال رمز التحقق'
+            };
+            if (nextBtn.querySelector('span')) {
+                nextBtn.querySelector('span').textContent = nextTexts[currentStep] || 'التالي';
             }
             
-            // Smoother scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function validateStep(step) {
-            const currentStepEl = document.getElementById(`step-${step}`);
-            const inputs = currentStepEl.querySelectorAll('input[required], select[required]');
-            let isValid = true;
-            
-            inputs.forEach(input => {
-                if (!input.value.trim()) {
-                    isValid = false;
-                    const container = input.closest('.input-container');
-                    container.classList.add('animate-shake');
-                    input.style.borderColor = '#fda4af';
-                    setTimeout(() => {
-                        container.classList.remove('animate-shake');
-                        input.style.borderColor = '';
-                    }, 500);
-                }
-            });
-            return isValid;
-        }
-
-        nextBtn.addEventListener('click', () => {
-            if (validateStep(currentStep)) {
-                if (currentStep < totalSteps) {
+        nextBtn.addEventListener('click', async () => {
+            if (await validateStep(currentStep)) {
+                if (currentStep === 4) {
+                    if (await sendOTP()) {
+                        currentStep++;
+                        updateUI();
+                    }
+                } else {
                     currentStep++;
                     updateUI();
                 }
@@ -584,62 +686,19 @@ fbq('track', 'Lead', {
                 updateUI();
             }
         });
-        
-        // Handle Django errors: If there are field errors in a specific step, go to that step
-        const errorFields = document.querySelectorAll('.text-rose-500');
-        if (errorFields.length > 0) {
-            const firstError = errorFields[0].closest('.step-content');
-            if (firstError) {
-                currentStep = parseInt(firstError.id.split('-')[1]);
-                updateUI();
-            }
-        }
 
-        // Micro-Validation Checkmarks
-        function setupMicroValidation() {
-            const allInputs = document.querySelectorAll('.input-container input, .input-container select');
-            allInputs.forEach(input => {
-                input.addEventListener('input', function() {
-                    const container = this.closest('.input-container');
-                    const existingCheck = container.querySelector('.valid-check');
-                    if (existingCheck) existingCheck.remove();
+        submitBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            verifyOTP();
+        });
 
-                    if (this.value.trim().length >= 2) {
-                        const checkEl = document.createElement('div');
-                        checkEl.className = 'valid-check absolute inset-y-0 left-2 flex items-center pointer-events-none';
-                        if (container.querySelector('.password-toggle')) {
-                            checkEl.className = 'valid-check absolute inset-y-0 left-[3.5rem] flex items-center pointer-events-none';
-                        }
-                        checkEl.innerHTML = '<i class="fas fa-check-circle text-emerald-400"></i>';
-                        container.appendChild(checkEl);
-                        this.style.borderColor = '#6ee7b7';
-                    } else {
-                        this.style.borderColor = '';
-                    }
-                });
+        changePhoneBtn.addEventListener('click', () => {
+            currentStep = 4;
+            updateUI();
+        });
 
-                // Also handle select 'change' event
-                input.addEventListener('change', function() {
-                    const container = this.closest('.input-container');
-                    const existingCheck = container.querySelector('.valid-check');
-                    if (existingCheck) existingCheck.remove();
-
-                    if (this.value.trim().length >= 1) {
-                        const checkEl = document.createElement('div');
-                        checkEl.className = 'valid-check absolute inset-y-0 left-2 flex items-center pointer-events-none';
-                        checkEl.innerHTML = '<i class="fas fa-check-circle text-emerald-400"></i>';
-                        container.appendChild(checkEl);
-                        this.style.borderColor = '#6ee7b7';
-                    } else {
-                        this.style.borderColor = '';
-                    }
-                });
-            });
-        }
-        setupMicroValidation();
-
-        // Initialize UI
         updateUI();
     });
+
 </script>
 {% endblock %}

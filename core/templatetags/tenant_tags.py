@@ -13,8 +13,8 @@ def store_url(context, supplier, path=''):
     Usage in templates::
 
         {% load tenant_tags %}
-        {% store_url supplier %}                → //store1.rawaaj.com/
-        {% store_url supplier '/p/5/' %}        → //store1.rawaaj.com/p/5/
+        {% store_url supplier %}                → //store1.rawaage.com/
+        {% store_url supplier '/p/5/' %}        → //store1.rawaage.com/p/5/
 
     Falls back to the legacy ``/products/<store_id>/`` path when the
     supplier has no subdomain set.

@@ -1,12 +1,12 @@
 /* 
-   Rawaaj Design System 
+   rawaage Design System 
    v1.0.0 - Saas Transformation
 */
 
 :root {
     /* 
        CORE PALETTE 
-       - Fixed Rawaaj Brand Identity colors. 
+       - Fixed rawaage Brand Identity colors. 
        - These do NOT change per tenant usually, unless fully white-labeled.
     */
     --brand-primary: #2B5876;

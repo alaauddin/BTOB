@@ -380,3 +380,13 @@ class WhatsAppInquiryClickAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         """Clicks are created automatically; disable manual creation."""
         return False
+
+
+@admin.register(OTPVerification)
+class OTPVerificationAdmin(admin.ModelAdmin):
+    list_display = ('phone', 'otp', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('phone', 'otp')
+    readonly_fields = ('created_at',)
+    date_hierarchy = 'created_at'
+    list_per_page = 50

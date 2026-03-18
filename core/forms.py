@@ -479,6 +479,15 @@ class MerchantSignupForm(forms.Form):
             'class': 'w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[var(--primary-color)] outline-none transition-all cursor-pointer'
         })
     )
+    
+    otp = forms.CharField(
+        max_length=6,
+        required=False,
+        label='رمز التحقق',
+        widget=forms.TextInput(attrs={
+            'placeholder': '••••••'
+        })
+    )
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
