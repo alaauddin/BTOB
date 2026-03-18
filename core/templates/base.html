@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% if system_settings.seo_title %}{{ system_settings.seo_title }}{% else %}{{ system_settings.site_name|default:"متجرك الإلكتروني" }}{% endif %}{% endblock %}</title>
+    <title>{% block title %}{% if system_settings.seo_title %}{{ system_settings.seo_title }}{% else %}{{ system_settings.site_name|default:"رواج" }}{% endif %}{% endblock %}</title>
     
     <!-- Dynamic SEO Tags -->
-    <meta name="description" content="{% block meta_description %}{% if system_settings.seo_description %}{{ system_settings.seo_description }}{% else %}{{ system_settings.description }}{% endif %}{% endblock %}">
+    <meta name="description" content="{% block meta_description %}{% if system_settings.seo_description %}{{ system_settings.seo_description }}{% else %}{{ system_settings.description|default:"" }}{% endif %}{% endblock %}">
     {% if system_settings.seo_keywords %}
     <meta name="keywords" content="{{ system_settings.seo_keywords }}">
     {% endif %}
@@ -27,7 +27,7 @@
     {% block meta_pixel_events %}{% endblock %}
     </script>
     <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id={{ system_settings.meta_pixel_id }}&ev=PageView&noscript=1"/></noscript>
+    src="https://www.facebook.com/tr?id={{ system_settings.meta_pixel_id|default:'' }}&ev=PageView&noscript=1"/></noscript>
     <!-- End Meta Pixel Code -->
     {% endif %}
     

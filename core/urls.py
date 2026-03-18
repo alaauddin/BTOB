@@ -69,8 +69,8 @@ urlpatterns = [
     path('store/<slug:store_slug>/track/<int:pk>/', order_detail_view, name='store_order_track'),
     
     # Category filters for Storefront
-    path('store/<slug:store_slug>/c/<int:category_id>/', product_list, name='store_category'),
-    path('store/<slug:store_slug>/sc/<int:subcategory_id>/', product_list, name='store_subcategory'),
+    path('store/<str:store_slug>/c/<int:category_id>/', product_list, name='store_category'),
+    path('store/<str:store_slug>/sc/<int:subcategory_id>/', product_list, name='store_subcategory'),
 
 
     path('merchant/login/', MerchantLoginView.as_view(), name='merchant_login'),

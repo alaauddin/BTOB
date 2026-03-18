@@ -33,6 +33,9 @@ def my_merchant(request):
     
     # Simple Router Stats
     orders = Order.objects.filter(order_items__product__supplier=supplier).distinct()
+    import logging
+    logger = logging.getLogger('core')
+    logger.info(f"Accessing merchant dashboard for supplier: {supplier} (ID: {supplier.id})")
     pending_orders = orders.filter(pipeline_status__slug='pending').count()
     total_products = Product.objects.filter(supplier=supplier).count()
     
