@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from core.decorators import merchant_required
 from core.models import Supplier, Product, ProductOffer, Promotion, SupplierAds, Order, Category, PlatformOfferAd
-from core.forms import ProductForm, SupplierSettingsForm, DomainOnlyForm, BrandingOnlyForm
+from core.forms import ProductForm, SupplierSettingsForm, DomainOnlyForm, BrandingOnlyForm, LocationOnlyForm, CurrencyOnlyForm
 from django.db.models import Count, Sum, Avg
 from django.utils import timezone
 from core.models import SupplierAdPlatfrom
@@ -64,6 +64,8 @@ def my_merchant(request):
         'settings_form': SupplierSettingsForm(instance=supplier),
         'domain_form': DomainOnlyForm(instance=supplier),
         'branding_form': BrandingOnlyForm(instance=supplier),
+        'location_form': LocationOnlyForm(instance=supplier, prefix='loc'),
+        'currency_form': CurrencyOnlyForm(instance=supplier),
     }
     
     return render(request, template_name, context)
@@ -114,6 +116,10 @@ def update_merchant_settings(request):
             form = DomainOnlyForm(request.POST, instance=supplier)
         elif form_type == 'branding':
             form = BrandingOnlyForm(request.POST, request.FILES, instance=supplier)
+        elif form_type == 'location':
+            form = LocationOnlyForm(request.POST, instance=supplier, prefix='loc')
+        elif form_type == 'currency':
+            form = CurrencyOnlyForm(request.POST, instance=supplier)
         else:
             form = SupplierSettingsForm(request.POST, request.FILES, instance=supplier)
             
@@ -136,6 +142,8 @@ def update_merchant_settings(request):
         'settings_form': SupplierSettingsForm(instance=supplier),
         'domain_form': DomainOnlyForm(instance=supplier),
         'branding_form': BrandingOnlyForm(instance=supplier),
+        'location_form': LocationOnlyForm(instance=supplier, prefix='loc'),
+        'currency_form': CurrencyOnlyForm(instance=supplier),
         'supplier': supplier
     }
     return render(request, 'my_merchant.html', context)

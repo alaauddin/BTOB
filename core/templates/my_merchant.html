@@ -59,14 +59,160 @@
         border-style: solid;
         border-color: rgba(44, 90, 122, 0.98) transparent transparent transparent;
     }
+    /* Modal Focus Enhancements */
+    #dashboard-main {
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s ease;
+    }
+    
+    body.modal-active #dashboard-main {
+        transform: scale(0.96);
+        filter: brightness(0.7) blur(2px);
+    }
+
+    .modal-backdrop {
+        backdrop-filter: blur(8px);
+        background-color: rgba(15, 23, 42, 0.4);
+    }
+
+    .modal-content-animate {
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
+    <!-- Onboarding Step Checklist Modal (Root-level for global stacking) -->
+    {% with has_logo=supplier.profile_picture has_cover=supplier.panal_picture has_location=supplier.latitude has_currency=supplier.currency has_subdomain=supplier.subdomain has_products=total_products|add:0 %}
+    <div id="checklist-modal" class="fixed inset-0 hidden items-start justify-center p-4 sm:p-6 overflow-y-auto" style="z-index: 9999999 !important;">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeChecklistModal()"></div>
+        <div class="bg-white w-full max-w-md rounded-[32px] shadow-2xl relative z-20 overflow-hidden animate-slide-up mt-8 sm:mt-16 mb-8">
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-30">
+                <h2 class="text-xl font-black text-gray-900">خطوات إكمال المتجر</h2>
+                <button onclick="closeChecklistModal()" class="text-gray-400 hover:text-gray-600 p-2"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                <!-- Inner Checklist Buttons -->
+                <div class="flex items-center justify-between p-3 bg-green-50 rounded-2xl border border-green-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-green-500 text-white rounded-lg flex items-center justify-center"><i class="fas fa-check"></i></div>
+                        <span class="text-sm font-bold text-gray-700">المعلومات الأساسية (مكتمل)</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-green-50 rounded-2xl border border-green-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-green-500 text-white rounded-lg flex items-center justify-center"><i class="fas fa-check"></i></div>
+                        <span class="text-sm font-bold text-gray-700">الموافقة على الشروط (مكتمل)</span>
+                    </div>
+                </div>
+                <!-- Interactive Steps -->
+                <button onclick="openBrandingModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_logo %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
+                    <div class="flex items-center gap-3 text-right">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_logo %}bg-green-500 text-white{% else %}bg-white text-blue-500 shadow-sm{% endif %}">
+                            <i class="fas {% if has_logo %}fa-check{% else %}fa-image{% endif %}"></i>
+                        </div>
+                        <span class="text-sm font-bold">شعار المتجــر (+10%)</span>
+                    </div>
+                    {% if not has_logo %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
+                </button>
+                <button onclick="openBrandingModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_cover %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
+                    <div class="flex items-center gap-3 text-right">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_cover %}bg-green-500 text-white{% else %}bg-white text-purple-500 shadow-sm{% endif %}">
+                            <i class="fas {% if has_cover %}fa-check{% else %}fa-palette{% endif %}"></i>
+                        </div>
+                        <span class="text-sm font-bold">صورة الغلاف (+10%)</span>
+                    </div>
+                    {% if not has_cover %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
+                </button>
+                <button onclick="openMapModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_location %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
+                    <div class="flex items-center gap-3 text-right">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_location %}bg-green-500 text-white{% else %}bg-white text-orange-500 shadow-sm{% endif %}">
+                            <i class="fas {% if has_location %}fa-check{% else %}fa-map-marker-alt{% endif %}"></i>
+                        </div>
+                        <span class="text-sm font-bold">موقع المتجر على الخريطة (+10%)</span>
+                    </div>
+                    {% if not has_location %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
+                </button>
+                <button onclick="openCurrencyModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_currency %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
+                    <div class="flex items-center gap-3 text-right">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_currency %}bg-green-500 text-white{% else %}bg-white text-emerald-500 shadow-sm{% endif %}">
+                            <i class="fas {% if has_currency %}fa-check{% else %}fa-dollar-sign{% endif %}"></i>
+                        </div>
+                        <span class="text-sm font-bold">ضبط العملة (+10%)</span>
+                    </div>
+                    {% if not has_currency %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
+                </button>
+                <a href="{% url 'merchant_products' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_products %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
+                    <div class="flex items-center gap-3 text-right">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_products %}bg-green-500 text-white{% else %}bg-white text-blue-600 shadow-sm{% endif %}">
+                            <i class="fas {% if has_products %}fa-check{% else %}fa-plus{% endif %}"></i>
+                        </div>
+                        <span class="text-sm font-bold">إضافة أول منتج (+20%)</span>
+                    </div>
+                    {% if not has_products %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
+                </a>
+                <button onclick="openDomainModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_subdomain %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
+                    <div class="flex items-center gap-3 text-right">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_subdomain %}bg-green-500 text-white{% else %}bg-white text-indigo-500 shadow-sm{% endif %}">
+                            <i class="fas {% if has_subdomain %}fa-check{% else %}fa-link{% endif %}"></i>
+                        </div>
+                        <span class="text-sm font-bold">حجز الرابط الخاص (+10%)</span>
+                    </div>
+                    {% if not has_subdomain %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+
+    <div id="dashboard-main" class="min-h-screen flex flex-col">
+
 <div class="min-h-screen bg-gray-50 pb-20" dir="rtl">
 
 
     <div class="container mx-auto px-4 mt-4">
+        <!-- 1. Onboarding Progress Section -->
+        {% with has_logo=supplier.profile_picture has_cover=supplier.panal_picture has_location=supplier.latitude has_currency=supplier.currency has_subdomain=supplier.subdomain has_products=total_products|add:0 %}
+        {% if not has_logo or not has_cover or not has_location or not has_currency or not has_subdomain or has_products == 0 %}
+        <div id="onboarding-progress-card" class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 mb-6 overflow-hidden relative group">
+            <!-- Animated Background Gradient -->
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+            
+            <div class="relative z-10">
+                <div class="flex items-center justify-between gap-4 mb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100/50 rounded-xl flex items-center justify-center text-blue-600">
+                            <i class="fas fa-rocket text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-black text-gray-900 leading-none mb-1">متجرك بانتظار الإطلاق! 🚀</h3>
+                            <p id="progress-suggestion" class="text-[10px] text-gray-500 font-medium">أكمل الخطوات المتبقية لزيادة مبيعاتك بنسبة 300%</p>
+                        </div>
+                    </div>
+                    <div class="text-left">
+                        <span id="progress-percent" class="text-xl font-black text-blue-600">0%</span>
+                        <span class="block text-[8px] font-bold text-gray-400 uppercase tracking-wider">معدل الإنجاز</span>
+                    </div>
+                </div>
+
+                <!-- Horizontal Progress Line -->
+                <div class="relative h-2.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="absolute inset-y-0 right-0 bg-blue-600 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"></div>
+                </div>
+
+                <!-- CTA Overlay/Button -->
+                <div class="mt-4 flex items-center justify-end">
+                    <button onclick="openChecklistModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl text-xs font-black shadow-lg shadow-blue-100 transition-all flex items-center gap-2">
+                        خطوات إكمال المتجر
+                        <i class="fas fa-list-check"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+        {% endwith %}
+
         <!-- 3. Store Profile Card -->
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative mb-4">
              <!-- Cover Picture Background (if exists) -->
@@ -135,7 +281,7 @@
                 </button>
              </div>
         </div>
-
+        {%if supplier.currency %}
         <!-- 4. Statistics Row -->
         <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 mb-6">
             <div class="grid grid-cols-4 gap-2">
@@ -179,11 +325,12 @@
                     </div>
                     <div class="flex flex-col">
                         <span class="text-[10px] font-bold text-gray-400 leading-tight">الإيرادات</span>
-                        <span class="text-lg font-black text-purple-600">{{ total_revenue|floatformat:0 }}$</span>
+                        <span class="text-lg font-black text-purple-600">  {{supplier.currency}}{{ total_revenue|floatformat:0 }} </span>
                     </div>
                 </div>
             </div>
         </div>
+        {%endif%}
         <!-- 5. Subdomain & Link Section -->
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-6">
             <!-- Top Row -->
@@ -370,12 +517,6 @@
         </div>
     </div>
 
-    <!-- Merchant Settings Modal Component -->
-    {% include 'includes/merchant_settings_modal.html' %}
-    
-    <!-- Targeted Specialized Modals -->
-    {% include 'includes/domain_only_modal.html' %}
-    {% include 'includes/branding_only_modal.html' %}
 
     <!-- Terms Agreement Modal (Persistent) -->
     {% if not supplier.agreed_to_terms and system_settings.show_merchant_agreement %}
@@ -627,11 +768,21 @@
         })();
     </script>
     {% endif %}
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<!-- Modal Includes -->
+{% include 'includes/map_only_modal.html' %}
+{% include 'includes/currency_only_modal.html' %}
+{% include 'includes/branding_only_modal.html' %}
+{% include 'includes/domain_only_modal.html' %}
+{% include 'includes/merchant_settings_modal.html' %}
+{% include 'includes/privacy_modal.html' %}
+
 <script>
     let map;
     let marker;
@@ -639,6 +790,7 @@
     function openSettingsModal() {
         document.getElementById('settings-modal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+        toggleModalFocus(true);
         
         // Initialize map when modal opens
         setTimeout(() => {
@@ -673,6 +825,7 @@
     function closeSettingsModal() {
         document.getElementById('settings-modal').classList.add('hidden');
         document.body.style.overflow = '';
+        toggleModalFocus(false);
     }
 
     function copyStoreLink() {
@@ -965,4 +1118,110 @@
         });
     }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+    // --- Onboarding Progress Logic ---
+    function updateOnboardingProgress() {
+        const hasLogo = {% if supplier.profile_picture %}true{% else %}false{% endif %};
+        const hasCover = {% if supplier.panal_picture %}true{% else %}false{% endif %};
+        const hasLocation = {% if supplier.latitude %}true{% else %}false{% endif %};
+        const hasCurrency = {% if supplier.currency %}true{% else %}false{% endif %};
+        const hasSubdomain = {% if supplier.subdomain %}true{% else %}false{% endif %};
+        const hasProducts = {% if total_products > 0 %}true{% else %}false{% endif %};
+
+        let percent = 30; // 20 basic info + 10 terms (endowed progress)
+        if (hasLogo) percent += 10;
+        if (hasCover) percent += 10;
+        if (hasLocation) percent += 10;
+        if (hasCurrency) percent += 10;
+        if (hasProducts) percent += 20;
+        if (hasSubdomain) percent += 10;
+
+        const bar = document.getElementById('progress-bar');
+        const text = document.getElementById('progress-percent');
+        const suggestion = document.getElementById('progress-suggestion');
+        
+        if (bar && text) {
+            bar.style.width = percent + '%';
+            text.innerText = percent + '%';
+            
+            // Motivational Copy (Goal Gradient Effect)
+            if (percent === 100) {
+                suggestion.innerText = "متجرك جاهز تماماً للانطلاق! 🌟";
+                setTimeout(triggerCelebration, 1500);
+            } else if (percent >= 80) {
+                suggestion.innerText = "خطوة واحدة تفصلك عن النجاح! 🎯";
+            } else if (percent >= 50) {
+                suggestion.innerText = "أداء رائع! استمر في بناء متجرك 🚀";
+            } else {
+                suggestion.innerText = "أكمل الخطوات المتبقية لزيادة مبيعاتك بنسبة 300%";
+            }
+        }
+    }
+
+    function openChecklistModal() {
+        const modal = document.getElementById('checklist-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeChecklistModal() {
+        const modal = document.getElementById('checklist-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+    }
+
+    function triggerCelebration() {
+        if (localStorage.getItem('celebrated_100_{{ supplier.id }}') === 'true') return;
+        
+        const count = 200;
+        const defaults = { origin: { y: 0.7 } };
+
+        function fire(particleRatio, opts) {
+          confetti({
+            ...defaults,
+            ...opts,
+            particleCount: Math.floor(count * particleRatio)
+          });
+        }
+
+        fire(0.25, { spread: 26, startVelocity: 55 });
+        fire(0.2, { spread: 60 });
+        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+        fire(0.1, { spread: 120, startVelocity: 45 });
+
+        localStorage.setItem('celebrated_100_{{ supplier.id }}', 'true');
+        
+        setTimeout(() => {
+            Swal.fire({
+                title: 'مبروك! 🎉',
+                text: 'لقد أكملت إعداد متجرك بنجاح. أنت الآن جاهز لاستقبال الطلبات!',
+                icon: 'success',
+                confirmButtonText: 'رائع!',
+                confirmButtonColor: '#2563eb'
+            });
+        }, 500);
+    }
+    // Modal Focus Helper
+    function toggleModalFocus(active) {
+        if (active) {
+            document.body.classList.add('modal-active');
+        } else {
+            document.body.classList.remove('modal-active');
+        }
+    }
+
+    // Initialize progress on load
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(updateOnboardingProgress, 800);
+    });
+</script>
+
 {% endblock %}

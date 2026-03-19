@@ -664,6 +664,25 @@ class BrandingOnlyForm(forms.ModelForm):
             'panal_picture': forms.FileInput(attrs={'class': 'hidden', 'accept': 'image/*', 'id': 'banner_input_branding'}),
         }
 
+class LocationOnlyForm(forms.ModelForm):
+    class Meta:
+        model = Supplier
+        fields = ['latitude', 'longitude']
+        widgets = {
+            'latitude': forms.HiddenInput(),
+            'longitude': forms.HiddenInput(),
+        }
+
+class CurrencyOnlyForm(forms.ModelForm):
+    class Meta:
+        model = Supplier
+        fields = ['currency']
+        widgets = {
+            'currency': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm cursor-pointer'
+            })
+        }
+
 
 class SupplierAdPlatfromForm(forms.ModelForm):
     class Meta:

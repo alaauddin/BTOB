@@ -89,7 +89,7 @@ async function compressImage(file, maxSizeKB = 150) {
 }
 
 async function handleImageUpload(inputElement, maxSizeKB = 150) {
-    const MAX_FILE_SIZE_MB = 5;
+    const MAX_FILE_SIZE_MB = 10;
     const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
     const files = Array.from(inputElement.files);
     if (files.length === 0) return;
