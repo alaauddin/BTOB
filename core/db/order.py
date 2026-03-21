@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from core.db.constants import CITY_CHO, COUNTRY_CHO
 from core.db.workflow import OrderStatus, WorkflowStep
 from core.db.product import Product
+from core.db.delivery_driver import DeliveryDriver
 
 
 class Order(models.Model):
@@ -17,6 +18,12 @@ class Order(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     pipeline_status = models.ForeignKey(OrderStatus, on_delete=models.PROTECT, null=True, blank=True)
+    delivery_driver = models.ForeignKey(
+        DeliveryDriver, on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='assigned_orders',
+        verbose_name="سائق التوصيل",
+    )
     is_stock_decreased = models.BooleanField(default=False, verbose_name="تم تقليل المخزون")
     cancellation_reason = models.TextField(blank=True, null=True, verbose_name="سبب الإلغاء")
     updated_at = models.DateTimeField(auto_now=True)
@@ -103,6 +110,10 @@ class Order(models.Model):
             # Check payment requirement on CURRENT step before moving
             if current_step.requires_payment and not self.is_fully_paid():
                 return False, f"لا يمكن الانتقال: يتوجب سداد كامل المبلغ ({self.total_amount}) للطلب أولاً."
+
+            # Check driver assignment requirement on CURRENT step before moving
+            if current_step.requires_driver_assignment and not self.delivery_driver:
+                return False, "لا يمكن الانتقال: يجب تعيين سائق توصيل للطلب أولاً."
 
         # Handle stock reduction on NEW step if moving to a step that requires it (AND NOT CANCELLING)
         if new_status.slug != 'cancelled' and next_step and next_step.decrease_stock and not self.is_stock_decreased:

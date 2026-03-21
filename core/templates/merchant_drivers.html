@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}إدارة سائقي التوصيل - {{ supplier.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    :root {
+        --primary: {{ supplier.primary_color|default:'#F58231' }};
+        --secondary: {{ supplier.footer_color|default:'#2B6CB0' }};
+        --bg-glass: rgba(255, 255, 255, 0.85);
+        --border-glass: rgba(255, 255, 255, 0.3);
+        --shadow-premium: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+        --text-main: #4A5568;
+        --text-muted: #64748b;
+    }
+
+    body {
+        font-family: 'Outfit', 'Inter', sans-serif;
+        background: #f8fafc;
+        color: var(--text-main);
+    }
+
+    .premium-container {
+        padding: 1rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    @media (min-width: 768px) {
+        .premium-container { padding: 2rem; }
+    }
+
+    .glass-card {
+        background: var(--bg-glass);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-glass);
+        border-radius: 20px;
+        padding: 1.25rem;
+        box-shadow: var(--shadow-premium);
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    @media (min-width: 768px) {
+        .glass-card { border-radius: 24px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    }
+
+    .glass-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.12);
+    }
+
+    .premium-header {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        padding: 1.5rem;
+        border-radius: 24px;
+        color: white;
+        box-shadow: 0 20px 30px -10px rgba(245, 130, 49, 0.2);
+        margin-bottom: 2rem;
+    }
+
+    @media (min-width: 768px) {
+        .premium-header {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 3rem;
+            border-radius: 32px;
+        }
+    }
+
+    .premium-header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    @media (min-width: 768px) {
+        .premium-header h1 { font-size: 2.25rem; }
+    }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--text-main);
+    }
+
+    .section-title i {
+        color: var(--primary);
+        background: rgba(245, 130, 49, 0.08);
+        padding: 8px;
+        border-radius: 10px;
+        font-size: 0.875rem;
+    }
+
+    .stat-pill {
+        background: #f8fafc;
+        padding: 0.75rem;
+        border-radius: 14px;
+        text-align: center;
+        border: 1px solid #f1f5f9;
+    }
+
+    .stat-value {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05rem;
+    }
+
+    .driver-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 16px;
+        background: rgba(248, 250, 252, 0.5);
+        margin-bottom: 0.75rem;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+    }
+
+    .driver-row:hover {
+        background: white;
+        border-color: #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    .driver-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .badge-active {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-inactive {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="premium-container" dir="rtl">
+    <!-- Header -->
+    <header class="premium-header">
+        <div>
+            <h1><i class="fas fa-motorcycle me-2"></i> سائقو التوصيل</h1>
+            <p class="mb-0 opacity-75">إدارة سائقي التوصيل لمتجرك</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'my_merchant' %}" class="btn glass" style="color: white; border: 1px solid rgba(255,255,255,0.3);">
+                <i class="fas fa-arrow-right me-2"></i> العودة للوحة التحكم
+            </a>
+        </div>
+    </header>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-pill">
+                <span class="stat-value">{{ total_drivers_count }}</span>
+                <span class="stat-label">إجمالي السائقين</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-pill">
+                <span class="stat-value">{{ active_drivers_count }}</span>
+                <span class="stat-label">سائقون نشطون</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add Driver Form -->
+        <div class="col-12 col-lg-4">
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fas fa-user-plus"></i> إضافة سائق جديد</h3>
+
+                <form method="post" action="{% url 'add_driver' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">الاسم الأول *</label>
+                        <input type="text" name="first_name" class="form-control border-0 bg-light" placeholder="أحمد" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">الاسم الأخير</label>
+                        <input type="text" name="last_name" class="form-control border-0 bg-light" placeholder="محمد">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">رقم الهاتف *</label>
+                        <input type="text" name="phone" class="form-control border-0 bg-light" placeholder="777123456" required dir="ltr">
+                    </div>
+                    <hr>
+                    <p class="text-muted small"><i class="fas fa-key me-1"></i> بيانات تسجيل الدخول</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">اسم المستخدم *</label>
+                        <input type="text" name="username" class="form-control border-0 bg-light" placeholder="driver_ahmed" required dir="ltr">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">كلمة المرور *</label>
+                        <input type="password" name="password" class="form-control border-0 bg-light" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn w-100 rounded-pill fw-bold" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white;">
+                        <i class="fas fa-plus me-2"></i> إضافة السائق
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Drivers List -->
+        <div class="col-12 col-lg-8">
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fas fa-list"></i> قائمة السائقين</h3>
+
+                {% for driver in drivers %}
+                <div class="driver-row">
+                    <div class="driver-avatar" style="background: {% if driver.is_active %}#10b981{% else %}#94a3b8{% endif %};">
+                        {{ driver.user.first_name|make_list|first|upper|default:"?" }}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">{{ driver.user.get_full_name|default:driver.user.username }}</div>
+                        <div class="text-muted small">
+                            <i class="fas fa-phone me-1"></i>{{ driver.phone }}
+                            <span class="mx-2">|</span>
+                            <i class="fas fa-user me-1"></i>{{ driver.user.username }}
+                        </div>
+                    </div>
+                    <span class="{% if driver.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+                        {% if driver.is_active %}نشط{% else %}معطّل{% endif %}
+                    </span>
+                    <form method="post" action="{% url 'toggle_driver_status' driver.id %}" class="ms-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm {% if driver.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} rounded-pill" title="{% if driver.is_active %}تعطيل{% else %}تفعيل{% endif %}">
+                            <i class="fas {% if driver.is_active %}fa-ban{% else %}fa-check{% endif %}"></i>
+                        </button>
+                    </form>
+                </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <i class="fas fa-motorcycle fa-3x mb-3" style="color: #e2e8f0;"></i>
+                    <p class="text-muted">لا يوجد سائقون مسجلون بعد</p>
+                    <p class="text-muted small">استخدم النموذج لإضافة أول سائق توصيل</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

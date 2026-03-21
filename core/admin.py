@@ -42,7 +42,7 @@ class OrderStatusAdmin(admin.ModelAdmin):
 
 class WorkflowStepInline(admin.TabularInline):
     model = WorkflowStep
-    fields = ('status', 'priority', 'requires_payment', 'decrease_stock')
+    fields = ('status', 'priority', 'requires_payment', 'decrease_stock', 'requires_driver_assignment')
     extra = 1
 
 class OrderWorkflowAdmin(admin.ModelAdmin):
@@ -80,17 +80,19 @@ class SupplierAdmin(admin.ModelAdmin):
         html = '<div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">'
         html += '<table style="width:100%; border-collapse: collapse; text-align: right;">'
         html += '<thead style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">'
-        html += '<tr><th style="padding:12px; font-weight:600;">الحالة</th><th style="padding:12px; font-weight:600;">الأولوية</th><th style="padding:12px; font-weight:600;">يتطلب سداد</th><th style="padding:12px; font-weight:600;">تقليل المخزون</th><th style="padding:12px; font-weight:600;">الإجراءات</th></tr></thead><tbody>'
+        html += '<tr><th style="padding:12px; font-weight:600;">الحالة</th><th style="padding:12px; font-weight:600;">الأولوية</th><th style="padding:12px; font-weight:600;">يتطلب سداد</th><th style="padding:12px; font-weight:600;">تقليل المخزون</th><th style="padding:12px; font-weight:600;">يتطلب سائق</th><th style="padding:12px; font-weight:600;">الإجراءات</th></tr></thead><tbody>'
         
         for step in steps:
             edit_url = reverse('admin:core_workflowstep_change', args=[step.id])
             req_payment_icon = '✅' if step.requires_payment else '❌'
             decrease_stock_icon = '✅' if step.decrease_stock else '❌'
+            req_driver_icon = '✅' if step.requires_driver_assignment else '❌'
             html += f'<tr style="border-bottom: 1px solid #f1f5f9;">'
             html += f'<td style="padding:12px;"><span style="background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">{step.status.name}</span></td>'
             html += f'<td style="padding:12px; font-weight: 600; color: #64748b;">{step.priority}</td>'
             html += f'<td style="padding:12px; text-align:center;">{req_payment_icon}</td>'
             html += f'<td style="padding:12px; text-align:center;">{decrease_stock_icon}</td>'
+            html += f'<td style="padding:12px; text-align:center;">{req_driver_icon}</td>'
             html += f'<td style="padding:12px;"><a href="{edit_url}" class="changelink">تعديل</a></td></tr>'
         
         add_url = reverse('admin:core_workflowstep_add') + f'?workflow={obj.workflow.id}'
@@ -105,7 +107,7 @@ class SupplierAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('المعلومات الأساسية', {
-            'fields': ('user', 'managing_users', 'name', 'is_active', 'phone', 'category', 'currency', 'return_policy', 'delivery_fee_ratio', 'enable_delivery_fees', 'show_order_amounts','show_platform_ads','store_id'),
+            'fields': ('user', 'managing_users', 'name', 'is_active', 'phone', 'category', 'currency', 'return_policy', 'delivery_fee_ratio', 'enable_delivery_fees', 'enable_delivery_drivers', 'show_order_amounts','show_platform_ads','store_id'),
             'description': 'أضف المعلومات الأساسية للمورد هنا والمستخدمين المدراء.'
         }),
         ('المكان والجغرافيا', {
@@ -192,6 +194,17 @@ admin.site.register(SupplierCategory)
 admin.site.register(ProductOffer)
 admin.site.register(SupplierAds)
 admin.site.register(Currency)
+
+
+@admin.register(DeliveryDriver)
+class DeliveryDriverAdmin(admin.ModelAdmin):
+    """Admin for delivery driver profiles."""
+    list_display = ('user', 'supplier', 'phone', 'is_active', 'created_at')
+    list_filter = ('is_active', 'supplier')
+    search_fields = ('user__username', 'user__first_name', 'user__last_name', 'phone', 'supplier__name')
+    list_editable = ('is_active',)
+    readonly_fields = ('created_at',)
+    list_per_page = 50
 admin.site.register(PlatformOfferAd)
 @admin.register(SupplierAdPlatfrom)
 class SupplierAdPlatfromAdmin(admin.ModelAdmin):

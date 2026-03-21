@@ -77,6 +77,7 @@ class Supplier(models.Model):
     can_add_products = models.BooleanField(default=False, verbose_name="إضافة منتجات")
     show_system_logo = models.BooleanField(default=True, verbose_name="عرض شعار المنصة في الشريط العلوي")
     show_out_of_stock = models.BooleanField(default=True, verbose_name="عرض المنتجات غير المتوفرة")
+    enable_delivery_drivers = models.BooleanField(default=False, verbose_name="تفعيل نظام سائقي التوصيل")
     agreed_to_terms = models.BooleanField(default=False, verbose_name="الموافقة على الشروط والأحكام")
     terms_agreed_at = models.DateTimeField(null=True, blank=True, verbose_name="تاريخ الموافقة على الشروط")
     return_policy = models.TextField(blank=True, null=True, verbose_name="سياسة الاستبدال والاسترجاع")

@@ -1,0 +1,474 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تتبع مسار الطلب #{{ order.id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --driver-primary: #f59e0b;
+            --driver-primary-dark: #d97706;
+            --driver-text: #1e293b;
+            --driver-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #f8fafc;
+        }
+
+        /* Top Header */
+        .map-header {
+            background: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+        .btn-back {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: var(--driver-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-back:active {
+            background: #f1f5f9;
+        }
+        .header-title h1 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin: 0;
+            color: var(--driver-text);
+        }
+        .header-title p {
+            font-size: 0.8rem;
+            color: var(--driver-muted);
+            margin: 0;
+        }
+
+        /* Map Container */
+        #map {
+            flex: 1;
+            width: 100%;
+            background: #e2e8f0;
+        }
+
+        /* Bottom Info Panel */
+        .map-info-panel {
+            background: white;
+            padding: 1.5rem;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+            z-index: 10;
+            margin-top: -20px;
+        }
+        
+        .route-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .route-info::before {
+            content: '';
+            position: absolute;
+            right: 17px;
+            top: 24px;
+            bottom: 24px;
+            width: 2px;
+            background: #e2e8f0;
+            border-style: dashed;
+        }
+        .route-point {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        .point-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 4px white;
+        }
+        .point-icon.store {
+            background: #334155;
+        }
+        .point-icon.customer {
+            background: var(--driver-primary);
+        }
+        .point-details h4 {
+            font-size: 0.9rem;
+            font-weight: 800;
+            margin: 0 0 0.2rem 0;
+            color: var(--driver-text);
+        }
+        .point-details p {
+            font-size: 0.75rem;
+            color: var(--driver-muted);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .map-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        .btn-action {
+            flex: 1;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-nav {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        .btn-call {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+
+        /* Prevent desktop awkwardness */
+        @media (min-width: 768px) {
+            body {
+                max-width: 480px;
+                margin: 0 auto;
+                box-shadow: 0 0 40px rgba(0,0,0,0.08);
+            }
+        }
+
+        /* Pulsing dot for current location */
+        .gps-ring {
+            border: 3px solid #16a34a;
+            -webkit-border-radius: 40px;
+            height: 48px;
+            width: 48px;
+            position: absolute;
+            left: -8px;
+            top: -8px;
+            -webkit-animation: pulsate 1s ease-out;
+            -webkit-animation-iteration-count: infinite;
+            opacity: 0.0;
+        }
+
+        .gps-dot {
+            background-color: #16a34a;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 8px rgba(0,0,0,0.4);
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        @-webkit-keyframes pulsate {
+            0% {-webkit-transform: scale(0.1, 0.1); opacity: 0.0;}
+            50% {opacity: 1.0;}
+            100% {-webkit-transform: scale(1.2, 1.2); opacity: 0.0;}
+        }
+
+        .btn-locate {
+            position: absolute;
+            bottom: 220px;
+            right: 1.5rem;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: white;
+            color: var(--driver-text);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            z-index: 1000;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-locate:active {
+            background: #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="map-header">
+    <a href="{% url 'driver_dashboard' %}" class="btn-back">
+        <i class="fas fa-chevron-right"></i>
+    </a>
+    <div class="header-title">
+        <h1>تتبع المسار إالى العميل</h1>
+        <p>طلب #{{ order.id }}</p>
+    </div>
+</div>
+
+<div id="map"></div>
+<button id="btn-locate" class="btn-locate" aria-label="موقعي الحالي">
+    <i class="fas fa-crosshairs"></i>
+</button>
+
+<div class="map-info-panel">
+    <div class="route-info">
+        <!-- Store Point -->
+        <div class="route-point">
+            <div class="point-icon store"><i class="fas fa-store"></i></div>
+            <div class="point-details">
+                <h4>{{ supplier.name }} (نقطة الانطلاق)</h4>
+                {% if supplier.address %}
+                <p>{{ supplier.address }}</p>
+                {% else %}
+                <p>موقع المتجر</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Customer Point -->
+        <div class="route-point">
+            <div class="point-icon customer"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="point-details">
+                <h4>{{ customer_name }} (نقطة التوصيل)</h4>
+                <p id="distance-info">جاري حساب المسافة...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="map-actions">
+        <a href="https://www.google.com/maps/dir/?api=1&origin={{ supplier.latitude }},{{ supplier.longitude }}&destination={{ order.shippingaddress_set.first.latitude }},{{ order.shippingaddress_set.first.longitude }}&travelmode=driving" 
+           target="_blank" class="btn-action btn-nav">
+            <i class="fas fa-directions"></i> بدء الملاحة
+        </a>
+        
+        {% if order.shippingaddress_set.first.phone %}
+        <a href="tel:{{ order.shippingaddress_set.first.phone }}" class="btn-action btn-call">
+            <i class="fas fa-phone-alt"></i> اتصال
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Safe JSON data passing -->
+{{ store_location|json_script:"storeLocation" }}
+{{ customer_location|json_script:"customerLocation" }}
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+    // The data is double-JSON encoded because the view uses json.dumps and the template uses json_script
+    let storeDataRaw = JSON.parse(document.getElementById('storeLocation').textContent);
+    let customerDataRaw = JSON.parse(document.getElementById('customerLocation').textContent);
+    
+    const storeData = typeof storeDataRaw === 'string' ? JSON.parse(storeDataRaw) : storeDataRaw;
+    const customerData = typeof customerDataRaw === 'string' ? JSON.parse(customerDataRaw) : customerDataRaw;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const store = [parseFloat(storeData.lat), parseFloat(storeData.lng)]; // Leaflet uses [lat, lng]
+        const customer = [parseFloat(customerData.lat), parseFloat(customerData.lng)];
+
+        // Initialize Map
+        const map = L.map('map', {
+            zoomControl: false // Move zoom control if needed, or disable
+        }).setView(store, 13);
+
+        L.control.zoom({ position: 'topleft' }).addTo(map);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Custom Marker Icons
+        const storeIcon = L.divIcon({
+            html: '<div style="background-color: #334155; width: 100%; height: 100%; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;"><i class="fas fa-store"></i></div>',
+            className: '',
+            iconSize: [36, 36],
+            iconAnchor: [18, 18],
+        });
+
+        const customerIcon = L.divIcon({
+            html: '<div style="background-color: #f59e0b; width: 100%; height: 100%; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;"><i class="fas fa-map-marker-alt"></i></div>',
+            className: '',
+            iconSize: [42, 42],
+            iconAnchor: [21, 21],
+        });
+
+        // Add Markers
+        L.marker(store, { icon: storeIcon }).addTo(map).bindPopup(storeData.name);
+        L.marker(customer, { icon: customerIcon }).addTo(map).bindPopup(customerData.name);
+
+        // Calculate and Display Route using OSRM
+        calculateAndDisplayRoute(store, customer, map);
+
+        // --- Live Location Tracking ---
+        let driverMarker = null;
+
+        const driverIcon = L.divIcon({
+            html: '<div class="gps-dot"><i class="fas fa-motorcycle"></i></div><div class="gps-ring"></div>',
+            className: '',
+            iconSize: [32, 32], 
+            iconAnchor: [16, 16], 
+        });
+
+        if ("geolocation" in navigator) {
+            const watchId = navigator.geolocation.watchPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const currentPos = [lat, lng];
+
+                    if (!driverMarker) {
+                        // First time getting location
+                        driverMarker = L.marker(currentPos, { icon: driverIcon, zIndexOffset: 1000 }).addTo(map);
+                        driverMarker.bindPopup("موقعك الحالي");
+                    } else {
+                        // Update existing marker
+                        driverMarker.setLatLng(currentPos);
+                    }
+                },
+                function(error) {
+                    console.warn("Geolocation Error:", error.message);
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 10000,
+                    timeout: 5000
+                }
+            );
+
+            // Re-center on driver location button
+            document.getElementById('btn-locate').addEventListener('click', function() {
+                if (driverMarker) {
+                    map.setView(driverMarker.getLatLng(), 16);
+                } else {
+                    // Force a one-time check if watch hasn't fired yet
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => map.setView([pos.coords.latitude, pos.coords.longitude], 16),
+                        (err) => alert("تعذر تحديد موقعك الحالي: " + err.message),
+                        { enableHighAccuracy: true }
+                    );
+                }
+            });
+        } else {
+            document.getElementById('btn-locate').style.display = 'none';
+        }
+    });
+
+    function haversineDistance(coords1, coords2) {
+        function toRad(x) { return x * Math.PI / 180; }
+        var lat1 = coords1[0], lon1 = coords1[1];
+        var lat2 = coords2[0], lon2 = coords2[1];
+
+        var R = 6371; // km
+        var x1 = lat2 - lat1;
+        var dLat = toRad(x1);
+        var x2 = lon2 - lon1;
+        var dLon = toRad(x2)
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    function calculateAndDisplayRoute(start, end, map) {
+        // OSRM requires coordinates in [lng, lat] format
+        const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
+
+        fetch(osrmUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.code !== 'Ok') {
+                    throw new Error("OSRM Routing Error");
+                }
+
+                // Get Coordinates
+                const routeCoords = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]); // Convert back to [lat, lng]
+                
+                // Draw Polyline
+                const polyline = L.polyline(routeCoords, {
+                    color: '#2563eb',  // Vibrant Blue
+                    weight: 6,
+                    opacity: 0.9,
+                    lineJoin: 'round'
+                }).addTo(map);
+
+                // Fit map bounds to the polyline
+                map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
+
+                // Format Distance and Duration
+                const distKm = (data.routes[0].distance / 1000).toFixed(1);
+                const durationMin = Math.round(data.routes[0].duration / 60);
+
+                document.getElementById('distance-info').innerHTML = 
+                    `<strong>المسافة:</strong> ${distKm} كم &bull; <strong>الوقت المتوقع:</strong> ${durationMin} دقيقة<br>${customerData.address}`;
+            })
+            .catch(err => {
+                console.warn("Routing failed, falling back to straight line:", err);
+                
+                // Draw a simple straight line
+                const fallbackLine = L.polyline([start, end], {
+                    color: '#2563eb', // Vibrant Blue
+                    weight: 5,
+                    opacity: 0.8,
+                    dashArray: '10, 10'
+                }).addTo(map);
+
+                map.fitBounds(fallbackLine.getBounds(), { padding: [50, 50] });
+
+                const distKm = haversineDistance(start, end).toFixed(1);
+                document.getElementById('distance-info').innerHTML = 
+                    `<strong>المسافة التقريبية:</strong> ${distKm} كم (مسار مباشر)<br>${customerData.address}`;
+            });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,570 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>لوحة السائق | {{ supplier.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --driver-primary: #f59e0b;
+            --driver-primary-dark: #d97706;
+            --driver-success: #10b981;
+            --driver-danger: #ef4444;
+            --driver-bg: #f8fafc;
+            --driver-card: #ffffff;
+            --driver-text: #1e293b;
+            --driver-muted: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--driver-bg);
+            color: var(--driver-text);
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Header */
+        .driver-header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            padding: 1.25rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .driver-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .driver-identity {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .driver-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: var(--driver-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: white;
+            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+        }
+        .driver-name {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .driver-store {
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+        .btn-logout {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 10px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0 0;
+        }
+        .stat-pill {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-pill .stat-number {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--driver-primary);
+        }
+        .stat-pill .stat-label {
+            font-size: 0.6rem;
+            opacity: 0.7;
+            display: block;
+        }
+
+        /* Tab filter */
+        .tab-filter {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: white;
+            border-bottom: 1px solid #f1f5f9;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f1f5f9;
+            color: var(--driver-muted);
+            text-decoration: none;
+            text-align: center;
+            display: block;
+        }
+        .tab-btn.active {
+            background: var(--driver-primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        .tab-btn .tab-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            font-size: 0.65rem;
+            margin-inline-start: 4px;
+            padding: 0 5px;
+        }
+        .tab-btn.active .tab-count {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+        .tab-btn:not(.active) .tab-count {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        /* Order cards */
+        .orders-list {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .order-card {
+            background: var(--driver-card);
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .order-card:active {
+            transform: scale(0.98);
+        }
+
+        .order-card-header {
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .order-id {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: var(--driver-text);
+        }
+        .order-time {
+            font-size: 0.7rem;
+            color: var(--driver-muted);
+            margin-top: 2px;
+        }
+        .order-status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .order-status-badge.status-active {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+        .order-status-badge.status-delivered {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+        .order-status-badge.status-cancelled {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .order-card-body {
+            padding: 0 1rem;
+        }
+        .customer-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-top: 1px solid #f8fafc;
+        }
+        .customer-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--driver-muted);
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .customer-name {
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .customer-address {
+            font-size: 0.7rem;
+            color: var(--driver-muted);
+            line-height: 1.3;
+            margin-top: 2px;
+        }
+        .order-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-top: 1px dashed #e2e8f0;
+        }
+        .order-total-label {
+            font-size: 0.75rem;
+            color: var(--driver-muted);
+        }
+        .order-total-value {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--driver-primary-dark);
+        }
+
+        .order-card-actions {
+            padding: 0.75rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        .btn-action {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            text-decoration: none;
+        }
+        .btn-action:active {
+            transform: scale(0.95);
+        }
+        .btn-action-call {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        .btn-action-map {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+        .btn-action-whatsapp {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        .btn-action-status {
+            background: linear-gradient(135deg, var(--driver-primary), var(--driver-primary-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--driver-muted);
+        }
+        .empty-state i {
+            font-size: 3rem;
+            opacity: 0.3;
+            margin-bottom: 1rem;
+        }
+        .empty-state h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .empty-state p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        /* Prevent desktop awkwardness */
+        @media (min-width: 768px) {
+            body {
+                max-width: 480px;
+                margin: 0 auto;
+                box-shadow: 0 0 40px rgba(0,0,0,0.08);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="driver-header">
+    <div class="driver-header-top">
+        <div class="driver-identity">
+            <div class="driver-avatar">
+                {{ request.user.first_name|first|upper|default:"S" }}
+            </div>
+            <div>
+                <div class="driver-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+                <div class="driver-store"><i class="fas fa-store" style="margin-left:4px;"></i> {{ supplier.name }}</div>
+            </div>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout">
+            <i class="fas fa-sign-out-alt" style="margin-left:4px;"></i> خروج
+        </a>
+    </div>
+    <div class="stats-row">
+        <div class="stat-pill">
+            <div class="stat-number">{{ active_count }}</div>
+            <span class="stat-label">نشطة</span>
+        </div>
+        <div class="stat-pill">
+            <div class="stat-number">{{ delivered_count }}</div>
+            <span class="stat-label">تم التوصيل</span>
+        </div>
+        <div class="stat-pill">
+            <div class="stat-number">{{ all_count }}</div>
+            <span class="stat-label">الكل</span>
+        </div>
+    </div>
+</div>
+
+<!-- Tab Filter -->
+<div class="tab-filter">
+    <a href="?status=active" class="tab-btn {% if status_filter == 'active' %}active{% endif %}">
+        نشطة <span class="tab-count">{{ active_count }}</span>
+    </a>
+    <a href="?status=delivered" class="tab-btn {% if status_filter == 'delivered' %}active{% endif %}">
+        تم التسليم <span class="tab-count">{{ delivered_count }}</span>
+    </a>
+    <a href="?status=all" class="tab-btn {% if status_filter == 'all' %}active{% endif %}">
+        الكل <span class="tab-count">{{ all_count }}</span>
+    </a>
+</div>
+
+<!-- Orders List -->
+<div class="orders-list">
+    {% for order in orders %}
+    <div class="order-card" id="order-card-{{ order.id }}">
+        <div class="order-card-header">
+            <div>
+                <div class="order-id">طلب #{{ order.id }}</div>
+                <div class="order-time">
+                    <i class="far fa-clock" style="margin-left:3px;"></i>
+                    {{ order.created_at|timesince }} مضت
+                </div>
+            </div>
+            <span class="order-status-badge
+                {% if order.pipeline_status.slug == 'delivered' %}status-delivered
+                {% elif order.pipeline_status.slug == 'cancelled' %}status-cancelled
+                {% else %}status-active{% endif %}"
+                id="status-badge-{{ order.id }}">
+                {{ order.pipeline_status.name|default:"معلق" }}
+            </span>
+        </div>
+
+        <div class="order-card-body">
+            <div class="customer-row">
+                <div class="customer-icon"><i class="fas fa-user"></i></div>
+                <div>
+                    <div class="customer-name">
+                        {{ order.user.get_full_name|default:order.user.username }}
+                    </div>
+                    {% with addr=order.shippingaddress_set.first %}
+                    {% if addr %}
+                    <div class="customer-address">
+                        <i class="fas fa-map-marker-alt" style="margin-left:3px;"></i>
+                        {{ addr.address_line1 }}, {{ addr.city }}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+
+            <div class="order-total-row">
+                <span class="order-total-label">إجمالي الطلب</span>
+                <span class="order-total-value">{{ order.total_amount|floatformat:0 }} {{ supplier.currency }}</span>
+            </div>
+        </div>
+
+        <div class="order-card-actions">
+            {% with addr=order.shippingaddress_set.first %}
+            {% if addr and addr.phone %}
+            <a href="tel:{{ addr.phone }}" class="btn-action btn-action-call">
+                <i class="fas fa-phone-alt"></i> اتصال
+            </a>
+            <a href="https://wa.me/{{ addr.phone }}" target="_blank" class="btn-action btn-action-whatsapp">
+                <i class="fab fa-whatsapp"></i> واتساب
+            </a>
+            {% endif %}
+            {% if addr and addr.latitude and addr.longitude and supplier.latitude and supplier.longitude %}
+            <a href="{% url 'driver_order_map' order.id %}" class="btn-action btn-action-map">
+                <i class="fas fa-map-marked-alt"></i> الموقع
+            </a>
+            {% endif %}
+            {% endwith %}
+
+            {% if order.pipeline_status.slug != 'delivered' and order.pipeline_status.slug != 'cancelled' %}
+            <button type="button" class="btn-action btn-action-status" onclick="updateOrderStatus({{ order.id }}, '{{ order.get_next_status.name|default:'التالي' }}')">
+                <i class="fas fa-arrow-left"></i> تحديث الحالة
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <i class="fas fa-motorcycle"></i>
+        <h4>لا توجد طلبات</h4>
+        <p>
+            {% if status_filter == 'active' %}
+                ليس لديك طلبات نشطة حالياً
+            {% elif status_filter == 'delivered' %}
+                لم تقم بتوصيل أي طلبات بعد
+            {% else %}
+                لم يتم تعيين أي طلبات لك حتى الآن
+            {% endif %}
+        </p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+async function updateOrderStatus(orderId, nextStatusName) {
+    const { value: confirmUpdate } = await Swal.fire({
+        title: '<i class="fas fa-sync-alt" style="color: #f59e0b;"></i> تحديث حالة الطلب',
+        html: `هل أنت متأكد من رغبتك في نقل الطلب #${orderId} إلى المرحلة التالية؟<br><br><strong style="color: #f59e0b;">(${nextStatusName})</strong>`,
+        showCancelButton: true,
+        confirmButtonText: 'نعم، تحديث',
+        cancelButtonText: 'إلغاء',
+        confirmButtonColor: '#f59e0b',
+        focusConfirm: false,
+    });
+
+    if (!confirmUpdate) return;
+
+    const formData = new FormData();
+    // We don't send status_slug anymore, it is handled by move_to_next_status
+
+    try {
+        const response = await fetch(`/driver-update-status/${orderId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) {
+            // Update the badge in-place
+            const badge = document.getElementById(`status-badge-${orderId}`);
+            if (badge) {
+                badge.textContent = data.new_status;
+                badge.className = 'order-status-badge ' +
+                    (data.new_slug === 'delivered' ? 'status-delivered' :
+                     data.new_slug === 'cancelled' ? 'status-cancelled' : 'status-active');
+            }
+            Swal.fire({
+                title: 'تم التحديث',
+                text: data.message,
+                icon: 'success',
+                confirmButtonColor: '#10b981',
+                timer: 2000,
+                showConfirmButton: false,
+            });
+            // If we're on the active tab and status changed to delivered/cancelled, remove card
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentFilter = urlParams.get('status') || 'active';
+            if (currentFilter === 'active' && (data.new_slug === 'delivered' || data.new_slug === 'cancelled')) {
+                const card = document.getElementById(`order-card-${orderId}`);
+                if (card) {
+                    card.style.transition = 'all 0.3s';
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateX(100%)';
+                    setTimeout(() => card.remove(), 350);
+                }
+            }
+        } else {
+            Swal.fire('خطأ', data.message || 'حدث خطأ أثناء التحديث', 'error');
+        }
+    } catch (err) {
+        Swal.fire('خطأ', 'حدث خطأ في الاتصال', 'error');
+    }
+}
+</script>
+
+</body>
+</html>

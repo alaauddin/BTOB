@@ -726,6 +726,55 @@
                 </div>
             </div>
 
+            {% if supplier.enable_delivery_drivers %}
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fas fa-motorcycle"></i> سائق التوصيل</h3>
+
+                {% if order.delivery_driver %}
+                <div class="d-flex align-items-center mb-3 p-3 rounded-3" style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.15);">
+                    <div class="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 44px; height: 44px; font-size: 1.1rem;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">{{ order.delivery_driver.user.get_full_name|default:order.delivery_driver.user.username }}</div>
+                        <div class="text-muted small"><i class="fas fa-phone me-1"></i>{{ order.delivery_driver.phone }}</div>
+                    </div>
+                    <form method="post" action="{% url 'assign_driver_to_order' order.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" title="إلغاء التعيين">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="alert py-2 px-3 rounded-3 mb-3" style="background: rgba(245, 158, 11, 0.08); border: 1px dashed rgba(245, 158, 11, 0.3); color: #92400e;">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    <span class="small">لم يتم تعيين سائق لهذا الطلب بعد</span>
+                </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'assign_driver_to_order' order.id %}">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <select name="driver_id" class="form-select border-0 bg-light" id="driverSelect">
+                            <option value="">-- اختر سائق --</option>
+                            {% for driver in available_drivers %}
+                                <option value="{{ driver.id }}" {% if order.delivery_driver and order.delivery_driver.id == driver.id %}selected{% endif %}>
+                                    {{ driver.user.get_full_name|default:driver.user.username }} ({{ driver.phone }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-dark" type="submit">تعيين</button>
+                    </div>
+                </form>
+                {% if not available_drivers %}
+                <p class="text-muted small mt-2 mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    لا يوجد سائقون مسجلون. <a href="{% url 'manage_drivers' %}">أضف سائقاً</a>
+                </p>
+                {% endif %}
+            </div>
+            {% endif %}
             <div class="glass-card">
                 <h3 class="section-title"><i class="fas fa-sticky-note"></i> ملاحظات داخلية</h3>
                 
@@ -980,6 +1029,70 @@
                 document.getElementById('nextStepForm').submit();
             }
         } else {
+            {% if supplier.enable_delivery_drivers %}
+            // Check if current step requires driver assignment
+            const currentStepRequiresDriver = {{ order.get_current_workflow_step.requires_driver_assignment|yesno:"true,false" }};
+            const hasDriver = {{ order.delivery_driver|yesno:"true,false" }};
+
+            if (currentStepRequiresDriver && !hasDriver) {
+                const availableDrivers = [
+                    {% for driver in available_drivers %}
+                    { id: {{ driver.id }}, name: "{{ driver.user.get_full_name|default:driver.user.username }}", phone: "{{ driver.phone }}" },
+                    {% endfor %}
+                ];
+
+                if (availableDrivers.length === 0) {
+                    await Swal.fire({
+                        title: 'يتطلب تعيين سائق',
+                        html: '<p>لا يمكن الانتقال للمرحلة التالية بدون تعيين سائق توصيل.</p><p>لا يوجد سائقون مسجلون. <a href="{% url "manage_drivers" %}">أضف سائقاً</a></p>',
+                        icon: 'warning',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#f59e0b',
+                    });
+                    return;
+                }
+
+                const driverOptionsHtml = availableDrivers.map(d =>
+                    `<option value="${d.id}">${d.name} (${d.phone})</option>`
+                ).join('');
+
+                const { value: selectedDriverId } = await Swal.fire({
+                    title: '<i class="fas fa-motorcycle" style="color: #f59e0b;"></i> تعيين سائق توصيل',
+                    html: `
+                        <p style="color: #64748b; margin-bottom: 1rem;">يجب تعيين سائق توصيل قبل الانتقال للمرحلة التالية</p>
+                        <select id="swalDriverSelect" class="swal2-select" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem; direction: rtl;">
+                            <option value="">-- اختر سائق --</option>
+                            ${driverOptionsHtml}
+                        </select>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'تعيين والانتقال',
+                    cancelButtonText: 'تراجع',
+                    confirmButtonColor: '#10b981',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const selected = document.getElementById('swalDriverSelect').value;
+                        if (!selected) {
+                            Swal.showValidationMessage('يجب اختيار سائق');
+                            return false;
+                        }
+                        return selected;
+                    }
+                });
+
+                if (!selectedDriverId) return;
+
+                // Assign driver via AJAX first, then submit the form
+                const assignData = new FormData();
+                assignData.append('driver_id', selectedDriverId);
+                await fetch(`{% url 'assign_driver_to_order' order.id %}`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: assignData
+                });
+            }
+            {% endif %}
+
             document.getElementById('nextStepForm').submit();
         }
     }

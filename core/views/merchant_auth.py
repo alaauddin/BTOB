@@ -12,8 +12,10 @@ class MerchantLoginView(View):
             # If already logged in and is a supplier, redirect to dashboard
             if hasattr(request.user, 'supplier'):
                 return redirect('my_merchant')
-            # If logged in but not supplier, maybe redirect to join?
-            # For now, let's show the login page essentially forcing re-login or different account
+            # If already logged in and is a driver, redirect to driver dashboard
+            from core.models import DeliveryDriver
+            if DeliveryDriver.objects.filter(user=request.user, is_active=True).exists():
+                return redirect('driver_dashboard')
             
         form = AuthenticationForm()
         return render(request, self.template_name, {'form': form})
@@ -32,9 +34,17 @@ class MerchantLoginView(View):
                 if next_url:
                     return redirect(next_url)
                 return redirect('my_merchant')
-            else:
-                messages.error(request, 'هذا الحساب غير مسجل كتاجر. يرجى استخدام حساب تاجر أو الانضمام إلينا.')
+
+            # Check if user is a delivery driver
+            from core.models import DeliveryDriver
+            driver = DeliveryDriver.objects.filter(user=user, is_active=True).first()
+            if driver:
+                login(request, user)
+                return redirect('driver_dashboard')
+
+            messages.error(request, 'هذا الحساب غير مسجل كتاجر أو سائق.')
         else:
             messages.error(request, 'اسم المستخدم أو كلمة المرور غير صحيحة')
             
         return render(request, self.template_name, {'form': form})
+

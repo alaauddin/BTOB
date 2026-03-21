@@ -39,6 +39,10 @@ from core.views.profile import profile_view, address_list_view, set_current_addr
 from core.views.landing import landing_page
 from core.views.merchant_selection import select_merchant
 from core.views.whatsapp_inquiry_click import track_wa_inquiry_click
+from core.views.delivery_driver_views import (
+    manage_drivers, add_driver, toggle_driver_status, assign_driver_to_order,
+    driver_dashboard, driver_update_order_status, driver_order_map
+)
 
 urlpatterns = [
     # Landing Page
@@ -160,6 +164,15 @@ urlpatterns = [
 
     # Tour API
     path('api/tour-complete/', mark_tour_complete, name='tour_complete'),
+
+    # Delivery Drivers
+    path('merchant-drivers/', manage_drivers, name='manage_drivers'),
+    path('add-driver/', add_driver, name='add_driver'),
+    path('toggle-driver-status/<int:driver_id>/', toggle_driver_status, name='toggle_driver_status'),
+    path('assign-driver/<int:order_id>/', assign_driver_to_order, name='assign_driver_to_order'),
+    path('driver-dashboard/', driver_dashboard, name='driver_dashboard'),
+    path('driver-update-status/<int:order_id>/', driver_update_order_status, name='driver_update_order_status'),
+    path('driver-map/<int:order_id>/', driver_order_map, name='driver_order_map'),
 
     # WhatsApp Inquiry Tracking
     path('wa-inquiry-click/<int:product_id>/', track_wa_inquiry_click, name='wa_inquiry_click'),

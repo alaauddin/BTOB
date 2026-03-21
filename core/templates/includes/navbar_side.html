@@ -60,6 +60,12 @@
                 <i class="fas fa-users"></i>
                 <span>العملاء</span>
             </a>
+            {% if supplier.enable_delivery_drivers %}
+            <a href="{% url 'manage_drivers' %}" class="nav-item {% if 'merchant-drivers' in request.path %}active{% endif %}">
+                <i class="fas fa-motorcycle"></i>
+                <span>سائقو التوصيل</span>
+            </a>
+            {% endif %}
         </div>
 
         <!-- MARKETING Group -->

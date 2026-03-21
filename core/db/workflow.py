@@ -33,6 +33,7 @@ class WorkflowStep(models.Model):
     priority = models.PositiveIntegerField()
     requires_payment = models.BooleanField(default=False, verbose_name="يتطلب سداد كامل")
     decrease_stock = models.BooleanField(default=False, verbose_name="تقليل المخزون")
+    requires_driver_assignment = models.BooleanField(default=False, verbose_name="يتطلب تعيين سائق توصيل")
 
     class Meta:
         app_label = 'core'

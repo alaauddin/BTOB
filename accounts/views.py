@@ -158,11 +158,11 @@ def ajax_signup_view(request):
             
     return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
 
-@csrf_exempt
 def ajax_merchant_login_view(request):
     """
     Handle AJAX merchant login requests.
     Expects JSON data: {'username': '...', 'password': '...'}
+    Supports merchants (suppliers) and delivery drivers.
     """
     if request.method == 'POST':
         try:
@@ -181,11 +181,22 @@ def ajax_merchant_login_view(request):
                         'message': 'تم تسجيل دخول التاجر بنجاح',
                         'redirect_url': '/my-merchant/'
                     })
-                else:
+
+                # Check if user is a delivery driver
+                from core.models import DeliveryDriver
+                driver = DeliveryDriver.objects.filter(user=user, is_active=True).first()
+                if driver:
+                    auth_login(request, user)
                     return JsonResponse({
-                        'success': False, 
-                        'message': 'هذا الحساب غير مسجل كتاجر. يرجى استخدام حساب تاجر أو الانضمام إلينا.'
+                        'success': True,
+                        'message': f'مرحباً {user.get_full_name() or user.username}',
+                        'redirect_url': '/driver-dashboard/'
                     })
+
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'هذا الحساب غير مسجل كتاجر أو سائق. يرجى استخدام حساب صالح أو الانضمام إلينا.'
+                })
             else:
                 return JsonResponse({
                     'success': False, 
@@ -195,6 +206,7 @@ def ajax_merchant_login_view(request):
             return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
             
     return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+
 
 def ajax_unified_auth_view(request):
     """

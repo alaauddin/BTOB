@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Sum, Count
 from django.utils import timezone
-from core.models import Supplier, Order, OrderItem, ShippingAddress, OrderStatus, OrderNote, OrderPaymentReference
+from core.models import Supplier, Order, OrderItem, ShippingAddress, OrderStatus, OrderNote, OrderPaymentReference, DeliveryDriver
 from django.core.paginator import Paginator
 from core.utils.merchant_utils import get_active_supplier
 
@@ -196,6 +196,13 @@ def merchant_order_detail(request, order_id):
     supplier_order_total = order.total_amount
     items_total = sum(item.get_subtotal_with_discount() for item in order_items)
     
+    # Delivery Drivers (if feature enabled)
+    available_drivers = []
+    if supplier.enable_delivery_drivers:
+        available_drivers = DeliveryDriver.objects.filter(
+            supplier=supplier, is_active=True
+        ).select_related('user')
+
     context = {
         'supplier': supplier,
         'order': order,
@@ -211,6 +218,7 @@ def merchant_order_detail(request, order_id):
         'pending_count': pending_orders.count(),
         'distance_km': distance_km,
         'expected_delivery_fee': expected_delivery_fee,
+        'available_drivers': available_drivers,
     }
     
     return render(request, template_name, context)
@@ -331,16 +339,38 @@ def merchant_order_quick_view(request, order_id):
     # Get workflow steps
     workflow_steps = []
     current_priority = 0
+    current_requires_driver = False
     if supplier.workflow:
         steps = supplier.workflow.steps.all().select_related('status').order_by('priority')
         for step in steps:
             workflow_steps.append({
                 'name': step.status.name,
                 'slug': step.status.slug,
-                'priority': step.priority
+                'priority': step.priority,
+                'requires_driver_assignment': step.requires_driver_assignment,
             })
             if order.pipeline_status and order.pipeline_status.slug == step.status.slug:
                 current_priority = step.priority
+                current_requires_driver = step.requires_driver_assignment
+
+    # Available drivers (if feature enabled)
+    available_drivers = []
+    if supplier.enable_delivery_drivers:
+        for drv in DeliveryDriver.objects.filter(supplier=supplier, is_active=True).select_related('user'):
+            available_drivers.append({
+                'id': drv.id,
+                'name': drv.user.get_full_name() or drv.user.username,
+                'phone': drv.phone,
+            })
+
+    # Current assigned driver
+    assigned_driver = None
+    if order.delivery_driver:
+        assigned_driver = {
+            'id': order.delivery_driver.id,
+            'name': order.delivery_driver.user.get_full_name() or order.delivery_driver.user.username,
+            'phone': order.delivery_driver.phone,
+        }
 
     # Financial breakdown
     items_gross = sum([item.get_subtotal() for item in order_items])
@@ -362,7 +392,11 @@ def merchant_order_quick_view(request, order_id):
             'cancellation_reason': order.cancellation_reason,
             'created_at': order.created_at.strftime("%Y-%m-%d %H:%M"),
             'current_priority': current_priority,
+            'current_requires_driver': current_requires_driver,
             'workflow_steps': workflow_steps,
+            'assigned_driver': assigned_driver,
+            'available_drivers': available_drivers,
+            'enable_delivery_drivers': supplier.enable_delivery_drivers,
             'items': [
                 {
                     'name': item.product.name,
@@ -383,7 +417,11 @@ def merchant_order_quick_view(request, order_id):
 
 @login_required
 def update_order_status_ajax(request, order_id):
-    """AJAX view to update order status by clicking steps"""
+    """AJAX view to update order status by clicking steps.
+
+    Accepts optional ``driver_id`` to assign a delivery driver to the order
+    before performing the status transition.
+    """
     if request.method != 'POST':
         return JsonResponse({'success': False, 'message': 'Invalid method.'}, status=405)
     
@@ -410,6 +448,16 @@ def update_order_status_ajax(request, order_id):
     new_status = OrderStatus.objects.filter(slug=status_slug).first()
     if not new_status:
         return JsonResponse({'success': False, 'message': 'Invalid status.'}, status=400)
+    
+    # Assign driver if provided (before status transition so the check passes)
+    driver_id = request.POST.get('driver_id')
+    if driver_id:
+        driver = DeliveryDriver.objects.filter(
+            id=driver_id, supplier=supplier, is_active=True
+        ).first()
+        if driver:
+            order.delivery_driver = driver
+            order.save()
     
     # Update status
     reason = request.POST.get('reason')

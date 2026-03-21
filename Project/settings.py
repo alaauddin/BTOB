@@ -127,6 +127,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.middleware.NavigationMiddleware',
     'core.middleware.VisitTrackingMiddleware',
+    'core.middleware.DriverRedirectMiddleware',
 ]
 
 # Add allauth middleware if available (required for version >= 0.56.0)

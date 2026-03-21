@@ -257,3 +257,38 @@ class VisitTrackingMiddleware:
             browser = 'Firefox'
 
         return device_type, browser, operating_system
+
+
+class DriverRedirectMiddleware:
+    """
+    Middleware to ensure delivery drivers are always redirected to their dashboard
+    if they try to access the merchant dashboard or storefronts.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.user.is_authenticated:
+            # Check if user is an active driver
+            from core.models import DeliveryDriver
+            
+            # Use hasattr check first to avoid query if possible, but user might have both?
+            # Safe logic: check DB
+            driver = DeliveryDriver.objects.filter(user=request.user, is_active=True).first()
+            
+            if driver:
+                path = request.path_info
+                # Allowed paths for drivers
+                allowed_prefixes = (
+                    '/driver-dashboard/',
+                    '/driver-update-status/',
+                    '/driver-map/',
+                    '/logout/',
+                    '/static/',
+                    '/media/',
+                )
+                
+                if not any(path.startswith(prefix) for prefix in allowed_prefixes):
+                    return redirect('driver_dashboard')
+                    
+        return self.get_response(request)

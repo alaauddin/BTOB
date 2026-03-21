@@ -44,6 +44,126 @@
     .hidden {
         display: none !important;
     }
+
+    /* Driver assignment section in modal */
+    .modal-driver-section {
+        padding: 0.75rem 1rem;
+        margin: 0 0 0.5rem 0;
+        border-radius: 14px;
+        border: 1px dashed #e2e8f0;
+        background: #f8fafc;
+    }
+    .modal-driver-section.has-driver {
+        border-color: rgba(16, 185, 129, 0.3);
+        background: rgba(16, 185, 129, 0.04);
+    }
+    .modal-driver-section .driver-section-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .modal-driver-section .driver-section-title i {
+        color: #f59e0b;
+        font-size: 0.9rem;
+    }
+    .modal-driver-assigned {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .modal-driver-assigned .driver-avatar-sm {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #10b981;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+    .modal-driver-assigned .driver-info {
+        flex-grow: 1;
+    }
+    .modal-driver-assigned .driver-name {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #1e293b;
+    }
+    .modal-driver-assigned .driver-phone {
+        font-size: 0.7rem;
+        color: #64748b;
+    }
+    .modal-driver-select-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .modal-driver-select-row select {
+        flex: 1;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        background: white;
+        direction: rtl;
+        color: #334155;
+    }
+    .modal-driver-select-row select:focus {
+        outline: none;
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+    .btn-assign-driver {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        transition: all 0.2s ease;
+    }
+    .btn-assign-driver:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    .btn-assign-driver:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    .btn-unassign-driver {
+        padding: 0.35rem 0.6rem;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        cursor: pointer;
+        background: #fef2f2;
+        color: #dc2626;
+        transition: all 0.2s ease;
+    }
+    .btn-unassign-driver:hover {
+        background: #fee2e2;
+    }
+    .driver-warning-text {
+        font-size: 0.75rem;
+        color: #d97706;
+        margin-top: 0.25rem;
+    }
+    .driver-warning-text a {
+        color: #f59e0b;
+        font-weight: 600;
+        text-decoration: underline;
+    }
 </style>
 {% endblock %}
 
@@ -314,6 +434,17 @@
                 </div>
             </div>
 
+            <!-- Driver Assignment Section (injected by JS) -->
+            <div id="modalDriverSection" class="modal-driver-section hidden">
+                <div class="driver-section-title">
+                    <i class="fas fa-motorcycle"></i>
+                    <span>سائق التوصيل</span>
+                </div>
+                <div id="modalDriverContent">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+
             <!-- Cancellation Reason Alert -->
             <div id="modalCancellationAlert" class="modal-cancellation-alert hidden">
                 <i class="fas fa-exclamation-circle"></i>
@@ -438,6 +569,20 @@ function openOrderQuickView(orderId) {
                     document.getElementById('modalOrderStepper').classList.remove('hidden');
                 }
 
+                // Store driver data for use in step changes
+                window._currentOrderData = {
+                    orderId: order.id,
+                    currentRequiresDriver: order.current_requires_driver,
+                    assignedDriver: order.assigned_driver,
+                    availableDrivers: order.available_drivers || [],
+                    enableDeliveryDrivers: order.enable_delivery_drivers,
+                    currentPriority: order.current_priority,
+                    workflowSteps: order.workflow_steps,
+                };
+
+                // Populate driver assignment section in modal
+                renderModalDriverSection(order);
+
                 // Handle Cancellation Alert display
                 const cancelAlert = document.getElementById('modalCancellationAlert');
                 if (order.status_slug === 'cancelled') {
@@ -525,6 +670,120 @@ function closeOrderQuickView(event) {
     document.body.style.overflow = ''; // Restore scroll
 }
 
+function renderModalDriverSection(order) {
+    const section = document.getElementById('modalDriverSection');
+    const content = document.getElementById('modalDriverContent');
+
+    // Hide section if feature is not enabled or no step requires driver
+    if (!order.enable_delivery_drivers) {
+        section.classList.add('hidden');
+        return;
+    }
+
+    // Check if any step in the workflow requires driver assignment
+    const anyStepRequiresDriver = order.workflow_steps.some(s => s.requires_driver_assignment);
+    if (!anyStepRequiresDriver) {
+        section.classList.add('hidden');
+        return;
+    }
+
+    section.classList.remove('hidden');
+
+    if (order.assigned_driver) {
+        // Show assigned driver with unassign option
+        section.classList.add('has-driver');
+        const initial = order.assigned_driver.name.charAt(0).toUpperCase();
+        content.innerHTML = `
+            <div class="modal-driver-assigned">
+                <div class="driver-avatar-sm">${initial}</div>
+                <div class="driver-info">
+                    <div class="driver-name">${order.assigned_driver.name}</div>
+                    <div class="driver-phone"><i class="fas fa-phone" style="font-size:0.6rem;margin-left:3px;"></i> ${order.assigned_driver.phone}</div>
+                </div>
+                <button type="button" class="btn-unassign-driver" onclick="assignDriverFromModal(${order.id}, '')" title="إلغاء التعيين">
+                    <i class="fas fa-times"></i> إلغاء
+                </button>
+            </div>
+        `;
+    } else {
+        // Show driver selection dropdown
+        section.classList.remove('has-driver');
+
+        if (order.available_drivers && order.available_drivers.length > 0) {
+            const options = order.available_drivers.map(d =>
+                `<option value="${d.id}">${d.name} (${d.phone})</option>`
+            ).join('');
+
+            content.innerHTML = `
+                <div class="modal-driver-select-row">
+                    <select id="modalDriverDropdown">
+                        <option value="">-- اختر سائق --</option>
+                        ${options}
+                    </select>
+                    <button type="button" class="btn-assign-driver" onclick="assignDriverFromModal(${order.id})">
+                        <i class="fas fa-check" style="margin-left:4px;"></i> تعيين
+                    </button>
+                </div>
+                ${order.current_requires_driver ? '<div class="driver-warning-text"><i class="fas fa-exclamation-triangle" style="margin-left:3px;"></i> يجب تعيين سائق قبل الانتقال للمرحلة التالية</div>' : ''}
+            `;
+        } else {
+            content.innerHTML = `
+                <div class="driver-warning-text">
+                    <i class="fas fa-info-circle" style="margin-left:3px;"></i>
+                    لا يوجد سائقون مسجلون.
+                    <a href="/merchant-drivers/">أضف سائقاً</a>
+                </div>
+            `;
+        }
+    }
+}
+
+function assignDriverFromModal(orderId, driverIdOverride) {
+    const driverId = driverIdOverride !== undefined ? driverIdOverride : document.getElementById('modalDriverDropdown').value;
+
+    if (driverId === '' && driverIdOverride === undefined) {
+        showNotification('يرجى اختيار سائق أولاً', 'error');
+        return;
+    }
+
+    const formData = new FormData();
+    if (driverId) formData.append('driver_id', driverId);
+    {% if request.GET.supplier_id %}
+    // Not needed for assign endpoint but kept for consistency
+    {% endif %}
+
+    // Show loading state
+    const content = document.getElementById('modalDriverContent');
+    content.style.opacity = '0.5';
+    content.style.pointerEvents = 'none';
+
+    fetch(`/assign-driver/${orderId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(driverId ? 'تم تعيين السائق بنجاح' : 'تم إلغاء تعيين السائق', 'success');
+            // Refresh the modal to update driver section and stepper
+            openOrderQuickView(orderId);
+        } else {
+            showNotification('حدث خطأ أثناء تعيين السائق', 'error');
+            content.style.opacity = '1';
+            content.style.pointerEvents = 'auto';
+        }
+    })
+    .catch(() => {
+        showNotification('حدث خطأ في الاتصال', 'error');
+        content.style.opacity = '1';
+        content.style.pointerEvents = 'auto';
+    });
+}
+
 async function changeOrderStepperStatus(orderId, statusSlug) {
     let reason = null;
     
@@ -549,8 +808,33 @@ async function changeOrderStepperStatus(orderId, statusSlug) {
         reason = typedReason;
     }
 
+    // Check if the CURRENT step requires driver assignment and no driver is set
+    const orderData = window._currentOrderData;
+    if (orderData && orderData.enableDeliveryDrivers && statusSlug !== 'cancelled') {
+        // Find the current step
+        const currentStep = orderData.workflowSteps.find(s => s.priority === orderData.currentPriority);
+        // Find the target step
+        const targetStep = orderData.workflowSteps.find(s => s.slug === statusSlug);
+        
+        // Only check if we're moving forward and current step requires driver
+        if (currentStep && targetStep && targetStep.priority > currentStep.priority
+            && currentStep.requires_driver_assignment && !orderData.assignedDriver) {
+            
+            // Highlight the driver section and show notification
+            const driverSection = document.getElementById('modalDriverSection');
+            driverSection.style.border = '2px solid #f59e0b';
+            driverSection.style.boxShadow = '0 0 16px rgba(245, 158, 11, 0.2)';
+            setTimeout(() => {
+                driverSection.style.border = '';
+                driverSection.style.boxShadow = '';
+            }, 3000);
+            
+            showNotification('يجب تعيين سائق توصيل أولاً من القسم أعلاه', 'error');
+            return;
+        }
+    }
+
     const stepperWrapper = document.getElementById('modalOrderStepper');
-    const originalContent = stepperWrapper.innerHTML;
     
     // Show minimal loading state on the stepper
     stepperWrapper.style.opacity = '0.5';
