@@ -65,13 +65,12 @@
     }
     
     body.modal-active #dashboard-main {
-        transform: scale(0.96);
-        filter: brightness(0.7) blur(2px);
+        filter: brightness(0.6);
+        pointer-events: none;
     }
 
     .modal-backdrop {
-        backdrop-filter: blur(8px);
-        background-color: rgba(15, 23, 42, 0.4);
+        background-color: rgba(15, 23, 42, 0.6); /* Slightly darker instead of blur */
     }
 
     .modal-content-animate {
@@ -136,7 +135,7 @@
     <!-- Onboarding Step Checklist Modal (Root-level for global stacking) -->
     {% with has_logo=supplier.profile_picture has_cover=supplier.panal_picture has_location=supplier.latitude has_currency=supplier.currency has_subdomain=supplier.subdomain has_products=total_products|add:0 %}
     <div id="checklist-modal" class="fixed inset-0 hidden items-start justify-center p-4 sm:p-6 overflow-y-auto" style="z-index: 9999999 !important;">
-        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeChecklistModal()"></div>
+        <div class="fixed inset-0 bg-slate-900/60" onclick="closeChecklistModal()"></div>
         <div class="bg-white w-full max-w-md rounded-[32px] shadow-2xl relative z-20 overflow-hidden animate-slide-up mt-8 sm:mt-16 mb-8">
             <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-30">
                 <h2 class="text-xl font-black text-gray-900">خطوات إكمال المتجر</h2>
@@ -217,6 +216,7 @@
         </div>
     </div>
     {% endwith %}
+
 
     <div id="dashboard-main" class="min-h-screen flex flex-col">
 
@@ -602,9 +602,9 @@
     {% if not supplier.agreed_to_terms and system_settings.show_merchant_agreement %}
     <div id="terms-modal" class="fixed inset-0 z-[9100] flex items-center justify-center p-4 overflow-y-auto" style="z-index: 9100 !important;">
         <!-- Non-dismissible backdrop -->
-        <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md"></div>
+        <div class="fixed inset-0 bg-slate-900/80"></div>
         
-        <div class="bg-white w-full max-w-4xl rounded-[32px] shadow-2xl relative z-10 overflow-hidden flex flex-col my-8" style="max-height: calc(100vh - 4rem);">
+        <div class="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl relative z-10 overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300" style="max-height: calc(100vh - 4rem); display: flex; flex-direction: column;">
             <!-- Header -->
             <div class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
                 <div class="flex items-center gap-2 mb-0.5">
@@ -849,6 +849,7 @@
     </script>
     {% endif %}
     </div>
+</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
