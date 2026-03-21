@@ -77,6 +77,58 @@
     .modal-content-animate {
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+
+    /* Step Markers Styling */
+    .step-marker {
+        width: 28px;
+        height: 28px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        position: absolute;
+        top: 50%;
+        transform: translate(50%, -50%);
+        z-index: 30;
+        color: #94a3b8;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 640px) {
+        .step-marker {
+            display: none !important; /* Hide step markers on mobile to avoid overcrowding */
+        }
+    }
+
+    .step-marker.active {
+        border-color: #3b82f6;
+        background: #3b82f6;
+        color: white;
+        box-shadow: 0 8px 12px -3px rgba(59, 130, 246, 0.4);
+        transform: translate(50%, -50%) scale(1.15);
+    }
+    .step-marker i {
+        font-size: 14px;
+    }
+    .step-label {
+        position: absolute;
+        top: -25px;
+        right: 50%;
+        transform: translateX(50%);
+        font-size: 8px;
+        font-weight: 800;
+        color: #64748b;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .step-marker.active .step-label {
+        opacity: 1;
+        color: #3b82f6;
+    }
 </style>
 {% endblock %}
 
@@ -98,12 +150,14 @@
                         <span class="text-sm font-bold text-gray-700">المعلومات الأساسية (مكتمل)</span>
                     </div>
                 </div>
+                {% if system_settings.show_merchant_agreement %}
                 <div class="flex items-center justify-between p-3 bg-green-50 rounded-2xl border border-green-100">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-green-500 text-white rounded-lg flex items-center justify-center"><i class="fas fa-check"></i></div>
                         <span class="text-sm font-bold text-gray-700">الموافقة على الشروط (مكتمل)</span>
                     </div>
                 </div>
+                {% endif %}
                 <!-- Interactive Steps -->
                 <button onclick="openBrandingModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_logo %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
                     <div class="flex items-center gap-3 text-right">
@@ -132,6 +186,15 @@
                     </div>
                     {% if not has_location %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
                 </button>
+                <button onclick="openDomainModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_subdomain %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
+                    <div class="flex items-center gap-3 text-right">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_subdomain %}bg-green-500 text-white{% else %}bg-white text-indigo-500 shadow-sm{% endif %}">
+                            <i class="fas {% if has_subdomain %}fa-check{% else %}fa-link{% endif %}"></i>
+                        </div>
+                        <span class="text-sm font-bold">حجز الرابط الخاص (+10%)</span>
+                    </div>
+                    {% if not has_subdomain %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
+                </button>
                 <button onclick="openCurrencyModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_currency %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
                     <div class="flex items-center gap-3 text-right">
                         <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_currency %}bg-green-500 text-white{% else %}bg-white text-emerald-500 shadow-sm{% endif %}">
@@ -150,15 +213,6 @@
                     </div>
                     {% if not has_products %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
                 </a>
-                <button onclick="openDomainModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_subdomain %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
-                    <div class="flex items-center gap-3 text-right">
-                        <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_subdomain %}bg-green-500 text-white{% else %}bg-white text-indigo-500 shadow-sm{% endif %}">
-                            <i class="fas {% if has_subdomain %}fa-check{% else %}fa-link{% endif %}"></i>
-                        </div>
-                        <span class="text-sm font-bold">حجز الرابط الخاص (+10%)</span>
-                    </div>
-                    {% if not has_subdomain %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
-                </button>
             </div>
         </div>
     </div>
@@ -173,31 +227,57 @@
         <!-- 1. Onboarding Progress Section -->
         {% with has_logo=supplier.profile_picture has_cover=supplier.panal_picture has_location=supplier.latitude has_currency=supplier.currency has_subdomain=supplier.subdomain has_products=total_products|add:0 %}
         {% if not has_logo or not has_cover or not has_location or not has_currency or not has_subdomain or has_products == 0 %}
-        <div id="onboarding-progress-card" class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 mb-6 overflow-hidden relative group">
+        <div id="onboarding-progress-card" class="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 mb-6 overflow-hidden relative group">
             <!-- Animated Background Gradient -->
             <div class="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
             
             <div class="relative z-10">
                 <div class="flex items-center justify-between gap-4 mb-3">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-blue-100/50 rounded-xl flex items-center justify-center text-blue-600">
-                            <i class="fas fa-rocket text-xl"></i>
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100/50 rounded-xl flex items-center justify-center text-blue-600">
+                            <i class="fas fa-rocket text-sm sm:text-xl"></i>
                         </div>
                         <div>
-                            <h3 class="text-base font-black text-gray-900 leading-none mb-1">متجرك بانتظار الإطلاق! 🚀</h3>
-                            <p id="progress-suggestion" class="text-[10px] text-gray-500 font-medium">أكمل الخطوات المتبقية لزيادة مبيعاتك بنسبة 300%</p>
+                            <h3 class="text-xs sm:text-base font-black text-gray-900 leading-none mb-1">متجرك بانتظار الإطلاق! 🚀</h3>
+                            <p id="progress-suggestion" class="text-[8px] sm:text-[10px] text-gray-500 font-medium">أكمل الخطوات المتبقية لزيادة مبيعاتك بنسبة 300%</p>
                         </div>
                     </div>
                     <div class="text-left">
-                        <span id="progress-percent" class="text-xl font-black text-blue-600">0%</span>
-                        <span class="block text-[8px] font-bold text-gray-400 uppercase tracking-wider">معدل الإنجاز</span>
+                        <span id="progress-percent" class="text-base sm:text-xl font-black text-blue-600">0%</span>
+                        <span class="block text-[7px] sm:text-[8px] font-bold text-gray-400 uppercase tracking-wider">معدل الإنجاز</span>
                     </div>
                 </div>
 
-                <!-- Horizontal Progress Line -->
-                <div class="relative h-2.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                <!-- Horizontal Progress Line with Markers -->
+                <div class="relative h-4 w-full bg-gray-100 rounded-full mt-8 mb-4">
                     <div id="progress-bar" class="absolute inset-y-0 right-0 bg-blue-600 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
-                    <div class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
+                    
+                    <!-- Step Markers -->
+                    <div id="marker-logo" class="step-marker" style="right: 40%;">
+                        <i class="fas fa-image"></i>
+                        <span class="step-label">الشعار</span>
+                    </div>
+                    <div id="marker-cover" class="step-marker" style="right: 50%;">
+                        <i class="fas fa-palette"></i>
+                        <span class="step-label">الغلاف</span>
+                    </div>
+                    <div id="marker-location" class="step-marker" style="right: 60%;">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span class="step-label">الموقع</span>
+                    </div>
+                    <div id="marker-subdomain" class="step-marker" style="right: 70%;">
+                        <i class="fas fa-link"></i>
+                        <span class="step-label">الرابط</span>
+                    </div>
+                    <div id="marker-currency" class="step-marker" style="right: 80%;">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span class="step-label">العملة</span>
+                    </div>
+                    <div id="marker-products" class="step-marker" style="right: 100%;">
+                        <i class="fas fa-box"></i>
+                        <span class="step-label">المنتجات</span>
+                    </div>
                 </div>
 
                 <!-- CTA Overlay/Button -->
@@ -1129,7 +1209,10 @@
         const hasSubdomain = {% if supplier.subdomain %}true{% else %}false{% endif %};
         const hasProducts = {% if total_products > 0 %}true{% else %}false{% endif %};
 
-        let percent = 30; // 20 basic info + 10 terms (endowed progress)
+        const showAgreement = {% if system_settings.show_merchant_agreement %}true{% else %}false{% endif %};
+        let percent = showAgreement ? 30 : 20; // 20 basic info + 10 terms (if enabled)
+        // If agreement is disabled, we should distribute that 10% or just give it for free
+        if (!showAgreement) percent += 10; // Give the 10% for free as it's not required
         if (hasLogo) percent += 10;
         if (hasCover) percent += 10;
         if (hasLocation) percent += 10;
@@ -1145,6 +1228,27 @@
             bar.style.width = percent + '%';
             text.innerText = percent + '%';
             
+            // Update Markers
+            const markers = {
+                'marker-logo': hasLogo,
+                'marker-cover': hasCover,
+                'marker-location': hasLocation,
+                'marker-currency': hasCurrency,
+                'marker-products': hasProducts,
+                'marker-subdomain': hasSubdomain
+            };
+
+            Object.keys(markers).forEach(id => {
+                const marker = document.getElementById(id);
+                if (marker) {
+                    if (markers[id]) {
+                        marker.classList.add('active');
+                    } else {
+                        marker.classList.remove('active');
+                    }
+                }
+            });
+
             // Motivational Copy (Goal Gradient Effect)
             if (percent === 100) {
                 suggestion.innerText = "متجرك جاهز تماماً للانطلاق! 🌟";
