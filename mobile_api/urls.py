@@ -8,8 +8,10 @@ from .views import (
     # Merchant management
     MerchantDashboardAPIView, MerchantSwitchAPIView,
     MerchantOrdersAPIView, MerchantOrderDetailAPIView,
-    MerchantProductsAPIView,
+    MerchantProductsAPIView, MerchantProfileAPIView,
+    MerchantBrandingAPIView, MerchantAgreeTermsAPIView,
 )
+from .core_views import CurrenciesAPIView
 
 app_name = 'mobile_api'
 
@@ -38,4 +40,10 @@ urlpatterns = [
     path('merchant/orders/', MerchantOrdersAPIView.as_view(), name='merchant_orders'),
     path('merchant/orders/<int:order_id>/', MerchantOrderDetailAPIView.as_view(), name='merchant_order_detail'),
     path('merchant/products/', MerchantProductsAPIView.as_view(), name='merchant_products'),
+    path('merchant/profile/', MerchantProfileAPIView.as_view(), name='merchant_profile'),
+    path('merchant/branding/', MerchantBrandingAPIView.as_view(), name='merchant_branding'),
+    path('merchant/agree-terms/', MerchantAgreeTermsAPIView.as_view(), name='merchant_agree_terms'),
+    
+    # Core/Global data
+    path('core/currencies/', CurrenciesAPIView.as_view(), name='currencies'),
 ]

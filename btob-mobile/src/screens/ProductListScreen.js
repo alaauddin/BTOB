@@ -31,11 +31,15 @@ export default function ProductListScreen({ route, navigation }) {
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
+    if (!storeId || String(storeId) === 'undefined') {
+      setLoading(false);
+      return;
+    }
     fetchStoreProfile();
   }, [storeId]);
 
   useEffect(() => {
-    if (user) {
+    if (user && storeId && storeId !== 'undefined') {
       fetchCartItems();
     }
   }, [storeId, user]);
@@ -281,7 +285,7 @@ export default function ProductListScreen({ route, navigation }) {
   if (!storeData || !storeData.supplier) {
     return (
       <View style={styles.centerMode}>
-        <Text style={styles.emptyText}>لم يتم العثور على المتجر</Text>
+        <Text style={styles.emptyText}>الرجاء تحديث الجلسة (تسجيل الخروج والدخول مجدداً) للوصول للمتجر.</Text>
       </View>
     );
   }

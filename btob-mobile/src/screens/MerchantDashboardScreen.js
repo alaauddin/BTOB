@@ -10,6 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import client from '../api/client';
 import CustomHeader from '../components/CustomHeader';
+import OnboardingModal from '../components/OnboardingModal';
 
 const { width } = Dimensions.get('window');
 
@@ -69,6 +70,7 @@ export default function MerchantDashboardScreen({ navigation }) {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [onboardingModal, setOnboardingModal] = useState({ visible: false, stepKey: null });
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const primaryColor = activeMerchant?.primary_color || '#2B5876';
@@ -92,7 +94,11 @@ export default function MerchantDashboardScreen({ navigation }) {
   }, [fadeAnim]);
 
   useEffect(() => {
-    if (activeMerchant?.id) fetchDashboard(activeMerchant.id);
+    if (activeMerchant?.id) {
+      fetchDashboard(activeMerchant.id);
+    } else {
+      setLoading(false);
+    }
   }, [activeMerchant?.id]);
 
   const onRefresh = () => { setRefreshing(true); fetchDashboard(activeMerchant?.id, true); };
@@ -122,6 +128,11 @@ export default function MerchantDashboardScreen({ navigation }) {
     { icon: 'clock', label: 'طلبات معلقة', value: stats.pending_orders, gradient: ['#F59E0B', '#D97706'] },
     { icon: 'package', label: 'المنتجات', value: stats.total_products, gradient: ['#3B82F6', '#2563EB'] },
   ];
+  const kpiRow3 = [
+    { icon: 'list', label: 'الطلبات (الكل)', value: stats.total_orders, gradient: ['#EC4899', '#BE185D'] },
+    { icon: 'star', label: 'التقييم العام', value: stats.average_rating || '-', gradient: ['#F59E0B', '#D97706'] },
+    { icon: 'pie-chart', label: 'إيرادات (الكل)', value: `${parseFloat(stats.total_revenue || 0).toFixed(0)} ر.ي`, gradient: ['#10B981', '#059669'] },
+  ];
 
   /* ── JSX ──────────────────────────────────────────────────────── */
   return (
@@ -148,8 +159,8 @@ export default function MerchantDashboardScreen({ navigation }) {
             style={styles.welcomeStrip}
           >
             <View style={styles.welcomeTextBlock}>
-              <Text style={styles.welcomeHello}>مرحباً 👋</Text>
-              <Text style={styles.welcomeStore}>{activeMerchant?.name || 'المتجر'}</Text>
+              <Text style={[styles.welcomeHello, { textAlign: 'right' }]}>مرحباً 👋</Text>
+              <Text style={[styles.welcomeStore, { textAlign: 'right' }]}>{activeMerchant?.name || 'المتجر'}</Text>
             </View>
             {/* Merchant logo — use fresh API data for absolute URLs */}
             <View style={styles.welcomeLogoWrap}>
@@ -175,6 +186,75 @@ export default function MerchantDashboardScreen({ navigation }) {
           </View>
         )}
 
+        {/* ── Onboarding Tracker ── */}
+        {dashboard?.onboarding && (
+          <View style={styles.onboardingCard}>
+             <View style={{flexDirection: 'row-reverse', justifyContent: 'space-between', marginBottom: 8, alignItems: 'center'}}>
+               <Text style={styles.onboardingTitle}>إعداد المتجر</Text>
+               <Text style={[styles.onboardingTitle, {color: primaryColor, fontSize: 18}]}>{dashboard.onboarding.progress_percentage}%</Text>
+             </View>
+             
+             <Text style={[styles.onboardingSub, { textAlign: 'right' }]}>
+               {dashboard.onboarding.progress_percentage === 100 ? "متجرك جاهز تماماً للانطلاق! 🌟" :
+                dashboard.onboarding.progress_percentage >= 80 ? "خطوة واحدة تفصلك عن النجاح! 🎯" :
+                dashboard.onboarding.progress_percentage >= 50 ? "أداء رائع! استمر في بناء متجرك 🚀" :
+                "أكمل الخطوات المتبقية لزيادة مبيعاتك بنسبة 300%"}
+             </Text>
+
+             <View style={[styles.progressBarWrap, { marginTop: 12, marginBottom: 16 }]}>
+               <View style={[styles.progressBarFill, { width: `${dashboard.onboarding.progress_percentage}%`, backgroundColor: primaryColor }]} />
+             </View>
+
+             {/* Progress Markers Row */}
+             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8, flexDirection: 'row-reverse' }}>
+                {[
+                  { key: 'has_logo', icon: 'image', label: 'الشعار', target: 'Profile' },
+                  { key: 'has_cover', icon: 'layout', label: 'الغلاف', target: 'Profile' },
+                  { key: 'has_location', icon: 'map-pin', label: 'الموقع', target: 'Profile' },
+                  { key: 'has_currency', icon: 'dollar-sign', label: 'العملة', target: 'Profile' },
+                  { key: 'has_products', icon: 'package', label: 'المنتجات', target: 'Products' },
+                  { key: 'has_subdomain', icon: 'globe', label: 'الرابط', target: 'Profile' }
+                ].map((step, idx) => {
+                   const isDone = dashboard.onboarding[step.key];
+                   return (
+                     <TouchableOpacity 
+                       key={idx} 
+                       activeOpacity={0.7}
+                       onPress={() => {
+                         if (step.key === 'has_products') {
+                           navigation.navigate('Products');
+                         } else {
+                           setOnboardingModal({ visible: true, stepKey: step.key });
+                         }
+                       }}
+                       style={{ alignItems: 'center', marginLeft: 16, opacity: isDone ? 1 : 0.6 }}
+                     >
+                       <View style={{ 
+                         width: 44, height: 44, borderRadius: 22, 
+                         backgroundColor: isDone ? primaryColor : '#F1F5F9',
+                         justifyContent: 'center', alignItems: 'center', marginBottom: 6,
+                         borderWidth: isDone ? 0 : 1, borderColor: '#E2E8F0'
+                       }}>
+                         <Feather name={isDone ? "check" : step.icon} size={20} color={isDone ? "#FFF" : "#94A3B8"} />
+                       </View>
+                       <Text style={{ fontSize: 11, color: isDone ? '#0F172A' : '#64748B', fontWeight: isDone ? 'bold' : '600' }}>
+                         {step.label}
+                       </Text>
+                     </TouchableOpacity>
+                   );
+                })}
+             </ScrollView>
+
+             <TouchableOpacity 
+               onPress={() => navigation.navigate('Profile')}
+               style={{ backgroundColor: '#F8FAFC', paddingVertical: 12, borderRadius: 10, marginTop: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', borderWidth: 1, borderColor: '#E2E8F0' }}
+             >
+               <Feather name="settings" size={16} color="#475569" style={{ marginRight: 8 }} />
+               <Text style={{ color: '#0F172A', fontWeight: 'bold', fontSize: 14 }}>إعدادات ملف المتجر</Text>
+             </TouchableOpacity>
+          </View>
+        )}
+
         {/* ── KPI Grid — Row 1 (two wide) ── */}
         <Text style={styles.sectionLabel}>إحصائيات</Text>
         <View style={styles.kpiRow}>
@@ -186,6 +266,13 @@ export default function MerchantDashboardScreen({ navigation }) {
         {/* ── KPI Grid — Row 2 (three slim) ── */}
         <View style={styles.kpiRow}>
           {kpiRow2.map((k, i) => (
+            <KpiCard key={i} {...k} width={(width - 52) / 3} />
+          ))}
+        </View>
+
+        {/* ── KPI Grid — Row 3 (three slim) ── */}
+        <View style={styles.kpiRow}>
+          {kpiRow3.map((k, i) => (
             <KpiCard key={i} {...k} width={(width - 52) / 3} />
           ))}
         </View>
@@ -203,13 +290,37 @@ export default function MerchantDashboardScreen({ navigation }) {
           />
           <QuickAction
             icon="grid" label="المتجر" color="#3B82F6"
-            onPress={() => navigation.navigate('StoreView', { storeId: activeMerchant?.store_id })}
+            onPress={() => navigation.navigate('StoreView', { storeId: merchantInfo?.store_id || activeMerchant?.store_id })}
           />
           <QuickAction
-            icon="user" label="الحساب" color="#8B5CF6"
+            icon="user" label="الإعدادات" color="#8B5CF6"
             onPress={() => navigation.navigate('Profile')}
           />
         </View>
+
+        {/* ── Top Products ── */}
+        {dashboard?.top_products && dashboard.top_products.length > 0 && (
+          <View style={{marginTop: 10}}>
+             <Text style={styles.sectionLabel}>المنتجات الأكثر مبيعاً</Text>
+             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 10, paddingBottom: 10 }}>
+               {dashboard.top_products.map((p, i) => (
+                  <View key={`top_${i}`} style={styles.topProdCard}>
+                     {p.image ? (
+                        <Image source={{uri: p.image}} style={styles.topProdImg} />
+                     ) : (
+                        <View style={[styles.topProdImg, {backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center'}]}>
+                           <Feather name="image" size={24} color="#CBD5E1" />
+                        </View>
+                     )}
+                     <View style={styles.topProdInfo}>
+                        <Text style={styles.topProdName} numberOfLines={1}>{p.name}</Text>
+                        <Text style={styles.topProdPrice}>{p.price_after_discount} ر.ي</Text>
+                     </View>
+                  </View>
+               ))}
+             </ScrollView>
+          </View>
+        )}
 
         {/* ── Recent Orders ── */}
         <View style={styles.sectionHeader}>
@@ -242,6 +353,18 @@ export default function MerchantDashboardScreen({ navigation }) {
 
         <View style={{ height: 24 }} />
       </Animated.ScrollView>
+
+      {/* ── Onboarding Modal ── */}
+      <OnboardingModal
+        visible={onboardingModal.visible}
+        stepKey={onboardingModal.stepKey}
+        onClose={() => setOnboardingModal({ visible: false, stepKey: null })}
+        activeMerchant={activeMerchant}
+        onSuccess={() => {
+          setOnboardingModal({ visible: false, stepKey: null });
+          fetchDashboard(activeMerchant?.id, true);
+        }}
+      />
     </View>
   );
 }
@@ -284,7 +407,7 @@ const styles = StyleSheet.create({
   },
   coverBgImg: { borderRadius: 20 },
   welcomeStrip: {
-    padding: 22, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    padding: 22, flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center',
   },
   welcomeTextBlock: { flex: 1 },
   welcomeHello: { color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: '500', marginBottom: 4 },
@@ -303,20 +426,30 @@ const styles = StyleSheet.create({
 
   /* Alert */
   alertRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
+    flexDirection: 'row-reverse', alignItems: 'center', gap: 8,
     marginHorizontal: 16, marginTop: 12,
     backgroundColor: '#FEF3C7', borderRadius: 12, padding: 12,
-    borderLeftWidth: 3, borderLeftColor: '#F59E0B',
+    borderRightWidth: 3, borderRightColor: '#F59E0B',
   },
   alertText: { color: '#92400E', fontSize: 12, fontWeight: '500', flex: 1 },
 
+  /* Onboarding Card */
+  onboardingCard: {
+    marginHorizontal: 16, marginTop: 12, backgroundColor: '#fff', borderRadius: 16, padding: 16,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
+  },
+  onboardingTitle: { fontSize: 14, fontWeight: '700', color: '#0F172A' },
+  progressBarWrap: { height: 8, backgroundColor: '#F1F5F9', borderRadius: 4, overflow: 'hidden', marginVertical: 8 },
+  progressBarFill: { height: '100%', borderRadius: 4 },
+  onboardingSub: { fontSize: 11, color: '#64748B' },
+
   /* Sections */
-  sectionLabel: { fontSize: 16, fontWeight: '700', color: '#0F172A', marginLeft: 16, marginTop: 20, marginBottom: 12 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginRight: 16 },
+  sectionLabel: { fontSize: 16, fontWeight: '700', color: '#0F172A', marginRight: 16, marginTop: 20, marginBottom: 12, textAlign: 'right' },
+  sectionHeader: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginLeft: 16 },
   seeAll: { fontSize: 13, fontWeight: '600' },
 
   /* KPI cards */
-  kpiRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 10, marginBottom: 10 },
+  kpiRow: { flexDirection: 'row-reverse', paddingHorizontal: 16, gap: 10, marginBottom: 10 },
   kpiCard: {
     borderRadius: 18, padding: 16,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
@@ -339,7 +472,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
   },
   qaIconWrap: { width: 46, height: 46, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  qaLabel: { fontSize: 12, fontWeight: '700', color: '#0F172A' },
+  qaLabel: { fontSize: 12, fontWeight: '700', color: '#0F172A', textAlign: 'center' },
 
   /* Orders */
   ordersCard: {
@@ -347,20 +480,30 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
+    direction: 'rtl'
   },
-  orderRow: { flexDirection: 'row', alignItems: 'stretch' },
+  orderRow: { flexDirection: 'row-reverse', alignItems: 'stretch' },
   orderAccent: { width: 4 },
   orderRowBody: { flex: 1, paddingHorizontal: 14, paddingVertical: 14 },
-  orderRowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  orderRowId: { fontSize: 14, fontWeight: '700', color: '#0F172A' },
+  orderRowTop: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  orderRowId: { fontSize: 14, fontWeight: '700', color: '#0F172A', textAlign: 'right' },
   statusPill: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 },
   statusPillText: { fontSize: 11, fontWeight: '700' },
-  orderRowCustomer: { fontSize: 12, color: '#64748B', marginBottom: 8 },
-  orderRowBottom: { flexDirection: 'row', justifyContent: 'space-between' },
-  orderRowAmount: { fontSize: 14, fontWeight: '700', color: '#0F172A' },
+  orderRowCustomer: { fontSize: 12, color: '#64748B', marginBottom: 8, textAlign: 'right' },
+  orderRowBottom: { flexDirection: 'row-reverse', justifyContent: 'space-between' },
+  orderRowAmount: { fontSize: 14, fontWeight: '700', color: '#0F172A', textAlign: 'right' },
   orderRowDate: { fontSize: 11, color: '#94A3B8' },
-  orderDivider: { height: 1, backgroundColor: '#F1F5F9', marginLeft: 4 },
+  orderDivider: { height: 1, backgroundColor: '#F1F5F9', marginRight: 4 },
 
   emptyBox: { alignItems: 'center', paddingVertical: 40, gap: 12, marginHorizontal: 16 },
   emptyText: { color: '#94A3B8', fontSize: 14 },
+
+  topProdCard: {
+    backgroundColor: '#fff', borderRadius: 12, width: 140, padding: 8,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+  },
+  topProdImg: { width: '100%', height: 100, borderRadius: 8, marginBottom: 8 },
+  topProdInfo: { paddingHorizontal: 4 },
+  topProdName: { fontSize: 12, fontWeight: '600', color: '#0F172A', marginBottom: 4 },
+  topProdPrice: { fontSize: 11, fontWeight: '700', color: '#10B981' },
 });

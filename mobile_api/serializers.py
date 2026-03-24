@@ -169,6 +169,65 @@ class MerchantMiniSerializer(serializers.ModelSerializer):
         """Return absolute URL for the merchant cover/banner."""
         return self._abs(obj, 'panal_picture')
 
+class MerchantProfileSerializer(serializers.ModelSerializer):
+    """Full profile configuration serializer for merchant settings."""
+    profile_picture_url = serializers.SerializerMethodField(read_only=True)
+    cover_picture_url = serializers.SerializerMethodField(read_only=True)
+    store_link = serializers.SerializerMethodField(read_only=True)
+    currency_id = serializers.PrimaryKeyRelatedField(
+        queryset=Currency.objects.all(), source='currency', required=False, allow_null=True
+    )
+    
+    class Meta:
+        model = Supplier
+        fields = [
+            # Infrastructure & Identifiers
+            'id', 'store_id', 'profile_picture', 'panal_picture',
+            
+            # Basic Profile
+            'name', 'city', 'address', 'country', 'phone', 'secondary_phone',
+            'subdomain', 'latitude', 'longitude', 'profile_picture_url', 
+            'cover_picture_url', 'store_link', 'currency_id',
+            
+            # Display Preferences
+            'show_order_amounts', 'show_platform_ads', 'show_system_logo',
+            
+            # Visual Identity 
+            'primary_color', 'secondary_color', 'navbar_color', 'footer_color',
+            'text_color', 'accent_color',
+            
+            # Policies & Info
+            'return_policy', 'footer_description',
+            
+            # Social Links
+            'facebook_url', 'instagram_url', 'twitter_url', 'tiktok_url'
+        ]
+        read_only_fields = ['id', 'store_id', 'profile_picture', 'panal_picture']
+        extra_kwargs = {
+            'profile_picture': {'read_only': True},
+            'panal_picture': {'read_only': True},
+        }
+
+    def _abs(self, obj, field_name):
+        f = getattr(obj, field_name, None)
+        if not f:
+            return None
+        request = self.context.get('request')
+        url = f.url if hasattr(f, 'url') else str(f)
+        return request.build_absolute_uri(url) if request else url
+
+    def get_profile_picture_url(self, obj):
+        return self._abs(obj, 'profile_picture')
+
+    def get_cover_picture_url(self, obj):
+        return self._abs(obj, 'panal_picture')
+        
+    def get_store_link(self, obj):
+        if obj.subdomain:
+            from django.conf import settings
+            domain = getattr(settings, 'PLATFORM_DOMAIN', 'aratatt.com')
+            return f"https://{obj.subdomain}.{domain}"
+        return f"https://aratatt.com/store/{obj.store_id or obj.id}"
 
 class ShippingAddressSerializer(serializers.ModelSerializer):
     """Shipping address details for merchant order view."""

@@ -11,10 +11,10 @@ export default function CartScreen({ route, navigation }) {
     const [isCheckoutModalVisible, setCheckoutModalVisible] = useState(false);
 
     useEffect(() => {
-        if (supplierId) {
+        if (supplierId && String(supplierId) !== 'undefined') {
             fetchCart();
         } else {
-            console.error("No supplierId provided to CartScreen");
+            // console.warn("No valid supplierId provided to CartScreen");
             setLoading(false);
         }
     }, [supplierId]);

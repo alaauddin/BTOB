@@ -704,30 +704,89 @@ def _assert_merchant_access(user, merchant_id):
 def _build_dashboard_stats(supplier):
     """Compute KPI dashboard stats for a supplier. Returns a dict."""
     from django.utils import timezone
-    from django.db.models import Sum
+    from django.db.models import Sum, Avg
     from core.models import Order, Product
 
     today = timezone.now().date()
     supplier_orders = Order.objects.filter(
         order_items__product__supplier=supplier
     ).distinct()
-    revenue = (
+    
+    revenue_this_month = (
         supplier_orders
-        .filter(created_at__year=today.year, created_at__month=today.month)
+        .filter(created_at__year=today.year, created_at__month=today.month, pipeline_status__slug='confirmed')
         .aggregate(total=Sum('total_amount'))['total'] or 0
     )
+    
+    total_revenue = supplier_orders.filter(pipeline_status__slug='confirmed').aggregate(
+        total=Sum('total_amount')
+    )['total'] or 0
+
+    avg_rating = Product.objects.filter(supplier=supplier).aggregate(avg=Avg('review__rating'))['avg'] or 0
+
     return {
         'orders_today': supplier_orders.filter(created_at__date=today).count(),
         'orders_this_month': supplier_orders.filter(
             created_at__year=today.year, created_at__month=today.month
         ).count(),
-        'revenue_this_month': str(revenue),
+        'total_orders': supplier_orders.count(),
+        'revenue_this_month': str(revenue_this_month),
+        'total_revenue': str(total_revenue),
         'pending_orders': supplier_orders.filter(pipeline_status__slug='pending').count(),
-        'total_products': Product.objects.filter(supplier=supplier, is_active=True).count(),
+        'total_products': Product.objects.filter(supplier=supplier).count(),
         'low_stock_count': Product.objects.filter(
             supplier=supplier, is_active=True, stock__lt=5
         ).count(),
+        'average_rating': round(avg_rating, 1),
     }
+
+def _build_onboarding_stats(supplier):
+    """Compute onboarding progress for the dashboard."""
+    from core.models import SystemSettings, Product
+    
+    try:
+        system_settings = SystemSettings.objects.first()
+        show_agreement = system_settings.show_merchant_agreement if system_settings else False
+    except:
+        show_agreement = False
+
+    has_logo = bool(supplier.profile_picture)
+    has_cover = bool(supplier.panal_picture)
+    has_location = bool(supplier.latitude and supplier.longitude)
+    has_currency = bool(supplier.currency)
+    has_subdomain = bool(supplier.subdomain)
+    has_products = Product.objects.filter(supplier=supplier).exists()
+    agreed_to_terms = supplier.agreed_to_terms
+
+    percent = 30 if show_agreement else 30
+    if has_logo: percent += 10
+    if has_cover: percent += 10
+    if has_location: percent += 10
+    if has_currency: percent += 10
+    if has_subdomain: percent += 10
+    if has_products: percent += 20
+    
+    # Cap at 100
+    percent = min(percent, 100)
+
+    return {
+        'has_logo': has_logo,
+        'has_cover': has_cover,
+        'has_location': has_location,
+        'has_currency': has_currency,
+        'has_subdomain': has_subdomain,
+        'has_products': has_products,
+        'agreed_to_terms': agreed_to_terms,
+        'progress_percentage': percent
+    }
+
+def _top_products_qs(supplier, limit=5):
+    """Return a QuerySet of the top selling products."""
+    from core.models import Product
+    from django.db.models import Sum
+    return Product.objects.filter(supplier=supplier).annotate(
+        total_sold=Sum('orderitem__quantity')
+    ).filter(total_sold__gt=0).order_by('-total_sold')[:limit]
 
 
 def _recent_orders_qs(supplier, limit=10):
@@ -760,13 +819,18 @@ class MerchantDashboardAPIView(APIView):
         if err:
             return err
         all_merchants = _get_manageable_merchants(request.user)
+        from .serializers import MerchantProductSerializer
         return Response({
             'success': True,
             'merchant': MerchantMiniSerializer(supplier, context={'request': request}).data,
             'manageable_merchants': _merchant_list_data(request.user, all_merchants, request),
             'stats': _build_dashboard_stats(supplier),
+            'onboarding': _build_onboarding_stats(supplier),
             'recent_orders': MerchantOrderSerializer(
                 _recent_orders_qs(supplier), many=True, context={'request': request}
+            ).data,
+            'top_products': MerchantProductSerializer(
+                _top_products_qs(supplier), many=True, context={'request': request}
             ).data,
         })
 
@@ -885,4 +949,108 @@ class MerchantProductsAPIView(APIView):
         return Response({
             'success': True,
             'products': MerchantProductSerializer(products, many=True, context={'request': request}).data
+        })
+
+
+class MerchantProfileAPIView(APIView):
+    """GET/PATCH /merchant/profile/ - Get or update store profile configurations."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        merchant_id = request.query_params.get('merchant_id')
+        if not merchant_id:
+            return Response({'success': False, 'message': 'merchant_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        supplier, err = _assert_merchant_access(request.user, merchant_id)
+        if err:
+            return err
+            
+        from .serializers import MerchantProfileSerializer
+        serializer = MerchantProfileSerializer(supplier, context={'request': request})
+        return Response({
+            'success': True,
+            'profile': serializer.data
+        })
+
+    def patch(self, request):
+        merchant_id = request.data.get('merchant_id') or request.query_params.get('merchant_id')
+        if not merchant_id:
+            return Response({'success': False, 'message': 'merchant_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        supplier, err = _assert_merchant_access(request.user, merchant_id)
+        if err:
+            return err
+
+        from .serializers import MerchantProfileSerializer
+        serializer = MerchantProfileSerializer(supplier, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'success': True,
+                'message': 'Profile updated successfully.',
+                'profile': serializer.data
+            })
+        print(f"DEBUG PROFILE ERRORS: {serializer.errors}")
+        return Response({
+            'success': False,
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MerchantBrandingAPIView(APIView):
+    """POST /merchant/branding/ - Upload logo and cover pictures."""
+    from rest_framework.parsers import MultiPartParser, FormParser
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        merchant_id = request.data.get('merchant_id')
+        if not merchant_id:
+            return Response({'success': False, 'message': 'merchant_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        supplier, err = _assert_merchant_access(request.user, merchant_id)
+        if err:
+            return err
+
+        profile_picture = request.FILES.get('profile_picture')
+        panal_picture = request.FILES.get('panal_picture')
+        
+        updated = False
+        if profile_picture:
+            supplier.profile_picture = profile_picture
+            updated = True
+        if panal_picture:
+            supplier.panal_picture = panal_picture
+            updated = True
+            
+        if updated:
+            supplier.save()
+        
+        from .serializers import MerchantProfileSerializer
+        return Response({
+            'success': True,
+            'message': 'Branding images updated successfully.' if updated else 'No images provided.',
+            'profile': MerchantProfileSerializer(supplier, context={'request': request}).data
+        })
+
+
+class MerchantAgreeTermsAPIView(APIView):
+    """POST /merchant/agree-terms/ - Agree to merchant terms."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        merchant_id = request.data.get('merchant_id')
+        if not merchant_id:
+            return Response({'success': False, 'message': 'merchant_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        supplier, err = _assert_merchant_access(request.user, merchant_id)
+        if err:
+            return err
+            
+        supplier.agreed_to_terms = True
+        supplier.save(update_fields=['agreed_to_terms'])
+        
+        return Response({
+            'success': True,
+            'message': 'Terms agreed successfully.'
         })
