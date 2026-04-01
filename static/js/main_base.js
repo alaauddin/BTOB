@@ -295,7 +295,7 @@ function waitForJQuery(callback) {
 }
 
 waitForJQuery(function () {
-    window.performAddToCart = function (productId, supplierId) {
+    window.performAddToCart = function (productId, supplierId, selectedOptions = []) {
         const csrftoken = getCookie('csrftoken');
 
         // --- Optimistic Update ---
@@ -330,6 +330,9 @@ waitForJQuery(function () {
             url: url,
             type: "POST",
             headers: { "X-CSRFToken": csrftoken },
+            data: {
+                selected_options: selectedOptions
+            },
             success: function (response) {
                 // Sync with server state
                 const navBadge = $('#total-items');
@@ -361,7 +364,8 @@ waitForJQuery(function () {
                 if (typeof fbq !== 'undefined') {
                     fbq('track', 'AddToCart', {
                         content_ids: [String(productId)],
-                        content_type: 'product'
+                        content_type: 'product',
+                        variation_ids: selectedOptions
                     });
                 }
             },
@@ -389,17 +393,17 @@ waitForJQuery(function () {
         });
     };
 
-    window.addToCart = function (productId, supplierId) {
+    window.addToCart = function (productId, supplierId, selectedOptions = []) {
         if (!window.siteConfig.isAuthenticated) {
             openLoginModal(function () {
-                return window.performAddToCart(productId, supplierId);
+                return window.performAddToCart(productId, supplierId, selectedOptions);
             });
         } else {
-            window.performAddToCart(productId, supplierId);
+            window.performAddToCart(productId, supplierId, selectedOptions);
         }
     };
 
-    window.subToCart = function (productId, supplierId) {
+    window.subToCart = function (productId, supplierId, selectedOptions = []) {
         const csrftoken = getCookie('csrftoken');
 
         // --- Optimistic Update ---
@@ -444,6 +448,9 @@ waitForJQuery(function () {
             url: url,
             type: "POST",
             headers: { "X-CSRFToken": csrftoken },
+            data: {
+                selected_options: selectedOptions
+            },
             success: function (response) {
                 // Sync with server state
                 const navBadge2 = $('#total-items');

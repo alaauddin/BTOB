@@ -401,8 +401,12 @@ def merchant_order_quick_view(request, order_id):
                 {
                     'name': item.product.name,
                     'quantity': item.quantity,
-                    'price': float(item.product.get_price_with_offer()),
-                    'subtotal': float(item.get_subtotal_with_discount())
+                    'price': float(item.get_unit_price_with_discount()),
+                    'subtotal': float(item.get_subtotal_with_discount()),
+                    'selected_options': [
+                        {'attribute': opt.attribute.name, 'value': opt.value} 
+                        for opt in item.selected_options.all()
+                    ]
                 } for item in order_items
             ],
             'contact': {

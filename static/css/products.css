@@ -607,6 +607,61 @@
     color: var(--primary-color);
 }
 
+/* Action Buttons Hover Logic */
+.btn-add-cart, .card-wa-btn {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+}
+
+.store-card:hover .btn-add-cart, 
+.store-card:hover .card-wa-btn {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+/* Base Styles for buttons if not defined elsewhere */
+.btn-add-cart {
+    width: 100%;
+    padding: 12px;
+    background: var(--dark-color);
+    color: white;
+    border: none;
+    border-radius: 100px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.btn-add-cart:hover {
+    background: var(--primary-color);
+}
+
+.card-wa-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px;
+    background: #25d366;
+    color: white;
+    border-radius: 100px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.card-wa-btn:hover {
+    background: #128c7e;
+    color: white;
+}
+
 /* Pricing Layout */
 .pricing-wrapper {
     display: flex;
@@ -1249,7 +1304,7 @@
     /* Small mobile adjustment */
     @media (max-width: 576px) {
         .detail-ads-wrapper {
-            top: 81px;
+            top: 60px;
             /* Narrower navbar height */
             padding: 8px 12px;
         }

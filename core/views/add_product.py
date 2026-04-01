@@ -7,7 +7,7 @@ from django.views.decorators.http import require_http_methods
 import json
 
 from core.forms import ProductForm
-from core.models import Supplier, ProductCategory, Category, Product, ProductImage
+from core.models import Supplier, ProductCategory, Category, Product, ProductImage, ProductAttribute, ProductAttributeOption
 from core.utils.merchant_utils import get_active_supplier
 
 
@@ -42,6 +42,22 @@ def add_product(request):
                     additional_images = request.FILES.getlist('additional_images')
                     for img in additional_images:
                         ProductImage.objects.create(product=product, image=img)
+                    
+                    # Handle variations (New)
+                    variations_json = request.POST.get('variations')
+                    if variations_json:
+                        variations = json.loads(variations_json)
+                        for attr_data in variations:
+                            attr = ProductAttribute.objects.create(
+                                product=product,
+                                name=attr_data['name']
+                            )
+                            for opt_data in attr_data['options']:
+                                ProductAttributeOption.objects.create(
+                                    attribute=attr,
+                                    value=opt_data['value'],
+                                    price_modifier=opt_data['price_modifier']
+                                )
                     
                     return JsonResponse({
                         'success': True,

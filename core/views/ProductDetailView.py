@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404
-from core.models import Product, Cart, Supplier
+from core.models import Product, Cart, Supplier, CartItem
 from django.contrib.auth.decorators import login_required
 
-# @login_required
+@login_required
 def product_detail(request, pk, store_id=None, store_slug=None):
     """Function-based view for product detail.
 
@@ -11,7 +11,10 @@ def product_detail(request, pk, store_id=None, store_slug=None):
     - supplier: Supplier related to the product (if any)
     - cart: user's Cart for that supplier (or None)
     """
-    product = get_object_or_404(Product.objects.prefetch_related('additional_images'), pk=pk)
+    product = get_object_or_404(
+        Product.objects.prefetch_related('additional_images', 'attributes__options'), 
+        pk=pk
+    )
     
     # Resolve Supplier
     target_slug = store_slug or store_id
@@ -37,18 +40,23 @@ def product_detail(request, pk, store_id=None, store_slug=None):
         request.session['visited_products'] = visited_products
 
     user_cart = None
+    cart_selected_option_ids = []
     if request.user.is_authenticated:
         user_cart = Cart.objects.filter(user=request.user, supplier=supplier).first() 
         if not user_cart:
             user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
         
-        # Annotate quantity
-        from core.models import CartItem
-        try:
-            cart_item = CartItem.objects.get(cart=user_cart, product=product)
-            product.quantity_in_cart = cart_item.quantity
-        except CartItem.DoesNotExist:
-            product.quantity_in_cart = 0
+        # Sum up quantity of all variations of this product in the cart
+        from django.db.models import Sum
+        cart_items_for_prod = CartItem.objects.filter(
+            cart=user_cart, 
+            product=product
+        )
+        
+        product.quantity_in_cart = cart_items_for_prod.aggregate(total=Sum('quantity'))['total'] or 0
+        
+        # Get all option IDs currently in the cart for this product
+        cart_selected_option_ids = list(cart_items_for_prod.values_list('selected_options__id', flat=True))
     else:
         product.quantity_in_cart = 0
 
@@ -56,6 +64,7 @@ def product_detail(request, pk, store_id=None, store_slug=None):
         'product': product,
         'supplier': supplier,
         'cart': user_cart,
+        'cart_selected_option_ids': cart_selected_option_ids,
     }
 
     # Fetch active platform ads (first 3) if enabled for this supplier
@@ -63,12 +72,10 @@ def product_detail(request, pk, store_id=None, store_slug=None):
         from core.models import PlatformOfferAd
         from django.utils import timezone
         today = timezone.now().date()
-        context['platform_ads'] = PlatformOfferAd.objects.filter(
-            start_date__lte=today,
-            end_date__gte=today,
-            is_approved=True,
-            product__supplier__is_active=True
-        ).order_by('order').select_related('product', 'product__supplier')[:4]
+        context['platform_ads'] = Product.objects.filter(
+            supplier=supplier,
+            is_active=True
+        ).exclude(id=product.id).order_by('?')[:4].select_related('supplier')
 
     # Calculate estimated delivery fee for mobile cart bar
     if request.user.is_authenticated:

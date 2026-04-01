@@ -2,7 +2,7 @@
 
 
 from django.shortcuts import render, redirect
-from core.models import Cart, Supplier, SupplierCategory, PlatformOfferAd, SupplierAdPlatfrom
+from core.models import Cart, Supplier, SupplierCategory, PlatformOfferAd, SupplierAdPlatfrom, Product, ProductCategory
 from core.models import Order
 from django.utils import timezone
 from datetime import timedelta
@@ -100,6 +100,25 @@ def SuppliersListView(request):
     # Handle Business Request Form - Moved to separate view (join_business)
     # Form logic removed from here
 
+    # Get cart quantity for each product
+    from django.db.models import OuterRef, Subquery, Sum
+    from core.models import CartItem
+    cart_qty_subquery = CartItem.objects.filter(
+        cart__user=request.user if request.user.is_authenticated else None,
+        product=OuterRef('pk')
+    ).values('product').annotate(total=Sum('quantity')).values('total')[:1]
+
+    products = Product.objects.filter(
+        is_active=True, 
+        supplier__is_active=True
+    ).select_related('supplier', 'category').prefetch_related('attributes__options').annotate(
+        quantity_in_cart=Subquery(cart_qty_subquery)
+    ).order_of_id = Product.objects.all().order_by('-id')[:50]
+
+    # Annotate products with their final price (with offers)
+    # Note: Using python for simplicity as complex db annotations for offers might be heavy
+    # but for 50 products it's fine.
+    
     return render(
         request,
         'suppliers_list.html',
@@ -112,6 +131,6 @@ def SuppliersListView(request):
             'supplier_ads': supplier_ads,
             'platform_ads': platform_ads,
             'producing_family_suppliers': producing_family_suppliers,
-            # 'business_form': form, # Removed
+            'products': products,
         },
     )

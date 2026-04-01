@@ -53,7 +53,22 @@ def complete_order_and_notify(request, order, cart, shipping_address, supplier):
     
     # WhatsApp Redirection Info
     # Construct item list for WhatsApp message
-    items_list = "\n".join([f"- {item.product.name} ({item.quantity})" for item in order.order_items.all()])
+    items_lines = []
+    for item in order.order_items.all():
+        options_text = ""
+        # Assuming we can access selected_options from the through model since order_items is a M2M
+        # But wait, order_items is actually related_name on OrderItem for Order
+        # Let's verify the relationship in core/db/order.py:
+        # related_name='order_items' on OrderItem.order
+        
+        # Check if this item has selected options
+        if item.selected_options.exists():
+            opts = ", ".join([f"{o.attribute.name}: {o.value}" for o in item.selected_options.all()])
+            options_text = f" [{opts}]"
+        
+        items_lines.append(f"- {item.product.name}{options_text} ({item.quantity})")
+    
+    items_list = "\n".join(items_lines)
     wa_message = f"أريد طلبي من متجركم {supplier.name}\n\nقائمة أصناف الطلب:\n{items_list}"
     
     wa_url = f"https://wa.me/{supplier.phone}?text={quote(wa_message)}"

@@ -1,5 +1,38 @@
 let currentCategoryId = 'all';
+let currentViewMode = 'store'; // 'store' or 'product'
 
+/**
+ * Switch between Store View and Product View
+ * @param {string} mode - 'store' or 'product'
+ */
+function setViewMode(mode) {
+    currentViewMode = mode;
+    
+    // Update Toggle Buttons UI
+    const storeBtn = document.getElementById('storeModeBtn');
+    const productBtn = document.getElementById('productModeBtn');
+    const storeView = document.getElementById('storeViewSection');
+    const productView = document.getElementById('productViewSection');
+
+    if (mode === 'store') {
+        storeBtn.classList.add('active');
+        productBtn.classList.remove('active');
+        storeView.classList.remove('hidden-view');
+        productView.classList.add('hidden-view');
+    } else {
+        storeBtn.classList.remove('active');
+        productBtn.classList.add('active');
+        storeView.classList.add('hidden-view');
+        productView.classList.remove('hidden-view');
+    }
+
+    // Re-apply filters for the new view
+    applyFilters();
+}
+
+/**
+ * Filter by category from the pill navigation
+ */
 function setCategory(categoryId) {
     currentCategoryId = categoryId;
     
@@ -15,12 +48,16 @@ function setCategory(categoryId) {
     applyFilters();
 }
 
+/**
+ * Universal filter for both Stores and Products
+ */
 function applyFilters() {
     const searchText = document.getElementById('supplierSearchInput').value.toLowerCase();
-    const cards = document.querySelectorAll('.supplier-card-container');
-    let visibleCount = 0;
-
-    cards.forEach(card => {
+    
+    // Filter Stores
+    const storeCards = document.querySelectorAll('#storeViewSection .supplier-card-container');
+    let visibleStores = 0;
+    storeCards.forEach(card => {
         const name = card.getAttribute('data-name');
         const categoryNames = card.getAttribute('data-category-names');
         const categories = card.getAttribute('data-categories').split(',');
@@ -30,30 +67,196 @@ function applyFilters() {
 
         if (matchesCategory && matchesSearch) {
             card.style.display = 'block';
-            visibleCount++;
+            visibleStores++;
         } else {
             card.style.display = 'none';
         }
     });
 
-    // Handle no results state
-    const emptyState = document.getElementById('noSuppliersMessage');
-    if (visibleCount === 0) {
-        if (!emptyState) {
-            const grid = document.getElementById('supplierGrid');
-            if (grid) {
-                const message = document.createElement('div');
-                message.id = 'noSuppliersMessage';
-                message.className = 'col-12 w-full text-center py-5';
-                message.innerHTML = `
-                    <div class="no-suppliers">
-                        <i class="fas fa-search-minus mb-3" style="font-size: 3rem; color: #e2e8f0;"></i>
-                        <h3 class="text-slate-800">لا توجد نتائج</h3>
-                        <p class="text-slate-400">لم نجد أي موردين يطابقون بحثك الحالي.</p>
-                    </div>
-                `;
-                grid.appendChild(message);
+    // Filter Products
+    const productCards = document.querySelectorAll('#productViewSection .product-card-container');
+    let visibleProducts = 0;
+    productCards.forEach(card => {
+        const name = card.getAttribute('data-name');
+        const category = card.getAttribute('data-category');
+        
+        const matchesCategory = (currentCategoryId === 'all' || category === currentCategoryId);
+        const matchesSearch = name.includes(searchText);
+
+        if (matchesCategory && matchesSearch) {
+            card.style.display = 'block';
+            visibleProducts++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // Handle Empty States
+    handleEmptyState('store', visibleStores);
+    handleEmptyState('product', visibleProducts);
+}
+
+/**
+ * Cart & Options Logic
+ */
+let selectedOptions = {}; // Tracks { productId: { attrId: optId } }
+
+function handleAddToCart(event, productId) {
+    if (event) event.stopPropagation();
+    
+    // Check if product has options
+    const cardContainer = document.querySelector(`#product-card-${productId}`).closest('.product-card-container');
+    const hasOptions = cardContainer.getAttribute('data-has-options') === 'true';
+
+    if (hasOptions) {
+        showOptions(productId);
+    } else {
+        addToCart(productId, []);
+    }
+}
+
+function showOptions(productId) {
+    const overlay = document.getElementById(`options-${productId}`);
+    if (overlay) overlay.classList.add('active');
+    
+    // Initialize state if not exists
+    if (!selectedOptions[productId]) {
+        selectedOptions[productId] = {};
+    }
+}
+
+function hideOptions(event, productId) {
+    if (event) event.stopPropagation();
+    const overlay = document.getElementById(`options-${productId}`);
+    if (overlay) overlay.classList.remove('active');
+}
+
+function selectOption(element, productId, attrId, optId, priceModifier) {
+    // 1. Update UI
+    const group = element.closest('.option-chips');
+    group.querySelectorAll('.option-chip').forEach(chip => chip.classList.remove('selected'));
+    element.classList.add('selected');
+
+    // 2. Update State
+    if (!selectedOptions[productId]) selectedOptions[productId] = {};
+    selectedOptions[productId][attrId] = optId;
+}
+
+function confirmAndAdd(event, productId) {
+    if (event) event.stopPropagation();
+    
+    // Check if all attributes have a selection
+    const overlay = document.getElementById(`options-${productId}`);
+    const totalGroups = overlay.querySelectorAll('.option-group').length;
+    const selections = Object.keys(selectedOptions[productId] || {}).length;
+
+    if (selections < totalGroups) {
+        alert('يرجى اختيار جميع الخيارات المطلوبة');
+        return;
+    }
+
+    const optionIds = Object.values(selectedOptions[productId]);
+    addToCart(productId, optionIds);
+    hideOptions(null, productId);
+}
+
+/**
+ * Standard Add to Cart API Call
+ */
+async function addToCart(productId, optionIds) {
+    try {
+        const response = await fetch('/api/cart/add_item/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                quantity: 1,
+                selected_options: optionIds
+            })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            showToast('تمت الإضافة بنجاح', 'success');
+            // Update cart count if exists
+            const cartCountEls = document.querySelectorAll('.cart-count-badge');
+            cartCountEls.forEach(el => el.textContent = data.cart.total_items || data.cart_count);
+        } else {
+            showToast(data.message || 'حدث خطأ ما', 'error');
+        }
+    } catch (err) {
+        console.error('Cart Error:', err);
+        showToast('حدث خطأ في الاتصال بالسيرفر', 'error');
+    }
+}
+
+function showToast(message, type = 'success') {
+    // Check if toast container exists
+    let toast = document.getElementById('app-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'app-toast';
+        toast.style.cssText = 'position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; transition: all 0.5s ease;';
+        document.body.appendChild(toast);
+    }
+    
+    const banner = document.createElement('div');
+    const bgColor = type === 'success' ? '#10b981' : '#f43f5e';
+    banner.style.cssText = `background: ${bgColor}; color: white; padding: 12px 24px; border-radius: 12px; font-weight: 700; margin-top: 10px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); display: flex; align-items: center; gap: 8px; font-size: 14px;`;
+    banner.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> <span>${message}</span>`;
+    
+    toast.appendChild(banner);
+    setTimeout(() => {
+        banner.style.opacity = '0';
+        banner.style.transform = 'translateY(20px)';
+        setTimeout(() => banner.remove(), 500);
+    }, 3000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
+        }
+    }
+    return cookieValue;
+}
+
+/**
+ * Show/Hide empty state messages
+ */
+function handleEmptyState(type, count) {
+    const sectionId = type === 'store' ? 'storeViewSection' : 'productViewSection';
+    const gridSelector = type === 'store' ? '.supplier-marquee-section' : '.products-grid-premium';
+    const messageId = `no-${type}-message`;
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+
+    let emptyState = document.getElementById(messageId);
+    
+    if (count === 0) {
+        if (!emptyState) {
+            const grid = section.querySelector(gridSelector) || section.querySelector('.container');
+            const message = document.createElement('div');
+            message.id = messageId;
+            message.className = 'col-12 w-full text-center py-12';
+            message.innerHTML = `
+                <div class="no-results-premium opacity-60">
+                    <i class="fas fa-search-minus mb-4" style="font-size: 4rem;"></i>
+                    <h3 class="text-xl font-bold">لا توجد نتائج تطابق بحثك</h3>
+                    <p>جرب كلمات بحث أخرى أو تصنيفات مختلفة</p>
+                </div>
+            `;
+            grid.appendChild(message);
         }
     } else {
         if (emptyState) emptyState.remove();

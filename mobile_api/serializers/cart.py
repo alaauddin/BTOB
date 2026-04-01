@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import Cart, CartItem, Product
+from core.models import Cart, CartItem, Product, ProductAttributeOption
 
 class CartItemSerializer(serializers.ModelSerializer):
     product = serializers.SerializerMethodField()
@@ -7,9 +7,21 @@ class CartItemSerializer(serializers.ModelSerializer):
         queryset=Product.objects.all(), source='product', write_only=True
     )
 
+    selected_options = serializers.PrimaryKeyRelatedField(
+        queryset=ProductAttributeOption.objects.all(), 
+        many=True, 
+        required=False
+    )
+    
+    selected_options_details = serializers.SerializerMethodField()
+
     class Meta:
         model = CartItem
         fields = '__all__'
+        
+    def get_selected_options_details(self, obj):
+        from .product import ProductAttributeOptionSerializer
+        return ProductAttributeOptionSerializer(obj.selected_options.all(), many=True).data
         
     def get_product(self, obj):
         from .product import ProductSerializer

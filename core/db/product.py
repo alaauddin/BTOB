@@ -94,6 +94,53 @@ class Product(models.Model):
     def get_total_reviews(self):
         return self.review_set.count()
 
+    def has_attributes(self):
+        """Check if the product has any selectable attributes."""
+        return self.attributes.exists()
+
+    def get_attribute_names_display(self):
+        """Return a comma-separated list of attribute names."""
+        return ", ".join([attr.name for attr in self.attributes.all()])
+
+    def get_total_price(self, option_ids=None, with_offer=True):
+        """Calculate total price including base price (optionally with offer) and all selected option modifiers."""
+        base = self.get_price_with_offer() if with_offer else self.price
+        if not option_ids:
+            return base
+            
+        modifiers = ProductAttributeOption.objects.filter(id__in=option_ids).aggregate(
+            total=models.Sum('price_modifier')
+        )['total'] or 0
+        return base + modifiers
+
+
+class ProductAttribute(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='attributes')
+    name = models.CharField(max_length=100, verbose_name="اسم السمة (مثل: المقاس أو اللون)")
+
+    class Meta:
+        app_label = 'core'
+
+    def __str__(self):
+        return f"{self.name} for {self.product.name}"
+
+
+class ProductAttributeOption(models.Model):
+    attribute = models.ForeignKey(ProductAttribute, on_delete=models.CASCADE, related_name='options')
+    value = models.CharField(max_length=100, verbose_name="القيمة (مثل: XL أو أحمر)")
+    price_modifier = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0.00, 
+        verbose_name="تعديل السعر (اختياري)"
+    )
+
+    class Meta:
+        app_label = 'core'
+
+    def __str__(self):
+        return f"{self.value} ({self.attribute.name})"
+
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='additional_images')

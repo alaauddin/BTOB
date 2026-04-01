@@ -21,6 +21,7 @@ class CartViewSet(viewsets.ModelViewSet):
     def add_item(self, request):
         product_id = request.data.get('product_id')
         quantity = int(request.data.get('quantity', 1))
+        selected_option_ids = request.data.get('selected_options', [])
 
         if not product_id:
             return Response({'success': False, 'message': 'Product ID is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -28,22 +29,59 @@ class CartViewSet(viewsets.ModelViewSet):
         product = get_object_or_404(Product, id=product_id)
         supplier = product.supplier
 
+        # Enforce variations selection if product has attributes
+        if product.has_attributes() and not selected_option_ids:
+            return Response({
+                'success': False, 
+                'message': 'الرجاء اختيار الخيارات المطلوبة للمنتج (مثل المقاس أو اللون)'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         # Find or create a cart for this user and this specific supplier
         cart, created = Cart.objects.get_or_create(
             user=request.user,
             supplier=supplier
         )
 
-        # Check if item already exists in cart, update quantity if so
-        cart_item, item_created = CartItem.objects.get_or_create(
-            cart=cart,
-            product=product,
-            defaults={'quantity': quantity}
-        )
+        # To handle variations correctly, we check for a CartItem that has the SAME product 
+        # AND the EXACT SAME selected options.
+        cart_items = CartItem.objects.filter(cart=cart, product=product)
+        
+        # Clean and sort incoming IDs for robust comparison
+        try:
+            selected_option_ids = [int(oid) for oid in selected_option_ids if str(oid).isdigit()]
+        except (ValueError, TypeError):
+            selected_option_ids = []
 
-        if not item_created:
-            cart_item.quantity += quantity
-            cart_item.save()
+        target_item = None
+        for item in cart_items:
+            item_option_ids = list(item.selected_options.values_list('id', flat=True))
+            if sorted(item_option_ids) == sorted(selected_option_ids):
+                target_item = item
+                break
+        
+        if target_item:
+            target_item.quantity += quantity
+            # Update/Refresh locked prices on quantity increase
+            target_item.price = product.price
+            target_item.discount_price = product.get_price_with_offer()
+            # Calculate modifier total for current options
+            target_item.price_modifier_total = sum([opt.price_modifier for opt in target_item.selected_options.all()])
+            target_item.save()
+        else:
+            target_item = CartItem.objects.create(
+                cart=cart,
+                product=product,
+                quantity=quantity,
+                price=product.price,
+                discount_price=product.get_price_with_offer()
+            )
+            if selected_option_ids:
+                from core.models import ProductAttributeOption
+                options = ProductAttributeOption.objects.filter(id__in=selected_option_ids)
+                target_item.selected_options.set(options)
+                # Calculate modifier total after setting options
+                target_item.price_modifier_total = sum([opt.price_modifier for opt in options])
+                target_item.save()
 
         # Serialize and return updated cart
         serializer = self.get_serializer(cart)
@@ -141,6 +179,15 @@ class CartViewSet(viewsets.ModelViewSet):
             )
             if not item_created:
                 cart_item.quantity = quantity
+                # Refresh locked prices when quantity is updated manually
+                cart_item.price = product.price
+                cart_item.discount_price = product.get_price_with_offer()
+                cart_item.price_modifier_total = sum([opt.price_modifier for opt in cart_item.selected_options.all()])
+                cart_item.save()
+            else:
+                # Set initial prices for new item via update_quantity
+                cart_item.price = product.price
+                cart_item.discount_price = product.get_price_with_offer()
                 cart_item.save()
                 
         serializer = self.get_serializer(cart)
@@ -189,9 +236,20 @@ class CartViewSet(viewsets.ModelViewSet):
         if not user_address:
             return Response({'success': False, 'message': 'لا يوجد عنوان مسجل. يرجى إضافة عنوان جديد.'}, status=status.HTTP_400_BAD_REQUEST)
             
-        order = Order.objects.create(user=request.user, total_amount=cart.get_total_after_discount())
+        # Create order with placeholder total; will be recalculated by set_total_amount()
+        order = Order.objects.create(user=request.user, total_amount=0)
+        
         for cart_item in cart.cart_items.all():
-            OrderItem.objects.create(order=order, product=cart_item.product, quantity=cart_item.quantity)
+            order_item = OrderItem.objects.create(
+                order=order, 
+                product=cart_item.product, 
+                quantity=cart_item.quantity,
+                price=cart_item.price or cart_item.product.price,
+                discount_price=cart_item.discount_price or cart_item.product.get_price_with_offer(),
+                price_modifier_total=cart_item.price_modifier_total or 0
+            )
+            if cart_item.selected_options.exists():
+                order_item.selected_options.set(cart_item.selected_options.all())
             
         address_phone = user_address.phone or getattr(request.user, 'phone_number', None)
         if not address_phone:
@@ -212,6 +270,9 @@ class CartViewSet(viewsets.ModelViewSet):
             latitude=user_address.latitude,
             longitude=user_address.longitude
         )
+        
+        # Calculate final locked totals (items + delivery)
+        order.set_total_amount()
         
         # Inject full_name into the underlying Django request so order_utils can read it
         if 'full_name' in request.data:
@@ -243,9 +304,20 @@ class CartViewSet(viewsets.ModelViewSet):
         if not address_line1 or not phone:
             return Response({'success': False, 'message': 'الموقع ورقم الهاتف مطلوبان'}, status=status.HTTP_400_BAD_REQUEST)
             
-        order = Order.objects.create(user=request.user, total_amount=cart.get_total_after_discount())
+        # Create order with placeholder total; will be recalculated by set_total_amount()
+        order = Order.objects.create(user=request.user, total_amount=0)
+        
         for cart_item in cart.cart_items.all():
-            OrderItem.objects.create(order=order, product=cart_item.product, quantity=cart_item.quantity)
+            order_item = OrderItem.objects.create(
+                order=order, 
+                product=cart_item.product, 
+                quantity=cart_item.quantity,
+                price=cart_item.price or cart_item.product.price,
+                discount_price=cart_item.discount_price or cart_item.product.get_price_with_offer(),
+                price_modifier_total=cart_item.price_modifier_total or 0
+            )
+            if cart_item.selected_options.exists():
+                order_item.selected_options.set(cart_item.selected_options.all())
             
         lat = request.data.get('latitude')
         lng = request.data.get('longitude')
@@ -263,6 +335,9 @@ class CartViewSet(viewsets.ModelViewSet):
             longitude=lng,
             address_type='Shipping'
         )
+        
+        # Calculate final locked totals (items + delivery)
+        order.set_total_amount()
         
         # Save as user's permanent address for next time
         address, created = Address.objects.get_or_create(user=request.user, defaults={

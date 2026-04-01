@@ -3,6 +3,9 @@ from core.models import Order, OrderItem
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product = serializers.SerializerMethodField()
+    selected_options = serializers.SerializerMethodField()
+    selected_options_details = serializers.SerializerMethodField()
+
     class Meta:
         model = OrderItem
         fields = '__all__'
@@ -10,6 +13,13 @@ class OrderItemSerializer(serializers.ModelSerializer):
     def get_product(self, obj):
         from .product import ProductSerializer
         return ProductSerializer(obj.product, context=self.context).data
+
+    def get_selected_options(self, obj):
+        return obj.selected_options.all().values_list('id', flat=True)
+
+    def get_selected_options_details(self, obj):
+        from .product import ProductAttributeOptionSerializer
+        return ProductAttributeOptionSerializer(obj.selected_options.all(), many=True).data
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)

@@ -75,6 +75,7 @@
     }
 </style>
 <link rel="stylesheet" href="{% static 'css/product_list.css' %}?v={{ css_version }}">
+<link rel="stylesheet" href="{% static 'css/variations.css' %}?v={{ css_version }}">
 {% endblock %}
 
 
@@ -316,6 +317,7 @@
 
 
 {% block extra_js %}
+<script src="{% static 'js/product_actions.js' %}?v={{ css_version }}"></script>
 <script>
     // --- UI INTERACTIONS ---
 
@@ -433,18 +435,27 @@
     // Cart Status (Keep existing)
     function loadCartStatus() {
         const supplierId = "{{ supplier.store_id }}";
-        fetch(`/cart/status/${supplierId}/`)
-            .then(r => r.json())
-            .then(data => {
-                if (data.success && data.items) {
-                     // Logic to update UI buttons if we had +/- controls on cards
-                     // Current design just has "Add", so maybe we change "Add" to "Added"?
-                }
+        if (typeof refreshCartState === 'function') {
+            refreshCartState(supplierId).then(data => {
                 if (data.cart_items_count !== undefined) {
                     const els = document.querySelectorAll('#mobile-cart-count');
                     els.forEach(el => el.textContent = data.cart_items_count);
                 }
+                // Refresh all inline variation controls and badges
+                refreshAllProductBadges();
             });
+        } else {
+            fetch(`/cart/status/${supplierId}/`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.cart_items_count !== undefined) {
+                        const els = document.querySelectorAll('#mobile-cart-count');
+                        els.forEach(el => el.textContent = data.cart_items_count);
+                    }
+                    // Refresh all inline variation controls and badges
+                    refreshAllProductBadges();
+                });
+        }
     }
     
     // Keep Order interactions

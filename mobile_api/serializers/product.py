@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import ProductCategory, Product, ProductImage
+from core.models import ProductCategory, Product, ProductImage, ProductAttribute, ProductAttributeOption
 from .base import CategorySerializer
 
 class ProductCategorySerializer(serializers.ModelSerializer):
@@ -18,6 +18,19 @@ class ProductImageSerializer(serializers.ModelSerializer):
         model = ProductImage
         fields = ['id', 'image']
 
+class ProductAttributeOptionSerializer(serializers.ModelSerializer):
+    attribute_name = serializers.CharField(source='attribute.name', read_only=True)
+    attribute_id = serializers.IntegerField(source='attribute.id', read_only=True)
+    class Meta:
+        model = ProductAttributeOption
+        fields = ['id', 'value', 'price_modifier', 'attribute_name', 'attribute_id']
+
+class ProductAttributeSerializer(serializers.ModelSerializer):
+    options = ProductAttributeOptionSerializer(many=True, read_only=True)
+    class Meta:
+        model = ProductAttribute
+        fields = ['id', 'name', 'options']
+
 class ProductSerializer(serializers.ModelSerializer):
     # To avoid circular dependency with SupplierSerializer (if it were to need ProductSerializer),
     # we can either import here or use a StringRelatedField/MethodField.
@@ -28,6 +41,7 @@ class ProductSerializer(serializers.ModelSerializer):
     supplier = serializers.SerializerMethodField()
     category = ProductCategorySerializer(read_only=True)
     images = ProductImageSerializer(source='additional_images', many=True, read_only=True)
+    attributes = ProductAttributeSerializer(many=True, read_only=True)
     video = serializers.SerializerMethodField()
 
     price_after_discount = serializers.SerializerMethodField()

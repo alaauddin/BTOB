@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 
 from core.db.constants import CITY_CHO, COUNTRY_CHO
 from core.db.workflow import OrderStatus, WorkflowStep
-from core.db.product import Product
+from core.db.product import Product, ProductAttributeOption
 from core.db.delivery_driver import DeliveryDriver
 
 
@@ -16,6 +16,7 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     items = models.ManyToManyField(Product, through='OrderItem')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    delivery_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="رسوم التوصيل")
     created_at = models.DateTimeField(auto_now_add=True)
     pipeline_status = models.ForeignKey(OrderStatus, on_delete=models.PROTECT, null=True, blank=True)
     delivery_driver = models.ForeignKey(
@@ -142,8 +143,8 @@ class Order(models.Model):
 
     def set_total_amount(self):
         items_total = sum([item.get_subtotal_with_discount() for item in self.order_items.all()])
-        delivery_fee = self.get_expected_delivery_fee()
-        self.total_amount = items_total + delivery_fee
+        self.delivery_fee = self.get_expected_delivery_fee()
+        self.total_amount = items_total + self.delivery_fee
         self.save()
 
     def get_expected_delivery_fee(self):
@@ -184,7 +185,7 @@ class Order(models.Model):
         return sum([item.get_subtotal_with_discount() for item in self.order_items.all()])
 
     def get_total_after_discount(self):
-        return self.get_total_ammout_with_discout() + self.get_expected_delivery_fee()
+        return self.get_total_ammout_with_discout() + self.delivery_fee
 
     def get_discount_amount(self):
         items_gross = sum([item.get_subtotal() for item in self.order_items.all()])
@@ -227,6 +228,13 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    
+    # Pricing fields (Locked at order time)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="السعر الأساسي وقت الطلب")
+    discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="سعر العرض وقت الطلب")
+    price_modifier_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="مجموع إضافات الخيارات")
+    
+    selected_options = models.ManyToManyField(ProductAttributeOption, blank=True)
 
     class Meta:
         app_label = 'core'
@@ -234,11 +242,35 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.product.name} in Order {self.order.id}"
 
+    def get_options_price_modifier(self):
+        # Prefer the locked modifier total if it exists
+        if self.price_modifier_total:
+            return self.price_modifier_total
+        return sum([option.price_modifier for option in self.selected_options.all()])
+
+    def get_unit_price(self):
+        if self.price is not None:
+            return self.price + self.get_options_price_modifier()
+        
+        option_ids = self.selected_options.values_list('id', flat=True)
+        return self.product.get_total_price(option_ids, with_offer=False)
+
+    def get_unit_price_with_discount(self):
+        # Prefer locked discount_price, then locked price
+        if self.discount_price is not None:
+             return self.discount_price + self.get_options_price_modifier()
+        elif self.price is not None:
+             return self.price + self.get_options_price_modifier()
+        
+        # Fallback to current product offer
+        option_ids = self.selected_options.values_list('id', flat=True)
+        return self.product.get_total_price(option_ids, with_offer=True)
+
     def get_subtotal(self):
-        return self.product.price * self.quantity
+        return self.get_unit_price() * self.quantity
 
     def get_subtotal_with_discount(self):
-        return self.product.get_price_with_offer() * self.quantity
+        return self.get_unit_price_with_discount() * self.quantity
 
     def has_discount(self):
         return self.product.has_discount()

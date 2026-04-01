@@ -362,6 +362,15 @@ function editProduct(productId) {
                 document.getElementById('productForm').action = `/edit-product/${productId}/`;
                 updateModalStatusBtn(productId, p.is_active);
 
+                // Populate Variations (New)
+                if (p.attributes && p.attributes.length > 0) {
+                    p.attributes.forEach(attr => {
+                        addAttributeGroup(attr.name, attr.options);
+                    });
+                } else if (typeof addAttributeGroup === 'function') {
+                    // Start with one empty group if new? No, keep it optional.
+                }
+
                 document.getElementById('product-modal').classList.remove('hidden');
             }
         })
@@ -385,6 +394,10 @@ function resetModal() {
     const countBadge = document.getElementById('additional-images-count');
     if (countBadge) countBadge.classList.add('hidden');
 
+    // Reset Variations (New)
+    const variationsContainer = document.getElementById('attributes-container');
+    if (variationsContainer) variationsContainer.innerHTML = '';
+
     updateModalStatusBtn(null);
     document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
 }
@@ -400,6 +413,14 @@ document.getElementById('productForm').addEventListener('submit', function (e) {
     text.classList.add('opacity-0');
 
     const formData = new FormData(this);
+    
+    // Add Variations Data (New)
+    if (typeof collectVariationsData === 'function') {
+        const variations = collectVariationsData();
+        if (variations.length > 0) {
+            formData.append('variations', JSON.stringify(variations));
+        }
+    }
 
     fetch(this.action, {
         method: 'POST',

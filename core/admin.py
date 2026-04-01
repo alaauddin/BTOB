@@ -13,6 +13,7 @@ admin.site.register(ShippingAddress)
 admin.site.register(Address)
 admin.site.register(Review)
 admin.site.register(OrderNote)
+admin.site.register(ProductAttributeOption)
 
 @admin.register(BusinessRequest)
 class BusinessRequestAdmin(admin.ModelAdmin):
@@ -26,12 +27,25 @@ class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
 
+class ProductAttributeOptionInline(admin.TabularInline):
+    model = ProductAttributeOption
+    extra = 1
+
+@admin.register(ProductAttribute)
+class ProductAttributeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'product')
+    inlines = [ProductAttributeOptionInline]
+
+class ProductAttributeInline(admin.TabularInline):
+    model = ProductAttribute
+    extra = 1
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'supplier', 'category', 'price', 'stock', 'is_new', 'views_count')
     list_filter = ('supplier', 'category', 'is_new')
     search_fields = ('name', 'description')
-    inlines = [ProductImageInline]
+    inlines = [ProductImageInline, ProductAttributeInline]
     
     fields = ('supplier', 'category', 'name', 'description', 'price', 'stock', 'image', 'video', 'is_new', 'is_active')
 

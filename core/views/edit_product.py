@@ -7,7 +7,7 @@ from django.views.decorators.http import require_http_methods
 import json
 
 from core.forms import ProductForm
-from core.models import Supplier, ProductCategory, Product, Category, ProductImage
+from core.models import Supplier, ProductCategory, Product, Category, ProductImage, ProductAttribute, ProductAttributeOption
 from core.utils.merchant_utils import get_active_supplier
 
 
@@ -44,7 +44,20 @@ def edit_product(request, product_id):
                 'is_active': product.is_active,
                 'image_url': product.image.url if product.image else None,
                 'video_url': product.video.url if product.video else None,
-                'additional_images': [img.image.url for img in product.additional_images.all()]
+                'additional_images': [img.image.url for img in product.additional_images.all()],
+                'attributes': [
+                    {
+                        'id': attr.id,
+                        'name': attr.name,
+                        'options': [
+                            {
+                                'id': opt.id,
+                                'value': opt.value,
+                                'price_modifier': float(opt.price_modifier)
+                            } for opt in attr.options.all()
+                        ]
+                    } for attr in product.attributes.all()
+                ]
             }
         })
     
@@ -64,6 +77,25 @@ def edit_product(request, product_id):
                         # For simplicity, we add new ones. Optionally delete old ones if requested.
                         for img in additional_images:
                             ProductImage.objects.create(product=updated_product, image=img)
+                    
+                    # Handle variations (New)
+                    variations_json = request.POST.get('variations')
+                    if variations_json:
+                        variations = json.loads(variations_json)
+                        # We perform a sync: delete old ones and create new ones for simplicity
+                        # Use a transaction for safety if needed
+                        updated_product.attributes.all().delete()
+                        for attr_data in variations:
+                            attr = ProductAttribute.objects.create(
+                                product=updated_product,
+                                name=attr_data['name']
+                            )
+                            for opt_data in attr_data['options']:
+                                ProductAttributeOption.objects.create(
+                                    attribute=attr,
+                                    value=opt_data['value'],
+                                    price_modifier=opt_data['price_modifier']
+                                )
                     
                     return JsonResponse({
                         'success': True,

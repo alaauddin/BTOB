@@ -29,20 +29,21 @@ fbq('track', 'ViewContent', {
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/products.css' %}?v={{ css_version }}">
+<link rel="stylesheet" href="{% static 'css/variations.css' %}?v={{ css_version }}">
 {% endblock %}
 
 {% block content %}
-<div class="container container-products {% if supplier.show_platform_ads and platform_ads %}has-fixed-mobile-ads{% endif %}">
+<div class="container container-products {% if supplier.show_platform_ads  %}has-fixed-mobile-ads{% endif %}">
     <!-- Mini Platform Ads (Mobile only, above everything else in content) -->
-    {% if supplier.show_platform_ads and platform_ads %}
+    {% if supplier.show_platform_ads %}
     <div class="detail-ads-wrapper d-lg-none">
-        {% for ad in platform_ads|slice:":4" %}
-        <a href="{% url 'product_detail' ad.product.supplier.store_id ad.product.id %}" class="mini-ad-card">
+        {% for ad in platform_ads %}
+        <a href="{% url 'product_detail' supplier.store_id ad.id %}" class="mini-ad-card">
             <span class="mini-ad-badge">عرطة</span>
-            <img src="{{ ad.product.image.url }}" class="mini-ad-img" alt="{{ ad.product.name }}" loading="lazy">
+            <img src="{{ ad.image.url }}" class="mini-ad-img" alt="{{ ad.name }}" loading="lazy">
             <div class="mini-ad-info">
-                <h5 class="mini-ad-name">{{ ad.product.name }}</h5>
-                <div class="mini-ad-price">{{ ad.product.get_price_with_offer|floatformat:0 }} {{ ad.product.supplier.currency }}</div>
+                <h5 class="mini-ad-name">{{ ad.name }}</h5>
+                <div class="mini-ad-price">{{ ad.get_price_with_offer|floatformat:0 }} {{ ad.supplier.currency }}</div>
             </div>
         </a>
         {% endfor %}
@@ -161,6 +162,50 @@ fbq('track', 'ViewContent', {
                     {{ product.description|truncatewords:25 }}
                 </div>
 
+                <!-- Product Variations (New Premium UI) -->
+                {% if product.has_attributes %}
+                <div class="product-variations-detail my-5" id="detail-variations">
+                    {% for attr in product.attributes.all %}
+                    <div class="option-group mb-4" data-attribute-id="{{ attr.id }}">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ attr.name }}</span>
+                            <span class="selected-val text-[11px] font-bold text-blue-500 hidden" id="val-{{ attr.id }}"></span>
+                        </div>
+                        <div class="option-chips flex flex-wrap gap-2.5">
+                            {% for option in attr.options.all %}
+                            <div class="option-chip-premium {% if option.id in cart_selected_option_ids %}active{% endif %}" 
+                                 onclick="selectDetailOption(this, '{{ attr.id }}', '{{ option.id }}', '{{ option.value }}')"
+                                 data-price-modifier="{{ option.price_modifier }}">
+                                
+                                <span class="chip-nano-label">{{ attr.name }}</span>
+                                
+                                {% if option.price_modifier > 0 %}
+                                <span class="chip-price-tag">+{{ option.price_modifier|floatformat:0 }}</span>
+                                {% endif %}
+
+                                <span class="chip-value">{{ option.value }}</span>
+                                
+                                <div class="variation-controls hidden" id="ctrl-{{ option.id }}">
+                                    <button class="mini-qty-btn" onclick="handleOptionAction(event, '{{ attr.id }}', '{{ option.id }}', -1)">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <span class="mini-qty-val" id="badge-{{ option.id }}">0</span>
+                                    <button class="mini-qty-btn" onclick="handleOptionAction(event, '{{ attr.id }}', '{{ option.id }}', 1)">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="initial-add-icon" id="add-icon-{{ option.id }}">
+                                    <i class="fas fa-plus-circle text-sm"></i>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
                 <!-- Price & Stock -->
                 <div class="flex items-center justify-between flex-wrap gap-4 mb-4">
                     <div class="detail-price-box mb-0">
@@ -195,20 +240,20 @@ fbq('track', 'ViewContent', {
                         
                         <!-- Qty Controls (Shown if item in cart) -->
                         <div class="detail-qty-control {% if cart_item_qty == 0 %}d-none{% endif %}" id="qty-ctrl-{{ product.id }}">
-                            <button class="modern-qty-btn" onclick="subToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                            <button class="modern-qty-btn" onclick="handleDetailSubFromCart('{{ product.id }}', '{{ supplier.store_id }}', {{ product.has_attributes|yesno:'true,false' }})">
                                 <i class="fas fa-minus"></i>
                             </button>
                             <span class="modern-qty-display" id="quantity-{{ product.id }}">{{ cart_item_qty }}</span>
                             <!-- Hidden Helper for base.html expectations -->
                             <span id="total-qty-items-{{ product.id }}" class="d-none">{{ cart_item_qty }}</span>
 
-                            <button class="modern-qty-btn" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')" {% if product.stock <= cart_item_qty %}disabled style="opacity: 0.5; cursor: not-allowed;" title="أقصى كمية متاحة"{% endif %}>
+                            <button class="modern-qty-btn" onclick="handleDetailAddToCart('{{ product.id }}', '{{ supplier.store_id }}', {{ product.has_attributes|yesno:'true,false' }})" {% if product.stock <= cart_item_qty %}disabled style="opacity: 0.5; cursor: not-allowed;" title="أقصى كمية متاحة"{% endif %}>
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
                         
                         <!-- Add Button (Shown if item NOT in cart) -->
-                        <button class="detail-add-btn {% if cart_item_qty > 0 %}d-none{% endif %}" id="add-btn-{{ product.id }}" onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                        <button class="detail-add-btn {% if cart_item_qty > 0 %}d-none{% endif %}" id="add-btn-{{ product.id }}" onclick="handleDetailAddToCart('{{ product.id }}', '{{ supplier.store_id }}', {{ product.has_attributes|yesno:'true,false' }})">
                             <i class="fas fa-shopping-bag"></i>
                             <span>إضافة للسلة</span>
                         </button>
@@ -380,7 +425,226 @@ fbq('track', 'ViewContent', {
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/product_actions.js' %}?v={{ css_version }}"></script>
 <script>
+    // State for detail page selection
+    let detailSelections = {};
+    const basePrice = {{ product.get_price_with_offer|default:product.price }};
+
+    function selectDetailOption(element, attrId, optionId, optionValue) {
+        const group = element.closest('.option-group');
+        group.querySelectorAll('.option-chip-premium').forEach(c => {
+            c.classList.remove('active', 'border-primary-base', 'bg-primary-bg-soft', 'ring-4', 'ring-primary-bg-medium');
+            const attrLabel = c.querySelector('span:first-child');
+            if (attrLabel) attrLabel.classList.replace('text-primary-base', 'text-slate-500');
+        });
+        
+        element.classList.add('active', 'border-primary-base', 'bg-primary-bg-soft', 'ring-4', 'ring-primary-bg-medium');
+        const currentAttrLabel = element.querySelector('span:first-child');
+        if (currentAttrLabel) currentAttrLabel.classList.replace('text-slate-500', 'text-primary-base');
+        
+        const label = document.getElementById(`val-${attrId}`);
+        if (label) {
+            label.innerText = optionValue;
+            label.classList.remove('hidden');
+        }
+
+        // Update JS state
+        detailSelections[attrId] = optionId;
+        updateDetailPrice();
+    }
+
+    // Initialize selections from cart or first options
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if product.has_attributes %}
+            {% for attr in product.attributes.all %}
+                (function() {
+                    let foundInCart = false;
+                    {% for option in attr.options.all %}
+                        {% if option.id in cart_selected_option_ids %}
+                            detailSelections["{{ attr.id }}"] = "{{ option.id }}";
+                            document.getElementById('val-{{ attr.id }}').innerText = "{{ option.value }}";
+                            document.getElementById('val-{{ attr.id }}').classList.remove('hidden');
+                            foundInCart = true;
+                        {% endif %}
+                    {% endfor %}
+
+                    if (!foundInCart) {
+                        // Select the first option by default
+                        {% with first_opt=attr.options.first %}
+                        if ("{{ first_opt.id }}") {
+                            const firstOptElement = document.querySelector('.option-group[data-attribute-id="{{ attr.id }}"] .option-chip-premium');
+                            if (firstOptElement) {
+                                selectDetailOption(firstOptElement, '{{ attr.id }}', '{{ first_opt.id }}', '{{ first_opt.value }}');
+                            }
+                        }
+                        {% endwith %}
+                    }
+                })();
+            {% endfor %}
+        {% endif %}
+        
+        // Initial load of cart state and badge setup
+        refreshCartState('{{ supplier.store_id }}').then(() => {
+            updateDetailPrice();
+            refreshVariationBadges('{{ product.id }}');
+        });
+
+        // Listen for internal cart updates
+        document.addEventListener('cartUpdated', (e) => {
+            if (e.detail.productId == '{{ product.id }}') {
+                updateDetailPrice();
+                refreshVariationBadges('{{ product.id }}');
+            }
+        });
+    });
+
+    function updateDetailPrice() {
+        let totalPrice = basePrice;
+        document.querySelectorAll('.option-chip-premium.active').forEach(chip => {
+            const mod = parseFloat(chip.dataset.priceModifier || 0);
+            totalPrice += mod;
+        });
+
+        const priceEl = document.querySelector('.detail-current-price');
+        if (priceEl) {
+            priceEl.innerText = `${totalPrice.toLocaleString()} {{ supplier.currency }}`;
+        }
+        
+        // Refresh all variation badges on the page
+        refreshVariationBadges('{{ product.id }}');
+
+        // Update main quantity controls for the selected variation
+        const currentQty = getVariationQty('{{ product.id }}', Object.values(detailSelections));
+        const qtyDisplay = document.getElementById('quantity-{{ product.id }}');
+        const qtyCtrl = document.getElementById('qty-ctrl-{{ product.id }}');
+        const addBtn = document.getElementById('add-btn-{{ product.id }}');
+
+        if (qtyDisplay) qtyDisplay.innerText = currentQty;
+
+        if (currentQty > 0) {
+            if (qtyCtrl) qtyCtrl.classList.remove('d-none');
+            if (addBtn) addBtn.classList.add('d-none');
+        } else {
+            if (qtyCtrl) qtyCtrl.classList.add('d-none');
+            if (addBtn) addBtn.classList.remove('d-none');
+        }
+    }
+
+    /**
+     * Get total quantity for a specific option ID across all cart items for this product
+     */
+    function getOptionTotalQty(productId, optionId) {
+        if (!window.cartState || !window.cartState.items) return 0;
+        let total = 0;
+        window.cartState.items.forEach(item => {
+            if (item.product_id == productId && (item.selected_options || []).map(Number).includes(Number(optionId))) {
+                total += item.quantity;
+            }
+        });
+        return total;
+    }
+
+    /**
+     * Refresh all badges visibility and quantity
+     */
+    function refreshVariationBadges(productId) {
+        document.querySelectorAll('.option-chip-premium').forEach(chip => {
+            const onclickStr = chip.getAttribute('onclick') || '';
+            const match = onclickStr.match(/,\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/);
+            if (match) {
+                const optId = match[2];
+                const qty = getOptionTotalQty(productId, optId);
+                const badge = document.getElementById(`badge-${optId}`);
+                const ctrl = document.getElementById(`ctrl-${optId}`);
+                const addIcon = document.getElementById(`add-icon-${optId}`);
+
+                if (badge) badge.innerText = qty;
+                
+                if (qty > 0) {
+                    if (ctrl) ctrl.classList.remove('hidden');
+                    if (addIcon) addIcon.classList.add('hidden');
+                } else {
+                    if (ctrl) ctrl.classList.add('hidden');
+                    if (addIcon) addIcon.classList.remove('hidden');
+                }
+            }
+        });
+    }
+
+    /**
+     * Handle + / - action on an individual option chip
+     */
+    function handleOptionAction(event, attrId, optId, delta) {
+        event.stopPropagation(); // Avoid double trigger with chip selection
+        
+        // 1. Find elements
+        const chip = document.querySelector(`.option-chip-premium[onclick*="'${attrId}'"][onclick*="'${optId}'"]`);
+        const badge = document.getElementById(`badge-${optId}`);
+        const ctrl = document.getElementById(`ctrl-${optId}`);
+        const addIcon = document.getElementById(`add-icon-${optId}`);
+        if (!chip || !badge) return;
+
+        // 2. Optimistic Update
+        let currentVal = parseInt(badge.innerText) || 0;
+        let newVal = Math.max(0, currentVal + delta);
+        badge.innerText = newVal;
+        
+        if (newVal > 0) {
+            if (ctrl) ctrl.classList.remove('hidden');
+            if (addIcon) addIcon.classList.add('hidden');
+        } else {
+            if (ctrl) ctrl.classList.add('hidden');
+            if (addIcon) addIcon.classList.remove('hidden');
+        }
+
+        // 3. Selection Sync
+        const onclickStr = chip.getAttribute('onclick') || '';
+        const match = onclickStr.match(/selectDetailOption\(this,\s*'([^']+)',\s*'([^']+)',\s*'([^']+)'\)/);
+        if (match) {
+            selectDetailOption(chip, match[1], match[2], match[3]);
+        }
+
+        // 4. Cart Action
+        if (delta > 0) {
+            handleDetailAddToCart('{{ product.id }}', '{{ supplier.store_id }}', {{ product.has_attributes|yesno:'true,false' }});
+        } else {
+            handleDetailSubFromCart('{{ product.id }}', '{{ supplier.store_id }}', {{ product.has_attributes|yesno:'true,false' }});
+        }
+    }
+
+    // Alias for common refresh call if used in base templates
+    window.refreshAllProductBadges = () => refreshVariationBadges('{{ product.id }}');
+
+    function handleDetailAddToCart(pid, sid, hasAttributes) {
+        if (hasAttributes) {
+            const attrCount = document.querySelectorAll('.option-group').length;
+            const selectCount = Object.keys(detailSelections).length;
+            
+            if (selectCount < attrCount) {
+                showNotification("الرجاء اختيار جميع الخيارات", "error");
+                document.querySelectorAll('.option-group').forEach(group => {
+                    const id = group.dataset.attributeId;
+                    if (!detailSelections[id]) {
+                        group.classList.add('shake-error');
+                        setTimeout(() => group.classList.remove('shake-error'), 500);
+                    }
+                });
+                return;
+            }
+            addToCart(pid, sid, Object.values(detailSelections));
+        } else {
+            addToCart(pid, sid);
+        }
+    }
+
+    function handleDetailSubFromCart(pid, sid, hasAttributes) {
+        if (hasAttributes) {
+            subToCart(pid, sid, Object.values(detailSelections));
+        } else {
+            subToCart(pid, sid);
+        }
+    }
     function switchMedia(type, url, element) {
         const container = document.querySelector('.main-media-container');
         const mainImage = document.getElementById('mainMediaDisplay');

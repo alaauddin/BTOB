@@ -57,12 +57,12 @@ def product_list(request, store_id=None, store_slug=None, category_id=None, subc
         to_date__gte=today
     )
     
-    # Subquery for cart quantity
+    from django.db.models import Sum
     cart_qty = CartItem.objects.filter(
         cart__user=request.user if request.user.is_authenticated else None,
         cart__supplier=supplier,
         product=OuterRef('pk')
-    ).values('quantity')[:1]
+    ).values('product').annotate(total=Sum('quantity')).values('total')[:1]
     
     # Optimize queries by having the database do the partitioning instead of Python memory
     base_queryset = Product.objects.filter(supplier=supplier, is_active=True)
@@ -77,7 +77,7 @@ def product_list(request, store_id=None, store_slug=None, category_id=None, subc
     elif category_id:
         base_queryset = base_queryset.filter(category__id=category_id)
         
-    base_queryset = base_queryset.prefetch_related('additional_images')
+    base_queryset = base_queryset.prefetch_related('additional_images', 'attributes__options')
 
     # Offer Products (products that have active offers)
     offer_products_qs = base_queryset.filter(

@@ -50,10 +50,22 @@ def checkout_select_address_or_custom_address(request, store_id):
         if form.is_valid():           
             address = form.save(commit=False)
             
-            created_order = Order.objects.create(user=request.user, total_amount=cart.get_total_amount())
+            created_order = Order.objects.create(
+                user=request.user, 
+                total_amount=cart.get_total_after_discount(),
+                delivery_fee=estimated_fee
+            )
             for cart_item in cart.cart_items.all():
-                OrderItem.objects.create(order=created_order
-                , product=cart_item.product, quantity=cart_item.quantity)
+                order_item = OrderItem.objects.create(
+                    order=created_order, 
+                    product=cart_item.product, 
+                    quantity=cart_item.quantity,
+                    price=cart_item.price or cart_item.product.price,
+                    discount_price=cart_item.discount_price or cart_item.product.get_price_with_offer(),
+                    price_modifier_total=cart_item.price_modifier_total or cart_item.get_options_price_modifier()
+                )
+                if cart_item.selected_options.exists():
+                    order_item.selected_options.set(cart_item.selected_options.all())
             
             cart.cart_items.all().delete()
             address.order = created_order
@@ -93,9 +105,22 @@ def checkout_select_address_or_custom_address(request, store_id):
 def existing_address(request, store_id):
     supplier = get_object_or_404(Supplier, store_id=store_id)
     cart = Cart.objects.get(user=request.user, supplier=supplier) 
-    order = Order.objects.create(user=request.user, total_amount=cart.get_total_after_discount())
+    order = Order.objects.create(
+        user=request.user, 
+        total_amount=cart.get_total_after_discount(),
+        delivery_fee=Decimal('0') # Will be updated below
+    )
     for cart_item in cart.cart_items.all():
-        OrderItem.objects.create(order=order, product=cart_item.product, quantity=cart_item.quantity)
+        order_item = OrderItem.objects.create(
+            order=order, 
+            product=cart_item.product, 
+            quantity=cart_item.quantity,
+            price=cart_item.price or cart_item.product.price,
+            discount_price=cart_item.discount_price or cart_item.product.get_price_with_offer(),
+            price_modifier_total=cart_item.price_modifier_total or cart_item.get_options_price_modifier()
+        )
+        if cart_item.selected_options.exists():
+            order_item.selected_options.set(cart_item.selected_options.all())
 
     user_address = Address.objects.get(user = request.user)
 
@@ -116,6 +141,11 @@ def existing_address(request, store_id):
         longitude = user_address.longitude
     )
     
+    # Recalculate distance and fee for existing address
+    order.delivery_fee = order.get_expected_delivery_fee()
+    order.total_amount = cart.get_total_after_discount() + order.delivery_fee
+    order.save()
+
     result = complete_order_and_notify(request, order, cart, shipping_address, supplier)
     
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':

@@ -56,6 +56,17 @@
                 </a>
             </h3>
             
+            <!-- Variations Preview (New) -->
+            {% if product.has_attributes %}
+            <div class="prod-variations-preview d-flex flex-wrap gap-1 mb-2">
+                {% for attr in product.attributes.all %}
+                <span class="badge bg-light text-primary border rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 0.5px;">
+                    {{ attr.name }}
+                </span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
             <!-- Price Row -->
             <div class="price-row mb-3">
                 {% if product.has_discount %}
@@ -75,17 +86,26 @@
                      id="qty-ctrl-{{ product.id }}" 
                      style="border: 1px solid var(--surface-3);">
                     
+                    {% if product.has_attributes %}
+                    <button class="btn btn-sm btn-white rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0" 
+                            style="width: 32px; height: 32px; opacity: 0.5;"
+                            title="ادخل للمنتج لتعديل الخيارات"
+                            disabled>
+                        <i class="fas fa-minus fs-7"></i>
+                    </button>
+                    {% else %}
                     <button class="btn btn-sm btn-white rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0" 
                             style="width: 32px; height: 32px;"
                             onclick="subToCart('{{ product.id }}', '{{ supplier.store_id }}')">
                         <i class="fas fa-minus fs-7"></i>
                     </button>
+                    {% endif %}
                     
                     <span class="fw-bold px-2" id="total-qty-items-{{ product.id }}">{{ cart_item_qty }}</span>
                     
                     <button class="btn btn-sm btn-white rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0" 
                             style="width: 32px; height: 32px;"
-                            onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')"
+                            onclick="handleAddToCart('{{ product.id }}', '{{ supplier.store_id }}', {{ product.has_attributes|yesno:'true,false' }})"
                             {% if product.stock <= cart_item_qty %}disabled style="opacity: 0.5"{% endif %}>
                         <i class="fas fa-plus fs-7"></i>
                     </button>
@@ -95,7 +115,7 @@
                 {% if product.stock > 0 %}
                 <button class="btn-add-cart {% if cart_item_qty > 0 %}d-none{% endif %}" 
                         id="add-btn-{{ product.id }}" 
-                        onclick="addToCart('{{ product.id }}', '{{ supplier.store_id }}')">
+                        onclick="handleAddToCart('{{ product.id }}', '{{ supplier.store_id }}', {{ product.has_attributes|yesno:'true,false' }})">
                     <i class="fas fa-shopping-bag"></i>
                     إضافة
                 </button>
@@ -124,6 +144,42 @@
             </div>
 
         </div>
+
+        <!-- Product Options Overlay (For Variations) -->
+        {% if product.has_attributes %}
+        <div class="product-options-overlay" id="options-{{ product.id }}">
+            <div class="options-header">
+                <span class="options-title">اختر الخيارات</span>
+                <button class="close-options" onclick="hideOptions('{{ product.id }}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="options-body custom-scrollbar">
+                {% for attr in product.attributes.all %}
+                <div class="option-group" data-attribute-id="{{ attr.id }}">
+                    <label class="option-label">{{ attr.name }}</label>
+                    <div class="option-chips">
+                        {% for option in attr.options.all %}
+                        <div class="option-chip" 
+                             onclick="selectOption(this, '{{ attr.id }}', '{{ option.id }}')"
+                             data-price-modifier="{{ option.price_modifier }}">
+                            {{ option.value }}
+                            {% if option.price_modifier > 0 %}
+                            <span class="modifier" dir="ltr" style="unicode-bidi: isolate;">+{{ option.price_modifier|floatformat:0 }}</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="options-footer">
+                <button class="btn-confirm-options" onclick="confirmOptions('{{ product.id }}', '{{ supplier.store_id }}')">
+                    تأكيد الإضافة
+                </button>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 

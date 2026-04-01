@@ -135,6 +135,23 @@
                             </div>
                         </div>
 
+                        <!-- Variations Section (New) -->
+                        <div class="variations-section border-t border-slate-100 pt-3 mt-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                                    <i class="fas fa-swatches text-blue-500 ml-1"></i>
+                                    الخيارات والأنواع (مثلاً: لون، مقاس)
+                                </h4>
+                                <button type="button" onclick="addAttributeGroup()" class="text-[9px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-full transition-all">
+                                    + إضافة خيار جديد
+                                </button>
+                            </div>
+                            
+                            <div id="attributes-container" class="space-y-3">
+                                <!-- Dynamic Attributes will be injected here -->
+                            </div>
+                        </div>
+
                         <!-- Mini Uploaders Row -->
                         <div class="compact-upload-row">
                             <!-- Main Image -->
@@ -337,4 +354,85 @@
             countBadge.classList.add('hidden');
         }
     });
+</script>
+
+<!-- Variations JS Logic -->
+<script>
+    function addAttributeGroup(name = '', options = []) {
+        const container = document.getElementById('attributes-container');
+        const groupId = Date.now() + Math.random().toString(36).substr(2, 9);
+        
+        const groupHtml = `
+            <div class="attribute-group bg-slate-50 border border-slate-100 rounded-xl p-2.5 relative" data-group-id="${groupId}">
+                <button type="button" onclick="removeGroup(this)" class="absolute top-2 left-2 text-slate-400 hover:text-red-500 transition-colors">
+                    <i class="fas fa-times-circle text-xs"></i>
+                </button>
+                
+                <div class="mb-2">
+                    <label class="text-[9px] font-bold text-slate-400 mb-1 block">اسم الخاصية (مثلاً: المقاس)</label>
+                    <input type="text" class="attr-name w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-bold" value="${name}" placeholder="أدخل اسم الخاصية">
+                </div>
+                
+                <div class="options-rows space-y-1.5" id="options-${groupId}">
+                    <!-- Options go here -->
+                </div>
+                
+                <button type="button" onclick="addOptionRow('${groupId}')" class="mt-2 text-[9px] font-bold text-blue-500 hover:underline">
+                    + إضافة قيمة (مثلاً: XL)
+                </button>
+            </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', groupHtml);
+        
+        if (options.length > 0) {
+            options.forEach(opt => addOptionRow(groupId, opt.value, opt.price_modifier));
+        } else {
+            addOptionRow(groupId);
+        }
+    }
+
+    function addOptionRow(groupId, value = '', modifier = 0) {
+        const container = document.getElementById(`options-${groupId}`);
+        const rowHtml = `
+            <div class="option-row flex gap-2 items-center">
+                <input type="text" class="opt-value flex-grow bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs" value="${value}" placeholder="القيمة (مثلاً: أحمر)">
+                <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-2 py-1">
+                    <span class="text-[9px] font-bold text-slate-400">+</span>
+                    <input type="number" class="opt-modifier w-12 border-0 p-0 text-xs font-bold text-blue-600 focus:ring-0" value="${modifier}" step="1" min="0">
+                    <span class="text-[9px] font-bold text-slate-400">ريال</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-slate-300 hover:text-red-400">
+                    <i class="fas fa-minus-circle text-[10px]"></i>
+                </button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', rowHtml);
+    }
+
+    function removeGroup(btn) {
+        btn.closest('.attribute-group').remove();
+    }
+
+    function collectVariationsData() {
+        const variations = [];
+        document.querySelectorAll('.attribute-group').forEach(group => {
+            const name = group.querySelector('.attr-name').value.trim();
+            if (!name) return;
+            
+            const options = [];
+            group.querySelectorAll('.option-row').forEach(row => {
+                const val = row.querySelector('.opt-value').value.trim();
+                const mod = parseFloat(row.querySelector('.opt-modifier').value) || 0;
+                if (val) {
+                    options.push({ value: val, price_modifier: mod });
+                }
+            });
+            
+            if (options.length > 0) {
+                variations.push({ name: name, options: options });
+            }
+        });
+        return variations;
+    }
 </script>

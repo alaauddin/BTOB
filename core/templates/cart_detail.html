@@ -148,11 +148,22 @@ fbq('track', 'InitiateCheckout', {
                     </div>
                         <div class="ms-4 cart-item-details">
                             <h4 class="cart-item-name">{{ item.product.name }}</h4>
+                            
+                            {% if item.selected_options.exists %}
+                            <div class="cart-item-options mb-2">
+                                {% for option in item.selected_options.all %}
+                                <span class="badge bg-light text-primary border rounded-pill px-2 py-1 me-1" style="font-size: 0.75rem;">
+                                    {{ option.attribute.name }}: {{ option.value }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
                             <div class="cart-item-price">
-                                <span>{{ supplier.currency }} {{ item.product.get_price_with_offer|floatformat:0 }}</span>
-                                {% if item.product.has_discount %}
+                                <span>{{ supplier.currency }} {{ item.get_unit_price_with_discount|floatformat:0 }}</span>
+                                {% if item.has_discount %}
                                 <span class="text-danger ms-2 text-decoration-line-through small opacity-75" style="font-size: 0.9em;">
-                                    {{ supplier.currency }} {{ item.product.price|floatformat:0 }}
+                                    {{ supplier.currency }} {{ item.get_unit_price|floatformat:0 }}
                                 </span>
                                 {% endif %}
                             </div>

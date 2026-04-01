@@ -643,14 +643,23 @@
                         <img src="{{ item.product.image.url }}" class="item-thumb" alt="">
                         <div class="item-info">
                             <div class="item-name">{{ item.product.name }}</div>
-                            <div class="item-sub">SKU: PROD-{{ item.product.id }}</div>
+                            {% if item.selected_options.exists %}
+                            <div class="item-options mt-1 d-flex flex-wrap gap-1">
+                                {% for option in item.selected_options.all %}
+                                <span class="badge bg-light text-muted border py-1 px-2" style="font-size: 0.7rem;">
+                                    {{ option.attribute.name }}: {{ option.value }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="item-sub mt-1">SKU: PROD-{{ item.product.id }}</div>
                         </div>
                         <div class="item-quantity">
                             x {{ item.quantity }}
                         </div>
-                        <div class="item-pricing">
+                        <div class="item-pricing text-end">
                             <div class="fw-bold">{{ item.get_subtotal_with_discount|floatformat:2 }} {{ supplier.currency }}</div>
-                            <div class="text-muted small">{{ item.product.price|floatformat:2 }} {{ supplier.currency }} / للقطعة</div>
+                            <div class="text-muted small">{{ item.get_unit_price_with_discount|floatformat:2 }} {{ supplier.currency }} / للقطعة</div>
                         </div>
                     </div>
                     {% endfor %}

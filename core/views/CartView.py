@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.http import JsonResponse
 import logging
 import random
@@ -10,7 +11,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from core.models import Cart, Product, CartItem, Supplier, Order, OrderItem, Address
+from core.models import Cart, Product, CartItem, Supplier, Order, OrderItem, Address, ProductAttributeOption
 from django.contrib.auth.mixins import LoginRequiredMixin
 from core.forms import ShippingAddressForm
 from core.utils.whatsapp_utils import send_whatsapp_message
@@ -28,7 +29,10 @@ class CartView(DetailView):
     def get_object(self, queryset=None):
         store_id = self.kwargs.get('store_slug') or self.kwargs.get('store_id')
         supplier = get_object_or_404(Supplier, store_id=store_id)
-        cart = Cart.objects.filter(user=self.request.user, supplier=supplier).prefetch_related('cart_items__product__additional_images').first()
+        cart = Cart.objects.filter(user=self.request.user, supplier=supplier).prefetch_related(
+            'cart_items__product__additional_images',
+            'cart_items__selected_options'
+        ).first()
         if not cart:
             cart = Cart.objects.create(user=self.request.user, supplier=supplier)
         return cart
@@ -42,7 +46,7 @@ class CartView(DetailView):
         context['supplier'] = supplier
         context['shipping_form'] = ShippingAddressForm()
         context['user_address'] = Address.objects.filter(user=self.request.user).first()
-        context['total_prices'] = [item.product.price * item.quantity for item in self.object.cart_items.all()]
+        context['total_prices'] = [item.get_subtotal_with_discount() for item in self.object.cart_items.all()]
 
         # Calculate estimated delivery fee
         user_address = context['user_address']
@@ -144,6 +148,8 @@ class CartView(DetailView):
         return self.render_to_response(context)
 
 
+from django.db import transaction
+
 # @login_required
 def add_to_cart(request, product_id, store_id=None, store_slug=None):
     target_store_id = store_slug or store_id
@@ -156,89 +162,154 @@ def add_to_cart(request, product_id, store_id=None, store_slug=None):
     supplier = get_object_or_404(Supplier, store_id=target_store_id)
     user_cart, _ = Cart.objects.get_or_create(user=request.user, supplier=supplier)
 
-    # Determine quantity to add (default 1)
     quantity_to_add = 1
-    import json
-    try:
-        if request.body:
-            data = json.loads(request.body)
-            quantity_to_add = int(data.get('quantity', 1))
-    except (ValueError, json.JSONDecodeError):
-        pass
+    selected_option_ids = []
     
-    # Ensure positive quantity
-    if quantity_to_add < 1:
-        quantity_to_add = 1
+    import json
+    if request.method == 'POST':
+        # 1. Try to parse JSON body
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                quantity_to_add = int(data.get('quantity', 1))
+                incoming_opts = data.get('selected_options', [])
+                if isinstance(incoming_opts, list):
+                    selected_option_ids = sorted([int(oid) for oid in incoming_opts if str(oid).isdigit()])
+            except (ValueError, json.JSONDecodeError, TypeError):
+                pass
+        # 2. Fallback to traditional POST data
+        else:
+            try:
+                quantity_to_add = int(request.POST.get('quantity', 1))
+                # Handle both 'selected_options' and 'selected_options[]'
+                incoming_opts = request.POST.getlist('selected_options[]') or request.POST.getlist('selected_options')
+                if incoming_opts:
+                    selected_option_ids = sorted([int(oid) for oid in incoming_opts if str(oid).isdigit()])
+            except (ValueError, TypeError):
+                pass
 
-    # Check if the item is already in the cart
-    cart_item, item_created = CartItem.objects.get_or_create(cart=user_cart, product=product)
+    # Enforce variations selection if product has attributes
+    if product.has_attributes() and not selected_option_ids:
+        return JsonResponse({
+            'success': False, 
+            'message': 'الرجاء اختيار الخيارات المطلوبة (مثل المقاس أو اللون)'
+        }, status=400)
 
-    if not item_created:
-        # Stock Check for total quantity
-        if cart_item.quantity + quantity_to_add > product.stock:
-            return JsonResponse({
-                'success': False, 
-                'message': f'عذراً، الكمية المطلوبة غير متوفرة. المتوفر فقط: {product.stock}'
-            }, status=400)
+    # 1. Variation Matching: Find existing item with the EXACT same options
+    cart_item = None
+    potential_items = CartItem.objects.filter(cart=user_cart, product=product).annotate(
+        option_count=Count('selected_options')
+    ).filter(option_count=len(selected_option_ids))
+
+    for item in potential_items:
+        # Get sorted list of current IDs for this item
+        item_option_ids = sorted(list(item.selected_options.values_list('id', flat=True)))
+        if item_option_ids == selected_option_ids:
+            cart_item = item
+            break
+
+    # 2. Add / Update logic with high-integrity linking
+    with transaction.atomic():
+        if cart_item:
+            # Stock Check
+            if cart_item.quantity + quantity_to_add > product.stock:
+                return JsonResponse({'success': False, 'message': f'الكمية المتاحة: {product.stock}'}, status=400)
+            cart_item.quantity += quantity_to_add
+            # Update price/modifiers only if they are not already set (Locking at first addition)
+            if not cart_item.price:
+                cart_item.price = product.price
+                cart_item.discount_price = product.get_price_with_offer()
+                if selected_option_ids:
+                    cart_item.price_modifier_total = sum([o.price_modifier for o in ProductAttributeOption.objects.filter(id__in=selected_option_ids)])
+            cart_item.save()
+        else:
+            # Create new distinct item for this variation
+            if quantity_to_add > product.stock:
+                 return JsonResponse({'success': False, 'message': f'الكمية المتاحة: {product.stock}'}, status=400)
             
-        # If the item is already in the cart, update the quantity
-        cart_item.quantity += quantity_to_add
-        cart_item.save()
-    else:
-        # Stock Check for first add
-        if quantity_to_add > product.stock:
-             return JsonResponse({
-                'success': False, 
-                'message': f'عذراً، الكمية المطلوبة غير متوفرة. المتوفر فقط: {product.stock}'
-            }, status=400)
-            
-        # If the item is not in the cart, create a new cart item
-        cart_item.quantity = quantity_to_add
-        cart_item.save()
+            cart_item = CartItem.objects.create(
+                cart=user_cart, 
+                product=product, 
+                quantity=quantity_to_add,
+                price=product.price,
+                discount_price=product.get_price_with_offer()
+            )
+            if selected_option_ids:
+                from core.models import ProductAttributeOption
+                options = ProductAttributeOption.objects.filter(id__in=selected_option_ids)
+                if options.exists():
+                    cart_item.selected_options.set(options)
+                    cart_item.price_modifier_total = sum([o.price_modifier for o in options])
+                    cart_item.save()
+                    logger.info(f"Verified Linking: CartItem {cart_item.id} linked to options {[o.id for o in options]}")
 
-    cart_items_count = user_cart.get_total_items()
-    cart_total = int(user_cart.get_total_after_discount())
-
-    return JsonResponse({'success': True, 'message': 'Item added to cart', 'cart_items_count': cart_items_count, 'cart_item_count' : cart_item.quantity, 'cart_item_product_id': cart_item.product.id, 'cart_total': cart_total})
-
-
+    return JsonResponse({
+        'success': True, 
+        'message': 'تمت الإضافة للسلة', 
+        'cart_items_count': user_cart.get_total_items(), 
+        'cart_item_count': cart_item.quantity, 
+        'cart_item_product_id': product.id, 
+        'cart_total': int(user_cart.get_total_after_discount())
+    })
 
 @login_required
 def sub_to_cart(request, product_id, store_id=None, store_slug=None):
     target_store_id = store_slug or store_id
     supplier = get_object_or_404(Supplier, store_id=target_store_id)
     product = get_object_or_404(Product, pk=product_id)
-    user_cart = Cart.objects.get(user=request.user, supplier=supplier)
+    user_cart = get_object_or_404(Cart, user=request.user, supplier=supplier)
 
-    # Check if the item is already in the cart
-    try:
-        cart_item = CartItem.objects.get(cart=user_cart, product=product)
-            
+    selected_option_ids = []
+    import json
+    if request.method == 'POST':
+        # 1. Try to parse JSON body
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                incoming_opts = data.get('selected_options', [])
+                if isinstance(incoming_opts, list):
+                    selected_option_ids = sorted([int(oid) for oid in incoming_opts if str(oid).isdigit()])
+            except (ValueError, json.JSONDecodeError, TypeError):
+                pass
+        # 2. Fallback to traditional POST data
+        else:
+            try:
+                # Handle both 'selected_options' and 'selected_options[]'
+                incoming_opts = request.POST.getlist('selected_options[]') or request.POST.getlist('selected_options')
+                if incoming_opts:
+                    selected_option_ids = sorted([int(oid) for oid in incoming_opts if str(oid).isdigit()])
+            except (ValueError, TypeError):
+                pass
+
+    # Find the specific variation
+    cart_item = None
+    potential_items = CartItem.objects.filter(cart=user_cart, product=product).annotate(
+        option_count=Count('selected_options')
+    ).filter(option_count=len(selected_option_ids))
+    
+    for item in potential_items:
+        item_option_ids = sorted(list(item.selected_options.values_list('id', flat=True)))
+        if item_option_ids == selected_option_ids:
+            cart_item = item
+            break
+
+    if cart_item:
         if cart_item.quantity > 1:
-            # If the item is already in the cart, update the quantity
             cart_item.quantity -= 1
-            logger.debug(cart_item.quantity)
             cart_item.save()
         else:
-            # If the item is not in the cart, create a new cart item
-            cart_item.quantity = 0
             cart_item.delete()
-        cart_items_count = user_cart.get_total_items()
-        cart_total = int(user_cart.get_total_after_discount())
+            cart_item.quantity = 0
 
-        return JsonResponse({'success': True, 'message': 'Item removed from cart', 'cart_items_count': cart_items_count, 'cart_item_count' : cart_item.quantity, 'cart_item_product_id': cart_item.product.id, 'cart_total': cart_total})
+        return JsonResponse({
+            'success': True, 
+            'cart_items_count': user_cart.get_total_items(), 
+            'cart_item_count': cart_item.quantity, 
+            'cart_item_product_id': product.id, 
+            'cart_total': int(user_cart.get_total_after_discount())
+        })
 
-
-
-    except CartItem.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Item not in cart'})
-    
-
-
-
- 
-
-
+    return JsonResponse({'success': False, 'message': 'Item not found'})
 
 @method_decorator(login_required, name='dispatch')
 class IncreaseQuantityView(View):
@@ -257,6 +328,11 @@ class IncreaseQuantityView(View):
 
         # Implement the logic to increase the quantity
         cart_item.quantity += 1
+        # Refresh locked price if it was somehow missing
+        if not cart_item.price:
+            cart_item.price = cart_item.product.price
+            cart_item.discount_price = cart_item.product.get_price_with_offer()
+            cart_item.price_modifier_total = cart_item.get_options_price_modifier()
         cart_item.save()
 
         cart_total = int(cart.get_total_after_discount())
@@ -320,7 +396,11 @@ def get_cart_status(request, store_id=None, store_slug=None):
     try:
         cart = Cart.objects.get(user=request.user, supplier=supplier)
         items = [
-            {'product_id': item.product.id, 'quantity': item.quantity}
+            {
+                'product_id': item.product.id, 
+                'quantity': item.quantity,
+                'selected_options': sorted(list(item.selected_options.values_list('id', flat=True)))
+            }
             for item in cart.cart_items.all()
         ]
         return JsonResponse({

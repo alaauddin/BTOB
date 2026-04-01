@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{% static 'css/suppliers_mobile.css' %}?v={{ css_version }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="{% static 'css/suppliers_list.css' %}?v={{ css_version }}">
+    <link rel="stylesheet" href="{% static 'css/variations.css' %}?v={{ css_version }}">
 {% endblock %}
 
 {% block content %}
@@ -100,12 +101,24 @@
     {% endif %}
 
 
-    <!-- Search Bar Section -->
+    <!-- Search Bar & View Toggle Section -->
     <div class="search-section-wrapper">
-        <div class="container" >
+        <div class="container">
+            <!-- View Mode Switcher -->
+            <div class="view-mode-toggle mb-6">
+                <button class="toggle-btn active" id="storeModeBtn" onclick="setViewMode('store')">
+                    <i class="fas fa-store"></i>
+                    <span>المتاجر</span>
+                </button>
+                <button class="toggle-btn" id="productModeBtn" onclick="setViewMode('product')">
+                    <i class="fas fa-box-open"></i>
+                    <span>المنتجات</span>
+                </button>
+            </div>
+
             <div class="search-input-group">
                 <i class="fas fa-search search-icon"></i>
-                <input dir="ltr" type="text" id="supplierSearchInput" placeholder="ابحث عن متجر أو تصنيف..." onkeyup="applyFilters()">
+                <input dir="ltr" type="text" id="supplierSearchInput" placeholder="ابحث عن متجر أو منتج أو تصنيف..." onkeyup="applyFilters()">
             </div>
         </div>
     </div>
@@ -113,7 +126,6 @@
     <!-- Filter & Categories -->
 <div class="category-nav-wrapper">
     <div class="container" style="padding: 0px;">
-        <span class="filter-label mb-4"> </span>
         <div class="category-scroll-container">
             <button class="category-pill active" data-category="all" onclick="setCategory('all')">
                 <i class="fas fa-border-all"></i>
@@ -121,14 +133,15 @@
             </button>
             {% for category in categories %}
             <button class="category-pill" data-category="{{ category.id }}" onclick="setCategory('{{ category.id }}')">
-               
-                    <i class="fas fa-tag"></i>
+                <i class="fas fa-tag"></i>
                 <span>{{ category.name }}</span>
             </button>
             {% endfor %}
         </div>
     </div>
 </div>
+
+<div id="storeViewSection">
 
     <!-- Suppliers Marquee Section -->
     <div class="supplier-marquee-section" style="overflow: hidden; ">
@@ -297,6 +310,101 @@
             </div>
         </div>
     </section>
+</div> <!-- End #storeViewSection -->
+
+<!-- Products View Section -->
+<div id="productViewSection" class="hidden-view">
+    <div class="container py-6">
+        <div class="products-grid-premium">
+            {% for product in products %}
+            <div class="product-card-container" 
+                 data-name="{{ product.name|lower }}" 
+                 data-category="{{ product.category.category.id }}"
+                 data-price="{{ product.get_price_with_offer }}"
+                 data-has-options="{% if product.has_attributes %}true{% else %}false{% endif %}">
+                <div class="product-card-premium" id="product-card-{{ product.id }}">
+                    {% if product.has_discount %}
+                    <div class="product-badge-discount">-{{ product.get_discount_precentage }}%</div>
+                    {% endif %}
+                    
+                    <div class="product-image-box" onclick="window.location='{% store_url product.supplier path='/p/' %}{{ product.id }}/'">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">
+                        <div class="product-overlay-actions">
+                            <button class="btn-action-mini" title="عرض السريع">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-action-mini premium-cart-btn" 
+                                    onclick="handleAddToCart(event, {{ product.id }})" 
+                                    title="أضف للسلة">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+
+                        <!-- Options Picker (Hidden Overlay) -->
+                        {% if product.has_attributes %}
+                        <div class="product-options-overlay" id="options-{{ product.id }}">
+                            <div class="options-header">
+                                <span>اختر الخيارات</span>
+                                <button onclick="hideOptions(event, {{ product.id }})" class="close-options">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="options-body">
+                                {% for attr in product.attributes.all %}
+                                <div class="option-group">
+                                    <label>{{ attr.name }}</label>
+                                    <div class="option-chips">
+                                        {% for opt in attr.options.all %}
+                                        <div class="option-chip" 
+                                             onclick="selectOption(this, {{ product.id }}, {{ attr.id }}, {{ opt.id }}, {{ opt.price_modifier }})"
+                                             data-option-id="{{ opt.id }}">
+                                            {{ opt.value }}
+                                            {% if opt.price_modifier > 0 %}
+                                            <span class="price-tag">+{{ opt.price_modifier|floatformat:0 }}</span>
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="options-footer">
+                                <button class="confirm-options-btn" onclick="confirmAndAdd(event, {{ product.id }})">
+                                    أضف للسلة
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-info-box">
+                        <div class="product-supplier-mini" onclick="window.location='{% store_url product.supplier %}'">
+                            <img src="{% if product.supplier.profile_picture %}{{ product.supplier.profile_picture.url }}{% else %}{% static 'logo.png' %}{% endif %}" alt="{{ product.supplier.name }}">
+                            <span>{{ product.supplier.name }}</span>
+                        </div>
+                        <h3 class="product-name-premium">{{ product.name }}</h3>
+                        <div class="product-price-row">
+                            <div class="current-price">{{ product.get_price_with_offer|floatformat:0 }} {{ product.supplier.currency }}</div>
+                            {% if product.has_discount %}
+                            <div class="old-price">{{ product.price|floatformat:0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if not products %}
+        <div class="col-12 w-full text-center py-12">
+            <div class="no-products text-slate-400">
+                <i class="fas fa-box-open text-6xl mb-4"></i>
+                <h3 class="text-xl font-bold">لا توجد منتجات متاحة حالياً</h3>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
 
 
 
@@ -328,4 +436,5 @@
 {% block extra_js %}
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="{% static 'js/suppliers_list.js' %}?v={{ css_version }}"></script>
+    <script src="{% static 'js/product_actions.js' %}?v={{ css_version }}"></script>
 {% endblock %}

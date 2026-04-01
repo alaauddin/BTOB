@@ -593,14 +593,24 @@ function openOrderQuickView(orderId) {
                 }
 
                 // Update items
-                itemsContainer.innerHTML = order.items.map(item => `
+                itemsContainer.innerHTML = order.items.map(item => {
+                    const optionsHtml = item.selected_options && item.selected_options.length > 0
+                        ? `<div class="item-options-mini mt-1 d-flex flex-wrap gap-1">
+                            ${item.selected_options.map(opt => `<span class="badge bg-light text-muted border py-0 px-1" style="font-size: 0.65rem;">${opt.attribute}: ${opt.value}</span>`).join('')}
+                          </div>`
+                        : '';
+                    return `
                     <tr>
-                        <td><div class="item-name">${item.name}</div></td>
+                        <td>
+                            <div class="item-name">${item.name}</div>
+                            ${optionsHtml}
+                        </td>
                         <td class="text-center"><span class="item-qty">x${item.quantity}</span></td>
                         <td class="text-end font-medium">${item.price.toFixed(2)}</td>
                         <td class="text-end font-bold">${item.subtotal.toFixed(2)}</td>
                     </tr>
-                `).join('');
+                    `;
+                }).join('');
                 
                 // Update total
                 document.getElementById('modalSubtotal').textContent = `${order.subtotal.toFixed(2)} {{ supplier.currency }}`;

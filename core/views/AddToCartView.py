@@ -16,18 +16,77 @@ class AddToCartView(View):
         if not product.supplier.is_active:
             return JsonResponse({'success': False, 'message': 'المورد غير نشط حالياً.'})
             
-        user_cart, created = Cart.objects.get_or_create(user=request.user)
+        import json
+        selected_options = []
+        if request.method == 'POST':
+            # 1. Try to parse JSON body
+            if request.content_type == 'application/json':
+                try:
+                    data = json.loads(request.body)
+                    selected_options = data.get('selected_options', [])
+                except (ValueError, json.JSONDecodeError, TypeError):
+                    pass
+            # 2. Fallback to traditional POST data
+            else:
+                try:
+                    # Handle both 'selected_options' and 'selected_options[]'
+                    selected_options = request.POST.getlist('selected_options[]') or request.POST.getlist('selected_options')
+                except (ValueError, TypeError):
+                    pass
 
-        # Check if the item is already in the cart
-        cart_item, item_created = CartItem.objects.get_or_create(cart=user_cart, product=product)
+        # Enforce variations selection if product has attributes
+        if product.has_attributes() and not selected_options:
+            return JsonResponse({
+                'success': False, 
+                'message': 'الرجاء اختيار الخيارات المطلوبة (مثل المقاس أو اللون)'
+            }, status=400)
 
-        if not item_created:
-            # If the item is already in the cart, update the quantity
-            cart_item.quantity += quantity
-            cart_item.save()
+        user_cart, created = Cart.objects.get_or_create(user=request.user, supplier=product.supplier)
+
+        # Implementation logic similar to CartView.add_to_cart
+        from core.db.cart import CartItem
+        from core.db.product import ProductAttributeOption
+        
+        # Clean and sort options
+        try:
+            option_ids = sorted([int(oid) for oid in selected_options if str(oid).isdigit()])
+        except (ValueError, TypeError):
+            option_ids = []
+
+        # Find existing item with exact same options
+        cart_items = CartItem.objects.filter(cart=user_cart, product=product)
+        target_item = None
+        for item in cart_items:
+            item_option_ids = sorted(list(item.selected_options.values_list('id', flat=True)))
+            if item_option_ids == option_ids:
+                target_item = item
+                break
+
+        if target_item:
+            target_item.quantity += quantity
+            # Update price/modifiers only if they are not already set (Locking at first addition)
+            if not target_item.price:
+                target_item.price = product.price
+                target_item.discount_price = product.get_price_with_offer()
+                if option_ids:
+                    target_item.price_modifier_total = sum([o.price_modifier for o in ProductAttributeOption.objects.filter(id__in=option_ids)])
+            target_item.save()
         else:
-            # If the item is not in the cart, create a new cart item
-            cart_item.quantity = quantity
-            cart_item.save()
+            target_item = CartItem.objects.create(
+                cart=user_cart, 
+                product=product, 
+                quantity=quantity,
+                price=product.price,
+                discount_price=product.get_price_with_offer()
+            )
+            if option_ids:
+                options = ProductAttributeOption.objects.filter(id__in=option_ids)
+                target_item.selected_options.set(options)
+                target_item.price_modifier_total = sum([o.price_modifier for o in options])
+                target_item.save()
 
-        return JsonResponse({'success': True})
+        return JsonResponse({
+            'success': True,
+            'cart_item_count': target_item.quantity,
+            'cart_items_count': user_cart.get_total_items()
+        })
