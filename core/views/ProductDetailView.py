@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from core.models import Product, Cart, Supplier, CartItem
 from django.contrib.auth.decorators import login_required
 
-@login_required
+# @login_required
 def product_detail(request, pk, store_id=None, store_slug=None):
     """Function-based view for product detail.
 
