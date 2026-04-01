@@ -191,10 +191,11 @@ export default function ProductListScreen({ route, navigation }) {
               {item.name}
             </Text>
             <View style={styles.priceContainer}>
+              {item.has_attributes && <Text style={styles.startingFromText}>يبدأ من </Text>}
               {item.has_discount ? (
                 <>
                   <Text style={[styles.newPrice, { color: primaryColor }]}>
-                    {parseFloat(finalPrice).toFixed(2)} {currencySymbol}
+                    {parseFloat(item.price_after_discount).toFixed(2)} {currencySymbol}
                   </Text>
                   <Text style={styles.oldPrice}>
                     {parseFloat(item.price).toFixed(2)}
@@ -207,8 +208,24 @@ export default function ProductListScreen({ route, navigation }) {
               )}
             </View>
 
-            {/* Interactive Cart Button */}
-            {cartItems[item.id] > 0 ? (
+            {/* Interactive Cart Button or Options Shortcut */}
+            {item.has_attributes ? (
+              <TouchableOpacity
+                style={[
+                  styles.addToCartButton,
+                  { backgroundColor: "#f8fafc", borderWidth: 1, borderColor: primaryColor },
+                ]}
+                onPress={() => navigation.navigate("ProductDetails", { productId: item.id })}
+              >
+                <Ionicons
+                  name="options-outline"
+                  size={16}
+                  color={primaryColor}
+                  style={{ marginRight: 4 }}
+                />
+                <Text style={[styles.addToCartText, { color: primaryColor, fontWeight: "600" }]}>اختيار الخيارات</Text>
+              </TouchableOpacity>
+            ) : cartItems[item.id] > 0 ? (
               <View
                 style={[
                   styles.quantityController,
@@ -706,6 +723,12 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#94a3b8",
     textDecorationLine: "line-through",
+  },
+  startingFromText: {
+    fontSize: 10,
+    color: "#64748b",
+    marginRight: 2,
+    fontFamily: "System",
   },
   addToCartButton: {
     flexDirection: "row",

@@ -160,7 +160,7 @@ export default function OnboardingModal({ visible, stepKey, onClose, onSuccess, 
                     </View>
                     <LinearGradient colors={[primaryColor + '15', 'transparent']} style={styles.previewBox}>
                         <Text style={styles.previewLabel}>سيصبح رابط متجرك:</Text>
-                        <Text style={[styles.previewUrl, { color: primaryColor }]}>{subdomain || 'yourstore'}.aratat.com</Text>
+                        <Text style={[styles.previewUrl, { color: primaryColor }]}>{subdomain || 'yourstore'}.rawaage.com</Text>
                     </LinearGradient>
                 </View>
             );

@@ -108,7 +108,7 @@ export default function MerchantOffersScreen() {
                     style: 'destructive',
                     onPress: async () => {
                         try {
-                            const res = await client.delete(`/merchant/offers/?offer_id=${offer.id}`);
+                            const res = await client.delete(`/merchant/offers/?offer_id=${offer.id}&merchant_id=${activeMerchant.id}`);
                             if (res.data.success) {
                                 setOffers(prev => prev.filter(o => o.id !== offer.id));
                             }

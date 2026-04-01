@@ -18,7 +18,8 @@ from .orders import OrderItemSerializer, OrderSerializer
 from .merchant import (
     MerchantMiniSerializer, MerchantProfileSerializer, 
     MerchantOrderItemSerializer, MerchantOrderSerializer, 
-    MerchantProductSerializer, MerchantOfferSerializer
+    MerchantProductSerializer, MerchantOfferSerializer,
+    MerchantDriverSerializer
 )
 from .driver import (
     DeliveryDriverMiniSerializer, DriverOrderSerializer, DriverLocationSerializer

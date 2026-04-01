@@ -11,7 +11,8 @@ from .merchant import (
     MerchantDashboardAPIView, MerchantSwitchAPIView, MerchantOrdersAPIView,
     MerchantOrderDetailAPIView, MerchantProductsAPIView, MerchantOffersAPIView,
     MerchantProductCategoriesAPIView, MerchantProfileAPIView,
-    MerchantBrandingAPIView, MerchantAgreeTermsAPIView
+    MerchantBrandingAPIView, MerchantAgreeTermsAPIView,
+    MerchantDriversAPIView
 )
 from .driver import (
     DriverDashboardAPIView, DriverUpdateStatusAPIView, 

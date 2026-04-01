@@ -14,6 +14,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     )
     
     selected_options_details = serializers.SerializerMethodField()
+    subtotal_with_discount = serializers.SerializerMethodField()
 
     class Meta:
         model = CartItem
@@ -23,6 +24,9 @@ class CartItemSerializer(serializers.ModelSerializer):
         from .product import ProductAttributeOptionSerializer
         return ProductAttributeOptionSerializer(obj.selected_options.all(), many=True).data
         
+    def get_subtotal_with_discount(self, obj):
+        return obj.get_subtotal_with_discount()
+
     def get_product(self, obj):
         from .product import ProductSerializer
         return ProductSerializer(obj.product, context=self.context).data

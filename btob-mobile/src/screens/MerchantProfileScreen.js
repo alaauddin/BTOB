@@ -20,7 +20,7 @@ export default function MerchantProfileScreen() {
   const [saving, setSaving] = useState(false);
   
   // Profile Form State
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState(activeMerchant || {});
   const [imagesData, setImagesData] = useState({ profile_picture: null, panal_picture: null });
 
   // Fallback defaults
@@ -34,7 +34,11 @@ export default function MerchantProfileScreen() {
     try {
       const res = await client.get(`/merchant/profile/?merchant_id=${activeMerchant.id}`);
       if (res.data.success) {
-        setFormData(res.data.profile);
+        // Support both 'profile' and 'merchant' keys for robustness
+        const profileData = res.data.profile || res.data.merchant;
+        if (profileData) {
+          setFormData(profileData);
+        }
       }
     } catch (err) {
       console.error('Failed to fetch profile', err);
@@ -44,6 +48,8 @@ export default function MerchantProfileScreen() {
   }, [activeMerchant?.id]);
 
   useEffect(() => {
+    // If we have activeMerchant, we already initialized formData,
+    // but we still fetch to get the very latest from the server.
     fetchProfile();
   }, [fetchProfile]);
 
@@ -102,8 +108,11 @@ export default function MerchantProfileScreen() {
 
       if (patchRes.data.success) {
         successCount++;
-        setFormData(patchRes.data.profile);
-        setActiveMerchant({ ...activeMerchant, ...patchRes.data.profile }); 
+        const updatedProfile = patchRes.data.profile || patchRes.data.merchant;
+        if (updatedProfile) {
+          setFormData(updatedProfile);
+          setActiveMerchant({ ...activeMerchant, ...updatedProfile });
+        }
       }
 
       // 2. Upload images if changed via POST /branding/
@@ -130,9 +139,12 @@ export default function MerchantProfileScreen() {
 
         if (brandRes.data.success) {
           successCount++;
-          setFormData(brandRes.data.profile);
-          setActiveMerchant({ ...activeMerchant, ...brandRes.data.profile });
-          setImagesData({ profile_picture: null, panal_picture: null });
+          const updatedProfile = brandRes.data.profile || brandRes.data.merchant;
+          if (updatedProfile) {
+            setFormData(updatedProfile);
+            setActiveMerchant({ ...activeMerchant, ...updatedProfile });
+            setImagesData({ profile_picture: null, panal_picture: null });
+          }
         }
       }
 
@@ -290,8 +302,8 @@ export default function MerchantProfileScreen() {
                <Text style={[styles.cardTitle, { color: '#059669' }]}>إعدادات العرض</Text>
             </View>
             <ToggleRow label="عرض قيم الطلبات" icon="dollar-sign" value={formData?.show_order_amounts} onValueChange={v => updateField('show_order_amounts', v)} color={primaryColor} />
-            <ToggleRow label="عرض إعلانات المنصة" icon="airplay" value={formData?.show_platform_ads} onValueChange={v => updateField('show_platform_ads', v)} color={primaryColor} />
-            <ToggleRow label="إظهار شعار النظام" icon="shield" value={formData?.show_system_logo} onValueChange={v => updateField('show_system_logo', v)} color={primaryColor} />
+            <ToggleRow label="عرض بقية المنتجات في تفاصيل المنتج" icon="airplay" value={formData?.show_platform_ads} onValueChange={v => updateField('show_platform_ads', v)} color={primaryColor} />
+            {/* <ToggleRow label="إظهار شعار النظام" icon="shield" value={formData?.show_system_logo} onValueChange={v => updateField('show_system_logo', v)} color={primaryColor} /> */}
           </View>
 
           <View style={styles.card}>

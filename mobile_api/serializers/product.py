@@ -40,6 +40,8 @@ class ProductSerializer(serializers.ModelSerializer):
     
     supplier = serializers.SerializerMethodField()
     category = ProductCategorySerializer(read_only=True)
+    category_id = serializers.IntegerField(source='category.id', read_only=True)
+    available_categories = serializers.SerializerMethodField()
     images = ProductImageSerializer(source='additional_images', many=True, read_only=True)
     attributes = ProductAttributeSerializer(many=True, read_only=True)
     video = serializers.SerializerMethodField()
@@ -47,10 +49,14 @@ class ProductSerializer(serializers.ModelSerializer):
     price_after_discount = serializers.SerializerMethodField()
     has_discount = serializers.SerializerMethodField()
     discount_percentage = serializers.SerializerMethodField()
+    has_attributes = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = '__all__'
+
+    def get_has_attributes(self, obj):
+        return obj.has_attributes()
 
     def get_supplier(self, obj):
         from .buyer import SupplierSerializer
@@ -72,3 +78,11 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_discount_percentage(self, obj):
         return obj.get_discount_precentage() if obj.has_discount() else 0
+
+    def get_available_categories(self, obj):
+        """Return all categories belonging to the product's supplier."""
+        if not obj.supplier:
+            return []
+        from core.models import ProductCategory
+        categories = ProductCategory.objects.filter(products__supplier=obj.supplier).distinct()
+        return MerchantProductCategorySerializer(categories, many=True).data

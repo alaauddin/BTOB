@@ -33,15 +33,29 @@ export default function CartScreen({ route, navigation }) {
         }
     };
 
-    const handleUpdateQuantity = async (productId, currentQty, change) => {
+    const [updatingItems, setUpdatingItems] = useState(new Set());
+
+    const handleUpdateQuantity = async (productId, currentQty, change, selectedOptions = []) => {
         const newQty = currentQty + change;
         if (newQty < 0) return;
+
+        // Extract option IDs for the API
+        const selectedOptionIds = (selectedOptions || []).map(opt => opt.id).sort();
+        const itemKey = `${productId}_${JSON.stringify(selectedOptionIds)}`;
+        
+        if (updatingItems.has(itemKey)) return; // Tap blocker
+
+        setUpdatingItems(prev => new Set(prev).add(itemKey));
 
         // Optimistic update
         setCart(prev => {
             if (!prev) return prev;
             const updatedItems = prev.items.map(item => {
-                if (item.product.id === productId) {
+                const itemOptionIds = (item.selected_options_details || []).map(o => o.id).sort();
+                const isMatch = item.product.id === productId && 
+                               JSON.stringify(itemOptionIds) === JSON.stringify(selectedOptionIds);
+                
+                if (isMatch) {
                     return { ...item, quantity: newQty };
                 }
                 return item;
@@ -52,7 +66,8 @@ export default function CartScreen({ route, navigation }) {
         try {
             const response = await client.post('/carts/update_quantity/', {
                 product_id: productId,
-                quantity: newQty
+                quantity: newQty,
+                selected_options: selectedOptionIds
             });
             if (!response.data.success) {
                 fetchCart(); // Revert
@@ -62,12 +77,22 @@ export default function CartScreen({ route, navigation }) {
         } catch (error) {
             fetchCart(); // Revert
             console.error("Update error", error);
+        } finally {
+            setUpdatingItems(prev => {
+                const next = new Set(prev);
+                next.delete(itemKey);
+                return next;
+            });
         }
     };
 
     const renderCartItem = ({ item }) => {
         const product = item.product;
         const imageUrl = product.image || (product.images && product.images.length > 0 ? product.images[0].image : null);
+
+        // Calculate unit price from item fields (locked/variation aware)
+        const lockedPrice = item.discount_price || item.price || product.price;
+        const totalUnitPrice = parseFloat(lockedPrice) + parseFloat(item.price_modifier_total || 0);
 
         return (
             <View style={styles.card}>
@@ -81,29 +106,67 @@ export default function CartScreen({ route, navigation }) {
 
                 <View style={styles.cardContent}>
                     <View style={styles.cardHeader}>
-                        <Text style={styles.boldText} numberOfLines={2}>{product.name}</Text>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.boldText} numberOfLines={2}>{product.name}</Text>
+                            {/* Selected Options Badges */}
+                            {item.selected_options_details && item.selected_options_details.length > 0 && (
+                                <View style={styles.optionsContainer}>
+                                    {item.selected_options_details.map((opt) => (
+                                        <View key={opt.id} style={styles.optionBadge}>
+                                            <Text style={styles.optionBadgeText}>{opt.attribute_name}: {opt.value}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
+                        </View>
                         <TouchableOpacity
-                            onPress={() => handleUpdateQuantity(product.id, item.quantity, -item.quantity)}
+                            onPress={() => handleUpdateQuantity(product.id, item.quantity, -item.quantity, item.selected_options_details)}
                             style={styles.deleteButton}
                         >
                             <Ionicons name="trash-outline" size={20} color="#ef4444" />
                         </TouchableOpacity>
                     </View>
 
-                    <Text style={styles.priceText}>{parseFloat(product.price).toFixed(2)} ر.ي</Text>
+                    <Text style={styles.priceText}>{totalUnitPrice.toFixed(2)} ر.ي</Text>
 
                     <View style={styles.actionRow}>
                         <View style={styles.quantityController}>
-                            <TouchableOpacity style={styles.qtyBtn} onPress={() => handleUpdateQuantity(product.id, item.quantity, -1)}>
-                                <Ionicons name="remove" size={16} color="#2B5876" />
-                            </TouchableOpacity>
-                            <Text style={styles.qtyNumber}>{item.quantity}</Text>
-                            <TouchableOpacity style={[styles.qtyBtn, { backgroundColor: '#2B5876' }]} onPress={() => handleUpdateQuantity(product.id, item.quantity, 1)}>
-                                <Ionicons name="add" size={16} color="#fff" />
-                            </TouchableOpacity>
+                            {(() => {
+                                const itemOptionIds = (item.selected_options_details || []).map(o => o.id).sort();
+                                const itemKey = `${product.id}_${JSON.stringify(itemOptionIds)}`;
+                                const isUpdating = updatingItems.has(itemKey);
+
+                                return (
+                                    <>
+                                        <TouchableOpacity 
+                                            style={[styles.qtyBtn, isUpdating && { opacity: 0.5 }]} 
+                                            onPress={() => handleUpdateQuantity(product.id, item.quantity, -1, item.selected_options_details)}
+                                            disabled={isUpdating}
+                                        >
+                                            <Ionicons name="remove" size={16} color="#2B5876" />
+                                        </TouchableOpacity>
+                                        
+                                        <View style={{ width: 30, alignItems: 'center' }}>
+                                            {isUpdating ? (
+                                                <ActivityIndicator size="small" color="#2B5876" />
+                                            ) : (
+                                                <Text style={styles.qtyNumber}>{item.quantity}</Text>
+                                            )}
+                                        </View>
+
+                                        <TouchableOpacity 
+                                            style={[styles.qtyBtn, { backgroundColor: '#2B5876' }, isUpdating && { opacity: 0.5 }]} 
+                                            onPress={() => handleUpdateQuantity(product.id, item.quantity, 1, item.selected_options_details)}
+                                            disabled={isUpdating}
+                                        >
+                                            <Ionicons name="add" size={16} color="#fff" />
+                                        </TouchableOpacity>
+                                    </>
+                                );
+                            })()}
                         </View>
                         <Text style={styles.subtotalText}>
-                            المجموع: {(item.quantity * parseFloat(product.price)).toFixed(2)}
+                            المجموع: {parseFloat(item.subtotal_with_discount).toFixed(2)}
                         </Text>
                     </View>
                 </View>
@@ -146,7 +209,7 @@ export default function CartScreen({ route, navigation }) {
                         <View style={styles.totalRow}>
                             <Text style={styles.totalLabel}>الإجمالي الكلي:</Text>
                             <Text style={styles.totalAmount}>
-                                {cart.items.reduce((sum, item) => sum + (item.quantity * parseFloat(item.product.price)), 0).toFixed(2)} ر.ي
+                                {cart.items.reduce((sum, item) => sum + parseFloat(item.subtotal_with_discount), 0).toFixed(2)} ر.ي
                             </Text>
                         </View>
                         <TouchableOpacity style={styles.checkoutButton} onPress={() => setCheckoutModalVisible(true)}>
@@ -291,6 +354,25 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#64748b',
         fontWeight: '600',
+    },
+    optionsContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginTop: 4,
+        gap: 4,
+    },
+    optionBadge: {
+        backgroundColor: '#f1f5f9',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    optionBadgeText: {
+        fontSize: 10,
+        color: '#475569',
+        fontFamily: 'System',
     },
     quantityController: {
         flexDirection: 'row',

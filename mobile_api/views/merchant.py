@@ -10,8 +10,10 @@ from core.models import Order, Product, Supplier, SystemSettings, ProductOffer, 
 from ..serializers import (
     MerchantMiniSerializer, MerchantOrderSerializer, 
     MerchantProductSerializer, MerchantOfferSerializer,
-    MerchantProductCategorySerializer, SupplierSerializer
+    MerchantProductCategorySerializer, SupplierSerializer,
+    MerchantDriverSerializer
 )
+from django.shortcuts import get_object_or_404
 from .helpers import (
     _assert_merchant_access, _get_manageable_merchants, _merchant_list_data
 )
@@ -227,8 +229,10 @@ class MerchantOrderDetailAPIView(APIView):
     def patch(self, request, order_id):
         merchant_id = request.data.get('merchant_id')
         status_slug = request.data.get('status')
-        if not merchant_id or not status_slug:
-            return Response({'success': False, 'message': 'merchant_id and status are required.'}, status=status.HTTP_400_BAD_REQUEST)
+        driver_id = request.data.get('driver_id')
+
+        if not merchant_id:
+            return Response({'success': False, 'message': 'merchant_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
         
         supplier, err = _assert_merchant_access(request.user, merchant_id)
         if err: return err
@@ -237,18 +241,33 @@ class MerchantOrderDetailAPIView(APIView):
         if not order:
             return Response({'success': False, 'message': 'Order not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        from core.models import PipelineStatus
-        new_status = PipelineStatus.objects.filter(slug=status_slug).first()
-        if not new_status:
-            return Response({'success': False, 'message': 'Invalid status slug.'}, status=status.HTTP_400_BAD_REQUEST)
+        # 1. Handle Driver Assignment
+        if driver_id is not None:
+            from core.models import DeliveryDriver
+            if driver_id == '': # Unassign
+                order.delivery_driver = None
+                order.save()
+            else:
+                driver = DeliveryDriver.objects.filter(id=driver_id, supplier=supplier, is_active=True).first()
+                if not driver:
+                    return Response({'success': False, 'message': 'Invalid driver ID.'}, status=status.HTTP_400_BAD_REQUEST)
+                order.delivery_driver = driver
+                order.save()
 
-        order.pipeline_status = new_status
-        order.save()
+        # 2. Handle Status Update
+        if status_slug:
+            from core.models import OrderStatus
+            new_status = OrderStatus.objects.filter(slug=status_slug).first()
+            if not new_status:
+                return Response({'success': False, 'message': 'Invalid status slug.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Optional: trigger notification here
+            success, message = order.update_status(new_status, user=request.user)
+            if not success:
+                return Response({'success': False, 'message': message}, status=status.HTTP_400_BAD_REQUEST)
+
         return Response({
             'success': True,
-            'message': f'Order status updated to {new_status.name}',
+            'message': 'Order updated successfully.',
             'order': MerchantOrderSerializer(order, context={'request': request}).data
         })
 
@@ -264,7 +283,24 @@ class MerchantProductsAPIView(APIView):
         supplier, err = _assert_merchant_access(request.user, merchant_id)
         if err: return err
 
-        products = Product.objects.filter(supplier=supplier).order_by('-id')
+        # Filters
+        q = request.query_params.get('q')
+        category_id = request.query_params.get('category_id')
+        status_filter = request.query_params.get('status')
+
+        products = Product.objects.filter(supplier=supplier)
+        
+        if q:
+            products = products.filter(name__icontains=q)
+        if category_id:
+            products = products.filter(category_id=category_id)
+        if status_filter == 'active':
+            products = products.filter(is_active=True)
+        elif status_filter == 'inactive':
+            products = products.filter(is_active=False)
+
+        products = products.order_by('-id')
+
         return Response({
             'success': True,
             'products': MerchantProductSerializer(products, many=True, context={'request': request}).data
@@ -369,7 +405,8 @@ class MerchantProfileAPIView(APIView):
 
         return Response({
             'success': True,
-            'merchant': SupplierSerializer(supplier, context={'request': request}).data
+            'merchant': SupplierSerializer(supplier, context={'request': request}).data,
+            'profile': SupplierSerializer(supplier, context={'request': request}).data
         })
 
     def patch(self, request):
@@ -387,7 +424,11 @@ class MerchantProfileAPIView(APIView):
         serializer = SupplierSerializer(supplier, data=data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
-            return Response({'success': True, 'merchant': serializer.data})
+            return Response({
+                'success': True, 
+                'merchant': serializer.data,
+                'profile': serializer.data
+            })
         return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class MerchantBrandingAPIView(APIView):
@@ -403,7 +444,11 @@ class MerchantBrandingAPIView(APIView):
         serializer = SupplierSerializer(supplier, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
-            return Response({'success': True, 'merchant': serializer.data})
+            return Response({
+                'success': True, 
+                'merchant': serializer.data,
+                'profile': serializer.data
+            })
         return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class MerchantAgreeTermsAPIView(APIView):
@@ -417,3 +462,69 @@ class MerchantAgreeTermsAPIView(APIView):
         supplier.agreed_to_terms = True
         supplier.save()
         return Response({'success': True, 'message': 'Terms agreed.'})
+
+class MerchantDriversAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        merchant_id = request.query_params.get('merchant_id')
+        if not merchant_id: return Response({'success': False, 'message': 'merchant_id required'}, status=status.HTTP_400_BAD_REQUEST)
+        supplier, err = _assert_merchant_access(request.user, merchant_id)
+        if err: return err
+
+        from core.models import DeliveryDriver
+        drivers = DeliveryDriver.objects.filter(supplier=supplier).order_by('-id')
+        return Response({
+            'success': True,
+            'drivers': MerchantDriverSerializer(drivers, many=True, context={'request': request}).data
+        })
+
+    def post(self, request):
+        merchant_id = request.data.get('merchant_id')
+        if not merchant_id: return Response({'success': False, 'message': 'merchant_id required'}, status=status.HTTP_400_BAD_REQUEST)
+        supplier, err = _assert_merchant_access(request.user, merchant_id)
+        if err: return err
+
+        first_name = request.data.get('first_name')
+        last_name  = request.data.get('last_name', '')
+        phone      = request.data.get('phone')
+        username   = request.data.get('username')
+        password   = request.data.get('password')
+
+        if not all([first_name, phone, username, password]):
+            return Response({'success': False, 'message': 'All fields are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        from django.contrib.auth.models import User
+        from core.models import DeliveryDriver
+
+        if User.objects.filter(username=username).exists():
+            return Response({'success': False, 'message': f'Username "{username}" already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if DeliveryDriver.objects.filter(phone=phone, supplier=supplier).exists():
+            return Response({'success': False, 'message': 'A driver with this phone already exists for this supplier.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.create_user(
+                username=username,
+                password=password,
+                first_name=first_name,
+                last_name=last_name
+            )
+            driver = DeliveryDriver.objects.create(
+                user=user,
+                supplier=supplier,
+                phone=phone
+            )
+            
+            # Send WhatsApp with credentials
+            from core.utils.whatsapp_utils import send_whatsapp_message
+            msg = f"مرحباً {first_name}، تم تسجيلك كسائق في {supplier.name}.\nبيانات الدخول:\nالمستخدم: {username}\nكلمة المرور: {password}"
+            send_whatsapp_message(phone, msg)
+
+            return Response({
+                'success': True,
+                'message': 'Driver created and credentials sent via WhatsApp.',
+                'driver': MerchantDriverSerializer(driver, context={'request': request}).data
+            })
+        except Exception as e:
+            return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

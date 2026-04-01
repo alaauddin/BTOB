@@ -20,6 +20,7 @@ import CartScreen from '../screens/CartScreen';
 // Merchant sub-screens (full-screen push, outside the tab bar)
 import MerchantOrderDetailScreen from '../screens/MerchantOrderDetailScreen';
 import MerchantOffersScreen from '../screens/MerchantOffersScreen';
+import MerchantProductEditScreen from '../screens/MerchantProductEditScreen';
 
 // Driver Screens
 import DriverDashboardScreen from '../screens/DriverDashboardScreen';
@@ -75,6 +76,11 @@ export default function AppNavigator() {
                 <Stack.Screen
                     name="MerchantOffers"
                     component={MerchantOffersScreen}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="MerchantProductEdit"
+                    component={MerchantProductEditScreen}
                     options={{ headerShown: false }}
                 />
 

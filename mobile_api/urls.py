@@ -36,6 +36,7 @@ urlpatterns = [
     path('merchant/profile/', views.MerchantProfileAPIView.as_view(), name='merchant_profile'),
     path('merchant/branding/', views.MerchantBrandingAPIView.as_view(), name='merchant_branding'),
     path('merchant/agree-terms/', views.MerchantAgreeTermsAPIView.as_view(), name='merchant_agree_terms'),
+    path('merchant/drivers/', views.MerchantDriversAPIView.as_view(), name='merchant_drivers'),
     
     # Driver management endpoints
     path('driver/dashboard/', views.DriverDashboardAPIView.as_view(), name='driver_dashboard'),

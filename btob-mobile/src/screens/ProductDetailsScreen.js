@@ -35,10 +35,14 @@ export default function ProductDetailsScreen({ route, navigation }) {
   const [quantity, setQuantity] = useState(1);
   const [cartQty, setCartQty] = useState(0);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState({}); // { attributeId: optionId }
+  const [validationErrorIds, setValidationErrorIds] = useState([]); // Array of missing attribute IDs
 
   // Media gallery state
   const [activeSlide, setActiveSlide] = useState(0);
   const videoRef = useRef(null);
+  const scrollViewRef = useRef(null);
+  const attributeRefs = useRef({}); // { attributeId: ref }
 
   // For scroll animation on header
   const scrollY = new Animated.Value(0);
@@ -49,9 +53,17 @@ export default function ProductDetailsScreen({ route, navigation }) {
 
   useEffect(() => {
     if (user && product?.supplier?.id) {
-      fetchCartQty();
+      // If product has attributes, we only fetch qty once all are selected
+      const entries = Object.entries(selectedOptions);
+      if (!product.attributes || product.attributes.length === 0) {
+        fetchCartQty([]);
+      } else if (entries.length === product.attributes.length) {
+        fetchCartQty();
+      } else {
+        setCartQty(0);
+      }
     }
-  }, [user, product]);
+  }, [user, product, selectedOptions]);
 
   /**
    * Build the ordered list of media slides from the product:
@@ -81,26 +93,25 @@ export default function ProductDetailsScreen({ route, navigation }) {
     return slides;
   };
 
-  const fetchCartQty = async () => {
+  const fetchCartQty = async (optionsOverride = null) => {
+    if (!user || !product?.supplier?.id) return;
+
     try {
-      const response = await client.get(
-        `/carts/get_supplier_cart/?supplier_id=${product.supplier.id}`,
-      );
-      if (response.data.success && response.data.cart) {
-        const cartItem = response.data.cart.items.find(
-          (i) => i.product.id === product.id,
-        );
-        if (cartItem) {
-          setCartQty(cartItem.quantity);
-        } else {
-          setCartQty(0);
-        }
+      // If product has attributes, we need to know the qty for the SPECIFIC variant
+      const options = optionsOverride || Object.values(selectedOptions);
+      const payload = {
+        product_id: product.id,
+        selected_options: options,
+        supplier_id: product.supplier.id
+      };
+
+      const response = await client.post("/carts/get_item_quantity/", payload);
+      if (response.data.success) {
+        setCartQty(response.data.quantity);
         DeviceEventEmitter.emit(
           `cart_updated_${product.supplier.id}`,
           response.data.cart_count,
         );
-      } else {
-        setCartQty(0);
       }
     } catch (error) {
       console.error("Error fetching cart qty", error);
@@ -129,9 +140,35 @@ export default function ProductDetailsScreen({ route, navigation }) {
       return;
     }
 
+    // Check if all attributes have a selected option
+    if (!setToZero && product.attributes && product.attributes.length > 0) {
+      const missingAttributeIds = product.attributes
+        .filter(attr => !selectedOptions[attr.id])
+        .map(attr => attr.id);
+
+      if (missingAttributeIds.length > 0) {
+        setValidationErrorIds(missingAttributeIds);
+        
+        // Scroll to the first missing attribute
+        const firstMissingId = missingAttributeIds[0];
+        if (attributeRefs.current[firstMissingId]) {
+          attributeRefs.current[firstMissingId].measureLayout(
+            Animated.findNodeHandle(scrollViewRef.current),
+            (x, y) => {
+              scrollViewRef.current.scrollTo({ y: y - 100, animated: true });
+            }
+          );
+        }
+
+        Alert.alert("تنبيه", "الرجاء اختيار كافة الخيارات المطلوبة (مثل المقاس واللون)");
+        return;
+      }
+    }
+    setValidationErrorIds([]);
+
     setAddingToCart(true);
     let newQty;
-    let fallbackQty = cartQty;
+    const oldQty = cartQty;
 
     if (setToZero) {
       newQty = 0;
@@ -143,26 +180,38 @@ export default function ProductDetailsScreen({ route, navigation }) {
 
     if (newQty < 0) newQty = 0;
 
+    // 1. Optimistic Update
     setCartQty(newQty);
 
     try {
-      const response = await client.post("/carts/update_quantity/", {
+      const isInitialAdd = oldQty === 0 && !setToZero;
+      const endpoint = isInitialAdd ? "/carts/add_item/" : "/carts/update_quantity/";
+      
+      const payload = {
         product_id: product.id,
         quantity: newQty,
-      });
+        selected_options: Object.values(selectedOptions)
+      };
+
+      const response = await client.post(endpoint, payload);
+      
       if (!response.data.success) {
-        setCartQty(fallbackQty);
+        setCartQty(oldQty); // Rollback
         Alert.alert("تنبيه", response.data.message || "حدث خطأ ما");
       } else {
-        DeviceEventEmitter.emit(
-          `cart_updated_${product.supplier.id}`,
-          response.data.cart_count,
-        );
-        if (cartQty === 0)
+        // Update precise state from server count
+        if (response.data.quantity !== undefined) {
+          setCartQty(response.data.quantity);
+        }
+        
+        DeviceEventEmitter.emit(`cart_updated_${product.supplier.id}`, response.data.cart_count);
+        
+        if (isInitialAdd) {
           Alert.alert("نجاح", "تم إضافة المنتج إلى السلة بنجاح!");
+        }
       }
     } catch (error) {
-      setCartQty(fallbackQty);
+      setCartQty(oldQty); // Rollback
       console.error("Add/Update to cart error", error);
       Alert.alert("خطأ", "فشل في تحديث السلة. تحقق من اتصالك بالإنترنت.");
     } finally {
@@ -194,12 +243,27 @@ export default function ProductDetailsScreen({ route, navigation }) {
   }
 
   const currencySymbol = product.supplier?.currency?.symbol || "$";
-  const finalPrice = product.has_discount
+  const basePrice = product.has_discount
     ? product.price_after_discount
     : product.price;
-  const totalPrice = (parseFloat(finalPrice) * quantity).toFixed(2);
+  
+  // Calculate price modifiers from selected options
+  const modifierTotal = Object.values(selectedOptions).reduce((sum, optId) => {
+    // Find the option object in product attributes
+    for (const attr of (product.attributes || [])) {
+      const option = (attr.options || []).find(o => o.id === optId);
+      if (option) return sum + parseFloat(option.price_modifier || 0);
+    }
+    return sum;
+  }, 0);
+
+  const finalPrice = parseFloat(basePrice) + modifierTotal;
+  const totalPrice = (finalPrice * quantity).toFixed(2);
   const primaryColor = product.supplier?.primary_color || "#2B5876";
   const mediaSlides = buildMediaSlides(product);
+
+  const isSelectionComplete = !product.attributes || product.attributes.length === 0 || 
+    product.attributes.every(attr => !!selectedOptions[attr.id]);
 
   // ─────────────────────────────────────────────────────────────────
   // Render a single media slide (image or video)
@@ -261,6 +325,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
       </View>
 
       <Animated.ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         onScroll={Animated.event(
@@ -304,7 +369,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
               {/* Dot pagination — only shown when there are 2+ slides */}
               {mediaSlides.length > 1 && (
                 <View style={styles.dotRow}>
-                  {mediaSlides.map((slide, idx) => (
+                  {(mediaSlides || []).map((slide, idx) => (
                     <View
                       key={idx}
                       style={[
@@ -427,6 +492,61 @@ export default function ProductDetailsScreen({ route, navigation }) {
             </TouchableOpacity>
           )}
 
+          {/* Variations / Attributes Selection */}
+          {product.attributes && product.attributes.length > 0 && (
+            <View style={styles.variationsSection}>
+              {(product.attributes || []).map((attr) => {
+                const isError = validationErrorIds.includes(attr.id);
+                return (
+                  <View 
+                    key={attr.id} 
+                    ref={el => attributeRefs.current[attr.id] = el}
+                    style={[styles.attributeContainer, isError && styles.errorAttributeContainer]}
+                  >
+                    <View style={styles.attributeTitleRow}>
+                      <Text style={[styles.attributeTitle, isError && { color: "#ef4444" }]}>{attr.name}</Text>
+                      <Text style={isError ? styles.requiredTextError : styles.requiredText}>(مطلوب)</Text>
+                    </View>
+                    <View style={styles.optionsRow}>
+                      {(attr.options || []).map((opt) => {
+                        const isSelected = selectedOptions[attr.id] === opt.id;
+                        const hasModifier = parseFloat(opt.price_modifier) !== 0;
+                        return (
+                          <TouchableOpacity
+                            key={opt.id}
+                            style={[
+                              styles.optionChip,
+                              isSelected && { borderColor: primaryColor, backgroundColor: primaryColor + "08" },
+                              isError && !isSelected && { borderColor: "#fecaca" }
+                            ]}
+                            onPress={() => {
+                              setSelectedOptions(prev => ({ ...prev, [attr.id]: opt.id }));
+                              setValidationErrorIds(prev => prev.filter(id => id !== attr.id));
+                              // Reset quantity when shifting between variants for a cleaner UI
+                              if (selectedOptions[attr.id] !== opt.id) {
+                                setQuantity(1);
+                              }
+                            }}
+                          >
+                            <Text style={[styles.optionText, isSelected && { color: primaryColor, fontWeight: "bold" }]}>
+                              {opt.value}
+                            </Text>
+                            {hasModifier && (
+                              <Text style={[styles.modifierText, isSelected && { color: primaryColor }]}>
+                                {parseFloat(opt.price_modifier) > 0 ? "+" : ""}{parseFloat(opt.price_modifier).toFixed(0)}
+                              </Text>
+                            )}
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+                );
+              })}
+              <View style={styles.divider} />
+            </View>
+          )}
+
           {/* Specifications / Highlights */}
           <View style={styles.highlightsContainer}>
             <View style={styles.highlightItem}>
@@ -480,12 +600,12 @@ export default function ProductDetailsScreen({ route, navigation }) {
       {/* Sticky Bottom Bar */}
       <View style={styles.bottomBar}>
         <View style={styles.totalContainer}>
-          <Text style={styles.totalLabel}>السعر الإجمالي</Text>
+          <Text style={styles.totalLabel}>{isSelectionComplete ? "السعر الإجمالي" : "يبدأ من"}</Text>
           <View style={{ flexDirection: "row", alignItems: "baseline" }}>
             <Text style={styles.currentPriceNumber}>
               {cartQty > 0
                 ? (parseFloat(finalPrice) * cartQty).toFixed(2)
-                : totalPrice}
+                : (isSelectionComplete ? totalPrice : parseFloat(basePrice).toFixed(2))}
             </Text>
             <Text style={styles.currencySymbol}>{currencySymbol}</Text>
           </View>
@@ -539,12 +659,14 @@ export default function ProductDetailsScreen({ route, navigation }) {
             ) : (
               <>
                 <Ionicons
-                  name="cart"
+                  name={isSelectionComplete ? "cart" : "list"}
                   size={20}
                   color="#fff"
                   style={{ marginRight: 8 }}
                 />
-                <Text style={styles.addToCartText}>إضافة للسلة</Text>
+                <Text style={styles.addToCartText}>
+                  {isSelectionComplete ? `إضافة ${totalPrice} ${currencySymbol} للسلة` : "اختر الخيارات"}
+                </Text>
               </>
             )}
           </TouchableOpacity>
@@ -957,6 +1079,64 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginBottom: 4,
     textAlign: "left",
+  },
+  variationsSection: {
+    marginBottom: 8,
+  },
+  attributeContainer: {
+    marginBottom: 20,
+  },
+  attributeTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#1e293b",
+    textAlign: "left",
+  },
+  attributeTitleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  requiredText: {
+    fontSize: 12,
+    color: "#94a3b8",
+  },
+  requiredTextError: {
+    fontSize: 12,
+    color: "#ef4444",
+    fontWeight: "bold",
+  },
+  errorAttributeContainer: {
+    backgroundColor: "#fff5f5",
+    padding: 8,
+    borderRadius: 12,
+    marginHorizontal: -8,
+  },
+  optionsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  optionChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#e2e8f0",
+    backgroundColor: "#fff",
+    minWidth: 60,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  optionText: {
+    fontSize: 14,
+    color: "#475569",
+  },
+  modifierText: {
+    fontSize: 10,
+    color: "#94a3b8",
+    marginTop: 2,
   },
   addToCartBtn: {
     backgroundColor: "#2B5876",

@@ -112,10 +112,40 @@ export default function CustomHeader() {
     <>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.headerContainer}>
-          {/* ☰ Menu button */}
-          <TouchableOpacity onPress={() => setMenuVisible(true)} style={styles.menuButton}>
-            <Ionicons name="menu" size={28} color="#2B5876" />
-          </TouchableOpacity>
+          {/* Left Actions: Menu + Quick Switcher */}
+          <View style={styles.leftActions}>
+            <TouchableOpacity onPress={() => setMenuVisible(true)} style={styles.menuButton}>
+              <Ionicons name="menu" size={28} color="#2B5876" />
+            </TouchableOpacity>
+
+            {isMerchant && manageableMerchants && manageableMerchants.length > 1 && (
+              <TouchableOpacity 
+                activeOpacity={0.7} 
+                onPress={openSwitcher} 
+                style={styles.quickSwitcher}
+              >
+                <View style={styles.quickSwitcherLabelWrap}>
+                  {/* Merchant Logo or Initial */}
+                  <View style={[styles.miniLogo, { backgroundColor: activeMerchant?.primary_color || "#2B5876" }]}>
+                    {activeMerchant?.profile_picture ? (
+                      <Image 
+                        source={{ uri: activeMerchant.profile_picture }} 
+                        style={styles.miniLogoImg} 
+                      />
+                    ) : (
+                      <Text style={styles.miniLogoText}>
+                        {(activeMerchant?.name?.[0] || "M").toUpperCase()}
+                      </Text>
+                    )}
+                  </View>
+                  <Text style={styles.quickSwitcherText} numberOfLines={1}>
+                    {activeMerchant?.name || "المتجر"}
+                  </Text>
+                  <Feather name="chevron-down" size={12} color="#64748B" style={{ marginLeft: 2 }} />
+                </View>
+              </TouchableOpacity>
+            )}
+          </View>
 
           {/* Logo */}
           <View style={styles.logoContainer}>
@@ -258,6 +288,34 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 3,
   },
   menuButton: { padding: 6, backgroundColor: "#e9f0f5", borderRadius: 10 },
+  leftActions: { flexDirection: "row", alignItems: "center", gap: 10 },
+  quickSwitcher: {
+    backgroundColor: "#F1F5F9",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    maxWidth: 120,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  quickSwitcherLabelWrap: { flexDirection: "row-reverse", alignItems: "center" },
+  miniLogo: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 8,
+    overflow: "hidden",
+  },
+  miniLogoImg: { width: "100%", height: "100%" },
+  miniLogoText: { color: "#fff", fontSize: 10, fontWeight: "800" },
+  quickSwitcherText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#475569",
+    textAlign: "right",
+  },
   logoContainer: { flex: 1, alignItems: "center", justifyContent: "center" },
   logo: { height: 40, width: 120 },
   merchantNameInHeader: { fontSize: 17, fontWeight: "700", color: "#0F172A" },
