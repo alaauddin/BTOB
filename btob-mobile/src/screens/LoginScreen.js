@@ -27,8 +27,12 @@ export default function LoginScreen({ navigation }) {
       return;
     }
 
-    // Merchant login → go straight to the tab navigator, replacing the stack
-    navigation.reset({ index: 0, routes: [{ name: 'MerchantTabs' }] });
+    // Redirect based on scope
+    if (result.scope === 'driver') {
+        navigation.reset({ index: 0, routes: [{ name: 'DriverDashboard' }] });
+    } else {
+        navigation.reset({ index: 0, routes: [{ name: 'MerchantTabs' }] });
+    }
   };
 
   return (

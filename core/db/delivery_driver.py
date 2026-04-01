@@ -49,3 +49,24 @@ class DeliveryDriver(models.Model):
     def __str__(self):
         full_name = self.user.get_full_name() or self.user.username
         return f"{full_name} - {self.supplier.name}"
+
+
+class DriverLocation(models.Model):
+    """Store real-time coordinates of a delivery driver for live tracking."""
+    driver = models.ForeignKey(
+        DeliveryDriver, on_delete=models.CASCADE,
+        related_name='locations',
+        verbose_name="السائق"
+    )
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, verbose_name="خط العرض")
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, verbose_name="خط الطول")
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name="الوقت")
+
+    class Meta:
+        app_label = 'core'
+        ordering = ['-timestamp']
+        verbose_name = "موقع السائق"
+        verbose_name_plural = "مواقع السائقين"
+
+    def __str__(self):
+        return f"{self.driver} at {self.timestamp}"

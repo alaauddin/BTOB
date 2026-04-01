@@ -31,4 +31,17 @@ client.interceptors.request.use(
     }
 );
 
+client.getAuthMerchantId = async () => {
+    try {
+        const merchant = await AsyncStorage.getItem('active_merchant');
+        if (merchant) {
+            const parsed = JSON.parse(merchant);
+            return parsed.id;
+        }
+    } catch (e) {
+        console.error('Error getting active merchant ID', e);
+    }
+    return null;
+};
+
 export default client;

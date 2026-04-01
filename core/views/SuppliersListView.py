@@ -56,7 +56,7 @@ def SuppliersListView(request):
         approved=True,
         start_datetime__lte=timezone.now(),
         end_datetime__gte=timezone.now()
-    ).select_related('supplier')
+    ).order_by('-id').select_related('supplier')
     
 
     # Platform Offer Ads (Horizontal Scroll)
@@ -65,7 +65,7 @@ def SuppliersListView(request):
         end_date__gte=today,
         is_approved=True,
         product__supplier__is_active=True
-    ).order_by('order').select_related('product', 'product__supplier')
+    ).order_by('-id').select_related('product', 'product__supplier')
 
     
     if request.user.is_authenticated:

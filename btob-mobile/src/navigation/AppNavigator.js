@@ -19,11 +19,16 @@ import CartScreen from '../screens/CartScreen';
 
 // Merchant sub-screens (full-screen push, outside the tab bar)
 import MerchantOrderDetailScreen from '../screens/MerchantOrderDetailScreen';
+import MerchantOffersScreen from '../screens/MerchantOffersScreen';
+
+// Driver Screens
+import DriverDashboardScreen from '../screens/DriverDashboardScreen';
+import DriverTrackingScreen from '../screens/DriverTrackingScreen';
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-    const { isLoading, isMerchant } = useContext(AuthContext);
+    const { isLoading, isMerchant, isDriver } = useContext(AuthContext);
 
     if (isLoading) {
         return (
@@ -33,10 +38,16 @@ export default function AppNavigator() {
         );
     }
 
+    const getInitialRoute = () => {
+        if (isMerchant) return 'MerchantTabs';
+        if (isDriver) return 'DriverDashboard';
+        return 'Home';
+    };
+
     return (
         <NavigationContainer>
             <Stack.Navigator
-                initialRouteName={isMerchant ? 'MerchantTabs' : 'Home'}
+                initialRouteName={getInitialRoute()}
             >
                 {/* ── Public / Buyer ── */}
                 <Stack.Screen name="Home"             component={HomeScreen}             options={{ headerShown: false }} />
@@ -59,6 +70,23 @@ export default function AppNavigator() {
                 <Stack.Screen
                     name="MerchantOrderDetail"
                     component={MerchantOrderDetailScreen}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="MerchantOffers"
+                    component={MerchantOffersScreen}
+                    options={{ headerShown: false }}
+                />
+
+                {/* ── Driver Screens ── */}
+                <Stack.Screen
+                    name="DriverDashboard"
+                    component={DriverDashboardScreen}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="DriverMap"
+                    component={DriverTrackingScreen}
                     options={{ headerShown: false }}
                 />
             </Stack.Navigator>

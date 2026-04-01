@@ -32,4 +32,4 @@ from core.db.ads import SupplierAds, PlatformOfferAd  # noqa: F401
 from core.db.settings import SystemSettings  # noqa: F401
 from core.db.business import BusinessRequest  # noqa: F401
 from core.db.analytics import WebsiteStatistic, WhatsAppInquiryClick  # noqa: F401
-from core.db.delivery_driver import DeliveryDriver  # noqa: F401
+from core.db.delivery_driver import DeliveryDriver, DriverLocation  # noqa: F401

@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
 
     /** true iff the logged-in user has the merchant scope */
     const isMerchant = userScope === 'merchant';
+    const isDriver = userScope === 'driver';
 
     // ── Bootstrap on app start ─────────────────────────────────────
     useEffect(() => {
@@ -75,6 +76,21 @@ export const AuthProvider = ({ children }) => {
             if (response.data.success) {
                 const { access, refresh } = response.data.tokens;
                 const loggedInUser = response.data.user;
+                const scope = response.data.user_scope; // 'merchant' or 'driver'
+                
+                if (scope === 'driver') {
+                    await AsyncStorage.multiSet([
+                        ['access_token', access],
+                        ['refresh_token', refresh],
+                        ['user_data', JSON.stringify(loggedInUser)],
+                        ['user_scope', 'driver'],
+                        ['active_merchant', JSON.stringify({ id: null, name: response.data.supplier_name })],
+                    ]);
+                    setUser(loggedInUser);
+                    setUserScope('driver');
+                    return { success: true, scope: 'driver' };
+                }
+
                 const merchants = response.data.manageable_merchants || [];
                 const firstMerchant = merchants[0] || null;
 
@@ -91,7 +107,7 @@ export const AuthProvider = ({ children }) => {
                 setUserScope('merchant');
                 setManageableMerchants(merchants);
                 setActiveMerchantState(firstMerchant);
-                return { success: true };
+                return { success: true, scope: 'merchant' };
             }
             return { success: false, message: response.data.message };
         } catch (error) {
@@ -157,6 +173,7 @@ export const AuthProvider = ({ children }) => {
                 unifiedLoginPhone,
                 // Merchant scope
                 isMerchant,
+                isDriver,
                 userScope,
                 manageableMerchants,
                 activeMerchant,

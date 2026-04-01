@@ -281,16 +281,26 @@ export default function MerchantDashboardScreen({ navigation }) {
         <Text style={styles.sectionLabel}>إجراءات سريعة</Text>
         <View style={styles.actionsRow}>
           <QuickAction
+            icon="package" label="المنتجات" color="#3B82F6"
+            onPress={() => navigation.navigate('Products')}
+          />
+          <QuickAction
+            icon="tag" label="العروض" color="#EC4899"
+            onPress={() => navigation.navigate('MerchantOffers')}
+          />
+          <QuickAction
+            icon="grid" label="المتجر" color="#10B981"
+            onPress={() => navigation.navigate('StoreView', { storeId: merchantInfo?.store_id || activeMerchant?.store_id })}
+          />
+        </View>
+        <View style={[styles.actionsRow, { marginTop: 12 }]}>
+          <QuickAction
             icon="clock" label="معلّقة" color="#F59E0B"
             onPress={() => navigation.navigate('Orders', { filter: 'pending', merchantId: activeMerchant?.id })}
           />
           <QuickAction
-            icon="list" label="الكل" color="#10B981"
+            icon="list" label="الطلبات" color="#6366F1"
             onPress={() => navigation.navigate('Orders', { merchantId: activeMerchant?.id })}
-          />
-          <QuickAction
-            icon="grid" label="المتجر" color="#3B82F6"
-            onPress={() => navigation.navigate('StoreView', { storeId: merchantInfo?.store_id || activeMerchant?.store_id })}
           />
           <QuickAction
             icon="user" label="الإعدادات" color="#8B5CF6"

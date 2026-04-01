@@ -1,0 +1,208 @@
+from rest_framework import serializers
+from django.conf import settings
+from core.models import Supplier, OrderItem, Order, Product, ProductCategory, ProductOffer, ShippingAddress
+from .base import CurrencySerializer
+
+class MerchantMiniSerializer(serializers.ModelSerializer):
+    """Compact serializer used in the merchant switcher list."""
+    profile_picture = serializers.SerializerMethodField()
+    panal_picture   = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Supplier
+        fields = ['id', 'name', 'store_id', 'profile_picture', 'panal_picture', 'primary_color']
+
+    def _abs(self, obj, field_name):
+        f = getattr(obj, field_name, None)
+        if not f:
+            return None
+        request = self.context.get('request')
+        url = f.url if hasattr(f, 'url') else str(f)
+        return request.build_absolute_uri(url) if request else url
+
+    def get_profile_picture(self, obj):
+        return self._abs(obj, 'profile_picture')
+
+    def get_panal_picture(self, obj):
+        return self._abs(obj, 'panal_picture')
+
+class MerchantProfileSerializer(serializers.ModelSerializer):
+    """Full profile configuration serializer for merchant settings."""
+    profile_picture_url = serializers.SerializerMethodField(read_only=True)
+    cover_picture_url = serializers.SerializerMethodField(read_only=True)
+    store_link = serializers.SerializerMethodField(read_only=True)
+    currency_id = serializers.PrimaryKeyRelatedField(
+        queryset=Supplier.objects.none(), # Placeholder, populated in __init__
+        source='currency', required=False, allow_null=True
+    )
+
+    class Meta:
+        model = Supplier
+        fields = [
+            'id', 'store_id', 'profile_picture', 'panal_picture',
+            'name', 'city', 'address', 'country', 'phone', 'secondary_phone',
+            'subdomain', 'latitude', 'longitude', 'profile_picture_url', 
+            'cover_picture_url', 'store_link', 'currency_id',
+            'show_order_amounts', 'show_platform_ads', 'show_system_logo',
+            'primary_color', 'secondary_color', 'navbar_color', 'footer_color',
+            'text_color', 'accent_color',
+            'return_policy', 'footer_description',
+            'facebook_url', 'instagram_url', 'twitter_url', 'tiktok_url'
+        ]
+        read_only_fields = ['id', 'store_id', 'profile_picture', 'panal_picture']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from core.models import Currency
+        self.fields['currency_id'].queryset = Currency.objects.all()
+
+    def _abs(self, obj, field_name):
+        f = getattr(obj, field_name, None)
+        if not f: return None
+        request = self.context.get('request')
+        url = f.url if hasattr(f, 'url') else str(f)
+        return request.build_absolute_uri(url) if request else url
+
+    def get_profile_picture_url(self, obj):
+        return self._abs(obj, 'profile_picture')
+
+    def get_cover_picture_url(self, obj):
+        return self._abs(obj, 'panal_picture')
+        
+    def get_store_link(self, obj):
+        if obj.subdomain:
+            domain = getattr(settings, 'PLATFORM_DOMAIN', 'aratatt.com')
+            return f"https://{obj.subdomain}.{domain}"
+        return f"https://aratatt.com/store/{obj.store_id or obj.id}"
+
+class MerchantOrderItemSerializer(serializers.ModelSerializer):
+    product_name   = serializers.CharField(source='product.name', read_only=True)
+    product_image  = serializers.SerializerMethodField()
+    product_images = serializers.SerializerMethodField()
+    unit_price     = serializers.DecimalField(
+        source='product.price', max_digits=10, decimal_places=2, read_only=True
+    )
+
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'product_name', 'product_image', 'product_images', 'quantity', 'unit_price']
+
+    def _build_url(self, request, path):
+        if not path: return None
+        url = path.url if hasattr(path, 'url') else str(path)
+        return request.build_absolute_uri(url) if request else url
+
+    def get_product_image(self, obj):
+        return self._build_url(self.context.get('request'), obj.product.image)
+
+    def get_product_images(self, obj):
+        request = self.context.get('request')
+        extra = []
+        if hasattr(obj.product, 'additional_images'):
+            for img in obj.product.additional_images.all():
+                url = self._build_url(request, img.image)
+                if url: extra.append(url)
+        return extra
+
+class MerchantOrderSerializer(serializers.ModelSerializer):
+    items         = MerchantOrderItemSerializer(source='order_items', many=True, read_only=True)
+    customer_name = serializers.SerializerMethodField()
+    status_name   = serializers.CharField(source='pipeline_status.name', read_only=True, default='غير محدد')
+    status_slug   = serializers.CharField(source='pipeline_status.slug', read_only=True, default='')
+    shipping      = serializers.SerializerMethodField()
+    merchant      = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'customer_name', 'total_amount', 'created_at', 'updated_at',
+            'status_name', 'status_slug', 'merchant', 'items', 'shipping',
+        ]
+
+    def get_customer_name(self, obj):
+        return obj.user.get_full_name() or obj.user.username
+
+    def get_merchant(self, obj):
+        try:
+            supplier = obj.order_items.first().product.supplier
+        except AttributeError:
+            return None
+        return MerchantMiniSerializer(supplier, context=self.context).data
+
+    def get_shipping(self, obj):
+        addr = obj.shippingaddress_set.first()
+        if not addr: return None
+        return {
+            'phone': addr.phone,
+            'address_line1': addr.address_line1,
+            'address_line2': addr.address_line2,
+            'city': addr.city,
+            'country': addr.country,
+        }
+
+class MerchantProductSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField(read_only=True)
+    video_url = serializers.SerializerMethodField(read_only=True)
+    extra_images = serializers.SerializerMethodField(read_only=True)
+    price_after_discount = serializers.SerializerMethodField(read_only=True)
+    has_discount = serializers.SerializerMethodField(read_only=True)
+    
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=ProductCategory.objects.all(), source='category', required=False
+    )
+
+    class Meta:
+        model = Product
+        fields = [
+            'id', 'name', 'description', 'price', 'image', 'video', 
+            'is_new', 'is_active', 'stock', 'category_id',
+            'image_url', 'video_url', 'extra_images',
+            'price_after_discount', 'has_discount'
+        ]
+        extra_kwargs = {
+            'image': {'write_only': True, 'required': False},
+            'video': {'write_only': True, 'required': False},
+        }
+
+    def _build_url(self, request, field):
+        if not field: return None
+        if request: return request.build_absolute_uri(field.url)
+        return field.url
+
+    def get_image_url(self, obj):
+        return self._build_url(self.context.get('request'), obj.image)
+
+    def get_video_url(self, obj):
+        return self._build_url(self.context.get('request'), obj.video)
+
+    def get_extra_images(self, obj):
+        request = self.context.get('request')
+        urls = []
+        if hasattr(obj, 'additional_images'):
+            for img in obj.additional_images.all():
+                url = self._build_url(request, img.image)
+                if url: urls.append(url)
+        return urls
+
+    def get_price_after_discount(self, obj):
+        return obj.get_price_with_offer()
+
+    def get_has_discount(self, obj):
+        return obj.has_discount()
+
+class MerchantOfferSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    product_price = serializers.DecimalField(source='product.price', max_digits=10, decimal_places=2, read_only=True)
+    discount_percentage = serializers.SerializerMethodField(read_only=True)
+    
+    class Meta:
+        model = ProductOffer
+        fields = [
+            'id', 'product', 'product_name', 'product_price', 
+            'is_active', 'discount_precentage', 'discount_percentage',
+            'from_date', 'to_date', 'create_at'
+        ]
+        read_only_fields = ['id', 'create_at', 'created_by']
+
+    def get_discount_percentage(self, obj):
+        return obj.get_discount_percentage_offer()
