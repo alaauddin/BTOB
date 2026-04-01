@@ -1,0 +1,203 @@
+/* Reusable UI Components */
+.gradient-bg {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+}
+
+.nav-shadow {
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    background: white !important;
+}
+
+/* Search Bar Styles */
+.search-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 45px 10px 20px;
+    border-radius: 50px;
+    border: 1px solid #eee;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    pointer-events: none;
+}
+
+/* Action Button Styles (Cart/User) */
+.action-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: #4b5563;
+    background: #f3f4f6;
+}
+
+.action-btn:hover {
+    background: #e5e7eb;
+    color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+/* Footer Enhancements */
+.footer-main {
+    background: #f9fafb;
+    border-top: 1px solid #eee;
+    color: #4b5563;
+}
+
+.footer-column-title {
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+}
+
+.payment-icon {
+    height: 24px;
+    opacity: 0.8;
+    filter: grayscale(1);
+    transition: all 0.3s ease;
+}
+
+.payment-icon:hover {
+    opacity: 1;
+    filter: grayscale(0);
+}
+
+.app-badge {
+    height: 40px;
+    transition: transform 0.3s ease;
+}
+
+.app-badge:hover {
+    transform: scale(1.05);
+}
+
+.btn-primary,
+.btn-supplier-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+.btn-primary::before,
+.btn-supplier-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-primary:hover::before,
+.btn-supplier-primary:hover::before {
+    left: 100%;
+}
+
+.btn-primary:hover,
+.btn-supplier-primary:hover {
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    color: white;
+    filter: brightness(1.05);
+}
+
+.cart-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.6rem;
+    background: linear-gradient(45deg, var(--danger-color), #ff6b6b);
+    border-radius: 20px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    animation: pulse-glow 2s infinite;
+}
+
+.mobile-menu {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Glass morphism effects */
+.glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark {
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced nav links */
+.nav-link {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.nav-link:hover::before {
+    left: 100%;
+}
+
+/* Enhanced footer */
+.footer-enhanced {
+    background: linear-gradient(135deg, rgba(26, 32, 44, 0.95), rgba(45, 55, 72, 0.95));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}

@@ -1,0 +1,209 @@
+/* =====================================================
+   PREMIUM FLOATING BOTTOM NAVIGATION - Native App Quality
+   ===================================================== */
+
+:root {
+    /* Brand Colors - Aligned with Identity */
+    --nav-active-icon: #2B5876;
+    /* Brand primary blue */
+    --nav-inactive-icon: #94a3b8;
+    /* Muted grey */
+    --nav-indicator-bg: #D48231;
+    /* Brand orange */
+    --nav-indicator-glow: rgba(212, 130, 49, 0.3);
+    --nav-glass-bg: rgba(255, 255, 255, 0.95);
+    --nav-border: rgba(0, 0, 0, 0.05);
+    --nav-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Floating Container - Native iOS Style */
+.liquid-nav-wrapper {
+    position: fixed;
+    bottom: 16px;
+    /* Float above edge */
+    left: 16px;
+    right: 16px;
+    z-index: 9999;
+    width: auto;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Glass-Morphism Navigation Bar */
+.liquid-nav {
+    position: relative;
+    background: var(--nav-glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    height: 64px;
+    border-radius: 24px;
+    /* Fully rounded pill */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: var(--nav-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: transform 0.2s ease;
+}
+
+/* Items List */
+.nav-items-list {
+    display: flex;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    position: relative;
+    height: 100%;
+    z-index: 100;
+}
+
+/* Navigation Item */
+.liquid-nav-item {
+    position: relative;
+    flex: 1;
+    z-index: 10;
+    transition: transform 0.1s ease;
+}
+
+/* Item Link */
+.liquid-nav-item a {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Icon Styling */
+.nav-icon {
+    position: relative;
+    display: block;
+    line-height: normal;
+    font-size: 1.3rem;
+    color: var(--nav-inactive-icon);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 100;
+    margin-bottom: 10px;
+}
+
+/* Active Icon State - Refined Movement */
+.liquid-nav-item.active .nav-icon {
+    transform: translateY(-24px);
+    /* Reduced from -38px */
+    color: white;
+    font-size: 2rem;
+    padding-bottom: 17px;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+    margin-bottom: 0;
+}
+
+/* Text Label */
+.nav-text {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    text-align: center;
+    color: var(--nav-inactive-icon);
+    font-weight: 700;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.4s ease;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: none;
+}
+
+/* Active Text State */
+.liquid-nav-item.active .nav-text {
+    color: var(--nav-active-icon);
+    opacity: 1;
+    font-weight: 800;
+}
+
+/* Floating Indicator Bubble - Brand Orange */
+.nav-indicator {
+    position: absolute;
+    top: -50%;
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #D48231 0%, #E89A4E 100%);
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 8px 20px var(--nav-indicator-glow),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1;
+}
+
+/* Tap Feedback Animation */
+.liquid-nav-item:active {
+    transform: scale(0.92);
+}
+
+.liquid-nav-item:active .nav-icon {
+    transform: scale(0.9);
+}
+
+/* Desktop/Tablet Optimizations */
+@media (min-width: 768px) {
+    .liquid-nav-wrapper {
+        width: 100%;
+        max-width: 500px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        bottom: 24px;
+    }
+
+    .liquid-nav {
+        border-radius: 28px;
+        height: 68px;
+    }
+
+    .nav-icon {
+        font-size: 1.4rem;
+    }
+
+    .liquid-nav-item.active .nav-icon {
+        font-size: 1.5rem;
+    }
+}
+
+/* Smooth Hover States for Pointer Devices */
+@media (hover: hover) and (pointer: fine) {
+    .liquid-nav-item:not(.active):hover .nav-icon {
+        color: var(--nav-active-icon);
+        transform: scale(1.1);
+    }
+
+    .liquid-nav-item:not(.active):hover .nav-text {
+        color: var(--nav-active-icon);
+    }
+}
+
+/* Large Screens - Maintain Compact Size */
+@media (min-width: 1024px) {
+    .liquid-nav-wrapper {
+        max-width: 480px;
+    }
+}
+
+/* Safe Area Adjustments for Notched Devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .liquid-nav-wrapper {
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Ensure Content Spacing - Add padding to main content */
+.main-content {
+    padding-bottom: calc(64px + 32px + env(safe-area-inset-bottom, 0px));
+}

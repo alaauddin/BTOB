@@ -1,0 +1,231 @@
+/* Neo-Premium Order List - Precision, Balance & Elegance */
+:root {
+    --neo-accent: #ef7d2d;
+    --neo-dark: #1e293b;
+    --neo-light-bg: #fdfdfd;
+    --neo-card-bg: #ffffff;
+    --neo-border: #f1f5f9;
+    --neo-text-muted: #64748b;
+    --neo-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.orders-page-wrapper {
+    background-color: var(--neo-light-bg);
+    min-height: 100vh;
+    padding-bottom: 120px;
+    font-family: 'Inter', 'Outfit', sans-serif;
+}
+
+/* Elegant Header */
+.orders-premium-header {
+    background: transparent;
+    padding: 3.5rem 0 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.header-blob {
+    position: absolute;
+    top: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(239, 125, 45, 0.05) 0%, transparent 70%);
+    z-index: -1;
+}
+
+/* Fixed Horizontal Filter Bar */
+.filter-glass-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 2.5rem;
+    padding: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.filter-glass-container::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-chip {
+    padding: 8px 20px;
+    border-radius: 100px;
+    background: white;
+    border: 1.5px solid var(--neo-border);
+    color: var(--neo-text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-chip:hover {
+    border-color: var(--neo-accent);
+    color: var(--neo-accent);
+    background: #fffaf7;
+}
+
+.filter-chip.active {
+    background: var(--neo-dark);
+    color: white;
+    border-color: var(--neo-dark);
+    box-shadow: 0 8px 16px rgba(30, 41, 59, 0.15);
+}
+
+/* Precise Horizontal Cards */
+.order-premium-card {
+    background: var(--neo-card-bg);
+    border: 1px solid var(--neo-border);
+    border-radius: 20px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1.25rem;
+    box-shadow: var(--neo-shadow);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.order-premium-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.06);
+    border-color: var(--neo-accent);
+}
+
+/* Visual Side */
+.product-stack {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    border-radius: 16px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.product-stack img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Main Content Side */
+.card-main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.order-ref-id {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--neo-dark);
+}
+
+.card-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.meta-date {
+    font-size: 0.75rem;
+    color: var(--neo-text-muted);
+}
+
+/* End Side: Price & Navigation */
+.card-end-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.total-group {
+    text-align: left;
+}
+
+[dir="rtl"] .total-group {
+    text-align: right;
+}
+
+.total-label {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--neo-text-muted);
+    text-transform: uppercase;
+}
+
+.total-value {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: var(--neo-dark);
+}
+
+.action-arrow {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--neo-dark);
+    transition: all 0.3s ease;
+}
+
+.order-premium-card:hover .action-arrow {
+    background: var(--neo-accent);
+    color: white;
+}
+
+/* Empty State */
+.empty-orders-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    color: #e2e8f0;
+    margin-bottom: 1.5rem;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 640px) {
+    .order-premium-card {
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto;
+        gap: 0.75rem 1.25rem;
+    }
+
+    .card-end-content {
+        grid-column: 2;
+        justify-content: space-between;
+        padding-top: 8px;
+        border-top: 1px solid var(--neo-border);
+    }
+}

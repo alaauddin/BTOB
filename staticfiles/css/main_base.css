@@ -1,0 +1,496 @@
+@keyframes logo-pop-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.85) translateY(-10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.animate-logo {
+    animation: logo-pop-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    will-change: transform, opacity;
+}
+
+
+.password-toggle-wrapper {
+    position: relative;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+    z-index: 10;
+}
+
+.password-toggle-btn:hover {
+    color: var(--primary-color);
+}
+
+.input-premium-with-toggle {
+    padding-left: 45px !important;
+}
+
+
+
+
+/* Brand Utility Classes */
+.bg-brand-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.text-brand-primary {
+    color: var(--primary-color) !important;
+}
+
+.border-brand-primary {
+    border-color: var(--primary-color) !important;
+}
+
+.bg-gradient-brand {
+    background: var(--brand-gradient) !important;
+}
+
+.btn-brand {
+    background: var(--brand-gradient) !important;
+    color: white !important;
+    transition: all 0.3s ease;
+    border: none !important;
+}
+
+.btn-brand:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure SweetAlert2 is always on top of custom modals */
+.swal2-container {
+    z-index: 2000000 !important;
+}
+
+/* Modern Premium Navbar - Inspired by Stripe, Apple, Notion */
+.curved-navbar {
+    border-radius: 0 0 20px 20px;
+
+    /* Refined glassmorphism with subtle depth */
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+
+    /* Multi-layer shadow for premium depth */
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 8px 16px rgba(0, 0, 0, 0.02),
+        0 0 0 1px rgba(0, 0, 0, 0.02) !important;
+
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+
+    min-height: 72px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: visible;
+}
+
+/* Scrolled state - more compact and refined */
+.curved-navbar.navbar-scrolled {
+    min-height: 64px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.06),
+        0 12px 24px rgba(0, 0, 0, 0.04) !important;
+    border-radius: 0 0 16px 16px;
+}
+
+/* Modern Icon Buttons - Stripe/Notion style */
+.nav-orb {
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #4a5568;
+    position: relative;
+    border: 1px solid transparent;
+}
+
+.nav-orb:hover {
+    background: rgba(0, 0, 0, 0.06);
+    transform: scale(1.05);
+    color: var(--primary-color);
+    border-color: rgba(0, 0, 0, 0.04);
+}
+
+
+
+/* Clean Logo Presentation */
+.logo-orb-wrapper {
+    background: white;
+    padding: 4px;
+    border-radius: 16px;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.06),
+        0 2px 4px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+}
+
+.logo-orb-wrapper.logo-dual {
+    width: 150px;
+    border-radius: 50px;
+    padding: 6px 16px;
+    gap: 10px;
+}
+
+.logo-orb-wrapper img {
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
+    transition: all 0.3s ease;
+}
+
+.logo-orb-wrapper.logo-dual img {
+    width: 60px;
+    height: 60px;
+}
+
+.logo-separator {
+    width: 1px;
+    height: 30px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 1px;
+}
+
+.navbar-scrolled .logo-orb-wrapper {
+    width: 68px;
+    height: 68px;
+    transform: translateY(2px);
+}
+
+.navbar-scrolled .logo-orb-wrapper.logo-dual {
+    width: 120px;
+    height: 68px;
+    padding: 6px 12px;
+    gap: 8px;
+}
+
+.navbar-scrolled .logo-orb-wrapper.logo-dual img {
+    width: 48px;
+    height: 48px;
+}
+
+.navbar-scrolled .logo-separator {
+    height: 24px;
+}
+
+.logo-orb-wrapper:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.08),
+        0 4px 8px rgba(0, 0, 0, 0.04);
+}
+
+.logo-orb-wrapper:hover img {
+    transform: scale(1.05);
+}
+
+
+
+/* --- Amazing Login Modal Premium Enhancements --- */
+.modal-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.15),
+        inset 0 0 80px rgba(255, 255, 255, 0.4) !important;
+}
+
+.tab-switcher-container {
+    position: relative;
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 4px;
+    margin: 0 24px;
+    display: flex;
+    gap: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.tab-indicator {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    inset-inline-start: 4px;
+    width: calc(50% - 4px);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+.tab-btn {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    padding: 10px 0;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    color: #64748b;
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+}
+
+.animate-modal-fade {
+    animation: modal-fade-scale 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes modal-fade-scale {
+    0% {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Refined Modal Components */
+.tab-card {
+    border: 1.5px solid #f1f5f9;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-card.active {
+    border-color: var(--primary-color);
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(245, 130, 49, 0.08);
+}
+
+.tab-card.active .icon-box {
+    background: var(--primary-color) !important;
+}
+
+.tab-card.active .icon-box i {
+    color: white !important;
+}
+
+.tab-card.active span {
+    color: var(--primary-color);
+}
+
+.icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.floating-field-wrapper {
+    position: relative;
+    margin-top: 24px;
+}
+
+.floating-label {
+    position: absolute;
+    top: -10px;
+    right: 14px;
+    background: white;
+    padding: 0 6px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #94a3b8;
+    z-index: 10;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    border-radius: 10px;
+}
+
+.input-premium {
+    background: #ffffff !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    padding: 14px 60px !important;
+    font-size: 14px !important;
+    color: #1e293b !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    width: 100%;
+}
+
+.input-premium:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 4px rgba(245, 130, 49, 0.05) !important;
+    outline: none !important;
+}
+
+.input-premium:focus+.floating-label {
+    color: var(--primary-color);
+}
+
+.shimmer-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.shimmer-btn::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -150%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(to right,
+            transparent 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            transparent 100%);
+    transform: rotate(30deg);
+    transition: all 0.8s ease;
+}
+
+.shimmer-btn:hover::after {
+    left: 150%;
+}
+
+.fade-in-section {
+    animation: fade-in-up 0.5s ease-out forwards;
+}
+
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes progress-shrink {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+.animate-slide-in {
+    animation: slide-in-right 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Custom Scrollbar for Modal content */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Modal specific styles */
+.modal-glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-dark);
+    border-radius: 42px !important;
+}
+
+@keyframes modal-fade-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.animate-modal-fade {
+    animation: modal-fade-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-shake {
+    animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+@keyframes shake {
+
+    10%,
+    90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(4px, 0, 0);
+    }
+}
+
+.overflow-hidden {
+    overflow: hidden !important;
+}

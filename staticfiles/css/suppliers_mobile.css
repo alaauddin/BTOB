@@ -1,0 +1,102 @@
+/* Mobile Optimizations for Supplier Cards */
+@media (max-width: 768px) {
+
+    /* Compact cover area */
+    .supplier-image-container {
+        height: 110px !important;
+        z-index: 10 !important;
+        overflow: visible !important;
+    }
+
+    .supplier-cover {
+        height: 100% !important;
+    }
+
+    /* Centered logo on the line */
+    .supplier-logo-wrapper {
+        width: 56px !important;
+        height: 56px !important;
+        top: 100% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        bottom: auto !important;
+        right: auto !important;
+        border-width: 3px !important;
+        z-index: 999 !important;
+        background-color: white !important;
+    }
+
+    /* Content padding for logo clearance */
+    .supplier-content {
+        padding: 2.5rem 0.65rem 0.65rem !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+
+    /* Name */
+    .supplier-name {
+        font-size: 0.85rem !important;
+        margin-bottom: 0.15rem !important;
+        font-weight: 700 !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Meta */
+    .supplier-meta {
+        font-size: 0.7rem !important;
+        margin-bottom: 0.3rem !important;
+    }
+
+    .supplier-meta i {
+        width: 12px !important;
+        font-size: 0.65rem !important;
+        margin-left: 4px !important;
+    }
+
+    /* Tags */
+    .supplier-tags {
+        gap: 3px !important;
+        margin-top: 0.2rem !important;
+    }
+
+    .supplier-tag {
+        font-size: 0.6rem !important;
+        padding: 2px 5px !important;
+    }
+
+    /* Footer */
+    .supplier-footer {
+        padding-top: 0.5rem !important;
+        gap: 5px !important;
+    }
+
+    /* Button */
+    .btn-visit {
+        min-height: 34px !important;
+        padding: 6px 10px !important;
+        font-size: 0.7rem !important;
+        min-width: 75px !important;
+        gap: 4px !important;
+        border-radius: 8px !important;
+    }
+
+    .btn-visit i {
+        font-size: 0.75rem !important;
+    }
+
+    /* Rating */
+    .rating-box {
+        padding: 4px 6px !important;
+        font-size: 0.7rem !important;
+        border-radius: 6px !important;
+    }
+
+    .rating-box i {
+        font-size: 0.65rem !important;
+        margin-left: 3px !important;
+    }
+
+    .rating-box .fw-bold {
+        font-size: 0.7rem !important;
+    }
+}

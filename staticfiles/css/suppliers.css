@@ -1,0 +1,516 @@
+/* Suppliers List Styles - Mobile-First Optimized */
+
+:root {
+    /* Brand Colors - Aligned with global design system */
+    --primary-color: #D48231;
+    --primary-yellow: #8BB8D1;
+    --primary-blue: #2B5876;
+    --secondary-color: #56C7C7;
+    --dark-blue: #1e40af;
+    --light-gray: #f8fafc;
+    --medium-gray: #64748b;
+    --brand-gradient: linear-gradient(to right, #2B5876, #8BB8D1);
+    --tech-gradient: linear-gradient(135deg, #2B6CB0, #00FFFF);
+}
+
+/* ============================================
+   SUPPLIER CARDS - Mobile-First Responsive
+   ============================================ */
+
+/* Grid Container */
+.supplier-grid {
+    padding: 0.75rem 0.5rem;
+    padding-top: 16px;
+}
+
+@media (min-width: 768px) {
+    .supplier-grid {
+        padding: 2.5rem 0.5rem;
+        padding-top: 20px;
+    }
+}
+
+/* Marquee Section */
+.supplier-marquee-section {
+    overflow: visible !important;
+    padding-top: 16px;
+}
+
+@media (min-width: 768px) {
+    .supplier-marquee-section {
+        padding-top: 20px;
+    }
+}
+
+/* Card Container */
+.supplier-card-container {
+    margin-bottom: 0.75rem;
+    position: relative;
+    z-index: 1;
+}
+
+@media (min-width: 768px) {
+    .supplier-card-container {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Card Base */
+.supplier-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #e2e8f0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+    min-width: 200px;
+}
+
+@media (min-width: 768px) {
+    .supplier-card {
+        border-radius: 24px;
+        min-width: 260px;
+    }
+}
+
+/* Card Hover State */
+.supplier-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -4px rgba(43, 88, 118, 0.12);
+    border-color: #8BB8D1;
+    z-index: 10;
+}
+
+@media (min-width: 768px) {
+    .supplier-card:hover {
+        transform: translateY(-6px);
+    }
+}
+
+/* Image Container - Proper height for cover + logo */
+.supplier-image-container {
+    position: relative;
+    height: 120px;
+    overflow: visible;
+    background: #f1f5f9;
+    flex-shrink: 0;
+    z-index: 10;
+}
+
+@media (min-width: 768px) {
+    .supplier-image-container {
+        height: 120px;
+    }
+}
+
+/* Supplier Image */
+.supplier-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 350ms ease;
+}
+
+.supplier-card:hover .supplier-image {
+    transform: scale(1.05);
+}
+
+/* Cover Image */
+.supplier-cover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: top center;
+    transition: transform 350ms ease;
+}
+
+.supplier-card:hover .supplier-cover {
+    transform: scale(1.05);
+}
+
+/* Logo Wrapper - Centered and clear */
+.supplier-logo-wrapper {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    background: white;
+}
+
+@media (min-width: 768px) {
+    .supplier-logo-wrapper {
+        width: 72px;
+        height: 72px;
+        bottom: -36px;
+        border-width: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+}
+
+.supplier-logo-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Card Content - Enough top padding for logo */
+.supplier-content {
+    padding: 0.75rem;
+    padding-top: 2.75rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.25rem;
+}
+
+@media (min-width: 768px) {
+    .supplier-content {
+        padding: 1.25rem;
+        padding-top: 3.5rem;
+        gap: 0.35rem;
+    }
+}
+
+/* Supplier Name - Always visible */
+.supplier-name {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 0;
+    text-align: center;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (min-width: 768px) {
+    .supplier-name {
+        font-size: 1.15rem;
+    }
+}
+
+/* Supplier Meta (Location) */
+.supplier-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: #64748b;
+    font-size: 0.65rem;
+    margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+    .supplier-meta {
+        font-size: 0.8rem;
+        gap: 5px;
+    }
+}
+
+.supplier-meta i {
+    color: #D48231;
+    font-size: 0.6rem;
+}
+
+@media (min-width: 768px) {
+    .supplier-meta i {
+        font-size: 0.75rem;
+    }
+}
+
+/* Tags Container */
+.supplier-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 0;
+    justify-content: center;
+}
+
+@media (min-width: 768px) {
+    .supplier-tags {
+        gap: 6px;
+    }
+}
+
+/* Individual Tag */
+.supplier-tag {
+    padding: 2px 8px;
+    background: #f1f5f9;
+    color: #475569;
+    border-radius: 6px;
+    font-size: 0.6rem;
+    font-weight: 600;
+}
+
+@media (min-width: 768px) {
+    .supplier-tag {
+        padding: 4px 10px;
+        font-size: 0.7rem;
+    }
+}
+
+/* Card Footer */
+.supplier-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+@media (min-width: 768px) {
+    .supplier-footer {
+        padding-top: 0.75rem;
+    }
+}
+
+/* Rating Box */
+.rating-box {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 0.75rem;
+}
+
+@media (min-width: 768px) {
+    .rating-box {
+        gap: 5px;
+        font-size: 0.9rem;
+    }
+}
+
+.rating-box .text-warning {
+    color: #f59e0b;
+}
+
+/* Visit Button */
+.btn-visit {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    background: #2B5876;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: all 150ms ease;
+    min-height: 30px;
+    text-decoration: none;
+}
+
+@media (min-width: 768px) {
+    .btn-visit {
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        min-height: 40px;
+    }
+}
+
+.btn-visit:hover {
+    background: #0f172a;
+    transform: translateX(-3px);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-visit i {
+    transition: transform 150ms ease;
+}
+
+.btn-visit:hover i {
+    transform: translateX(-2px);
+}
+
+/* ============================================
+   PRODUCING FAMILIES CARDS - Premium Style
+   ============================================ */
+
+.producing-families-wrapper {
+    background: linear-gradient(135deg, rgba(212, 130, 49, 0.03) 0%, rgba(139, 184, 209, 0.05) 100%);
+    padding: 1rem 0;
+    margin: 0.75rem 0;
+    border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+    .producing-families-wrapper {
+        padding: 4rem 0;
+        margin: 2.5rem 0;
+        border-radius: 24px;
+    }
+}
+
+.suppliers-scroll-container {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: #8BB8D1 #e2e8f0;
+}
+
+@media (min-width: 768px) {
+    .suppliers-scroll-container {
+        gap: 20px;
+        padding: 0.75rem;
+    }
+}
+
+.supplier-card-premium {
+    background: linear-gradient(135deg, rgba(43, 88, 118, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border-radius: 12px;
+    min-width: 180px;
+    padding: 0.75rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+    transition: all 200ms ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (min-width: 768px) {
+    .supplier-card-premium {
+        border-radius: 24px;
+        min-width: 240px;
+        padding: 2.5rem;
+    }
+}
+
+.supplier-card-premium:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -6px rgba(43, 88, 118, 0.25);
+}
+
+@media (min-width: 768px) {
+    .supplier-card-premium:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px -10px rgba(43, 88, 118, 0.3);
+    }
+}
+
+.home-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    .home-badge {
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+}
+
+.supplier-logo-container {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 0.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@media (min-width: 768px) {
+    .supplier-logo-container {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 0.75rem;
+        border: 3px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+}
+
+.supplier-logo-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.supplier-info-glass {
+    text-align: center;
+    color: white;
+}
+
+.supplier-name-premium {
+    font-size: 0.875rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+@media (min-width: 768px) {
+    .supplier-name-premium {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+}
+
+.home-label {
+    font-size: 0.625rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.25rem;
+}
+
+@media (min-width: 768px) {
+    .home-label {
+        font-size: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
+.supplier-stats-mini {
+    justify-content: center;
+}
+
+.stat-mini {
+    font-size: 0.625rem;
+    opacity: 0.9;
+}
+
+@media (min-width: 768px) {
+    .stat-mini {
+        font-size: 0.75rem;
+    }
+}
