@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "btob-mobile",
+    "name": "منصة رواج",
     "slug": "btob-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo.jpeg",
     "scheme": "btobmobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

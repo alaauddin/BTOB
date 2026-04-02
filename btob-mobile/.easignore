@@ -1,0 +1,24 @@
+# Ignore dependencies
+node_modules/
+
+# Ignore Expo files
+.expo/
+dist/
+web-build/
+
+# Ignore native folders
+ios/
+android/
+
+# Ignore environment files
+.env*.local
+
+# Ignore logs
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Ignore parent directory things if they leak in
+../venv/
+../staticfiles/
