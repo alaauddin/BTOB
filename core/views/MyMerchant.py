@@ -2,14 +2,17 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from core.decorators import merchant_required
+from django.db.models.functions import TruncDate
+from datetime import timedelta
+import json
+from core.models import WebsiteStatistic, Supplier, Product, ProductOffer, Promotion, SupplierAds, Order, Category, PlatformOfferAd
+import logging
 from core.models import Supplier, Product, ProductOffer, Promotion, SupplierAds, Order, Category, PlatformOfferAd
 from core.forms import ProductForm, SupplierSettingsForm, DomainOnlyForm, BrandingOnlyForm, LocationOnlyForm, CurrencyOnlyForm
 from django.db.models import Count, Sum, Avg
 from django.utils import timezone
 from core.models import SupplierAdPlatfrom
 from core.utils.merchant_utils import get_active_supplier
-import logging
-
 logger = logging.getLogger("core.views.MyMerchant")
 
 
@@ -67,6 +70,44 @@ def my_merchant(request):
         'location_form': LocationOnlyForm(instance=supplier, prefix='loc'),
         'currency_form': CurrencyOnlyForm(instance=supplier),
     }
+    
+    # --- Statistics & Analytics ---
+    today = timezone.now().date()
+    thirty_days_ago = today - timedelta(days=29)
+    
+    # 1. Visitor stats (Last 30 days)
+    visitor_stats_qs = WebsiteStatistic.objects.filter(
+        supplier=supplier,
+        visited_at__date__gte=thirty_days_ago
+    ).annotate(
+        date=TruncDate('visited_at')
+    ).values('date').annotate(
+        count=Count('id')
+    ).order_by('date')
+    
+    # Fill missing dates with 0
+    stats_dict = {stat['date'].strftime('%Y-%m-%d'): stat['count'] for stat in visitor_stats_qs}
+    visitor_labels = []
+    visitor_data = []
+    
+    for i in range(30):
+        d = thirty_days_ago + timedelta(days=i)
+        ds = d.strftime('%Y-%m-%d')
+        visitor_labels.append(ds)
+        visitor_data.append(stats_dict.get(ds, 0))
+    
+    # 2. Product Views (Top 10)
+    top_viewed_products = Product.objects.filter(supplier=supplier).order_by('-views_count')[:10]
+    product_labels = [p.name for p in top_viewed_products]
+    product_views = [p.views_count for p in top_viewed_products]
+    
+    # Add to context after JSON serialization
+    context.update({
+        'visitor_labels_json': json.dumps(visitor_labels),
+        'visitor_data_json': json.dumps(visitor_data),
+        'product_labels_json': json.dumps(product_labels),
+        'product_views_json': json.dumps(product_views),
+    })
     
     return render(request, template_name, context)
 

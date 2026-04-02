@@ -411,6 +411,39 @@
             </div>
         </div>
         {%endif%}
+
+        <!-- 4.5 Analytics & Indicators Section -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-6 overflow-hidden">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                <div>
+                    <h3 class="text-xl font-black text-gray-900 flex items-center gap-2">
+                        <i class="fas fa-chart-pie text-blue-500"></i>
+                        إحصائيات الأداء
+                    </h3>
+                    <p class="text-[10px] text-gray-500 font-medium">نظرة عامة على نشاط متجرك ومنتجاتك</p>
+                </div>
+                
+                <!-- Custom Segmented Control (Toggle) -->
+                <div class="bg-gray-100 p-1 rounded-2xl flex items-center w-full sm:w-auto h-12">
+                    <button id="toggle-visitors" onclick="switchChart('visitors')" class="flex-1 sm:px-6 h-full rounded-xl text-xs font-black transition-all bg-white text-blue-600 shadow-sm border border-gray-200/50">
+                        الزوار (30 يوم)
+                    </button>
+                    <button id="toggle-products" onclick="switchChart('products')" class="flex-1 sm:px-6 h-full rounded-xl text-xs font-bold transition-all text-gray-500 hover:text-gray-700">
+                        مشاهدات المنتجات
+                    </button>
+                </div>
+            </div>
+
+            <!-- Visitor Chart Container -->
+            <div id="visitors-chart-container" class="relative h-[250px] sm:h-[300px]">
+                <canvas id="visitorsChart"></canvas>
+            </div>
+
+            <!-- Product Views Chart Container -->
+            <div id="products-chart-container" class="relative h-[250px] sm:h-[300px] hidden">
+                <canvas id="productsChart"></canvas>
+            </div>
+        </div>
         <!-- 5. Subdomain & Link Section -->
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-6">
             <!-- Top Row -->
@@ -516,19 +549,22 @@
                 <i class="fas fa-chevron-left text-gray-300 text-xs"></i>
             </a>
 
-            <!-- Tutorial Card -->
-            <a href="{% url 'merchant_tutorial' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" 
+            <!-- Academy Card -->
+            <a href="{% url 'academy_home' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" 
                class="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:scale-[1.01] transition-all">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center text-xl">
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl">
                         <i class="fas fa-graduation-cap"></i>
                     </div>
                     <div class="text-right">
-                        <h3 class="font-black text-gray-900">مركز المساعدة</h3>
-                        <p class="text-xs text-gray-400">تعلم كيف تزيد مبيعاتك وتدير متجرك باحتراف</p>
+                        <h3 class="font-black text-gray-900 text-sm">أكاديمية التجار</h3>
+                        <p class="text-[10px] text-gray-400">دورات تعليمية احترافية لتطوير مهاراتك</p>
                     </div>
                 </div>
-                <i class="fas fa-chevron-left text-gray-300 text-xs"></i>
+                <div class="flex items-center gap-3">
+                    <span class="bg-blue-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full">إصدار جديد</span>
+                    <i class="fas fa-chevron-left text-gray-300 text-xs"></i>
+                </div>
             </a>
         </div>
 
@@ -1328,5 +1364,139 @@
         setTimeout(updateOnboardingProgress, 800);
     });
 </script>
+{% endblock %}
 
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // --- Analytics Charts Logic ---
+    let visitorsChart = null;
+    let productsChart = null;
+
+    function initCharts() {
+        const visitorLabels = {{ visitor_labels_json|safe }};
+        const visitorData = {{ visitor_data_json|safe }};
+        const productLabels = {{ product_labels_json|safe }};
+        const productViews = {{ product_views_json|safe }};
+
+        // Visitor Line Chart
+        const ctxVisitors = document.getElementById('visitorsChart').getContext('2d');
+        if (ctxVisitors) {
+            visitorsChart = new Chart(ctxVisitors, {
+                type: 'line',
+                data: {
+                    labels: visitorLabels.map(d => d.split('-').slice(1).join('/')), // Short labels (MM/DD)
+                    datasets: [{
+                        label: 'عدد الزيارات',
+                        data: visitorData,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 2,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: '#1e293b',
+                            titleFont: { family: 'Tajawal', weight: 'bold' },
+                            bodyFont: { family: 'Tajawal' },
+                            padding: 12,
+                            cornerRadius: 12
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Tajawal', size: 10 }, color: '#94a3b8' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { family: 'Tajawal', size: 10 }, color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Product Bar Chart
+        const ctxProducts = document.getElementById('productsChart').getContext('2d');
+        if (ctxProducts) {
+            productsChart = new Chart(ctxProducts, {
+                type: 'bar',
+                data: {
+                    labels: productLabels,
+                    datasets: [{
+                        label: 'عدد المشاهدات',
+                        data: productViews,
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 8,
+                        barThickness: 20
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Horizontal
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleFont: { family: 'Tajawal', weight: 'bold' },
+                            bodyFont: { family: 'Tajawal' },
+                            padding: 12,
+                            cornerRadius: 12
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { family: 'Tajawal', size: 10 }, color: '#94a3b8' }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Tajawal', size: 10 }, color: '#1e293b', weight: 'bold' }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function switchChart(type) {
+        const vBtn = document.getElementById('toggle-visitors');
+        const pBtn = document.getElementById('toggle-products');
+        const vCont = document.getElementById('visitors-chart-container');
+        const pCont = document.getElementById('products-chart-container');
+
+        if (type === 'visitors') {
+            vBtn.className = "flex-1 sm:px-6 h-full rounded-xl text-xs font-black transition-all bg-white text-blue-600 shadow-sm border border-gray-200/50";
+            pBtn.className = "flex-1 sm:px-6 h-full rounded-xl text-xs font-bold transition-all text-gray-500 hover:text-gray-700";
+            vCont.classList.remove('hidden');
+            pCont.classList.add('hidden');
+        } else {
+            pBtn.className = "flex-1 sm:px-6 h-full rounded-xl text-xs font-black transition-all bg-white text-purple-600 shadow-sm border border-gray-200/50";
+            vBtn.className = "flex-1 sm:px-6 h-full rounded-xl text-xs font-bold transition-all text-gray-500 hover:text-gray-700";
+            pCont.classList.remove('hidden');
+            vCont.classList.add('hidden');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initCharts, 200);
+    });
+</script>
 {% endblock %}

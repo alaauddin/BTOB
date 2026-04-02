@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}أكاديمية التجار - منصة رواج{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/academy.css' %}?v=1.2">
+{% endblock %}
+
+{% block content %}
+<div class="acad-body py-8 md:py-12 pb-32" dir="rtl">
+    <div class="container mx-auto max-w-7xl">
+        
+        <!-- Header Section (Centred Solid) -->
+        <div class="text-center mb-16 px-4">
+            <h1 class="acad-title text-4xl md:text-5xl">أكاديمية التجار</h1>
+            <p class="acad-subtitle">تعلم أسرار التجارة الإلكترونية مع خبراء رواج</p>
+        </div>
+
+        <!-- Course Grid (High Density 2-Col Mobile) -->
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
+            {% for course in courses %}
+            <div class="acad-card acad-stagger p-4 md:p-10" style="animation-delay: 0.{{ forloop.counter }}s;">
+                <!-- Card Icon -->
+                <div class="acad-card-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+
+                <div class="flex-grow">
+                    <h3 class="acad-card-title">{{ course.title }}</h3>
+                    <p class="acad-card-desc line-clamp-3">{{ course.description }}</p>
+                </div>
+
+                <!-- Metadata Pills -->
+                <div class="acad-meta-row">
+                    <div class="acad-meta-pill">
+                        <i class="far fa-clock"></i>
+                        <span>45 دقيقة</span>
+                    </div>
+                    <div class="acad-meta-pill">
+                        <i class="far fa-play-circle"></i>
+                        <span>{{ course.chapters.count|default:"1" }} فصول</span>
+                    </div>
+                    <div class="acad-meta-pill">
+                        <span>مبتدئ</span>
+                    </div>
+                </div>
+
+                <!-- Progress Row (Matching Image) -->
+                <div class="acad-progress-section">
+                    <span class="acad-progress-label">إنجازك</span>
+                    <span class="acad-progress-val">{{ course.progress }}%</span>
+                </div>
+                <div class="acad-progress-track">
+                    <div class="acad-progress-fill" style="width: {{ course.progress }}%"></div>
+                </div>
+
+                <!-- Action Button -->
+                <a href="{% url 'course_detail' course.slug %}" class="acad-btn-course">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>ابدأ رحلة النجاح</span>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Support Help Section (Matching Image) -->
+        <div class="acad-help-box max-w-5xl mx-auto shadow-sm">
+            <span class="inline-block px-3 py-1 bg-slate-50 text-slate-400 text-[10px] font-black rounded-lg mb-6 tracking-widest uppercase">دعم تعليمي</span>
+            <h2 class="acad-help-title">هل ترغب في توجيه شخصي؟</h2>
+            <p class="acad-help-text max-w-lg mx-auto">فريق رواج متوفر على مدار الساعة للإجابة على استفساراتك ومساعدتك في تطوير متجرك</p>
+            
+            <a href="https://wa.me/967780888200" class="acad-btn-support group">
+                <i class="fab fa-whatsapp text-2xl transition-transform group-hover:rotate-12"></i>
+                <span>تواصل مع مستشار رواج</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

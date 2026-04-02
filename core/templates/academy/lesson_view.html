@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ lesson.title }} - {{ course.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/academy.css' %}?v=1.2">
+<style>
+    /* Content styling for the lesson body */
+    .prose h1, .prose h2, .prose h3 {
+        font-family: 'Tajawal', sans-serif !important;
+        font-weight: 900 !important;
+        color: #2b5876 !important;
+        margin-top: 2rem !important;
+        margin-bottom: 1rem !important;
+    }
+    .prose p {
+        font-family: 'Tajawal', sans-serif !important;
+        font-weight: 500 !important;
+        color: #334155 !important;
+        line-height: 1.7 !important;
+        margin-bottom: 1.2rem !important;
+        font-size: 0.95rem !important;
+    }
+    .prose ul, .prose ol {
+        margin-bottom: 1.5rem !important;
+        padding-right: 1.5rem !important;
+    }
+    .prose li {
+        margin-bottom: 0.5rem !important;
+        font-weight: 500 !important;
+        color: #475569 !important;
+        position: relative !important;
+    }
+    .prose blockquote {
+        border-right: 4px solid #3b82f6 !important;
+        border-left: none !important;
+        background: #f8fafc !important;
+        padding: 1.5rem !important;
+        border-radius: 1rem !important;
+        font-style: normal !important;
+        color: #1e293b !important;
+        font-weight: 700 !important;
+    }
+    .prose code {
+        background: #f1f5f9 !important;
+        padding: 0.2rem 0.4rem !important;
+        border-radius: 0.4rem !important;
+        font-size: 0.9em !important;
+    }
+    /* Fixed Sidebar Layout */
+    @media (min-width: 1024px) {
+        .lesson-container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            height: calc(100vh - 72px);
+        }
+        .lesson-sidebar {
+            overflow-y: auto;
+            border-left: 1px solid #e2e8f0;
+            background: #ffffff;
+        }
+        .lesson-content {
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lesson-container bg-white" dir="rtl">
+    <!-- Sidebar (Curriculum) -->
+    <aside class="lesson-sidebar bg-slate-50/50 hidden lg:flex flex-col">
+        <div class="p-6 border-b border-slate-100 bg-white">
+            <a href="{% url 'course_detail' course.slug %}" class="flex items-center gap-2.5 text-slate-400 hover:text-[#f58231] transition-all mb-3 text-[9px] font-black uppercase tracking-wider">
+                <i class="fas fa-arrow-right"></i>
+                العودة للدورة
+            </a>
+            <h3 class="text-sm font-extrabold text-[#2b5876] leading-tight">{{ course.title }}</h3>
+        </div>
+
+        <div class="p-3 space-y-6">
+            {% for chapter in chapters %}
+            <div>
+                <h4 class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-2.5 px-2">{{ chapter.title }}</h4>
+                <div class="space-y-0.5">
+                    {% for item in chapter.lessons.all %}
+                    <a href="{% url 'lesson_view' course.slug item.id %}" 
+                       class="flex items-center gap-2.5 p-2.5 rounded-xl transition-all border border-transparent {% if item.id == lesson.id %}bg-white shadow-sm border-slate-100 text-[#2b5876] font-extrabold{% else %}text-slate-500 hover:bg-white hover:border-slate-100 hover:text-[#2b5876]{% endif %}">
+                        <div class="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-lg {% if item.id == lesson.id %}bg-[#f58231] text-white shadow-md shadow-orange-500/20{% elif item.is_completed %}bg-orange-50 text-[#f58231]{% else %}bg-slate-100 text-slate-400{% endif %}">
+                            <i class="fas {% if item.is_completed %}fa-check{% else %}fa-play{% endif %} text-[8px]"></i>
+                        </div>
+                        <span class="text-[11px] truncate">{{ item.title }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="lesson-content p-4 lg:p-10">
+        <div class="max-w-4xl mx-auto">
+            <!-- Navigation Breadcrumb Mobile -->
+            <div class="lg:hidden mb-8">
+                <a href="{% url 'course_detail' course.slug %}" class="text-xs font-bold text-slate-400 hover:text-primary-color flex items-center gap-2">
+                    <i class="fas fa-arrow-right"></i>
+                    العودة لـ {{ course.title }}
+                </a>
+            </div>
+
+            <!-- Video Player (if available) -->
+            {% if lesson.video_id %}
+            <div class="mb-12 aspect-video rounded-[2rem] overflow-hidden bg-slate-900 shadow-2xl relative group">
+                <iframe 
+                    class="w-full h-full"
+                    src="https://www.youtube-nocookie.com/embed/{{ lesson.video_id }}?rel=0&showinfo=0&modestbranding=1" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+            {% endif %}
+
+            <!-- Lesson Header - Refined WOW -->
+            <div class="mb-12 text-center lg:text-right acad-stagger">
+                <div class="inline-block px-3 py-1 bg-white/10 backdrop-blur-md text-[#f58231] text-[9px] font-black rounded-lg mb-4 tracking-widest uppercase border border-orange-100">{{ lesson.chapter.title }}</div>
+                <h1 class="text-2xl lg:text-4xl font-extrabold text-[#2b5876] mb-4 leading-tight">{{ lesson.title }}</h1>
+                <div class="flex items-center justify-center lg:justify-start gap-5 text-[10px] font-bold text-slate-400">
+                    <span class="flex items-center gap-2"><i class="far fa-clock text-[#f58231]"></i> 5 دقائق من القراءة</span>
+                    <span class="flex items-center gap-2"><i class="far fa-eye text-[#f58231]"></i> 154 مشاهدة</span>
+                </div>
+            </div>
+
+            <!-- Lesson Body (Markdown) -->
+            <div class="prose max-w-none text-right" dir="rtl">
+                {{ lesson_html|safe }}
+            </div>
+
+            <!-- Bottom Navigation -->
+            <div class="mt-20 pt-10 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+                {% if prev_lesson %}
+                <a href="{% url 'lesson_view' course.slug prev_lesson.id %}" class="flex items-center gap-3 text-slate-400 hover:text-primary-color font-bold text-sm transition-all">
+                    <i class="fas fa-arrow-right"></i>
+                    الدرس السابق
+                </a>
+                {% else %}
+                <div></div>
+                {% endif %}
+
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <button id="mainActionBtn" onclick="markComplete(this, {{ lesson.id }})" 
+                            class="flex-1 sm:flex-none px-10 py-5 {% if is_completed %}acad-btn-success cursor-default{% else %}acad-btn-course !w-auto shadow-xl shadow-orange-500/10 active:scale-95{% endif %} rounded-2xl text-xs md:text-sm transition-all flex items-center justify-center gap-3">
+                        <i class="fas {% if is_completed %}fa-check-double{% else %}fa-check{% endif %}"></i>
+                        <span>{% if is_completed %}تم الإكمال بنجاح{% else %}إكمال وحفظ التقدم{% endif %}</span>
+                    </button>
+                    
+                    {% if next_lesson %}
+                    <a href="{% url 'lesson_view' course.slug next_lesson.id %}" class="flex-1 sm:flex-none px-10 py-5 acad-bg-midnight text-white rounded-2xl font-bold text-xs md:text-sm text-center shadow-xl shadow-slate-900/10 active:scale-95 transition-all flex items-center justify-center gap-3 group">
+                        التالي
+                        <i class="fas fa-arrow-left transition-transform group-hover:-translate-x-2"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    function markComplete(btn, lessonId) {
+        if (btn.classList.contains('bg-green-100')) return;
+        
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+        btn.disabled = true;
+
+        fetch(`/dashboard/academy/complete-lesson/${lessonId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                btn.classList.remove('acad-btn-course', 'active:scale-95');
+                btn.classList.add('acad-btn-success', 'cursor-default');
+                btn.innerHTML = '<i class="fas fa-check-double"></i> تم الإكمال بنجاح';
+                
+                // Show celebration (Brand Colors)
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    origin: { y: 0.75 },
+                    colors: ['#f58231', '#2b5876', '#10b981']
+                });
+            } else {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+{% block footer %}{% endblock %}
+{% endblock %}

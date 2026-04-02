@@ -3,10 +3,11 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from core.decorators import merchant_required
 from django.views.decorators.http import require_http_methods
-from core.models import Supplier, SupplierAdPlatfrom
+from core.models import Supplier, SupplierAdPlatfrom, SystemSettings
 from core.forms import SupplierAdPlatfromForm
 import logging
 from core.utils.merchant_utils import get_active_supplier
+from core.utils.whatsapp_utils import send_whatsapp_message
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,16 @@ def add_platform_ad(request):
             ad.link = "" 
             
         ad.save()
+
+        # Send WhatsApp notification to system number
+        try:
+            settings = SystemSettings.objects.first()
+            if settings and settings.whatsapp_number:
+                msg = f"إشعار جديد: قام التاجر ({supplier.name}) بإضافة إعلان منصة جديد بعنوان ({ad.title or 'بدون عنوان'}). يرجى مراجعة لوحة التحكم للموافقة عليه."
+                send_whatsapp_message(settings.whatsapp_number, msg)
+        except Exception as e:
+            logger.error(f"Failed to send WhatsApp notification for ad {ad.id}: {str(e)}")
+
         return JsonResponse({
             'success': True,
             'message': 'تم إضافة الإعلان بنجاح! بانتظار الموافقة.',

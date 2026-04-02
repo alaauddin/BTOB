@@ -99,24 +99,7 @@
                     <img src="{{ ad.image.url }}" class="hero-image" alt="{{ ad.title }}" loading="lazy">
                     
                     <!-- Text Overlay -->
-                    <div class="hero-overlay">
-                        <div class="hero-glass-badge">
-                            {% if ad.title %}
-                            <h2 class="h3 fw-bold mb-2">{{ ad.title }}</h2>
-                            {% endif %}
-                            
-                            {% if ad.description %}
-                            <p class="mb-3 opacity-90 small">{{ ad.description|truncatewords:15 }}</p>
-                            {% endif %}
-                            
-                            {% if ad.product %}
-                            <a href="{% url 'product_canonical' store_slug=supplier.store_id pk=ad.product.id %}" 
-                               class="btn btn-sm btn-light rounded-pill px-4 fw-bold text-dark">
-                                تسوق الآن
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
+                  
                 </div>
                 {% endfor %}
             </div>

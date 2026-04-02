@@ -43,6 +43,7 @@ from core.views.delivery_driver_views import (
     manage_drivers, add_driver, toggle_driver_status, assign_driver_to_order,
     driver_dashboard, driver_update_order_status, driver_order_map
 )
+from core.views.AcademyViews import academy_home, course_detail, lesson_view, complete_lesson
 
 urlpatterns = [
     # Landing Page
@@ -177,5 +178,10 @@ urlpatterns = [
     # WhatsApp Inquiry Tracking
     path('wa-inquiry-click/<int:product_id>/', track_wa_inquiry_click, name='wa_inquiry_click'),
 
+    # Merchant Academy (Courses)
+    path('dashboard/academy/', academy_home, name='academy_home'),
+    path('dashboard/academy/course/<slug:slug>/', course_detail, name='course_detail'),
+    path('dashboard/academy/course/<slug:course_slug>/lesson/<int:lesson_id>/', lesson_view, name='lesson_view'),
+    path('dashboard/academy/complete-lesson/<int:lesson_id>/', complete_lesson, name='complete_lesson'),
 ]
 

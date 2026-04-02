@@ -543,7 +543,8 @@ class SupplierSettingsForm(forms.ModelForm):
             'profile_picture', 'panal_picture', 'latitude', 'longitude', 
             'show_order_amounts', 'show_platform_ads', 'show_system_logo',
             'return_policy', 'footer_description',
-            'facebook_url', 'instagram_url', 'twitter_url', 'tiktok_url'
+            'facebook_url', 'instagram_url', 'twitter_url', 'tiktok_url',
+            'currency'
         ]
         widgets = {
             'name': forms.TextInput(attrs={
@@ -616,6 +617,9 @@ class SupplierSettingsForm(forms.ModelForm):
                 'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
                 'placeholder': 'https://tiktok.com/@yourprofile'
             }),
+            'currency': forms.Select(attrs={
+                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm cursor-pointer'
+            }),
         }
         labels = {
             'name': 'اسم المتجر',
@@ -640,7 +644,8 @@ class SupplierSettingsForm(forms.ModelForm):
             'facebook_url': 'رابط فيسبوك',
             'instagram_url': 'رابط انستقرام',
             'twitter_url': 'رابط تويتر',
-            'tiktok_url': 'رابط تيك توك'
+            'tiktok_url': 'رابط تيك توك',
+            'currency': 'عملة المتجر'
         }
 
 class DomainOnlyForm(forms.ModelForm):
