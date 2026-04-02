@@ -5,16 +5,25 @@
 {% block title %}{{ product.name }} - {{ supplier.name }}{% endblock %}
 
 {% block extra_meta %}
+<link rel="canonical" href="{{ request.build_absolute_uri }}" />
 <meta property="og:title" content="{{ product.name }}{% if product.has_discount %} - خصم {{ product.get_discount_precentage }}%!{% endif %}" />
-<meta property="og:description" content="{% if product.has_discount %}عرطة مميزة! خصم {{ product.get_discount_precentage }}% لفترة محدودة. {% endif %}{{ product.description|striptags|truncatechars:160 }}" />
-<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}" />
+<meta property="og:description" content="{% if product.has_discount %}عرض خاص! خصم {{ product.get_discount_precentage }}% لفترة محدودة. {% endif %}{{ product.description|striptags|truncatechars:160|escape }}" />
+{% if product.image %}
+    {% if product.image.url|slice:":4" == "http" %}
+        <meta property="og:image" content="{{ product.image.url }}" />
+        <meta name="twitter:image" content="{{ product.image.url }}" />
+    {% else %}
+        <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}" />
+        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}" />
+    {% endif %}
+    <meta property="og:image:width" content="800" />
+    <meta property="og:image:height" content="800" />
+{% endif %}
 <meta property="og:url" content="{{ request.build_absolute_uri }}" />
 <meta property="og:type" content="product" />
-<meta property="product:condition" content="new">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ product.name }}{% if product.has_discount %} - خصم {{ product.get_discount_precentage }}%!{% endif %}">
-<meta name="twitter:description" content="{% if product.has_discount %}عرطة مميزة! خصم {{ product.get_discount_precentage }}% لفترة محدودة. {% endif %}{{ product.description|striptags|truncatechars:160 }}">
-<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}">
+<meta name="twitter:title" content="{{ product.name }}">
+<meta name="twitter:description" content="{{ product.description|striptags|truncatechars:160|escape }}">
 {% endblock %}
 
 {% block meta_pixel_events %}
