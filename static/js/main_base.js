@@ -791,13 +791,13 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     window.handlePasswordResetRequest = function (isForgotBoth = false) {
-        const usernameEl = document.getElementById('reset_username');
-        const username = isForgotBoth ? '' : usernameEl.value;
+        const phoneEl = document.getElementById('reset_phone');
+        const phone = isForgotBoth ? '' : phoneEl.value;
         const submitBtn = document.getElementById('reset-submit-btn');
         const statusContainer = document.getElementById('reset-status-container');
 
-        if (!isForgotBoth && !username) {
-            showNotification('يرجى إدخال اسم المستخدم ورقم الهاتف', 'error');
+        if (!isForgotBoth && !phone) {
+            showNotification('يرجى إدخال رقم الهاتف', 'error');
             return;
         }
 
@@ -812,7 +812,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
             },
-            body: JSON.stringify({ username: username })
+            body: JSON.stringify({ phone: phone })
         })
             .then(response => response.json())
             .then(data => {
@@ -821,7 +821,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.is_forgot_both) {
                         if (statusContainer) {
                             statusContainer.className = 'rounded-xl p-4 text-right bg-blue-50 text-blue-700 text-[11px] border border-blue-100 space-y-3';
-                            const message = encodeURIComponent(`مرحباً، لقد نسيت اسم المستخدم وكلمة المرور الخاصة بي. أحتاج للمساعدة في استعادة بيانات حسابي.`);
+                            const message = encodeURIComponent(`مرحباً، لقد نسيت رقم الهاتف وكلمة المرور الخاصة بي. أحتاج للمساعدة في استعادة بيانات حسابي.`);
                             const whatsappUrl = `https://wa.me/${data.support_phone}?text=${message}`;
                             statusContainer.innerHTML = `
                             <p class="font-bold mb-2">استعادة بيانات الحساب</p>
@@ -840,7 +840,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     } else {
                         if (statusContainer) {
                             statusContainer.className = 'rounded-xl p-4 text-right bg-green-50 text-green-700 text-[11px] border border-green-100 space-y-3';
-                            const message = encodeURIComponent(`مرحباً، لقد قمت بطلب استعادة كلمة المرور لحسابي (${data.username}).`);
+                            const message = encodeURIComponent(`مرحباً، لقد قمت بطلب استعادة كلمة المرور لحسابي (${data.phone}).`);
                             const whatsappUrl = `https://wa.me/${data.support_phone}?text=${message}`;
                             statusContainer.innerHTML = `
                         <p class="font-bold mb-2">تم تحديث كلمة المرور!</p>
@@ -850,7 +850,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <i class="fab fa-whatsapp text-lg"></i>
                                 متابعة الطلب في واتساب
                             </a>
-                            <button type="button" onclick="togglePasswordReset(false); document.getElementById('merchant_username').value='${data.username}';" class="w-full py-2.5 bg-gray-800 text-white rounded-xl font-bold text-[10px] hover:bg-gray-900 transition-all">
+                            <button type="button" onclick="togglePasswordReset(false); document.getElementById('merchant_username').value='${data.phone}';" class="w-full py-2.5 bg-gray-800 text-white rounded-xl font-bold text-[10px] hover:bg-gray-900 transition-all">
                                 الذهاب لصفحة تسجيل الدخول
                             </button>
                         </div>

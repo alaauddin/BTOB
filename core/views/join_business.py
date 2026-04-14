@@ -47,6 +47,11 @@ def join_business(request):
         elif action == 'send_otp':
             if form.is_valid():
                 phone = form.cleaned_data['phone']
+                
+                from core.db.profile import Profile
+                if Profile.objects.filter(phone_number=phone).exists():
+                    return JsonResponse({'success': False, 'errors': {'phone': ['رقم الهاتف هذا مسجل بالفعل.']}})
+                
                 request.session['merchant_signup_data'] = form.cleaned_data
                 
                 otp = str(random.randint(100000, 999999))
@@ -94,6 +99,11 @@ def join_business(request):
                         password=signup_data['password'],
                         email=f"{signup_data['phone']}@aratatt.com"
                     )
+                    
+                    # Update profile to supplier type
+                    user.profile.user_type = 'supplier'
+                    user.profile.phone_number = signup_data['phone']
+                    user.profile.save()
                     
                     # 2. Create Supplier
                     import re

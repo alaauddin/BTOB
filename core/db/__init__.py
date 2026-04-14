@@ -12,6 +12,7 @@ from core.db.utils import upload_to_path  # noqa: F401
 
 # Models
 from core.db.otp import OTPVerification  # noqa: F401
+from core.db.profile import Profile  # noqa: F401
 from core.db.workflow import OrderStatus, OrderWorkflow, WorkflowStep  # noqa: F401
 from core.db.supplier import SupplierCategory, Currency, Supplier, SupplierAdPlatfrom  # noqa: F401
 from core.db.product import Category, ProductCategory, Product, ProductImage, ProductAttribute, ProductAttributeOption  # noqa: F401

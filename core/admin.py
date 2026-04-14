@@ -71,6 +71,12 @@ from django.forms import widgets
 from django.urls import reverse
 from django.utils.html import format_html, mark_safe
 
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'user_type', 'phone_number')
+    list_filter = ('user_type',)
+    search_fields = ('user__username', 'phone_number')
+
 class SupplierAdmin(admin.ModelAdmin):
     list_display = ('name', 'city', 'country', 'primary_color', 'views_count', 'agreed_to_terms', 'is_active')
     search_fields = ('name', 'city')
@@ -119,9 +125,15 @@ class SupplierAdmin(admin.ModelAdmin):
     
     workflow_steps_list.short_description = 'إعدادات خطوات سير العمل'
 
+    def profile_phone_number(self, obj):
+        if obj.user and hasattr(obj.user, 'profile') and obj.user.profile.phone_number:
+            return obj.user.profile.phone_number
+        return "غير متوفر"
+    profile_phone_number.short_description = "رقم هاتف حساب المستخدم"
+
     fieldsets = (
         ('المعلومات الأساسية', {
-            'fields': ('user', 'managing_users', 'name', 'is_active', 'phone', 'category', 'currency', 'return_policy', 'delivery_fee_ratio', 'enable_delivery_fees', 'enable_delivery_drivers', 'show_order_amounts','show_platform_ads','store_id'),
+            'fields': ('user', 'profile_phone_number', 'managing_users', 'name', 'is_active', 'phone', 'category', 'currency', 'return_policy', 'delivery_fee_ratio', 'enable_delivery_fees', 'enable_delivery_drivers', 'show_order_amounts','show_platform_ads','store_id'),
             'description': 'أضف المعلومات الأساسية للمورد هنا والمستخدمين المدراء.'
         }),
         ('المكان والجغرافيا', {
@@ -148,7 +160,7 @@ class SupplierAdmin(admin.ModelAdmin):
         }),
     )
 
-    readonly_fields = ('workflow_steps_list', 'map_picker', 'terms_agreed_at')
+    readonly_fields = ('workflow_steps_list', 'map_picker', 'terms_agreed_at', 'profile_phone_number')
 
     def map_picker(self, obj):
         lat = obj.latitude or 15.3694  # Default to Sana'a

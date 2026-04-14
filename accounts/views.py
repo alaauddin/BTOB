@@ -10,11 +10,14 @@ from .forms import  SignUpForm
 from django.views.generic import UpdateView
 from django.views.generic import CreateView
 
-from django.urls import reverse_lazy
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from django.core.cache import cache
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib import messages
 import time
 
 
@@ -281,68 +284,104 @@ def ajax_unified_auth_view(request):
 def ajax_password_reset_request(request):
     """
     Handle AJAX password reset requests.
-    Generates a new 8-digit numeric password and sends it to the user.
+    Generates a secure password reset link and sends it to the user via WhatsApp.
+    Only available to suppliers.
     """
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            username = data.get('username') # This is the phone/username
+            phone = data.get('phone')
             
             from core.models import SystemSettings
             settings = SystemSettings.objects.first()
             support_phone = settings.whatsapp_number if settings and settings.whatsapp_number else (settings.customer_service_number if settings else "+967777777777")
 
-            if not username:
-                # If no username, just return support info (Forgot Both flow)
+            if not phone:
                 return JsonResponse({
                     'success': True,
                     'is_forgot_both': True,
                     'support_phone': support_phone,
-                    'message': 'يرجى التواصل مع الدعم الفني لاستعادة بيانات حسابك.'
+                    'message': 'يرجى إدخال رقم الهاتف، أو التواصل مع الدعم الفني لاستعادة بيانات حسابك.'
                 })
             
-            user = User.objects.filter(username=username).first()
+            from core.db.profile import Profile
+            profile = Profile.objects.filter(phone_number=phone, user_type='supplier').first()
             
-            if user:
-                # Find the phone number from the Supplier model
-                phone_number = None
-                if hasattr(user, 'supplier'):
-                    phone_number = user.supplier.phone
-                
-                # Final check: if username looks like a phone number, use it as fallback
-                if not phone_number and username.isdigit() and len(username) >= 9:
-                    phone_number = username
-                
-                if not phone_number:
-                    return JsonResponse({
-                        'success': False,
-                        'message': 'لم نجد رقم هاتف مسجل لهذا الحساب. يرجى التواصل مع الدعم الفني.'
-                    })
+            if profile and profile.user:
+                user = profile.user
+                phone_number = profile.phone_number
 
-                # 1. Generate new 8-digit numeric password
-                new_password = get_random_string(length=8, allowed_chars='0123456789')
+                # 1. Generate token and encoded user ID
+                uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+                token = default_token_generator.make_token(user)
                 
-                # 2. Update user password
-                user.set_password(new_password)
-                user.save()
+                # 2. Build absolute reset URL
+                reset_path = reverse('password_reset_confirm', kwargs={'uidb64': uidb64, 'token': token})
+                reset_url = request.build_absolute_uri(reset_path)
                 
-                # 3. Attempt to send via WhatsApp
+                # 3. Send link via WhatsApp
                 from core.utils.whatsapp_utils import send_whatsapp_message
-                wa_message = f"مرحباً {user.first_name or user.username}،\nكلمة المرور الجديدة الخاصة بك هي: {new_password}\nيرجى استخدامها لتسجيل الدخول."
+                wa_message = f"مرحباً {user.first_name or user.username}،\nلقد طلبت إعادة تعيين كلمة المرور لحسابك كتاجر.\nالرجاء النقر على الرابط التالي لإنشاء كلمة مرور جديدة:\n\n{reset_url}\n\nهذا الرابط صالح لمرة واحدة. إذا لم تطلب هذا، يمكنك تجاهل هذه الرسالة."
                 send_whatsapp_message(phone_number, wa_message)
                 
                 return JsonResponse({
                     'success': True,
-                    'message': f'تم تعيين كلمة مرور جديدة وإرسالها إلى الرقم {phone_number}. يرجى التحقق من تطبيق واتساب.',
+                    'message': f'تم إرسال رابط إعادة تعيين كلمة المرور إلى الرقم {phone_number}. يرجى التحقق من الرسائل في تطبيق واتساب.',
                     'support_phone': support_phone,
-                    'username': username
+                    'phone': phone
                 })
             else:
                 return JsonResponse({
                     'success': False,
-                    'message': 'لم يتم العثور على حساب بهذا الاسم. يرجى التأكد من البيانات أو الانضمام كتاجر جديد.'
+                    'message': 'لم يتم العثور على حساب بهذا الهاتف. يرجى التأكد من البيانات أو الانضمام كتاجر جديد.'
                 })
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
             
     return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+
+
+def password_reset_confirm_view(request, uidb64, token):
+    """
+    Handle the destination link of the password reset URL.
+    Validates the token and allows the user to post a new password.
+    """
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+
+            if new_password and confirm_password:
+                if new_password == confirm_password:
+                    if len(new_password) < 6:
+                        messages.error(request, 'يجب أن تتكون كلمة المرور من 6 أحرف أو أرقام على الأقل.')
+                    else:
+                        user.set_password(new_password)
+                        user.save()
+                        
+                        # Send WhatsApp confirmation with username and new password
+                        phone_number = None
+                        if hasattr(user, 'profile'):
+                            phone_number = user.profile.phone_number
+                        
+                        if phone_number:
+                            from core.utils.whatsapp_utils import send_whatsapp_message
+                            wa_message = f"مرحباً {user.first_name or user.username}،\nتم إعادة تعيين كلمة المرور الخاصة بك بنجاح.\n\nبيانات الدخول لحسابك:\nاسم المستخدم: {user.username}\nكلمة المرور الجديدة: {new_password}\n\nنتمنى لك يوماً سعيداً."
+                            send_whatsapp_message(phone_number, wa_message)
+
+                        messages.success(request, 'تم إعادة تعيين كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول.')
+                        return redirect('login')  # Assuming 'login' is your standard login URL name
+                else:
+                    messages.error(request, 'كلمتي المرور غير متطابقتين.')
+            else:
+                messages.error(request, 'يرجى تعبئة جميع الحقول المطلوبة.')
+
+        return render(request, 'password_reset_confirm.html', {'validlink': True})
+    else:
+        return render(request, 'password_reset_confirm.html', {'validlink': False})

@@ -45,7 +45,7 @@ class Currency(models.Model):
 
 
 class Supplier(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='supplier')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='supplier', limit_choices_to={'profile__user_type': 'supplier'})
     name = models.CharField(max_length=100)
     store_id = models.SlugField(max_length=100, unique=True, null=True, blank=True)
     phone = models.CharField(max_length=15)
@@ -91,7 +91,7 @@ class Supplier(models.Model):
 
     is_active = models.BooleanField(default=True, verbose_name="نشط")
     has_seen_products_tour = models.BooleanField(default=False, verbose_name="شاهد جولة المنتجات")
-    managing_users = models.ManyToManyField(User, related_name='managed_suppliers', blank=True, verbose_name="المستخدمين المدراء")
+    managing_users = models.ManyToManyField(User, related_name='managed_suppliers', blank=True, verbose_name="المستخدمين المدراء", limit_choices_to={'profile__user_type': 'supplier'})
     subdomain = models.CharField(
         max_length=63,
         unique=True,

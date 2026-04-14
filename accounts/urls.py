@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/unified-auth/', views.ajax_unified_auth_view, name='api_unified_auth'),
     path('api/merchant-login/', views.ajax_merchant_login_view, name='api_merchant_login'),
     path('api/password-reset-request/', views.ajax_password_reset_request, name='api_password_reset_request'),
+    path('reset-password/<str:uidb64>/<str:token>/', views.password_reset_confirm_view, name='password_reset_confirm'),
     # path('create_or_update_contact/',views.create_or_update_contact,name='create_or_update_contact'),
     path('logout/',views.logout, name='logout'),
 
