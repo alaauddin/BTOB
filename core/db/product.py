@@ -41,6 +41,10 @@ class Product(models.Model):
     views_count = models.PositiveIntegerField(default=0, verbose_name="عدد المشاهدات")
     stock = models.PositiveIntegerField(default=0, verbose_name="المخزون")
 
+    # New Wholesale/Dropshipping fields
+    wholesale_origin = models.ForeignKey('core.WholesaleProduct', on_delete=models.SET_NULL, null=True, blank=True, related_name='imported_products', verbose_name="المصدر (الجملة)")
+    purchase_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="تكلفة الشراء")
+
     class Meta:
         app_label = 'core'
 

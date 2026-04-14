@@ -17,7 +17,7 @@ from core.views.ProductListView import product_list
 from core.views.ConvertCartToOrder import checkout_select_address_or_custom_address
 from core.views.SuppliersListView import SuppliersListView
 from core.views.add_to_wish_list import toggle_wishlist, get_wishlist_status
-from core.views.MyMerchant import my_merchant, update_merchant_settings, merchant_products, merchant_marketing, merchant_analytics, merchant_tutorial, quick_update_stock
+from core.views.MyMerchant import my_merchant, update_merchant_settings, merchant_products, merchant_marketing, merchant_analytics, merchant_tutorial, quick_update_stock, wholesale_market, inherit_wholesale_product_ajax,get_wholesale_product_details_ajax
 from core.views.agree_to_terms import agree_to_terms
 from core.views.add_product import add_product
 from core.views.edit_product import edit_product
@@ -116,6 +116,9 @@ urlpatterns = [
     path('update-merchant-settings/', update_merchant_settings, name='update_merchant_settings'),
     path('agree-to-terms/', agree_to_terms, name='agree_to_terms'),
     path('quick-update-stock/<int:product_id>/', quick_update_stock, name='quick_update_stock'),
+    path('wholesale-market/', wholesale_market, name='wholesale_market'),
+    path('get-wholesale-details/<int:product_id>/', get_wholesale_product_details_ajax, name='get_wholesale_details_ajax'),
+    path('inherit-product/<int:wholesale_product_id>/', inherit_wholesale_product_ajax, name='inherit_wholesale_product_ajax'),
     path('add-product/', add_product, name='add_product'),
     path('edit-product/<int:product_id>/', edit_product, name='edit_product'),
     path('add-offer/', add_product_offer, name='add_product_offer'),

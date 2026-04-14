@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}مركز التوريد (الجملة) - {{ supplier.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/merchant_dashboard.css' %}?v={{ css_version }}">
+<link rel="stylesheet" href="{% static 'css/merchant_products.css' %}?v={{ css_version }}">
+<style>
+    :root {
+        --primary-color: {{ supplier.primary_color|default:'#2563eb' }};
+        --secondary-color: {{ supplier.secondary_color|default:'#ffffff' }};
+        --accent-color: {{ supplier.accent_color|default:'#00FFFF' }};
+    }
+    .profit-badge {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .wholesale-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .wholesale-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    /* Compact Overrides */
+    .products-container {
+        padding: 0.5rem !important;
+        margin: 0 !important;
+    }
+    .page-title-row {
+        margin-bottom: 0.5rem !important;
+    }
+    .stats-summary-card {
+        padding: 0.25rem 0.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .filters-section {
+        margin-bottom: 0.5rem !important;
+    }
+    .status-row-wrapper {
+        margin-bottom: 0.5rem !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid min-h-screen bg-gray-50 pb-20" dir="rtl">
+    <div class="products-container">
+        <!-- Breadcrumbs & Header -->
+        <div class="breadcrumb-container">
+            <ul class="breadcrumb-custom">
+                <li class="breadcrumb-item-custom">
+                    <a href="{% url 'my_merchant' %}">لوحة التحكم</a>
+                </li>
+                <i class="fas fa-chevron-left breadcrumb-separator"></i>
+                <li class="breadcrumb-item-custom active">مركز التوريد</li>
+            </ul>
+        </div>
+
+        <div class="page-title-row">
+            <h2 class="page-title">
+                <i class="fas fa-shopping-basket"></i>
+                مركز التوريد بالجملة
+            </h2>
+            <div class="flex items-center gap-2">
+                <div class="hidden sm:flex bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-xs font-black border border-blue-100">
+                    <i class="fas fa-rocket ml-2"></i>
+                    دروبشيبينج سريع
+                </div>
+            </div>
+        </div>
+
+    <div class="px-2 sm:px-4 mt-4 sm:mt-6">
+        <!-- Stats Summary Row -->
+        <div class="stats-summary-card mb-4 sm:mb-8">
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="stat-number">{{ wholesale_products.count }}</span>
+                    <span class="stat-label">منتج متاح</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number text-emerald-600">+20%</span>
+                    <span class="stat-label">متوسط الربح</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number text-indigo-600">{{ wholesalers.count }}</span>
+                    <span class="stat-label">مورد معتمد</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number text-orange-500">100%</span>
+                    <span class="stat-label">ضمان التوصيل</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Innovative Filters -->
+        <div class="filters-section">
+            <div class="status-row-wrapper">
+                <div class="status-tabs-container">
+                    <div class="status-tab {% if not wholesaler_id or wholesaler_id == 'all' %}active{% endif %}" onclick="location.href='?q={{ query }}'">الكل</div>
+                    {% for w in wholesalers|slice:":4" %}
+                    <div class="status-tab {% if wholesaler_id == w.id|stringformat:'i' %}active{% endif %}" onclick="location.href='?wholesaler_id={{ w.id }}&q={{ query }}'">{{ w.name }}</div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn-toggle-filter {% if query %}active{% endif %}" onclick="toggleFilters()" id="filterToggleBtn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+            <!-- Collapsible Search Row -->
+            <form method="GET" action="." id="collapsibleFilters" class="collapsible-filter-content {% if query %}show{% endif %}">
+                <div class="compact-filter-row">
+                    <div class="filter-input-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="q" value="{{ query }}" placeholder="بحث باسم المنتج أو الوصف..." onchange="this.form.submit()">
+                        <input type="hidden" name="wholesaler_id" value="{{ wholesaler_id|default:'all' }}">
+                    </div>
+                    {% if wholesalers.count > 4 %}
+                    <div class="filter-input-wrapper">
+                        <i class="fas fa-filter"></i>
+                        <select name="wholesaler_id" onchange="this.form.submit()">
+                            <option value="all">جميع الموردين</option>
+                            {% for w in wholesalers %}
+                            <option value="{{ w.id }}" {% if wholesaler_id == w.id|stringformat:"i" %}selected{% endif %}>{{ w.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        <div class="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-6">
+            {% for p in wholesale_products %}
+            <div class="bg-white rounded-[20px] sm:rounded-[40px] border border-gray-100/50 shadow-sm hover:shadow-xl transition-all h-full flex flex-col group overflow-hidden relative {% if p.id in inherited_product_ids %}is-inherited{% endif %}" onclick="openWholesalePreview({{ p.id }}, {% if p.id in inherited_product_ids %}true{% else %}false{% endif %})">
+                
+                <!-- Card Image Container -->
+                <div class="relative h-20 sm:h-48 overflow-hidden {% if p.id in inherited_product_ids %}bg-black{% endif %}">
+                    <img src="{{ p.image.url }}" alt="{{ p.name }}" class="w-full h-full object-cover transition-all duration-500 {% if p.id in inherited_product_ids %}grayscale opacity-30 sm:opacity-40{% endif %}">
+                    
+                    {% if p.id in inherited_product_ids %}
+                    <!-- Dark Status Overlay -->
+                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center p-2">
+                        <div class="bg-black/95 backdrop-blur-sm text-white px-2 sm:px-4 py-1 sm:py-1.5 rounded-full text-[5px] sm:text-[10px] font-black flex items-center gap-1 shadow-2xl border border-white/10 uppercase tracking-wider">
+                            <i class="fas fa-check-double text-emerald-400"></i>
+                            <span class="text-white">في متجرك</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="absolute top-1 right-1">
+                        <span class="profit-badge px-1 py-0.5 rounded-full text-[4px] sm:text-xs font-black shadow-sm backdrop-blur-md">
+                            +{{ p.potential_profit }}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Info -->
+                <div class="p-1 flex-grow {% if p.id in inherited_product_ids %}opacity-50 grayscale{% endif %}">
+                    <h3 class="text-[4px] sm:text-base font-medium sm:font-black text-gray-900 mb-1 sm:mb-3 leading-[1.1] sm:leading-tight line-clamp-2 px-1">{{ p.name }}</h3>
+                </div>
+
+                <!-- Actions & Pricing (Fixed Bottom) -->
+                <div class="p-1 pt-0 mt-auto">
+                    <div class="bg-gray-50/50 p-0.5 sm:p-2.5 rounded-sm sm:rounded-2xl text-center border border-gray-100 flex items-center justify-center gap-1 sm:block mb-1 sm:mb-4 {% if p.id in inherited_product_ids %}opacity-40{% endif %}">
+                        <span class="text-[4px] sm:text-[8px] font-normal sm:font-bold text-gray-400 uppercase">جملة:</span>
+                        <span class="text-[5px] sm:text-sm font-medium sm:font-black text-gray-700">{{ p.purchase_price }}</span>
+                    </div>
+                    {% if p.id in inherited_product_ids %}
+                    <button onclick="event.stopPropagation(); openWholesalePreview({{ p.id }}, true)" class="w-full h-6 sm:h-12 bg-emerald-50 text-emerald-600 rounded-full sm:rounded-2xl font-black text-[4px] sm:text-xs hover:bg-emerald-100 transition-all flex items-center justify-center gap-0.5 border border-emerald-100">
+                        <i class="fas fa-check text-[4px] sm:text-[10px]"></i>
+                        <span class="whitespace-nowrap">مضاف</span>
+                    </button>
+                    {% else %}
+                    <button onclick="event.stopPropagation(); openWholesalePreview({{ p.id }}, false)" class="w-full h-6 sm:h-12 bg-gray-900 text-white rounded-full sm:rounded-2xl font-normal sm:font-black text-[5px] sm:text-xs hover:bg-black transition-all flex items-center justify-center">
+                        عرض
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full py-20 text-center">
+                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-box-open text-3xl text-gray-300"></i>
+                </div>
+                <h3 class="text-lg font-black text-gray-900">لا توجد منتجات جملة حالياً</h3>
+                <p class="text-sm text-gray-500">تحقق لاحقاً للحصول على عروض جديدة</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% include 'wholesale_detail_modal.html' %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function toggleFilters() {
+        const filters = document.getElementById('collapsibleFilters');
+        const btn = document.getElementById('filterToggleBtn');
+        filters.classList.toggle('show');
+        btn.classList.toggle('active');
+    }
+
+    let currentProduct = null;
+
+    function openWholesalePreview(productId, isInherited = false) {
+        const modal = document.getElementById('wholesale-preview-modal');
+        
+        // Handle "Inherited" Status UI
+        const statusBadge = document.getElementById('modal-status-badge');
+        const inheritBtn = document.getElementById('modal-inherit-btn');
+        const subtitle = document.getElementById('modal-category-subtitle');
+        
+        if (isInherited) {
+            statusBadge.classList.remove('hidden');
+            statusBadge.classList.add('flex');
+            inheritBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>موجود في متجرك</span>';
+            inheritBtn.classList.replace('bg-gray-900', 'bg-emerald-600'); 
+            // In Dashboard style, bg-gray-900 is often the default, but we'll use emerald for "Already there"
+            subtitle.innerText = "هذا المنتج موجود بالفعل في قائمة منتجاتك";
+        } else {
+            statusBadge.classList.add('hidden');
+            statusBadge.classList.remove('flex');
+            inheritBtn.innerHTML = '<i class="fas fa-plus-circle"></i> <span>إضافة إلى متجري الآن</span>';
+            // Reset to standard orange if it was changed
+            inheritBtn.style.backgroundColor = 'var(--color-action, #ED7D31)';
+            subtitle.innerText = "سورس السلعة الآن إلى متجرك";
+        }
+
+        // Show loading or just open
+        fetch(`/get-wholesale-details/${productId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentProduct = data.product;
+                    
+                    // Fill Modal
+                    document.getElementById('modal-product-name').innerText = currentProduct.name;
+                    document.getElementById('modal-description').innerText = currentProduct.description;
+                    document.getElementById('modal-category').innerText = currentProduct.category;
+                    document.getElementById('modal-wholesaler').innerText = "بواسطة: " + currentProduct.wholesaler;
+                    document.getElementById('modal-purchase-price').innerText = currentProduct.purchase_price + " {{ supplier.currency }}";
+                    document.getElementById('modal-sale-price').innerText = currentProduct.sale_price + " {{ supplier.currency }}";
+                    document.getElementById('modal-profit').innerText = "+" + currentProduct.potential_profit + " {{ supplier.currency }}";
+                    
+                    // Main Image
+                    const mainImg = document.getElementById('modal-main-image');
+                    mainImg.src = currentProduct.images[0];
+                    
+                    // Thumbnails
+                    const tray = document.getElementById('modal-thumbnail-tray');
+                    tray.innerHTML = '';
+                    currentProduct.images.forEach((imgUrl, index) => {
+                        const btn = document.createElement('button');
+                        btn.className = `thumbnail-btn flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden bg-white border-2 ${index === 0 ? 'border-blue-600 active' : 'border-transparent'}`;
+                        btn.onclick = () => switchModalImage(imgUrl, btn);
+                        btn.innerHTML = `<img src="${imgUrl}" class="w-full h-full object-cover">`;
+                        tray.appendChild(btn);
+                    });
+
+                    // Update Inherit Button
+                    const inheritBtn = document.getElementById('modal-inherit-btn');
+                    inheritBtn.onclick = () => startInheritanceFromModal();
+
+                    // Open Modal
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+    }
+
+    function switchModalImage(url, btn) {
+        document.getElementById('modal-main-image').src = url;
+        document.querySelectorAll('.thumbnail-btn').forEach(b => b.classList.remove('active', 'border-blue-600'));
+        btn.classList.add('active', 'border-blue-600');
+    }
+
+    function closeWholesalePreview() {
+        const modal = document.getElementById('wholesale-preview-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+    }
+
+    function startInheritanceFromModal() {
+        const btn = document.getElementById('modal-inherit-btn');
+        const productId = currentProduct.id;
+        const productName = currentProduct.name;
+        const suggestedPrice = currentProduct.sale_price;
+
+        Swal.fire({
+            title: 'تحديد سعر البيع',
+            text: `تم اقتراح سعر بيع ${suggestedPrice} لهذا المنتج. يمكنك تغييره الآن:`,
+            input: 'number',
+            inputValue: suggestedPrice,
+            inputAttributes: {
+                min: 0,
+                step: '0.01',
+                autofocus: 'autofocus'
+            },
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'إضافة لمتجري',
+            cancelButtonText: 'إلغاء',
+            borderRadius: '24px',
+            inputValidator: (value) => {
+                if (!value || value <= 0) {
+                    return 'يرجى إدخال سعر صالح أكبر من صفر'
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const finalPrice = result.value;
+                
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإضافة...';
+
+                fetch(`/inherit-product/${productId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        custom_price: finalPrice
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'تمت الإضافة! 🎉',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonText: 'حسناً',
+                            borderRadius: '24px'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('خطأ!', data.message, 'error');
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                });
+            }
+        });
+    }
+
+    // Keep the original inheritProduct for any direct card buttons if needed
+    function inheritProduct(btn, productId, productName, suggestedPrice) {
+        // Just call the modal for now to force the "Preview" flow as requested
+        openWholesalePreview(productId);
+    }
+</script>
+{% endblock %}

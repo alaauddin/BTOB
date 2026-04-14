@@ -47,7 +47,25 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('name', 'description')
     inlines = [ProductImageInline, ProductAttributeInline]
     
-    fields = ('supplier', 'category', 'name', 'description', 'price', 'stock', 'image', 'video', 'is_new', 'is_active')
+    fields = ('supplier', 'category', 'name', 'description', 'price', 'purchase_cost', 'wholesale_origin', 'stock', 'image', 'video', 'is_new', 'is_active')
+
+
+class WholesaleProductImageInline(admin.TabularInline):
+    model = WholesaleProductImage
+    extra = 1
+
+@admin.register(WholesaleSupplier)
+class WholesaleSupplierAdmin(admin.ModelAdmin):
+    list_display = ('name', 'phone', 'is_active', 'created_at')
+    list_filter = ('is_active',)
+    search_fields = ('name', 'phone')
+
+@admin.register(WholesaleProduct)
+class WholesaleProductAdmin(admin.ModelAdmin):
+    list_display = ('name', 'wholesaler', 'category', 'purchase_price', 'sale_price', 'stock', 'is_active')
+    list_filter = ('wholesaler', 'category', 'is_active')
+    search_fields = ('name', 'description')
+    inlines = [WholesaleProductImageInline]
 
 
 class OrderStatusAdmin(admin.ModelAdmin):
@@ -152,7 +170,7 @@ class SupplierAdmin(admin.ModelAdmin):
             'description': 'استخدم منتقي الألوان لتحديد ألوان متناسقة لمتجرك.'
         }),
         ('اعدادات الفئات', {
-            'fields': ('can_add_categories', 'can_add_product_categories','show_system_logo', 'show_out_of_stock')
+            'fields': ('can_add_categories', 'can_add_product_categories','can_buy_wholesale', 'show_system_logo', 'show_out_of_stock')
         }),
         ('الشروط والأحكام', {
             'fields': ('agreed_to_terms', 'terms_agreed_at'),

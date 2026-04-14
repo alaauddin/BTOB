@@ -16,6 +16,7 @@ from core.db.profile import Profile  # noqa: F401
 from core.db.workflow import OrderStatus, OrderWorkflow, WorkflowStep  # noqa: F401
 from core.db.supplier import SupplierCategory, Currency, Supplier, SupplierAdPlatfrom  # noqa: F401
 from core.db.product import Category, ProductCategory, Product, ProductImage, ProductAttribute, ProductAttributeOption  # noqa: F401
+from core.db.wholesale import WholesaleSupplier, WholesaleProduct, WholesaleProductImage  # noqa: F401
 from core.db.offer import WishList, ProductOffer  # noqa: F401
 from core.db.cart import Cart, CartItem  # noqa: F401
 from core.db.order import (  # noqa: F401

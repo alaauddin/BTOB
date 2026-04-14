@@ -75,6 +75,7 @@ class Supplier(models.Model):
     can_add_categories = models.BooleanField(default=False, verbose_name="إضافة فئات")
     can_add_product_categories = models.BooleanField(default=False, verbose_name="إضافة فئات المنتجات")
     can_add_products = models.BooleanField(default=False, verbose_name="إضافة منتجات")
+    can_buy_wholesale = models.BooleanField(default=False, verbose_name="السماح بشراء الجملة (Sourcing)")
     show_system_logo = models.BooleanField(default=True, verbose_name="عرض شعار المنصة في الشريط العلوي")
     show_out_of_stock = models.BooleanField(default=True, verbose_name="عرض المنتجات غير المتوفرة")
     enable_delivery_drivers = models.BooleanField(default=False, verbose_name="تفعيل نظام سائقي التوصيل")

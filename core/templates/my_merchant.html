@@ -494,8 +494,26 @@
             </div>
         </div>
 
-        <!-- 6. Menu/Navigation Cards -->
-        <div class="space-y-3 mb-10">
+            <!-- Sourcing Hub Card (Wholesale) -->
+            {% if supplier.can_buy_wholesale %}
+            <a href="{% url 'wholesale_market' %}" class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-4 shadow-lg shadow-blue-100 flex items-center justify-between hover:scale-[1.01] transition-all group overflow-hidden relative">
+                <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="flex items-center gap-4 relative z-10">
+                    <div class="w-12 h-12 bg-white/20 text-white rounded-2xl flex items-center justify-center text-xl backdrop-blur-sm">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="text-right">
+                        <h3 class="font-black text-white">مركز التوريد (الجملة)</h3>
+                        <p class="text-[10px] text-blue-100">ابحث عن منتجات لبيعها في متجرك بدون مخزون</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 relative z-10">
+                    <span class="bg-white text-blue-600 text-[10px] font-black px-2.5 py-1 rounded-full shadow-sm animate-pulse">جديد</span>
+                    <i class="fas fa-chevron-left text-white/50 text-xs"></i>
+                </div>
+            </a>
+            {% endif %}
+
             <!-- Orders Card -->
             <a href="{% url 'merchant_orders' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" 
                class="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:scale-[1.01] transition-all">
@@ -515,6 +533,9 @@
                     <i class="fas fa-chevron-left text-gray-300 text-xs"></i>
                 </div>
             </a>
+            
+            <!-- Wholesale Suggestions Widget -->
+           
 
             <!-- Products Card -->
             <a href="{% url 'merchant_products' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" 
@@ -1286,10 +1307,9 @@
                 }
             });
 
-            // Motivational Copy (Goal Gradient Effect)
+            // Motivational Copy
             if (percent === 100) {
                 suggestion.innerText = "متجرك جاهز تماماً للانطلاق! 🌟";
-                setTimeout(triggerCelebration, 1500);
             } else if (percent >= 80) {
                 suggestion.innerText = "خطوة واحدة تفصلك عن النجاح! 🎯";
             } else if (percent >= 50) {
@@ -1300,75 +1320,117 @@
         }
     }
 
-    function openChecklistModal() {
-        const modal = document.getElementById('checklist-modal');
-        if (modal) {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-    }
-
-    function closeChecklistModal() {
-        const modal = document.getElementById('checklist-modal');
-        if (modal) {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            document.body.style.overflow = '';
-        }
-    }
-
-    function triggerCelebration() {
-        if (localStorage.getItem('celebrated_100_{{ supplier.id }}') === 'true') return;
-        
-        const count = 200;
-        const defaults = { origin: { y: 0.7 } };
-
-        function fire(particleRatio, opts) {
-          confetti({
-            ...defaults,
-            ...opts,
-            particleCount: Math.floor(count * particleRatio)
-          });
-        }
-
-        fire(0.25, { spread: 26, startVelocity: 55 });
-        fire(0.2, { spread: 60 });
-        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-        fire(0.1, { spread: 120, startVelocity: 45 });
-
-        localStorage.setItem('celebrated_100_{{ supplier.id }}', 'true');
-        
-        setTimeout(() => {
-            Swal.fire({
-                title: 'مبروك! 🎉',
-                text: 'لقد أكملت إعداد متجرك بنجاح. أنت الآن جاهز لاستقبال الطلبات!',
-                icon: 'success',
-                confirmButtonText: 'رائع!',
-                confirmButtonColor: '#2563eb'
-            });
-        }, 500);
-    }
-    // Modal Focus Helper
-    function toggleModalFocus(active) {
-        if (active) {
-            document.body.classList.add('modal-active');
-        } else {
-            document.body.classList.remove('modal-active');
-        }
-    }
-
     // Initialize progress on load
     document.addEventListener('DOMContentLoaded', () => {
         setTimeout(updateOnboardingProgress, 800);
     });
 </script>
+
+{% if wholesale_suggestions %}
+<div class="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 mb-8">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-black text-gray-900 flex items-center gap-2">
+            <i class="fas fa-magic text-blue-500"></i>
+            منتجات مقترحة لمتجرك
+        </h3>
+        <a href="{% url 'wholesale_market' %}" class="text-xs font-bold text-blue-600 hover:underline">عرض الكل</a>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        {% for p in wholesale_suggestions %}
+        <div class="bg-gray-50 p-3 rounded-2xl border border-gray-100 group transition-all hover:border-blue-200">
+            <div class="aspect-square rounded-xl overflow-hidden mb-2 relative">
+                <img src="{{ p.image.url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                <div class="absolute top-1 right-1">
+                    <span class="bg-green-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-md shadow-sm">
+                        +{{ p.potential_profit }} ربح
+                    </span>
+                </div>
+            </div>
+            <h4 class="text-[10px] font-bold text-gray-800 truncate mb-1">{{ p.name }}</h4>
+            <p class="text-[10px] text-gray-400 mb-2">{{ p.sale_price }} {{ supplier.currency }}</p>
+            <button onclick="inheritProduct(this, {{ p.id }}, '{{ p.name }}', {{ p.sale_price }})" class="w-full py-1.5 bg-blue-600 text-white rounded-lg text-[9px] font-black hover:bg-blue-700 transition-all">
+                إضافة سريعة
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // Inherit Product Logic (Direct Prompt)
+    function inheritProduct(btn, productId, productName, suggestedPrice) {
+        Swal.fire({
+            title: 'تحديد سعر البيع',
+            text: `تم اقتراح سعر بيع ${suggestedPrice} لهذا المنتج. يمكنك تغييره الآن:`,
+            input: 'number',
+            inputValue: suggestedPrice,
+            inputAttributes: {
+                min: 0,
+                step: '0.01',
+                autofocus: 'autofocus'
+            },
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'إضافة لمتجري',
+            cancelButtonText: 'إلغاء',
+            borderRadius: '24px',
+            inputValidator: (value) => {
+                if (!value || value <= 0) {
+                    return 'يرجى إدخال سعر صالح أكبر من صفر'
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const finalPrice = result.value;
+                
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                fetch(`/inherit-product/${productId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        custom_price: finalPrice
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'تمت الإضافة! 🎉',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonText: 'حسناً',
+                            borderRadius: '24px'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('خطأ!', data.message, 'error');
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                });
+            }
+        });
+    }
+
     // --- Analytics Charts Logic ---
     let visitorsChart = null;
     let productsChart = null;

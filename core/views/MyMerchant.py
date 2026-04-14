@@ -5,9 +5,10 @@ from core.decorators import merchant_required
 from django.db.models.functions import TruncDate
 from datetime import timedelta
 import json
-from core.models import WebsiteStatistic, Supplier, Product, ProductOffer, Promotion, SupplierAds, Order, Category, PlatformOfferAd
 import logging
-from core.models import Supplier, Product, ProductOffer, Promotion, SupplierAds, Order, Category, PlatformOfferAd
+from decimal import Decimal
+from django.core.files.base import ContentFile
+from core.models import WebsiteStatistic, Supplier, Product, ProductOffer, Promotion, SupplierAds, Order, Category, PlatformOfferAd, WholesaleProduct
 from core.forms import ProductForm, SupplierSettingsForm, DomainOnlyForm, BrandingOnlyForm, LocationOnlyForm, CurrencyOnlyForm
 from django.db.models import Count, Sum, Avg
 from django.utils import timezone
@@ -101,12 +102,17 @@ def my_merchant(request):
     product_labels = [p.name for p in top_viewed_products]
     product_views = [p.views_count for p in top_viewed_products]
     
+    # 3. Wholesale Suggestions (Sourcing Hub)
+    from core.db.wholesale import WholesaleProduct
+    wholesale_suggestions = WholesaleProduct.objects.filter(is_active=True).order_by('-created_at')[:5]
+
     # Add to context after JSON serialization
     context.update({
         'visitor_labels_json': json.dumps(visitor_labels),
         'visitor_data_json': json.dumps(visitor_data),
         'product_labels_json': json.dumps(product_labels),
         'product_views_json': json.dumps(product_views),
+        'wholesale_suggestions': wholesale_suggestions,
     })
     
     return render(request, template_name, context)
@@ -292,3 +298,146 @@ def quick_update_stock(request, product_id):
                 return JsonResponse({'success': False, 'message': 'قيمة المخزون غير صالحة'}, status=400)
     
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
+
+
+@merchant_required
+def wholesale_market(request):
+    template_name = 'wholesale_market.html'
+    supplier = get_active_supplier(request)
+    
+    if not supplier:
+        return redirect('suppliers_list')
+        
+    if not supplier.can_buy_wholesale:
+        return redirect('dashboard_overview')
+    
+    from core.db.wholesale import WholesaleProduct, WholesaleSupplier
+    from django.db.models import Q
+    
+    wholesale_products = WholesaleProduct.objects.filter(is_active=True)
+    wholesalers = WholesaleSupplier.objects.filter(is_active=True)
+    
+    # Filtering Logic
+    query = request.GET.get('q', '')
+    wholesaler_id = request.GET.get('wholesaler_id', '')
+    
+    if query:
+        wholesale_products = wholesale_products.filter(
+            Q(name__icontains=query) | Q(description__icontains=query)
+        )
+        
+    if wholesaler_id and wholesaler_id != 'all':
+        wholesale_products = wholesale_products.filter(wholesaler_id=wholesaler_id)
+        
+    wholesale_products = wholesale_products.order_by('-created_at')
+    
+    # Identify products already inherited by this merchant
+    inherited_product_ids = Product.objects.filter(
+        supplier=supplier, 
+        wholesale_origin__isnull=False
+    ).values_list('wholesale_origin_id', flat=True)
+    
+    context = {
+        'supplier': supplier,
+        'wholesale_products': wholesale_products,
+        'wholesalers': wholesalers,
+        'inherited_product_ids': list(inherited_product_ids),
+        'query': query,
+        'wholesaler_id': wholesaler_id,
+    }
+    return render(request, template_name, context)
+
+
+@merchant_required
+def get_wholesale_product_details_ajax(request, product_id):
+    supplier = get_active_supplier(request)
+    if not supplier or not supplier.can_buy_wholesale:
+        return JsonResponse({'success': False, 'message': 'Permission denied'}, status=403)
+        
+    from core.db.wholesale import WholesaleProduct
+    wp = get_object_or_404(WholesaleProduct, id=product_id, is_active=True)
+    
+    images = [wp.image.url]
+    for ai in wp.additional_images.all():
+        images.append(ai.image.url)
+        
+    return JsonResponse({
+        'success': True,
+        'product': {
+            'id': wp.id,
+            'name': wp.name,
+            'description': wp.description,
+            'purchase_price': float(wp.purchase_price),
+            'sale_price': float(wp.sale_price),
+            'potential_profit': float(wp.potential_profit),
+            'images': images,
+            'wholesaler': wp.wholesaler.name,
+            'category': wp.category.name,
+            'stock': wp.stock,
+        }
+    })
+
+
+@merchant_required
+def inherit_wholesale_product_ajax(request, wholesale_product_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid method'}, status=405)
+    
+    supplier = get_active_supplier(request)
+    if not supplier or not supplier.can_buy_wholesale:
+        return JsonResponse({'success': False, 'message': 'Permission denied'}, status=403)
+    
+    from core.db.wholesale import WholesaleProduct
+    from core.db.product import Product, ProductImage
+    from django.core.files.base import ContentFile
+    
+    wp = get_object_or_404(WholesaleProduct, id=wholesale_product_id, is_active=True)
+    
+    # Get custom price if provided (from POST JSON body)
+    try:
+        data = json.loads(request.body)
+        custom_price = data.get('custom_price')
+        if custom_price:
+            final_price = Decimal(str(custom_price))
+        else:
+            final_price = wp.sale_price
+    except (json.JSONDecodeError, ValueError):
+        final_price = wp.sale_price
+
+    try:
+        # Create the new product
+        new_product = Product.objects.create(
+            supplier=supplier,
+            category=wp.category,
+            name=wp.name,
+            description=wp.description,
+            price=final_price,
+            purchase_cost=wp.purchase_price,
+            wholesale_origin=wp,
+            stock=10,
+            is_active=True,
+            is_new=True
+        )
+        
+        # Copy main image
+        if wp.image:
+            new_product.image.save(wp.image.name, ContentFile(wp.image.read()), save=True)
+        
+        # Copy video if exists
+        if wp.video:
+            new_product.video.save(wp.video.name, ContentFile(wp.video.read()), save=True)
+
+        # Copy additional images
+        for ai in wp.additional_images.all():
+            new_img = ProductImage(product=new_product)
+            new_img.image.save(ai.image.name, ContentFile(ai.image.read()), save=True)
+            
+        return JsonResponse({
+            'success': True, 
+            'message': f'تم استيراد المنتج "{wp.name}" بنجاح إلى متجرك!',
+            'product_id': new_product.id
+        })
+        
+    except Exception as e:
+        logger.error(f"Error inheriting product {wholesale_product_id}: {str(e)}")
+        return JsonResponse({'success': False, 'message': f'حدث خطأ: {str(e)}'}, status=500)
