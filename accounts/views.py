@@ -305,7 +305,20 @@ def ajax_password_reset_request(request):
                 })
             
             from core.db.profile import Profile
-            profile = Profile.objects.filter(phone_number=phone, user_type='supplier').first()
+            from django.db.models import Q
+            
+            # Clean up the phone input (e.g. 777747141)
+            clean_phone = phone.strip().lstrip('+').lstrip('00')
+            if clean_phone.startswith('967'):
+                clean_phone = clean_phone[3:]
+            
+            profile = Profile.objects.filter(
+                Q(phone_number=clean_phone) | 
+                Q(phone_number=f"+967{clean_phone}") | 
+                Q(phone_number=f"00967{clean_phone}") |
+                Q(phone_number=f"967{clean_phone}"),
+                user_type='supplier'
+            ).first()
             
             if profile and profile.user:
                 user = profile.user
