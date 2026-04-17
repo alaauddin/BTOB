@@ -72,7 +72,10 @@ export const AuthProvider = ({ children }) => {
         });
     }, []);
 
-    const handleAutoLogout = () => {
+    const handleAutoLogout = async () => {
+        // Clear biometric credentials on 401 to force re-verification
+        await disableBiometrics();
+        
         client.notify({
             title: 'انتهت الجلسة',
             message: 'انتهت صلاحية الجلسة الخاصة بك. يرجى تسجيل الدخول مرة أخرى للمتابعة.',
