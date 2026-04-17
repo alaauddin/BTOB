@@ -65,6 +65,48 @@
         background: #f8fafc;
         border-top: 2px dashed #e2e8f0;
     }
+
+    /* Toggle Switch Styles */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 40px;
+        height: 22px;
+        margin-left: 10px;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .toggle-slider {
+        background-color: #10b981;
+    }
+    input:checked + .toggle-slider:before {
+        transform: translateX(18px);
+    }
 </style>
 {% endblock %}
 
@@ -89,14 +131,20 @@
                                     <div class="method-name">{{ method.payment_method.name }}</div>
                                     <div class="method-info">
                                         <span class="badge bg-light text-dark">{{ method.account_field_name }}: {{ method.account_field_value }}</span>
-                                        {% if not method.is_active %}
-                                            <span class="badge bg-warning ms-2">غير نشط</span>
-                                        {% endif %}
                                     </div>
                                 </div>
-                                <a href="{% url 'delete_payment_method' method.id %}" class="delete-btn" onclick="return confirm('هل أنت متأكد من حذف وسيلة الدفع هذه؟')">
-                                    <i class="fas fa-trash"></i>
-                                </a>
+                                <div class="method-actions d-flex align-items-center">
+                                    <div class="status-toggle me-3">
+                                        <label class="toggle-switch" title="تفعيل/تعطيل">
+                                            <input type="checkbox" {% if method.is_active %}checked{% endif %} 
+                                                   onchange="togglePaymentStatus({{ method.id }}, this)">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <a href="{% url 'delete_payment_method' method.id %}" class="delete-btn" onclick="return confirm('هل أنت متأكد من حذف وسيلة الدفع هذه؟')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
                             </div>
                             {% endfor %}
                         </div>
@@ -124,6 +172,12 @@
                             <label class="form-label">{{ form.account_field_value.label }}</label>
                             {{ form.account_field_value }}
                         </div>
+                        <div class="col-md-12">
+                            <div class="form-check form-switch mt-2">
+                                {{ form.is_active }}
+                                <label class="form-check-label ms-2" for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
+                            </div>
+                        </div>
                         <div class="col-12 mt-4">
                             <button type="submit" class="btn btn-primary w-100 py-3 rounded-xl fw-bold">
                                 <i class="fas fa-plus-circle me-1"></i> حفظ وسيلة الدفع
@@ -141,4 +195,54 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function togglePaymentStatus(methodId, checkbox) {
+    const originalState = !checkbox.checked;
+    
+    try {
+        const response = await fetch(`/dashboard/payment-methods/toggle/${methodId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show success toast/notification if SweetAlert2 is available
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم التحديث',
+                    text: data.message,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }
+        } else {
+            throw new Error(data.message || 'فشل تحديث الحالة');
+        }
+    } catch (error) {
+        console.error('Error toggling payment status:', error);
+        checkbox.checked = originalState; // Revert checkbox
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'error',
+                title: 'خطأ',
+                text: error.message
+            });
+        } else {
+            alert(error.message);
+        }
+    }
+}
+</script>
 {% endblock %}

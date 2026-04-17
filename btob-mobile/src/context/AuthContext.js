@@ -45,9 +45,14 @@ export const AuthProvider = ({ children }) => {
                     ]);
 
                 // Check Biometrics Support
-                const hasHardware = await LocalAuthentication.hasHardwareAsync();
-                const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-                setBiometricsAvailable(hasHardware && isEnrolled);
+                try {
+                    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+                    const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+                    setBiometricsAvailable(hasHardware && isEnrolled);
+                } catch (bioError) {
+                    console.error('Biometrics check failed:', bioError);
+                    setBiometricsAvailable(false);
+                }
                 
                 // Check if user enabled biometrics
                 const isEnabled = await AsyncStorage.getItem('biometrics_enabled');

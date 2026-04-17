@@ -44,7 +44,7 @@ from core.views.delivery_driver_views import (
     driver_dashboard, driver_update_order_status, driver_order_map
 )
 from core.views.AcademyViews import academy_home, course_detail, lesson_view, complete_lesson
-from core.views.payment_views import manage_payment_methods, delete_payment_method, submit_payment, verify_payment
+from core.views.payment_views import manage_payment_methods, delete_payment_method, submit_payment, verify_payment, toggle_payment_method_status
 from core.views.ai_color_gen import GenerateAIColorsView
 
 
@@ -193,6 +193,7 @@ urlpatterns = [
     # Payment Features
     path('dashboard/payment-methods/', manage_payment_methods, name='manage_payment_methods'),
     path('dashboard/payment-methods/delete/<int:method_id>/', delete_payment_method, name='delete_payment_method'),
+    path('dashboard/payment-methods/toggle/<int:method_id>/', toggle_payment_method_status, name='toggle_payment_method_status'),
     path('payments/submit/', submit_payment, name='submit_payment'),
     path('payments/verify/<int:transaction_id>/', verify_payment, name='verify_payment'),
     path('verify-payment/<int:transaction_id>/', verify_payment), # Legacy alias to prevent 404s

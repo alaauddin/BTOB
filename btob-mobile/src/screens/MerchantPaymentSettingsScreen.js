@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, Alert, TextInput, Platform, Image
+  ActivityIndicator, Alert, TextInput, Platform, Image,
+  Animated, Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import client from '../api/client';
-import { LinearGradient } from 'expo-linear-gradient';
+import { THEME } from '../theme/profileTheme';
+import { styles as profileStyles } from '../theme/profileStyles';
+
+const { width } = Dimensions.get('window');
 
 export default function MerchantPaymentSettingsScreen() {
   const navigation = useNavigation();
   const { activeMerchant } = useAuth();
   const { showNotification } = useNotifications();
-  const primaryColor = activeMerchant?.primary_color || '#2B5876';
-
+  
+  const primaryColor = activeMerchant?.primary_color || THEME.colors.primary;
 
   const [loading, setLoading] = useState(true);
   const [globalMethods, setGlobalMethods] = useState([]);
@@ -27,9 +33,22 @@ export default function MerchantPaymentSettingsScreen() {
   const [fieldName, setFieldName] = useState('رقم الحساب');
   const [saving, setSaving] = useState(false);
 
+  // Animations
+  const fadeAnim = useState(new Animated.Value(0))[0];
+
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [loading]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -39,20 +58,19 @@ export default function MerchantPaymentSettingsScreen() {
         client.get(`/merchant/payment-settings/?merchant_id=${activeMerchant.id}`)
       ]);
       const globals = globalsRes.data.results || globalsRes.data;
-      // Filter out Cash on Delivery (already system default)
-      setGlobalMethods(globals.filter(m => m.id !== 3 && m.name.toLowerCase() !== 'cash on delivery'));
+      // Filter out Cash on Delivery and inactive ones
+      setGlobalMethods(globals.filter(m => m.name.toLowerCase() !== 'cash on delivery' && m.is_active));
       setMerchantMethods(merchantRes.data.results || merchantRes.data);
     } catch (err) {
-      // Handled globally
+      console.error(err);
     } finally {
-
       setLoading(false);
     }
   };
 
   const handleAddMethod = async () => {
-    if (!selectedGlobalMethod || (!accountValue && selectedGlobalMethod.requires_proof)) {
-      showNotification({ title: 'تنبيه', message: 'يرجى إكمال البيانات المطلوبة', type: 'warning' });
+    if (!selectedGlobalMethod || !accountValue) {
+      showNotification({ title: 'تنبيه', message: 'يرجى إدخال رقم الحساب/المحفظة', type: 'warning' });
       return;
     }
 
@@ -66,26 +84,33 @@ export default function MerchantPaymentSettingsScreen() {
         is_active: true
       });
       if (res.data) {
-        showNotification({ title: 'تمت الإضافة', message: 'تمت إضافة وسيلة الدفع بنجاح', type: 'success' });
+        showNotification({ title: 'تمت الإضافة', message: 'تم تفعيل وسيلة الدفع بنجاح', type: 'success' });
         setShowAddModal(false);
         setAccountValue('');
         setSelectedGlobalMethod(null);
         fetchData();
       }
     } catch (err) {
-      // Handled globally
+      console.error(err);
     } finally {
-
       setSaving(false);
     }
   };
 
   const toggleMethodStatus = async (method) => {
     try {
-      await client.patch(`/merchant/payment-settings/${method.id}/`, {
-        is_active: !method.is_active
+      const nextStatus = !method.is_active;
+      const res = await client.patch(`/merchant/payment-settings/${method.id}/`, {
+        is_active: nextStatus
       });
-      fetchData();
+      if (res.data) {
+          setMerchantMethods(prev => prev.map(m => m.id === method.id ? { ...m, is_active: nextStatus } : m));
+          showNotification({ 
+            title: nextStatus ? 'تم التفعيل' : 'تم التعطيل', 
+            message: nextStatus ? 'الوسيلة الآن متاحة لعملائك' : 'الوسيلة لم تعد تظهر في المتجر',
+            type: 'success' 
+          });
+      }
     } catch (err) {
       showNotification({ title: 'خطأ', message: 'فشل في تحديث الحالة', type: 'error' });
     }
@@ -93,20 +118,20 @@ export default function MerchantPaymentSettingsScreen() {
 
   const deleteMethod = (method) => {
     Alert.alert(
-      'حذف',
-      `هل أنت متأكد من حذف ${method.method_name}؟`,
+      'حذف وسيلة الدفع',
+      `هل أنت متأكد من حذف ${method.method_name} من متجرك؟`,
       [
         { text: 'إلغاء', style: 'cancel' },
         { 
-          text: 'حذف', 
+          text: 'حذف نهائي', 
           style: 'destructive', 
           onPress: async () => {
             try {
               await client.delete(`/merchant/payment-settings/${method.id}/`);
-              fetchData();
+              setMerchantMethods(prev => prev.filter(m => m.id !== method.id));
+              showNotification({ title: 'تم الحذف', message: 'تم حذف وسيلة الدفع', type: 'success' });
             } catch (err) {
               showNotification({ title: 'خطأ', message: 'فشل في الحذف', type: 'error' });
-            } finally {
             }
           }
         }
@@ -116,9 +141,9 @@ export default function MerchantPaymentSettingsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={primaryColor} />
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -127,18 +152,20 @@ export default function MerchantPaymentSettingsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Feather name="arrow-right" size={24} color="#334155" />
+          <Feather name="chevron-right" size={26} color={THEME.colors.slate[800]} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>إعدادات الدفع</Text>
-        <View style={{ width: 40 }} />
+        <Text style={styles.headerTitle}>إعدادات الدفع الإلكتروني</Text>
+        <View style={{ width: 44 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <Animated.ScrollView contentContainerStyle={[styles.scroll, { opacity: fadeAnim }]} showsVerticalScrollIndicator={false}>
         <View style={styles.infoBox}>
-          <Feather name="shield" size={40} color={primaryColor} />
-          <Text style={styles.infoTitle}>وسائل الدفع للمتجر</Text>
+          <View style={[styles.infoIconWrap, { backgroundColor: primaryColor + '15' }]}>
+             <Feather name="shield" size={32} color={primaryColor} />
+          </View>
+          <Text style={styles.infoTitle}>التحصيل الرقمي</Text>
           <Text style={styles.infoSubtitle}>
-            قم بتفعيل وسائل الدفع التي ترغب في توفيرها لعملائك ليتمكنوا من إرفاق إيصالات السداد.
+            فعل وسائل الدفع الإلكتروني لتمكين عملائك من إرفاق إيصالات السداد وتسهيل عملية التحقق المالي.
           </Text>
         </View>
 
@@ -147,42 +174,43 @@ export default function MerchantPaymentSettingsScreen() {
           <Text style={styles.sectionLabel}>الوسائل المفعلة</Text>
           {merchantMethods.length === 0 ? (
             <View style={styles.emptyCard}>
+              <Feather name="credit-card" size={40} color={THEME.colors.slate[300]} />
               <Text style={styles.emptyText}>لم تقم بإضافة أي وسيلة دفع بعد</Text>
             </View>
           ) : (
             merchantMethods.map(item => (
               <View key={item.id} style={styles.methodCard}>
-                <View style={styles.methodMain}>
-              <View style={styles.iconCircle}>
-                {item.method_logo ? (
-                  <Image source={{ uri: item.method_logo }} style={styles.methodLogo} resizeMode="contain" />
-                ) : (
-                  <Ionicons name="wallet-outline" size={24} color={primaryColor} />
-                )}
-              </View>
-              <View style={styles.methodInfo}>
-                <View style={styles.methodHeaderRow}>
-                  <Text style={styles.methodName}>{item.method_name}</Text>
-                  <Text style={styles.fieldNameTag}>{item.account_field_name}</Text>
+                <View style={[styles.methodLogoWrap, { backgroundColor: THEME.colors.slate[50] }]}>
+                  {item.method_logo ? (
+                    <Image source={{ uri: item.method_logo }} style={styles.methodLogo} resizeMode="contain" />
+                  ) : (
+                    <Feather name="wallet" size={22} color={primaryColor} />
+                  )}
                 </View>
-                    {item.account_field_value ? (
-                      <Text style={styles.methodValue}>{item.account_field_value}</Text>
-                    ) : null}
-                  </View>
+                
+                <View style={styles.methodBody}>
+                   <View style={styles.methodMeta}>
+                      <Text style={styles.methodName}>{item.method_name}</Text>
+                      <View style={styles.tagWrap}>
+                         <Text style={styles.tagText}>{item.account_field_name}</Text>
+                      </View>
+                   </View>
+                   <Text style={styles.accountText}>{item.account_field_value}</Text>
                 </View>
+
                 <View style={styles.methodActions}>
                   <TouchableOpacity 
                     onPress={() => toggleMethodStatus(item)}
-                    style={[styles.actionBtn, { backgroundColor: item.is_active ? '#10B98120' : '#F1F5F9' }]}
+                    style={[styles.miniAction, { borderColor: item.is_active ? '#10B981' : THEME.colors.slate[200] }]}
                   >
                     <Feather 
                       name={item.is_active ? "eye" : "eye-off"} 
-                      size={18} 
-                      color={item.is_active ? "#059669" : "#64748B"} 
+                      size={16} 
+                      color={item.is_active ? "#10B981" : THEME.colors.slate[400]} 
                     />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => deleteMethod(item)} style={styles.actionBtnDelete}>
-                    <Feather name="trash-2" size={18} color="#DC2626" />
+                  <TouchableOpacity onPress={() => deleteMethod(item)} style={styles.miniActionDelete}>
+                    <Feather name="trash-2" size={16} color={THEME.colors.rose} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -193,7 +221,7 @@ export default function MerchantPaymentSettingsScreen() {
         {/* Available to Add */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>إضافة وسيلة جديدة</Text>
-          <View style={styles.grid}>
+          <View style={styles.addGrid}>
             {globalMethods
               .filter(gm => !merchantMethods.some(mm => mm.payment_method === gm.id))
               .map(gm => (
@@ -202,64 +230,76 @@ export default function MerchantPaymentSettingsScreen() {
                   style={styles.gridItem}
                   onPress={() => {
                     setSelectedGlobalMethod(gm);
+                    setAccountValue('');
+                    setFieldName(gm.account_field_name || 'رقم الحساب');
                     setShowAddModal(true);
                   }}
                 >
-                  <LinearGradient
-                    colors={['#FFFFFF', '#F8FAFC']}
-                    style={styles.gridInner}
-                  >
-                    <View style={styles.addCircle}>
-                      <Ionicons name="add" size={24} color={primaryColor} />
-                    </View>
-                    <Text style={styles.gridLabel}>{gm.name}</Text>
-                  </LinearGradient>
+                  <View style={styles.gridIconWrap}>
+                     <Feather name="plus" size={18} color={primaryColor} />
+                  </View>
+                  <Text style={styles.gridText}>{gm.name}</Text>
                 </TouchableOpacity>
               ))
             }
           </View>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
-      {/* Add Modal (Simulated inline) */}
+      {/* Modern Add Modal */}
       {showAddModal && (
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>إعداد {selectedGlobalMethod?.name}</Text>
-            <Text style={styles.modalLabel}>رقم الحساب أو معرف المحفظة</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="مثال: 77XXXXXXX"
-              value={accountValue}
-              onChangeText={setAccountValue}
-              keyboardType="numeric"
-              textAlign="right"
-            />
-
-            <Text style={styles.modalLabel}>تسمية الحقل (مثلاً: رقم المحفظة، حساب رقم)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="رقم الحساب"
-              value={fieldName}
-              onChangeText={setFieldName}
-              textAlign="right"
-            />
-            <View style={styles.modalBtns}>
-              <TouchableOpacity 
-                style={[styles.modalBtn, { backgroundColor: primaryColor }]} 
-                onPress={handleAddMethod}
-                disabled={saving}
-              >
-                {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.modalBtnText}>تفعيل</Text>}
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.modalBtn, styles.modalBtnCancel]} 
-                onPress={() => setShowAddModal(false)}
-              >
-                <Text style={styles.modalBtnTextCancel}>إلغاء</Text>
-              </TouchableOpacity>
+        <View style={styles.overlay}>
+          <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
+          <Animated.View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+               <Text style={styles.modalTitle}>إعداد {selectedGlobalMethod?.name}</Text>
+               <TouchableOpacity onPress={() => setShowAddModal(false)} style={styles.closeBtn}>
+                  <Feather name="x" size={20} color={THEME.colors.slate[400]} />
+               </TouchableOpacity>
             </View>
-          </View>
+
+            <View style={styles.modalBody}>
+               <Text style={styles.inputLabel}>رقم الحساب أو معرف المحفظة</Text>
+               <View style={styles.inputWrap}>
+                  <Feather name="hash" size={18} color={THEME.colors.slate[300]} style={{ marginLeft: 12 }} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="مثال: 77XXXXXXX"
+                    value={accountValue}
+                    onChangeText={setAccountValue}
+                    keyboardType="numeric"
+                    textAlign="right"
+                    placeholderTextColor={THEME.colors.slate[300]}
+                  />
+               </View>
+
+               <Text style={styles.inputLabel}>تسمية الحقل (اختياري)</Text>
+               <View style={styles.inputWrap}>
+                  <Feather name="edit-3" size={18} color={THEME.colors.slate[300]} style={{ marginLeft: 12 }} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="مثال: رقم الحساب"
+                    value={fieldName}
+                    onChangeText={setFieldName}
+                    textAlign="right"
+                    placeholderTextColor={THEME.colors.slate[300]}
+                  />
+               </View>
+
+               <TouchableOpacity 
+                 onPress={handleAddMethod}
+                 disabled={saving}
+               >
+                 <LinearGradient
+                   colors={['#8B5CF6', '#6366F1']}
+                   start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                   style={styles.submitBtn}
+                 >
+                   {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitBtnText}>تفعيل الوسيلة</Text>}
+                 </LinearGradient>
+               </TouchableOpacity>
+            </View>
+          </Animated.View>
         </View>
       )}
     </SafeAreaView>
@@ -267,52 +307,57 @@ export default function MerchantPaymentSettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8FAFC' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: {
-    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingVertical: 15, backgroundColor: '#fff',
-    borderBottomWidth: 1, borderBottomColor: '#F1F5F9'
+  container: { flex: 1, backgroundColor: THEME.colors.slate[50] },
+  header: { 
+    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', 
+    paddingHorizontal: 16, height: 64, backgroundColor: '#FFF',
+    borderBottomWidth: 1, borderBottomColor: THEME.colors.slate[100]
   },
-  backBtn: { padding: 8 },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#1E293B' },
+  headerTitle: { fontSize: 17, fontWeight: '800', color: THEME.colors.slate[800] },
+  backBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
   scroll: { padding: 20 },
-  infoBox: { alignItems: 'center', marginBottom: 30, backgroundColor: '#fff', padding: 20, borderRadius: 24, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10 },
-  infoTitle: { fontSize: 18, fontWeight: '800', color: '#1E293B', marginTop: 12 },
-  infoSubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginTop: 8, lineHeight: 22 },
-  section: { marginBottom: 25 },
-  sectionLabel: { fontSize: 15, fontWeight: '800', color: '#94A3B8', marginBottom: 15, textAlign: 'right' },
-  emptyCard: { padding: 30, alignItems: 'center', backgroundColor: '#F1F5F9', borderRadius: 20, borderStyle: 'dashed', borderWidth: 1, borderColor: '#CBD5E1' },
-  emptyText: { color: '#94A3B8', fontWeight: '600' },
-  methodCard: {
-    backgroundColor: '#fff', borderRadius: 20, padding: 16, marginBottom: 12,
-    flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center',
-    elevation: 3, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8,
+  
+  infoBox: { alignItems: 'center', marginBottom: 32 },
+  infoIconWrap: { width: 72, height: 72, borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  infoTitle: { fontSize: 22, fontWeight: '900', color: THEME.colors.slate[900] },
+  infoSubtitle: { fontSize: 14, color: THEME.colors.slate[500], textAlign: 'center', marginTop: 8, lineHeight: 22, paddingHorizontal: 20 },
+
+  section: { marginBottom: 32 },
+  sectionLabel: { fontSize: 13, fontWeight: '900', color: THEME.colors.slate[400], marginBottom: 16, textAlign: 'right', textTransform: 'uppercase', letterSpacing: 0.5 },
+  
+  methodCard: { 
+    backgroundColor: '#FFF', borderRadius: 24, padding: 16, marginBottom: 12, borderWeight: 1, borderColor: THEME.colors.slate[100],
+    flexDirection: 'row-reverse', alignItems: 'center', elevation: 2, shadowOpacity: 0.05, shadowRadius: 10
   },
-  methodMain: { flexDirection: 'row-reverse', alignItems: 'center', flex: 1 },
-  iconCircle: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
+  methodLogoWrap: { width: 48, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
   methodLogo: { width: '80%', height: '80%' },
-  methodInfo: { marginRight: 15, alignItems: 'flex-start', flex: 1 },
-  methodHeaderRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, marginBottom: 2 },
-  methodName: { fontSize: 16, fontWeight: '800', color: '#1E293B' },
-  fieldNameTag: { fontSize: 10, color: '#94A3B8', backgroundColor: '#F1F5F9', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
-  methodValue: { fontSize: 14, fontWeight: '600', color: '#64748B' },
-  methodActions: { flexDirection: 'row', gap: 8 },
-  actionBtn: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  actionBtnDelete: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#FEF2F2', justifyContent: 'center', alignItems: 'center' },
-  grid: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 12 },
-  gridItem: { width: '48%', height: 120, borderRadius: 24, overflow: 'hidden', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8 },
-  gridInner: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 15 },
-  addCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
-  gridLabel: { fontSize: 14, fontWeight: '800', color: '#334155' },
-  modalOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', padding: 20, zIndex: 100 },
-  modalContent: { backgroundColor: '#fff', borderRadius: 32, padding: 25 },
-  modalTitle: { fontSize: 20, fontWeight: '800', color: '#1E293B', marginBottom: 20, textAlign: 'center' },
-  modalLabel: { fontSize: 14, fontWeight: '700', color: '#64748B', marginBottom: 10, textAlign: 'right' },
-  input: { backgroundColor: '#F8FAFC', borderRadius: 16, height: 56, paddingHorizontal: 20, fontSize: 16, fontWeight: '600', borderWidth: 1, borderColor: '#F1F5F9', marginBottom: 20 },
-  modalBtns: { gap: 10 },
-  modalBtn: { height: 56, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
-  modalBtnCancel: { backgroundColor: '#F1F5F9' },
-  modalBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
-  modalBtnTextCancel: { color: '#64748B', fontSize: 16, fontWeight: '800' },
+  methodBody: { flex: 1, marginRight: 16, alignItems: 'flex-start' },
+  methodMeta: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, marginBottom: 4 },
+  methodName: { fontSize: 16, fontWeight: '800', color: THEME.colors.slate[800] },
+  tagWrap: { backgroundColor: THEME.colors.slate[50], paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
+  tagText: { fontSize: 10, color: THEME.colors.slate[400], fontWeight: '700' },
+  accountText: { fontSize: 14, fontWeight: '600', color: THEME.colors.slate[500], textAlign: 'right' },
+  methodActions: { flexDirection: 'row', gap: 10 },
+  miniAction: { width: 34, height: 34, borderRadius: 10, borderWeight: 1.5, justifyContent: 'center', alignItems: 'center' },
+  miniActionDelete: { width: 34, height: 34, borderRadius: 10, backgroundColor: THEME.colors.rose + '10', justifyContent: 'center', alignItems: 'center' },
+
+  emptyCard: { padding: 40, alignItems: 'center', backgroundColor: '#FFF', borderRadius: 24, borderStyle: 'dashed', borderWidth: 2, borderColor: THEME.colors.slate[200] },
+  emptyText: { color: THEME.colors.slate[300], fontWeight: '700', marginTop: 12 },
+
+  addGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 12 },
+  gridItem: { width: (width - 56) / 2, backgroundColor: '#FFF', borderRadius: 20, padding: 16, alignItems: 'center', elevation: 2, shadowOpacity: 0.05, shadowRadius: 10, borderWeight: 1, borderColor: THEME.colors.slate[100] },
+  gridIconWrap: { width: 32, height: 32, borderRadius: 10, backgroundColor: THEME.colors.slate[50], justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  gridText: { fontSize: 14, fontWeight: '800', color: THEME.colors.slate[700] },
+
+  overlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'flex-end', zIndex: 1000 },
+  modalContent: { backgroundColor: '#FFF', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 24 },
+  modalHeader: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  modalTitle: { fontSize: 20, fontWeight: '900', color: THEME.colors.slate[900] },
+  closeBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: THEME.colors.slate[50], justifyContent: 'center', alignItems: 'center' },
+  modalBody: { gap: 16 },
+  inputLabel: { fontSize: 13, fontWeight: '800', color: THEME.colors.slate[500], textAlign: 'right', marginBottom: -8 },
+  inputWrap: { flexDirection: 'row-reverse', alignItems: 'center', backgroundColor: THEME.colors.slate[50], borderRadius: 16, height: 56, paddingHorizontal: 16, borderWidth: 1, borderColor: THEME.colors.slate[100] },
+  input: { flex: 1, fontSize: 16, fontWeight: '700', color: THEME.colors.slate[800] },
+  submitBtn: { height: 60, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginTop: 10 },
+  submitBtnText: { color: '#FFF', fontSize: 17, fontWeight: '900' }
 });

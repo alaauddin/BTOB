@@ -760,3 +760,4 @@ class SupplierPaymentMethodForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Only show active global payment methods
         self.fields['payment_method'].queryset = PaymentMethod.objects.filter(is_active=True)
+        self.fields['is_active'].initial = True

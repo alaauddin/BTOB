@@ -163,22 +163,24 @@ export default function BrandGenModal({ visible, onClose, onSuccess, merchantId 
               onPress={generateAIColors}
               activeOpacity={0.8}
             >
-              {isAiGenerating ? (
-                <View style={styles.generatingState}>
-                  <ActivityIndicator color="#FFF" style={{ marginRight: 10 }} />
-                  <Text style={styles.generateActionText}>جاري التحليل واستخراج الألوان...</Text>
-                </View>
-              ) : (
-                <LinearGradient
-                  colors={['#8B5CF6', '#6366F1']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.generateGradient}
-                >
-                  <Feather name="cpu" size={20} color="#FFF" />
-                  <Text style={styles.generateActionText}>بدء التنسيق الذكي</Text>
-                </LinearGradient>
-              )}
+              <LinearGradient
+                colors={isAiGenerating ? ['#6366F1', '#4F46E5'] : ['#8B5CF6', '#6366F1']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.generateGradient}
+              >
+                {isAiGenerating ? (
+                  <View style={styles.generatingState}>
+                    <ActivityIndicator color="#FFF" style={{ marginRight: 10 }} />
+                    <Text style={styles.generateActionText}>جاري التحليل...</Text>
+                  </View>
+                ) : (
+                  <>
+                    <Feather name="zap" size={20} color="#FFF" />
+                    <Text style={styles.generateActionText}>توليد الهوية الذكية</Text>
+                  </>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -246,17 +248,17 @@ const styles = StyleSheet.create({
   },
   warningNoteText: { flex: 1, fontSize: 12, color: '#6366F1', fontWeight: '600', textAlign: 'right' },
   
-  generateActionBtn: { marginHorizontal: 20, marginBottom: 12, borderRadius: 18, overflow: 'hidden', elevation: 4 },
+  generateActionBtn: { marginHorizontal: 20, marginBottom: 16, borderRadius: 20, overflow: 'hidden', elevation: 8, shadowColor: '#6366F1', shadowOpacity: 0.3, shadowRadius: 10 },
   generateGradient: {
     height: 60, flexDirection: 'row-reverse', alignItems: 'center',
     justifyContent: 'center', gap: 10
   },
-  generateActionText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
+  generateActionText: { color: '#FFF', fontSize: 17, fontWeight: '900' },
   generatingState: { 
-    height: 60, backgroundColor: '#8B5CF6', flexDirection: 'row-reverse', 
-    alignItems: 'center', justifyContent: 'center', borderRadius: 18 
+    flexDirection: 'row-reverse', 
+    alignItems: 'center', justifyContent: 'center'
   },
   
   cancelLink: { paddingVertical: 12, alignItems: 'center' },
-  cancelLinkText: { color: '#94A3B8', fontSize: 14, fontWeight: '700' },
+  cancelLinkText: { color: '#94A3B8', fontSize: 14, fontWeight: '800' },
 });

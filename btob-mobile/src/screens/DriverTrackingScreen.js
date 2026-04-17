@@ -119,8 +119,8 @@ export default function DriverMapScreen({ route, navigation }) {
         ref={mapRef}
         style={styles.map}
         initialRegion={{
-          latitude: parseFloat(shipping?.latitude) || 15.1,
-          longitude: parseFloat(shipping?.longitude) || 44.1,
+          latitude: Number.isFinite(parseFloat(shipping?.latitude)) ? parseFloat(shipping.latitude) : 15.1,
+          longitude: Number.isFinite(parseFloat(shipping?.longitude)) ? parseFloat(shipping.longitude) : 44.1,
           latitudeDelta: 0.1,
           longitudeDelta: 0.1,
         }}
@@ -132,8 +132,8 @@ export default function DriverMapScreen({ route, navigation }) {
         {shipping?.latitude && (
           <Marker
             coordinate={{ 
-              latitude: parseFloat(shipping.latitude), 
-              longitude: parseFloat(shipping.longitude) 
+              latitude: Number.isFinite(parseFloat(shipping?.latitude)) ? parseFloat(shipping?.latitude) : 15.1, 
+              longitude: Number.isFinite(parseFloat(shipping?.longitude)) ? parseFloat(shipping?.longitude) : 44.1 
             }}
             title="موقع العميل"
             description={shipping.address_line1}

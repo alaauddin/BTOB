@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from core.models import Supplier, SupplierPaymentMethod, PaymentTransaction, Order, OrderStatus
 from core.forms import SupplierPaymentMethodForm
 from core.utils.merchant_utils import get_active_supplier
@@ -21,6 +22,7 @@ def manage_payment_methods(request):
         if form.is_valid():
             spm = form.save(commit=False)
             spm.supplier = supplier
+            spm.is_active = True
             spm.save()
             messages.success(request, 'Payment method added successfully.')
             return redirect('manage_payment_methods')
@@ -41,6 +43,23 @@ def delete_payment_method(request, method_id):
     spm.delete()
     messages.success(request, 'Payment method removed.')
     return redirect('manage_payment_methods')
+
+@login_required
+@require_POST
+def toggle_payment_method_status(request, method_id):
+    """AJAX view to toggle the active status of a payment method."""
+    supplier = get_active_supplier(request)
+    spm = get_object_or_404(SupplierPaymentMethod, id=method_id, supplier=supplier)
+    
+    spm.is_active = not spm.is_active
+    spm.save()
+    
+    status_text = "نشط" if spm.is_active else "غير نشط"
+    return JsonResponse({
+        'success': True,
+        'message': f'تمت حالة وسيلة الدفع إلى {status_text}',
+        'is_active': spm.is_active
+    })
 
 @login_required
 def submit_payment(request):

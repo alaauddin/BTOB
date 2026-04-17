@@ -1,10 +1,12 @@
 # Ignore dependencies
 node_modules/
+package-lock.json
 
 # Ignore Expo files
 .expo/
 dist/
 web-build/
+expo_out.log
 
 # Ignore native folders
 ios/
@@ -12,13 +14,10 @@ android/
 
 # Ignore environment files
 .env*.local
-
-# Ignore logs
-*.log
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+.env
 
 # Ignore parent directory things if they leak in
 ../venv/
 ../staticfiles/
+../media/
+../.git/

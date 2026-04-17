@@ -1,0 +1,35 @@
+# Root EAS Ignore for BTOB Project
+# Prevents backend and large files from being uploaded to Expo build servers
+
+# Backend App folders
+/accounts/
+/core/
+/service_provider/
+/tenants/
+/nginx/
+
+# Python Environments
+/venv/
+/.venv/
+env/
+ENV/
+
+# Static and Media
+/static/
+/staticfiles/
+/media/
+
+# Database and Data
+*.sqlite3
+db.sqlite3*
+data.json
+db_backup/
+
+# Logs and system
+*.log
+docker-compose.yml
+Dockerfile
+entrypoint.sh
+
+# Mobile dependencies (should be ignored relative to root too)
+btob-mobile/node_modules/

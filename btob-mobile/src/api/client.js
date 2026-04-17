@@ -157,5 +157,6 @@ client.notify = notify;
 client.setNotificationListener = setNotificationListener;
 client.setUnauthorizedHandler = setUnauthorizedHandler;
 
+
 export default client;
 

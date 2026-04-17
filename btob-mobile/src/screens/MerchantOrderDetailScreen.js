@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import MapView, { Marker, Polyline } from '../components/MapModule';
 import client from '../api/client';
+import { THEME } from '../theme/profileTheme';
 
 const { width } = Dimensions.get('window');
 
@@ -205,8 +206,8 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
   };
 
   const merchant = order?.merchant || activeMerchant;
-  const primaryColor = merchant?.primary_color || '#2B5876';
-  const accentColor = '#F58231';
+  const primaryColor = merchant?.primary_color || THEME.colors.primary;
+  const accentColor = THEME.colors.amber;
 
   if (loading) {
     return (
@@ -525,7 +526,9 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
             <SectionHeader title="حالة الدفع" icon="credit-card" color={primaryColor} />
             <View style={styles.paymentInfoRow}>
               <View style={styles.paymentMethodLabel}>
-                <Ionicons name="card-outline" size={20} color={primaryColor} />
+                <View style={[styles.tinyMethodIcon, { backgroundColor: primaryColor + '10' }]}>
+                  <Feather name="credit-card" size={16} color={primaryColor} />
+                </View>
                 <Text style={styles.paymentMethodName}>{order.payment_transaction.method_name}</Text>
               </View>
               <View style={[
@@ -537,8 +540,8 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
                 <Text style={[
                     styles.txStatusText,
                     order.payment_transaction.status === 'verified' && { color: '#059669' },
-                    order.payment_transaction.status === 'rejected' && { color: '#DC2626' },
-                    order.payment_transaction.status === 'pending' && { color: '#D97706' },
+                    order.payment_transaction.status === 'rejected' && { color: THEME.colors.rose },
+                    order.payment_transaction.status === 'pending' && { color: THEME.colors.amber },
                   ]}>
                   {order.payment_transaction.status_display}
                 </Text>
@@ -570,10 +573,10 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
                   <Text style={styles.txBtnText}>تأكيد الاستلام</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                   style={[styles.txBtn, { backgroundColor: '#FEE2E2', borderWidth: 1, borderColor: '#FECACA' }]} 
+                   style={[styles.txBtn, { backgroundColor: THEME.colors.rose + '10', borderWidth: 1, borderColor: THEME.colors.rose + '20' }]} 
                    onPress={() => handleRejectPayment(order.payment_transaction.id)}
                 >
-                  <Text style={[styles.txBtnText, { color: '#B91C1C' }]}>رفض الإيصال</Text>
+                  <Text style={[styles.txBtnText, { color: THEME.colors.rose }]}>رفض الإيصال</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -648,8 +651,8 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
           <MapView
             style={styles.map}
             initialRegion={{
-              latitude: parseFloat(order.merchant?.latitude || activeMerchant?.latitude || 15.3694),
-              longitude: parseFloat(order.merchant?.longitude || activeMerchant?.longitude || 44.1910),
+              latitude: Number.isFinite(parseFloat(order.merchant?.latitude)) ? parseFloat(order.merchant?.latitude) : (Number.isFinite(parseFloat(activeMerchant?.latitude)) ? parseFloat(activeMerchant?.latitude) : 15.3694),
+              longitude: Number.isFinite(parseFloat(order.merchant?.longitude)) ? parseFloat(order.merchant?.longitude) : (Number.isFinite(parseFloat(activeMerchant?.longitude)) ? parseFloat(activeMerchant?.longitude) : 44.1910),
               latitudeDelta: 0.05,
               longitudeDelta: 0.05,
             }}
@@ -657,8 +660,8 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
             {order.merchant?.latitude && (
               <Marker
                 coordinate={{
-                  latitude: parseFloat(order.merchant.latitude),
-                  longitude: parseFloat(order.merchant.longitude),
+                  latitude: Number.isFinite(parseFloat(order.merchant?.latitude)) ? parseFloat(order.merchant.latitude) : 15.3694,
+                  longitude: Number.isFinite(parseFloat(order.merchant?.longitude)) ? parseFloat(order.merchant.longitude) : 44.1910,
                 }}
                 title="متجرك"
                 description={merchant?.name}
@@ -672,8 +675,8 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
             {order.shipping?.latitude && (
               <Marker
                 coordinate={{
-                  latitude: parseFloat(order.shipping.latitude),
-                  longitude: parseFloat(order.shipping.longitude),
+                  latitude: Number.isFinite(parseFloat(order.shipping?.latitude)) ? parseFloat(order.shipping.latitude) : 15.3694,
+                  longitude: Number.isFinite(parseFloat(order.shipping?.longitude)) ? parseFloat(order.shipping.longitude) : 44.1910,
                 }}
                 title="موقع العميل"
                 description={order.customer_name}
@@ -1147,13 +1150,14 @@ const styles = StyleSheet.create({
 
   /* Payment Section Styles */
   paymentInfoRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
-  paymentMethodLabel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
-  paymentMethodName: { fontSize: 16, fontWeight: '800', color: '#1E293B' },
-  txStatusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, backgroundColor: '#F1F5F9' },
-  txPending: { backgroundColor: '#FFF7ED' },
+  paymentMethodLabel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10 },
+  tinyMethodIcon: { width: 32, height: 32, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  paymentMethodName: { fontSize: 16, fontWeight: '800', color: THEME.colors.slate[800] },
+  txStatusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
+  txPending: { backgroundColor: THEME.colors.amber + '10' },
   txVerified: { backgroundColor: '#F0FDF4' },
-  txRejected: { backgroundColor: '#FEF2F2' },
-  txStatusText: { fontSize: 13, fontWeight: '700' },
+  txRejected: { backgroundColor: THEME.colors.rose + '10' },
+  txStatusText: { fontSize: 13, fontWeight: '800' },
   receiptPreviewBox: { marginTop: 10, marginBottom: 20 },
   receiptHint: { fontSize: 13, fontWeight: '700', color: '#64748B', marginBottom: 10, textAlign: 'right' },
   receiptThumbnailBtn: { height: 180, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9' },
