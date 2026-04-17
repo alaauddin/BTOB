@@ -63,7 +63,7 @@ services:
     image: redis:7-alpine
     restart: always
     ports:
-      - "6379:6379"
+      - "6379"
 
   # --------------- Celery Worker ---------------
   celery_worker:
