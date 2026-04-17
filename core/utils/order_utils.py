@@ -5,9 +5,42 @@ from core.utils.whatsapp_utils import send_whatsapp_message
 
 logger = logging.getLogger(__name__)
 
-def complete_order_and_notify(request, order, cart, shipping_address, supplier):
+def complete_order_and_notify(request, order, cart, shipping_address, supplier, payment_method_id=None, receipt=None):
     """Unified logic for finishing order, notifications, and clearing cart."""
     order.set_total_amount()
+
+    # Create Payment Transaction if applicable
+    if payment_method_id:
+        from core.models import SupplierPaymentMethod, PaymentTransaction, PaymentMethod
+        try:
+            is_system_default = request.POST.get('is_system_default_payment') == 'true'
+            
+            if is_system_default:
+                # Handle platform defaults like COD (payment_method_id is the global ID)
+                global_method = PaymentMethod.objects.get(id=payment_method_id)
+                # Try to find if the supplier HAS configured it
+                supp_payment = SupplierPaymentMethod.objects.filter(supplier=supplier, payment_method=global_method).first()
+                
+                PaymentTransaction.objects.create(
+                    order=order,
+                    user=request.user,
+                    payment_method=global_method,
+                    supplier_payment_method=supp_payment,
+                    receipt=receipt,
+                    status='verified' if not global_method.requires_proof else 'pending'
+                )
+            else:
+                supp_payment = SupplierPaymentMethod.objects.get(id=payment_method_id, supplier=supplier)
+                PaymentTransaction.objects.create(
+                    order=order,
+                    user=request.user,
+                    payment_method=supp_payment.payment_method,
+                    supplier_payment_method=supp_payment,
+                    receipt=receipt,
+                    status='pending' if supp_payment.payment_method.requires_proof else 'verified'
+                )
+        except (SupplierPaymentMethod.DoesNotExist, PaymentMethod.DoesNotExist):
+            logger.error(f"PaymentMethod {payment_method_id} not found (is_system={is_system_default})")
     
     # Send Notifications
     try:
@@ -73,9 +106,19 @@ def complete_order_and_notify(request, order, cart, shipping_address, supplier):
     
     wa_url = f"https://wa.me/{supplier.phone}?text={quote(wa_message)}"
     
+    # Determine Message based on payment
+    # Determine Message based on payment
+    tx = getattr(order, 'payment_transaction', None)
+    if not tx:
+        msg = 'تم اتمام الطلب بنجاح سيتواصل معك فريق العمليات لأتمام عملية الدفع'
+    elif tx.payment_method and tx.payment_method.id == 3: # COD
+        msg = 'تم استلام طلبك بنجاح! خيار الدفع: عند استلام الطلبات.'
+    else:
+        msg = 'تم اتمام الطلب وإرفاق الإيصال بنجاح! سيتم التحقق منه قريباً.'
+
     return {
         'success': True,
-        'message': 'تم اتمام الطلب بنجاح سيتواصل معك فريق العمليات لأتمام عملية الدفع',
+        'message': msg,
         'order_id': order.id,
         'wa_url': wa_url,
         'supplier_phone': supplier.phone

@@ -101,6 +101,10 @@
                 <i class="fas fa-cog"></i>
                 <span>إعدادات المتجر</span>
             </a>
+            <a href="{% url 'manage_payment_methods' %}" class="nav-item {% if 'dashboard/payment-methods' in request.path %}active{% endif %}">
+                <i class="fas fa-wallet"></i>
+                <span>إعدادات الدفع</span>
+            </a>
         </div>
     </div>
 

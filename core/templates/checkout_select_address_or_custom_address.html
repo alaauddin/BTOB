@@ -629,7 +629,24 @@ fbq('track', 'Purchase', {
                         </div>
                     </div>
                     
-                    <a href="{% url 'existing_address' supplier.store_id %}" class="action-btn w-100 text-center">
+                    {% if payment_methods %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">اختر وسيلة الدفع</label>
+                        <div class="row g-2">
+                            {% for method in payment_methods %}
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="payment_method_id" id="pm_{{ method.id }}" value="{{ method.id }}" {% if forloop.first %}checked{% endif %}>
+                                <label class="btn btn-outline-primary w-100 p-2 d-flex flex-column align-items-center rounded-xl" for="pm_{{ method.id }}">
+                                    <img src="{{ method.payment_method.logo.url }}" style="height: 30px; object-fit: contain;" class="mb-1">
+                                    <span class="small" style="font-size: 0.7rem;">{{ method.payment_method.name }}</span>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <a href="{% url 'existing_address' supplier.store_id %}" class="action-btn w-100 text-center" id="confirmOrderExisting">
                         <i class="fas fa-check-circle"></i>
                         <span>تأكيد الطلب بهذا العنوان</span>
                     </a>
@@ -682,6 +699,24 @@ fbq('track', 'Purchase', {
                                         </select>
                                     </div>
                                 </div>
+                                
+                                {% if payment_methods %}
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">اختر وسيلة الدفع</label>
+                                    <div class="row g-2">
+                                        {% for method in payment_methods %}
+                                        <div class="col-6">
+                                            <input type="radio" class="btn-check" name="payment_method_id_custom" id="pm_custom_{{ method.id }}" value="{{ method.id }}" {% if forloop.first %}checked{% endif %}>
+                                            <label class="btn btn-outline-primary w-100 p-2 d-flex flex-column align-items-center rounded-xl" for="pm_custom_{{ method.id }}">
+                                                <img src="{{ method.payment_method.logo.url }}" style="height: 30px; object-fit: contain;" class="mb-1">
+                                                <span class="small" style="font-size: 0.7rem;">{{ method.payment_method.name }}</span>
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
                                 <button type="submit" class="action-btn w-100">
                                     <i class="fas fa-paper-plane"></i>
                                     <span>تأكيد الطلب بالعنوان المخصص</span>
@@ -747,6 +782,19 @@ fbq('track', 'Purchase', {
         });
         
         document.querySelector('.action-buttons').appendChild(printButton);
+
+        // Handle Payment Selection for Existing Address
+        const confirmExistingBtn = document.getElementById('confirmOrderExisting');
+        if (confirmExistingBtn) {
+            confirmExistingBtn.addEventListener('click', function(e) {
+                const selectedPayment = document.querySelector('input[name="payment_method_id"]:checked');
+                if (selectedPayment) {
+                    const baseUrl = this.getAttribute('href');
+                    const separator = baseUrl.includes('?') ? '&' : '?';
+                    this.setAttribute('href', baseUrl + separator + 'payment_method_id=' + selectedPayment.value);
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

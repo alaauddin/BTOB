@@ -434,6 +434,17 @@
                 </div>
             </div>
 
+            <!-- Payment Verification Section (injected by JS) -->
+            <div id="modalPaymentSection" class="modal-driver-section hidden">
+                <div class="driver-section-title">
+                    <i class="fas fa-credit-card"></i>
+                    <span>التحقق من الدفع</span>
+                </div>
+                <div id="modalPaymentContent">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+
             <!-- Driver Assignment Section (injected by JS) -->
             <div id="modalDriverSection" class="modal-driver-section hidden">
                 <div class="driver-section-title">
@@ -580,8 +591,11 @@ function openOrderQuickView(orderId) {
                     workflowSteps: order.workflow_steps,
                 };
 
-                // Populate driver assignment section in modal
-                renderModalDriverSection(order);
+    // Populate driver assignment section in modal
+    renderModalDriverSection(order);
+
+    // Populate payment verification section in modal
+    renderModalPaymentSection(order);
 
                 // Handle Cancellation Alert display
                 const cancelAlert = document.getElementById('modalCancellationAlert');
@@ -746,6 +760,103 @@ function renderModalDriverSection(order) {
             `;
         }
     }
+}
+
+function renderModalPaymentSection(order) {
+    const section = document.getElementById('modalPaymentSection');
+    const content = document.getElementById('modalPaymentContent');
+
+    if (!order.payment || !order.payment.method_name) {
+        section.classList.add('hidden');
+        return;
+    }
+
+    section.classList.remove('hidden');
+    section.classList.remove('has-driver');
+
+    let html = '';
+    if (order.payment.has_transaction) {
+        const trans = order.payment.transaction;
+        let badgeClass = 'bg-info';
+        if (trans.status === 'verified') badgeClass = 'bg-success';
+        else if (trans.status === 'rejected') badgeClass = 'bg-danger';
+
+        html = `
+            <div class="d-flex gap-3 align-items-start">
+                <a href="${trans.receipt_url}" target="_blank" class="flex-shrink-0">
+                    <img src="${trans.receipt_url}" class="rounded border" style="width: 70px; height: 70px; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                </a>
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center mb-1">
+                        <img src="${order.payment.method_logo}" style="height: 16px; margin-left: 6px;">
+                        <span class="small fw-bold text-dark">${order.payment.method_name}</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge ${badgeClass} py-1 px-2" style="font-size: 0.65rem; border-radius: 6px;">
+                            ${trans.status_display}
+                        </span>
+                    </div>
+                    ${trans.status === 'pending' ? `
+                        <div class="d-flex gap-2">
+                            <button type="button" onclick="verifyPaymentFromModal(${trans.id}, 'approve')" class="btn btn-success btn-sm py-1 px-3 fw-bold" style="font-size: 0.75rem;">تفعيل</button>
+                            <button type="button" onclick="verifyPaymentFromModal(${trans.id}, 'reject')" class="btn btn-outline-danger btn-sm py-1 px-3 fw-bold" style="font-size: 0.75rem;">رفض</button>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    } else {
+        html = `
+            <div class="d-flex align-items-center gap-2">
+                <img src="${order.payment.method_logo}" style="height: 18px;">
+                <span class="small fw-bold">${order.payment.method_name}</span>
+                <span class="text-muted small ms-auto" style="font-size: 0.7rem;">
+                    <i class="fas fa-hourglass-start me-1"></i> بانتظار الإيصال
+                </span>
+            </div>
+        `;
+    }
+
+    content.innerHTML = html;
+}
+
+function verifyPaymentFromModal(transactionId, action) {
+    if (!confirm(`هل أنت متأكد من ${action === 'approve' ? 'تفعيل' : 'رفض'} هذا الدفع؟`)) return;
+
+    const formData = new FormData();
+    formData.append('action', action);
+
+    // Show loading
+    const content = document.getElementById('modalPaymentContent');
+    content.style.opacity = '0.5';
+    content.style.pointerEvents = 'none';
+
+    fetch(`/payments/verify/${transactionId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            // Refresh modal data
+            const orderId = window._currentOrderData.orderId;
+            openOrderQuickView(orderId);
+        } else {
+            showNotification(data.message || 'حدث خطأ ما', 'error');
+            content.style.opacity = '1';
+            content.style.pointerEvents = 'auto';
+        }
+    })
+    .catch(() => {
+        showNotification('حدث خطأ في الاتصال بالسيرفر', 'error');
+        content.style.opacity = '1';
+        content.style.pointerEvents = 'auto';
+    });
 }
 
 function assignDriverFromModal(orderId, driverIdOverride) {

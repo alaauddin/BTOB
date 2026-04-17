@@ -61,7 +61,7 @@
             </div>
             <div class="stat-item">
                 <span class="stat-label">الإجمالي</span>
-                <span class="stat-value" style="color: #F58231;">{{ order.total_amount|floatformat:0 }} {{ supplier.currency|default:"ر.ي" }}</span>
+                <span class="stat-value" style="color: var(--color-action);">{{ order.total_amount|floatformat:0 }} {{ supplier.currency|default:"ر.ي" }}</span>
             </div>
         </div>
 
@@ -69,7 +69,7 @@
             <!-- Items Section -->
             <div class="col-lg-7">
                 <h3 class="items-list-title">
-                    <i class="fas fa-list-ul" style="color: #F58231;"></i>
+                    <i class="fas fa-list-ul" style="color: var(--color-action);"></i>
                     المشتريات
                 </h3>
                 
@@ -162,6 +162,37 @@
 
                     <!-- Bottom Nav Actions (Removed redundant ones) -->
                     <div class="bottom-actions mt-4">
+                        {% if order.selected_payment_method %}
+                        <div class="payment-info-box mb-4 p-3 rounded-xl border border-dashed">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ order.selected_payment_method.payment_method.logo.url }}" style="height: 30px; margin-left: 10px;">
+                                <h6 class="mb-0 fw-bold">{{ order.selected_payment_method.payment_method.name }}</h6>
+                            </div>
+                            <div class="small mb-3">
+                                <div class="text-muted">{{ order.selected_payment_method.account_field_name }}</div>
+                                <div class="fw-bold fs-6">{{ order.selected_payment_method.account_field_value }}</div>
+                            </div>
+
+                            {% if order.payment_transaction %}
+                                <div class="alert {% if order.payment_transaction.status == 'pending' %}alert-info{% elif order.payment_transaction.status == 'verified' %}alert-success{% else %}alert-danger{% endif %} py-2 px-3 small border-0 m-0">
+                                    <i class="fas {% if order.payment_transaction.status == 'pending' %}fa-clock{% elif order.payment_transaction.status == 'verified' %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                                    حالة الدفع: {{ order.payment_transaction.get_status_display }}
+                                </div>
+                            {% else %}
+                                <div id="uploadReceiptSection">
+                                    <p class="small text-muted mb-2">يرجى رفع صورة التحويل لإتمام الطلب:</p>
+                                    <input type="file" id="receiptInput" class="form-control form-control-sm mb-2" accept="image/*">
+                                    <div id="receiptPreview" class="mb-2 d-none">
+                                        <img src="" class="img-fluid rounded border" style="max-height: 150px;">
+                                    </div>
+                                    <button class="btn btn-primary btn-sm w-100 fw-bold" id="submitReceiptBtn">
+                                        <i class="fas fa-upload me-1"></i> رفع الإيصال
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
                         <a href="{% url 'my_orders' %}" class="btn-neo btn-neo-secondary w-100">
                             <i class="fas fa-chevron-right"></i>
                             العودة لطلباتي
@@ -174,4 +205,71 @@
 </div>
 
 {% endblock %}
-  
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const receiptInput = document.getElementById('receiptInput');
+        const submitBtn = document.getElementById('submitReceiptBtn');
+        const previewDiv = document.getElementById('receiptPreview');
+        const previewImg = previewDiv ? previewDiv.querySelector('img') : null;
+
+        if (receiptInput) {
+            receiptInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        previewDiv.classList.remove('d-none');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        if (submitBtn) {
+            submitBtn.addEventListener('click', function() {
+                const file = receiptInput.files[0];
+                if (!file) {
+                    alert('يرجى اختيار صورة الإيصال أولاً');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('order_id', '{{ order.id }}');
+                formData.append('supplier_payment_method_id', '{{ order.selected_payment_method.id }}');
+                formData.append('receipt', file);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع...';
+
+                fetch('{% url "submit_payment" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-upload me-1"></i> رفع الإيصال';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء الرفع، يرجى المحاولة مرة أخرى');
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-upload me-1"></i> رفع الإيصال';
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

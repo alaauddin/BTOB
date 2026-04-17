@@ -19,6 +19,7 @@ import { Alert } from "react-native";
 import { Video, ResizeMode } from "expo-av";
 import client from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useNotifications } from "../context/NotificationContext";
 import AuthModal from "../components/AuthModal";
 import CartIconBadge from "../components/CartIconBadge";
 
@@ -31,6 +32,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
   const [loading, setLoading] = useState(true);
   const [authModalVisible, setAuthModalVisible] = useState(false);
   const { user } = useAuth();
+  const { showNotification } = useNotifications();
 
   const [quantity, setQuantity] = useState(1);
   const [cartQty, setCartQty] = useState(0);
@@ -160,7 +162,11 @@ export default function ProductDetailsScreen({ route, navigation }) {
           );
         }
 
-        Alert.alert("تنبيه", "الرجاء اختيار كافة الخيارات المطلوبة (مثل المقاس واللون)");
+        showNotification({ 
+          title: "تنبيه", 
+          message: "الرجاء اختيار كافة الخيارات المطلوبة (مثل المقاس واللون)", 
+          type: "warning" 
+        });
         return;
       }
     }
@@ -197,7 +203,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
       
       if (!response.data.success) {
         setCartQty(oldQty); // Rollback
-        Alert.alert("تنبيه", response.data.message || "حدث خطأ ما");
+        showNotification({ title: "تنبيه", message: response.data.message || "حدث خطأ ما", type: "error" });
       } else {
         // Update precise state from server count
         if (response.data.quantity !== undefined) {
@@ -207,13 +213,13 @@ export default function ProductDetailsScreen({ route, navigation }) {
         DeviceEventEmitter.emit(`cart_updated_${product.supplier.id}`, response.data.cart_count);
         
         if (isInitialAdd) {
-          Alert.alert("نجاح", "تم إضافة المنتج إلى السلة بنجاح!");
+          showNotification({ title: "نجاح", message: "تم إضافة المنتج إلى السلة بنجاح!", type: "success" });
         }
       }
     } catch (error) {
       setCartQty(oldQty); // Rollback
       console.error("Add/Update to cart error", error);
-      Alert.alert("خطأ", "فشل في تحديث السلة. تحقق من اتصالك بالإنترنت.");
+      showNotification({ title: "خطأ", message: "فشل في تحديث السلة. تحقق من اتصالك بالإنترنت.", type: "error" });
     } finally {
       setAddingToCart(false);
     }

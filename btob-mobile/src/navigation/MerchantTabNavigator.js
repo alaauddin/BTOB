@@ -10,6 +10,7 @@ import MerchantOrdersScreen from '../screens/MerchantOrdersScreen';
 import MerchantProductsScreen from '../screens/MerchantProductsScreen';
 import ProductListScreen from '../screens/ProductListScreen';
 import MerchantProfileScreen from '../screens/MerchantProfileScreen';
+import WholesaleMarketScreen from '../screens/WholesaleMarketScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -30,7 +31,11 @@ function MerchantTabBar({ state, descriptors, navigation }) {
   return (
     <View style={[styles.tabBar, { paddingBottom: insets.bottom + 4 }]}>
       {state.routes.map((route, index) => {
-        const tab = tabs.find(t => t.name === route.name) || tabs[index];
+        const tab = tabs.find(t => t.name === route.name);
+        
+        // Skip rendering for screens not defined in our primary tabs array (lik WholesaleMarket)
+        if (!tab) return null;
+
         const isFocused = state.index === index;
 
         const onPress = () => {
@@ -91,6 +96,7 @@ export default function MerchantTabNavigator() {
         initialParams={{ storeId: activeMerchant?.store_id }}
       />
       <Tab.Screen name="Profile" component={MerchantProfileScreen} />
+      <Tab.Screen name="WholesaleMarket" component={WholesaleMarketScreen} />
     </Tab.Navigator>
   );
 }

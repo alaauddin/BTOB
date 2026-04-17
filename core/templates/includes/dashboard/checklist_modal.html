@@ -1,0 +1,83 @@
+{% with has_logo=supplier.profile_picture has_cover=supplier.panal_picture has_location=supplier.latitude has_currency=supplier.currency has_subdomain=supplier.subdomain has_products=total_products|add:0 %}
+<div id="checklist-modal" class="fixed inset-0 hidden items-start justify-center p-4 sm:p-6 overflow-y-auto" style="z-index: 9000 !important;">
+    <div class="fixed inset-0 bg-slate-900/60" onclick="closeChecklistModal()"></div>
+    <div class="bg-white w-full max-w-md rounded-[32px] shadow-2xl relative z-20 overflow-hidden animate-slide-up mt-8 sm:mt-16 mb-8">
+        <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-30">
+            <h2 class="text-xl font-black text-gray-900">خطوات إكمال المتجر</h2>
+            <button onclick="closeChecklistModal()" class="text-gray-400 hover:text-gray-600 p-2"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <!-- Inner Checklist Buttons -->
+            <div class="flex items-center justify-between p-3 bg-green-50 rounded-2xl border border-green-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-green-500 text-white rounded-lg flex items-center justify-center"><i class="fas fa-check"></i></div>
+                    <span class="text-sm font-bold text-gray-700">المعلومات الأساسية (مكتمل)</span>
+                </div>
+            </div>
+            {% if system_settings.show_merchant_agreement %}
+            <div class="flex items-center justify-between p-3 bg-green-50 rounded-2xl border border-green-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-green-500 text-white rounded-lg flex items-center justify-center"><i class="fas fa-check"></i></div>
+                    <span class="text-sm font-bold text-gray-700">الموافقة على الشروط (مكتمل)</span>
+                </div>
+            </div>
+            {% endif %}
+            <!-- Interactive Steps -->
+            <button onclick="openBrandingModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_logo %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
+                <div class="flex items-center gap-3 text-right">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_logo %}bg-green-500 text-white{% else %}bg-white text-blue-500 shadow-sm{% endif %}">
+                        <i class="fas {% if has_logo %}fa-check{% else %}fa-image{% endif %}"></i>
+                    </div>
+                    <span class="text-sm font-bold">شعار المتجــر (+10%)</span>
+                </div>
+                {% if not has_logo %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
+            </button>
+            <button onclick="openBrandingModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_cover %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
+                <div class="flex items-center gap-3 text-right">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_cover %}bg-green-500 text-white{% else %}bg-white text-purple-500 shadow-sm{% endif %}">
+                        <i class="fas {% if has_cover %}fa-check{% else %}fa-palette{% endif %}"></i>
+                    </div>
+                    <span class="text-sm font-bold">صورة الغلاف (+10%)</span>
+                </div>
+                {% if not has_cover %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
+            </button>
+            <button onclick="openMapModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_location %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
+                <div class="flex items-center gap-3 text-right">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_location %}bg-green-500 text-white{% else %}bg-white text-orange-500 shadow-sm{% endif %}">
+                        <i class="fas {% if has_location %}fa-check{% else %}fa-map-marker-alt{% endif %}"></i>
+                    </div>
+                    <span class="text-sm font-bold">موقع المتجر على الخريطة (+10%)</span>
+                </div>
+                {% if not has_location %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
+            </button>
+            <button onclick="openDomainModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_subdomain %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
+                <div class="flex items-center gap-3 text-right">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_subdomain %}bg-green-500 text-white{% else %}bg-white text-indigo-500 shadow-sm{% endif %}">
+                        <i class="fas {% if has_subdomain %}fa-check{% else %}fa-link{% endif %}"></i>
+                    </div>
+                    <span class="text-sm font-bold">حجز الرابط الخاص (+10%)</span>
+                </div>
+                {% if not has_subdomain %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
+            </button>
+            <button onclick="openCurrencyModal(); closeChecklistModal();" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_currency %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
+                <div class="flex items-center gap-3 text-right">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_currency %}bg-green-500 text-white{% else %}bg-white text-emerald-500 shadow-sm{% endif %}">
+                        <i class="fas {% if has_currency %}fa-check{% else %}fa-dollar-sign{% endif %}"></i>
+                    </div>
+                    <span class="text-sm font-bold">ضبط العملة (+10%)</span>
+                </div>
+                {% if not has_currency %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
+            </button>
+            <a href="{% url 'merchant_products' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" class="w-full flex items-center justify-between p-3 rounded-2xl border transition-all {% if has_products %}bg-green-50 border-green-100 text-green-700{% else %}bg-gray-50 border-gray-100 hover:border-blue-200 text-gray-700{% endif %}">
+                <div class="flex items-center gap-3 text-right">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center {% if has_products %}bg-green-500 text-white{% else %}bg-white text-blue-600 shadow-sm{% endif %}">
+                        <i class="fas {% if has_products %}fa-check{% else %}fa-plus{% endif %}"></i>
+                    </div>
+                    <span class="text-sm font-bold">إضافة أول منتج (+20%)</span>
+                </div>
+                {% if not has_products %}<i class="fas fa-chevron-left text-xs text-gray-300"></i>{% endif %}
+            </a>
+        </div>
+    </div>
+</div>
+{% endwith %}

@@ -7,6 +7,7 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import client from '../api/client';
 import OfferEditModal from '../components/OfferEditModal';
 
@@ -62,6 +63,7 @@ const OfferCard = ({ item, primaryColor, onDelete }) => {
 
 export default function MerchantOffersScreen() {
     const { activeMerchant } = useAuth();
+    const { showNotification } = useNotifications();
     const primaryColor = activeMerchant?.primary_color || '#2B5876';
 
     const [offers, setOffers] = useState([]);
@@ -75,13 +77,14 @@ export default function MerchantOffersScreen() {
         if (!silent) setLoading(true);
         try {
             const [offRes, prodRes] = await Promise.all([
-                client.get(`/merchant/offers/?merchant_id=${activeMerchant.id}`),
-                client.get(`/merchant/products/?merchant_id=${activeMerchant.id}`)
+                client.get(`/merchant/offers/?merchant_id=${activeMerchant?.id}`),
+                client.get(`/merchant/products/?merchant_id=${activeMerchant?.id}`)
             ]);
             if (offRes.data.success) setOffers(offRes.data.offers);
             if (prodRes.data.success) setProducts(prodRes.data.products);
         } catch (err) {
             console.error('Fetch offers error', err);
+            showNotification({ title: 'خطأ', message: 'فشل في تحميل البيانات', type: 'error' });
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -108,12 +111,12 @@ export default function MerchantOffersScreen() {
                     style: 'destructive',
                     onPress: async () => {
                         try {
-                            const res = await client.delete(`/merchant/offers/?offer_id=${offer.id}&merchant_id=${activeMerchant.id}`);
+                            const res = await client.delete(`/merchant/offers/?offer_id=${offer.id}&merchant_id=${activeMerchant?.id}`);
                             if (res.data.success) {
                                 setOffers(prev => prev.filter(o => o.id !== offer.id));
                             }
                         } catch (err) {
-                            Alert.alert('خطأ', 'فشل في حذف العرض');
+                            showNotification({ title: 'خطأ', message: 'فشل في حذف العرض', type: 'error' });
                         }
                     }
                 }

@@ -15,6 +15,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import client from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useNotifications } from "../context/NotificationContext";
 import AuthModal from "../components/AuthModal";
 import CartIconBadge from "../components/CartIconBadge";
 
@@ -22,6 +23,7 @@ const { width } = Dimensions.get("window");
 
 export default function ProductListScreen({ route, navigation }) {
   const { storeId } = route.params;
+  const { showNotification } = useNotifications();
   const [storeData, setStoreData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authModalVisible, setAuthModalVisible] = useState(false);
@@ -124,7 +126,7 @@ export default function ProductListScreen({ route, navigation }) {
           ...prev,
           [productId]: currentQty,
         }));
-        Alert.alert("تنبيه", response.data.message || "حدث خطأ ما");
+        showNotification({ title: "تنبيه", message: response.data.message || "حدث خطأ ما", type: "error" });
       } else {
         setCartCount(response.data.cart_count);
         DeviceEventEmitter.emit(
@@ -139,7 +141,7 @@ export default function ProductListScreen({ route, navigation }) {
         [productId]: currentQty,
       }));
       console.error("Update quantity error", error);
-      Alert.alert("خطأ", "فشل في تحديث السلة. تحقق من اتصالك بالإنترنت.");
+      showNotification({ title: "خطأ", message: "فشل في تحديث السلة. تحقق من اتصالك بالإنترنت.", type: "error" });
     } finally {
       setAddingToCartId(null);
     }

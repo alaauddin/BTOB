@@ -12,9 +12,16 @@ from .merchant import (
     MerchantOrderDetailAPIView, MerchantProductsAPIView, MerchantOffersAPIView,
     MerchantProductCategoriesAPIView, MerchantProfileAPIView,
     MerchantBrandingAPIView, MerchantAgreeTermsAPIView,
-    MerchantDriversAPIView
+    MerchantDriversAPIView, GenerateAIColorsAPIView
 )
 from .driver import (
     DriverDashboardAPIView, DriverUpdateStatusAPIView, 
     DriverLocationUpdateAPIView
+)
+from .wholesale import (
+    WholesaleProductViewSet, WholesaleSupplierViewSet, InheritWholesaleProductAPIView
+)
+from .payment import (
+    GlobalPaymentMethodViewSet, MerchantPaymentMethodViewSet,
+    MerchantVerifyPaymentAPIView
 )

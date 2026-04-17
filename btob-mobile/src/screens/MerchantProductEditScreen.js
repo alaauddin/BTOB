@@ -11,6 +11,7 @@ import { Video, ResizeMode } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
 import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 
 const { width } = Dimensions.get('window');
 
@@ -18,6 +19,7 @@ export default function MerchantProductEditScreen({ route, navigation }) {
   const { product, categories = [] } = route.params || {};
   const isEdit = !!product;
   const { activeMerchant } = useAuth();
+  const { showNotification } = useNotifications();
   const primaryColor = activeMerchant?.primary_color || '#2B5876';
 
   const [loading, setLoading] = useState(false);
@@ -114,9 +116,9 @@ export default function MerchantProductEditScreen({ route, navigation }) {
   };
 
   const handleSave = async () => {
-    if (!name.trim()) return Alert.alert('خطأ', 'يرجى إدخال اسم المنتج');
-    if (!price.trim()) return Alert.alert('خطأ', 'يرجى إدخال السعر');
-    if (!categoryId) return Alert.alert('خطأ', 'يرجى اختيار القسم');
+    if (!name.trim()) return showNotification({ title: 'خطأ', message: 'يرجى إدخال اسم المنتج', type: 'warning' });
+    if (!price.trim()) return showNotification({ title: 'خطأ', message: 'يرجى إدخال السعر', type: 'warning' });
+    if (!categoryId) return showNotification({ title: 'خطأ', message: 'يرجى اختيار القسم', type: 'warning' });
 
     setLoading(true);
     try {
@@ -180,13 +182,17 @@ export default function MerchantProductEditScreen({ route, navigation }) {
       }
 
       if (res.data.success) {
-        Alert.alert('نجاح', isEdit ? 'تم تحديث المنتج بنجاح' : 'تم إضافة المنتج بنجاح');
+        showNotification({ 
+          title: 'نجاح', 
+          message: isEdit ? 'تم تحديث المنتج بنجاح' : 'تم إضافة المنتج بنجاح', 
+          type: 'success' 
+        });
         navigation.goBack();
         if (route.params?.onSaved) route.params.onSaved();
       }
     } catch (err) {
       console.error('Save error', err.response?.data || err);
-      Alert.alert('خطأ', 'فشل في حفظ المنتج');
+      showNotification({ title: 'خطأ', message: 'فشل في حفظ المنتج', type: 'error' });
     } finally {
       setLoading(false);
     }

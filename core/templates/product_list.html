@@ -67,13 +67,6 @@
 
 
 {% block extra_css %}
-<style>
-    :root {
-        --primary-base: {{ supplier.primary_color|default:'#F58231' }};
-        --primary-bg-soft: {{ supplier.primary_color|default:'#F58231' }}0D;
-        --primary-bg-medium: {{ supplier.primary_color|default:'#F58231' }}1A;
-    }
-</style>
 <link rel="stylesheet" href="{% static 'css/product_list.css' %}?v={{ css_version }}">
 <link rel="stylesheet" href="{% static 'css/variations.css' %}?v={{ css_version }}">
 {% endblock %}

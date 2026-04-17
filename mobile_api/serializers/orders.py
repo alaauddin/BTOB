@@ -24,6 +24,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     supplier = serializers.SerializerMethodField()
+    payment_transaction = serializers.SerializerMethodField()
     
     class Meta:
         model = Order
@@ -32,3 +33,10 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_supplier(self, obj):
         from .buyer import SupplierSerializer
         return SupplierSerializer(obj.supplier, context=self.context).data
+
+    def get_payment_transaction(self, obj):
+        from .payment import PaymentTransactionSerializer
+        tx = obj.payment_transactions.first() # Our logic usually creates one per order
+        if tx:
+            return PaymentTransactionSerializer(tx, context=self.context).data
+        return None

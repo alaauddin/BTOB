@@ -7,9 +7,12 @@ import {
 import { Feather, Ionicons } from '@expo/vector-icons';
 import client from '../api/client';
 
+import { useNotifications } from '../context/NotificationContext';
+
 const { height } = Dimensions.get('window');
 
 export default function OfferEditModal({ visible, onClose, products, onSaved, primaryColor }) {
+    const { showNotification } = useNotifications();
     const [loading, setLoading] = useState(false);
     
     // Form State
@@ -19,11 +22,11 @@ export default function OfferEditModal({ visible, onClose, products, onSaved, pr
     const [toDate, setToDate] = useState(new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]);
 
     const handleSave = async () => {
-        if (!selectedProductId) return Alert.alert('خطأ', 'يرجى اختيار المنتج');
-        if (!discount || isNaN(discount)) return Alert.alert('خطأ', 'يرجى إدخال نسبة الخصم');
+        if (!selectedProductId) return showNotification({ title: 'خطأ', message: 'يرجى اختيار المنتج', type: 'warning' });
+        if (!discount || isNaN(discount)) return showNotification({ title: 'خطأ', message: 'يرجى إدخال نسبة الخصم', type: 'warning' });
         
         const discountVal = parseFloat(discount) / 100;
-        if (discountVal <= 0 || discountVal >= 1) return Alert.alert('خطأ', 'نسبة الخصم يجب أن تكون بين 1% و 99%');
+        if (discountVal <= 0 || discountVal >= 1) return showNotification({ title: 'خطأ', message: 'نسبة الخصم يجب أن تكون بين 1% و 99%', type: 'warning' });
 
         setLoading(true);
         try {
@@ -36,7 +39,7 @@ export default function OfferEditModal({ visible, onClose, products, onSaved, pr
             });
 
             if (res.data.success) {
-                Alert.alert('نجاح', 'تم إضافة العرض بنجاح');
+                showNotification({ title: 'نجاح', message: 'تم إضافة العرض بنجاح', type: 'success' });
                 onSaved();
                 onClose();
                 // Reset form
@@ -45,7 +48,7 @@ export default function OfferEditModal({ visible, onClose, products, onSaved, pr
             }
         } catch (err) {
             console.error('Save offer error', err.response?.data || err);
-            Alert.alert('خطأ', 'فشل في إنشاء العرض');
+            showNotification({ title: 'خطأ', message: 'فشل في إنشاء العرض', type: 'error' });
         } finally {
             setLoading(false);
         }

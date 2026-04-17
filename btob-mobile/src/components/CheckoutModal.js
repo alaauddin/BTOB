@@ -17,7 +17,10 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
+import * as ImagePicker from 'expo-image-picker';
+import * as Clipboard from 'expo-clipboard';
 import apiClient from "../api/client";
+import { useNotifications } from "../context/NotificationContext";
 
 // Modular Sub-components
 import styles from './checkout/CheckoutStyles';
@@ -35,6 +38,7 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
     const [loading, setLoading] = useState(false);
     const [fetchingAddress, setFetchingAddress] = useState(true);
     const [savedAddress, setSavedAddress] = useState(null);
+    const { showNotification } = useNotifications();
 
     // Form State
     const [fullName, setFullName] = useState("");
@@ -43,6 +47,13 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
     const [notes, setNotes] = useState("");
     const [savedNotes, setSavedNotes] = useState("");
     const [userTabInteracted, setUserTabInteracted] = useState(false);
+    
+    // Payment State
+    const [currentStep, setCurrentStep] = useState("address"); // "address" or "payment"
+    const [supplierMethods, setSupplierMethods] = useState([]);
+    const [selectedMethod, setSelectedMethod] = useState(null);
+    const [receiptImage, setReceiptImage] = useState(null);
+    const [fetchingMethods, setFetchingMethods] = useState(false);
 
     // Map State
     const [selectedLocation, setSelectedLocation] = useState({
@@ -74,13 +85,49 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                 Animated.timing(slideAnimation, { toValue: 1, duration: 350, useNativeDriver: true }),
                 Animated.timing(fadeAnimation, { toValue: 1, duration: 300, useNativeDriver: true }),
             ]).start();
-            if (supplierId) fetchSavedAddress();
+            if (supplierId) {
+                fetchSavedAddress();
+                fetchPaymentMethods();
+            }
         } else {
             slideAnimation.setValue(0);
             fadeAnimation.setValue(0);
+            setCurrentStep("address");
+            setReceiptImage(null);
+            // Default selection will be handled in fetchPaymentMethods once data arrives
             setTimeout(() => { setFormError(""); }, 300);
         }
     }, [visible, supplierId]);
+
+    const fetchPaymentMethods = async () => {
+        setFetchingMethods(true);
+        try {
+            const response = await apiClient.get(`/merchant/payment-settings/?merchant_id=${supplierId}`);
+            if (response.data) {
+                const methods = response.data.results || response.data;
+                const activeMethods = methods.filter(m => m.is_active);
+                
+                // Always inject Cash on Delivery as the system default
+                const codMethod = {
+                    id: 'cod', // special ID for default COD
+                    payment_method: 3, 
+                    method_name: 'الدفع عند الاستلام',
+                    requires_proof: false,
+                    is_active: true
+                };
+                
+                const finalMethods = [codMethod, ...activeMethods];
+                setSupplierMethods(finalMethods);
+                
+                // Default to COD
+                setSelectedMethod(codMethod);
+            }
+        } catch (error) {
+            console.log("Fetch methods error:", error);
+        } finally {
+            setFetchingMethods(false);
+        }
+    };
 
     const fetchSavedAddress = async () => {
         setFetchingAddress(true);
@@ -196,45 +243,94 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
         } catch (err) { }
     };
 
-    const handleCheckoutWithSaved = async () => {
-        setFormError("");
-        setLoading(true);
-        try {
-            const response = await apiClient.post('/carts/checkout_registered_address/', {
-                supplier_id: supplierId,
-                address_line2: savedNotes,
-            });
-            if (response.data.success && response.data.wa_url) {
-                Linking.openURL(response.data.wa_url).catch(() => Alert.alert("عذراً", "حدث خطأ في فتح واتساب"));
-                onClose();
-                if (onSuccess) onSuccess();
-            } else {
-                setFormError(response.data.message || "حدث خطأ أثناء الطلب");
-            }
-        } catch (error) {
-            setFormError(error.response?.data?.message || "فشل الاتصال بالخادم");
-        } finally {
-            setLoading(false);
+    const pickReceipt = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            showNotification({ title: 'عذراً', message: 'نحتاج إلى إذن الوصول للصور لإرفاق الإيصال', type: 'warning' });
+            return;
+        }
+
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 0.7,
+        });
+
+        if (!result.canceled) {
+            setReceiptImage(result.assets[0]);
         }
     };
 
-    const handleCheckoutWithNew = async () => {
+    const copyToClipboard = async (text) => {
+        await Clipboard.setStringAsync(text);
+        showNotification({ title: 'تم النسخ', message: 'تم نسخ رقم الحساب إلى الحافظة', type: 'success' });
+    };
+
+    const validateAddress = () => {
+        if (activeTab === 'new') {
+            if (!addressLine1.trim()) { setFormError("يرجى إدخال الموقع (العنوان)"); return false; }
+            if (!phone.trim()) { setFormError("يرجى إدخال رقم الهاتف"); return false; }
+        }
+        return true;
+    };
+
+    const handleProceedToPayment = () => {
+        if (validateAddress()) {
+            setCurrentStep("payment");
+        }
+    };
+
+    const handleCheckout = async () => {
         setFormError("");
-        if (!addressLine1.trim()) { setFormError("يرجى إدخال الموقع (العنوان)"); return; }
-        if (!phone.trim()) { setFormError("يرجى إدخال رقم الهاتف"); return; }
+        if (selectedMethod?.requires_proof && !receiptImage) {
+            setFormError("يرجى إرفاق صورة إيصال الدفع");
+            return;
+        }
+
         setLoading(true);
         try {
-            const response = await apiClient.post('/carts/checkout_custom_address/', {
-                supplier_id: supplierId,
-                full_name: fullName,
-                address_line1: addressLine1,
-                phone: phone,
-                address_line2: notes,
-                latitude: selectedLocation?.latitude || null,
-                longitude: selectedLocation?.longitude || null,
+            const formData = new FormData();
+            formData.append('supplier_id', supplierId);
+            
+            if (activeTab === 'saved') {
+                formData.append('address_line2', savedNotes);
+            } else {
+                formData.append('full_name', fullName);
+                formData.append('address_line1', addressLine1);
+                formData.append('phone', phone);
+                formData.append('address_line2', notes);
+                formData.append('latitude', selectedLocation?.latitude || "");
+                formData.append('longitude', selectedLocation?.longitude || "");
+            }
+
+            if (selectedMethod) {
+                // If it's our special 'cod' ID, we'll send the global payment method ID (3)
+                const methodId = selectedMethod.id === 'cod' ? 3 : selectedMethod.id;
+                formData.append('payment_method_id', methodId);
+                
+                // If it was our injected COD, tell backend it's a global method ID 
+                // Alternatively, the backend utility will handle id=3 specifically
+                if (selectedMethod.id === 'cod') {
+                    formData.append('is_system_default_payment', 'true');
+                }
+            }
+
+            if (receiptImage) {
+                const uri = receiptImage.uri;
+                formData.append('receipt', {
+                    uri: Platform.OS === 'android' ? uri : uri.replace('file://', ''),
+                    name: uri.split('/').pop() || 'receipt.jpg',
+                    type: 'image/jpeg'
+                });
+            }
+
+            const endpoint = activeTab === 'saved' ? '/carts/checkout_registered_address/' : '/carts/checkout_custom_address/';
+            const response = await apiClient.post(endpoint, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
+
             if (response.data.success && response.data.wa_url) {
-                Linking.openURL(response.data.wa_url).catch(() => Alert.alert("عذراً", "حدث خطأ في فتح واتساب"));
+                Linking.openURL(response.data.wa_url).catch(() => showNotification({ title: 'عذراً', message: 'حدث خطأ في فتح واتساب', type: 'error' }));
                 onClose();
                 if (onSuccess) onSuccess();
             } else {
@@ -248,6 +344,200 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
     };
 
     const translateY = slideAnimation.interpolate({ inputRange: [0, 1], outputRange: [600, 0] });
+
+    const renderContent = () => (
+        <>
+            <View style={styles.headerArea}>
+                <Text style={styles.modalTitle}>إتمام الطلب</Text>
+                <View style={styles.stepperContainer}>
+                    <View style={[styles.stepCircle, currentStep === 'address' && styles.activeStep]}>
+                        <Ionicons name="location-outline" size={16} color={currentStep === 'address' ? "#fff" : "#94a3b8"} />
+                    </View>
+                    <View style={styles.stepConnector} />
+                    <View style={[styles.stepCircle, currentStep === 'payment' && styles.activeStep]}>
+                        <Ionicons name="card-outline" size={16} color={currentStep === 'payment' ? "#fff" : "#94a3b8"} />
+                    </View>
+                </View>
+                <Text style={styles.modalSubtitle}>
+                    {currentStep === 'address' ? "حدد عنوان التوصيل على الخريطة" : "اختر وسيلة الدفع المناسبة"}
+                </Text>
+            </View>
+
+            {fetchingAddress ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#0ea5e9" />
+                    <Text style={styles.loadingText}>جاري تحميل البيانات...</Text>
+                </View>
+            ) : (
+                <>
+                    {currentStep === 'address' && (
+                        <TabHeader
+                            activeTab={activeTab}
+                            setActiveTab={setActiveTab}
+                            setFormError={setFormError}
+                            setUserTabInteracted={setUserTabInteracted}
+                            savedAddress={savedAddress}
+                            selectedLocation={selectedLocation}
+                            requestCurrentLocation={requestCurrentLocation}
+                        />
+                    )}
+
+                    {formError ? (
+                        <View style={styles.errorBox}>
+                            <Ionicons name="alert-circle" size={18} color="#ef4444" />
+                            <Text style={styles.errorTextCenter}>{formError}</Text>
+                        </View>
+                    ) : null}
+
+                    <ScrollView
+                        style={styles.scrollArea}
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                        nestedScrollEnabled={true}
+                        keyboardShouldPersistTaps="handled"
+                        alwaysBounceVertical={true}
+                        scrollEventThrottle={16}
+                    >
+                        {currentStep === 'address' ? (
+                            activeTab === "saved" ? (
+                                <SavedAddressTab
+                                    savedAddress={savedAddress}
+                                    staticMapHtml={staticMapHtml}
+                                    savedNotes={savedNotes}
+                                    setSavedNotes={setSavedNotes}
+                                />
+                            ) : (
+                                <NewAddressTab
+                                    newMapRef={newMapRef}
+                                    interactiveMapHtml={interactiveMapHtml}
+                                    handleMapMessage={handleMapMessage}
+                                    handleRecenter={handleRecenter}
+                                    locatingUser={locatingUser}
+                                    selectedLocation={selectedLocation}
+                                    fullName={fullName}
+                                    setFullName={setFullName}
+                                    addressLine1={addressLine1}
+                                    setAddressLine1={setAddressLine1}
+                                    phone={phone}
+                                    setPhone={setPhone}
+                                    notes={notes}
+                                    setNotes={setNotes}
+                                />
+                            )
+                        ) : (
+                            <View style={styles.paymentContainer}>
+                                {fetchingMethods ? (
+                                    <ActivityIndicator size="small" color="#0ea5e9" />
+                                ) : (
+                                    <>
+                                        <View style={styles.paymentGrid}>
+                                            {supplierMethods.map((method) => (
+                                                <TouchableOpacity
+                                                    key={method.id}
+                                                    style={[
+                                                        styles.paymentItem,
+                                                        selectedMethod?.id === method.id && styles.selectedPaymentItem
+                                                    ]}
+                                                    onPress={() => setSelectedMethod(method)}
+                                                >
+                                                    <Ionicons 
+                                                        name={method.requires_proof ? "wallet-outline" : "cash-outline"} 
+                                                        size={24} 
+                                                        color={selectedMethod?.id === method.id ? "#0ea5e9" : "#64748b"} 
+                                                    />
+                                                    <Text style={[
+                                                        styles.paymentItemText,
+                                                        selectedMethod?.id === method.id && styles.selectedPaymentItemText
+                                                    ]}>
+                                                        {method.method_name}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                            {supplierMethods.length === 0 && (
+                                                 <Text style={styles.noMethodsText}>لا توجد فروع دفع إلكترونية متاحة حالياً. يتم الدفع عند الاستلام.</Text>
+                                            )}
+                                        </View>
+
+                                        {selectedMethod && selectedMethod.account_field_value ? (
+                                            <View style={styles.accountCard}>
+                                                <View style={styles.accountHeader}>
+                                                    <Text style={styles.accountLabel}>{selectedMethod.account_field_name || "رقم الحساب"}</Text>
+                                                    <TouchableOpacity onPress={() => copyToClipboard(selectedMethod.account_field_value)}>
+                                                        <Ionicons name="copy-outline" size={20} color="#0ea5e9" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                                <Text style={styles.accountNumber}>{selectedMethod.account_field_value}</Text>
+                                            </View>
+                                        ) : null}
+
+                                        {selectedMethod && selectedMethod.requires_proof ? (
+                                            <View style={styles.receiptSection}>
+                                                <Text style={styles.receiptLabel}>إرفاق إيصال السداد</Text>
+                                                <TouchableOpacity style={styles.uploadBox} onPress={pickReceipt}>
+                                                    {receiptImage ? (
+                                                        <View style={styles.receiptPreview}>
+                                                            <Ionicons name="image" size={30} color="#0ea5e9" />
+                                                            <Text style={styles.receiptName} numberOfLines={1}>{receiptImage.name || 'تم اختيار الصورة'}</Text>
+                                                            <TouchableOpacity onPress={() => setReceiptImage(null)} style={styles.removeReceipt}>
+                                                                <Ionicons name="close-circle" size={20} color="#ef4444" />
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    ) : (
+                                                        <>
+                                                            <Ionicons name="camera-outline" size={32} color="#94a3b8" />
+                                                            <Text style={styles.uploadText}>اضغط هنا لاختيار صورة الإيصال</Text>
+                                                        </>
+                                                    )}
+                                                </TouchableOpacity>
+                                            </View>
+                                        ) : null}
+                                    </>
+                                )}
+                            </View>
+                        )}
+                    </ScrollView>
+
+                    <View style={styles.footerArea}>
+                        {currentStep === 'address' ? (
+                            <TouchableOpacity
+                                style={styles.submitBtn}
+                                onPress={handleProceedToPayment}
+                            >
+                                <View style={styles.btnContent}>
+                                    <Text style={styles.submitBtnText}>التالي: وسيلة الدفع</Text>
+                                    <Ionicons name="chevron-back" size={22} color="#fff" />
+                                </View>
+                            </TouchableOpacity>
+                        ) : (
+                            <View style={styles.finalFooter}>
+                                <TouchableOpacity
+                                    style={styles.backBtn}
+                                    onPress={() => setCurrentStep("address")}
+                                >
+                                    <Ionicons name="chevron-forward" size={20} color="#64748b" />
+                                    <Text style={styles.backBtnText}>رجوع</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.submitBtn, { flex: 1, marginLeft: 12 }]}
+                                    onPress={handleCheckout}
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator color="#fff" />
+                                    ) : (
+                                        <View style={styles.btnContent}>
+                                            <Text style={styles.submitBtnText}>إرسال الطلب</Text>
+                                            <Ionicons name="logo-whatsapp" size={22} color="#fff" style={{ marginLeft: 8 }} />
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                    </View>
+                </>
+            )}
+        </>
+    );
 
     if (!visible) return null;
 
@@ -266,90 +556,7 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                                 <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                                     <Ionicons name="close-circle" size={32} color="#e2e8f0" />
                                 </TouchableOpacity>
-
-                                <View style={styles.headerArea}>
-                                    <Text style={styles.modalTitle}>إتمام الطلب</Text>
-                                    <Text style={styles.modalSubtitle}>حدد عنوان التوصيل على الخريطة</Text>
-                                </View>
-
-                                {fetchingAddress ? (
-                                    <View style={styles.loadingContainer}>
-                                        <ActivityIndicator size="large" color="#0ea5e9" />
-                                        <Text style={styles.loadingText}>جاري تحميل البيانات...</Text>
-                                    </View>
-                                ) : (
-                                    <>
-                                        <TabHeader
-                                            activeTab={activeTab}
-                                            setActiveTab={setActiveTab}
-                                            setFormError={setFormError}
-                                            setUserTabInteracted={setUserTabInteracted}
-                                            savedAddress={savedAddress}
-                                            selectedLocation={selectedLocation}
-                                            requestCurrentLocation={requestCurrentLocation}
-                                        />
-
-                                        {formError ? (
-                                            <View style={styles.errorBox}>
-                                                <Ionicons name="alert-circle" size={18} color="#ef4444" />
-                                                <Text style={styles.errorTextCenter}>{formError}</Text>
-                                            </View>
-                                        ) : null}
-
-                                        <ScrollView
-                                            style={styles.scrollArea}
-                                            contentContainerStyle={styles.scrollContent}
-                                            showsVerticalScrollIndicator={false}
-                                            nestedScrollEnabled={true}
-                                            keyboardShouldPersistTaps="handled"
-                                            alwaysBounceVertical={true}
-                                            scrollEventThrottle={16}
-                                        >
-                                            {activeTab === "saved" ? (
-                                                <SavedAddressTab
-                                                    savedAddress={savedAddress}
-                                                    staticMapHtml={staticMapHtml}
-                                                    savedNotes={savedNotes}
-                                                    setSavedNotes={setSavedNotes}
-                                                />
-                                            ) : (
-                                                <NewAddressTab
-                                                    newMapRef={newMapRef}
-                                                    interactiveMapHtml={interactiveMapHtml}
-                                                    handleMapMessage={handleMapMessage}
-                                                    handleRecenter={handleRecenter}
-                                                    locatingUser={locatingUser}
-                                                    selectedLocation={selectedLocation}
-                                                    fullName={fullName}
-                                                    setFullName={setFullName}
-                                                    addressLine1={addressLine1}
-                                                    setAddressLine1={setAddressLine1}
-                                                    phone={phone}
-                                                    setPhone={setPhone}
-                                                    notes={notes}
-                                                    setNotes={setNotes}
-                                                />
-                                            )}
-                                        </ScrollView>
-
-                                        <View style={styles.footerArea}>
-                                            <TouchableOpacity
-                                                style={styles.submitBtn}
-                                                onPress={activeTab === "saved" ? handleCheckoutWithSaved : handleCheckoutWithNew}
-                                                disabled={loading}
-                                            >
-                                                {loading ? (
-                                                    <ActivityIndicator color="#fff" />
-                                                ) : (
-                                                    <View style={styles.btnContent}>
-                                                        <Text style={styles.submitBtnText}>إرسال الطلب عبر واتساب</Text>
-                                                        <Ionicons name="logo-whatsapp" size={22} color="#fff" />
-                                                    </View>
-                                                )}
-                                            </TouchableOpacity>
-                                        </View>
-                                    </>
-                                )}
+                                {renderContent()}
                             </Animated.View>
                         </KeyboardAvoidingView>
                     ) : (
@@ -359,90 +566,7 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                                 <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                                     <Ionicons name="close-circle" size={32} color="#e2e8f0" />
                                 </TouchableOpacity>
-
-                                <View style={styles.headerArea}>
-                                    <Text style={styles.modalTitle}>إتمام الطلب</Text>
-                                    <Text style={styles.modalSubtitle}>حدد عنوان التوصيل على الخريطة</Text>
-                                </View>
-
-                                {fetchingAddress ? (
-                                    <View style={styles.loadingContainer}>
-                                        <ActivityIndicator size="large" color="#0ea5e9" />
-                                        <Text style={styles.loadingText}>جاري تحميل البيانات...</Text>
-                                    </View>
-                                ) : (
-                                    <>
-                                        <TabHeader
-                                            activeTab={activeTab}
-                                            setActiveTab={setActiveTab}
-                                            setFormError={setFormError}
-                                            setUserTabInteracted={setUserTabInteracted}
-                                            savedAddress={savedAddress}
-                                            selectedLocation={selectedLocation}
-                                            requestCurrentLocation={requestCurrentLocation}
-                                        />
-
-                                        {formError ? (
-                                            <View style={styles.errorBox}>
-                                                <Ionicons name="alert-circle" size={18} color="#ef4444" />
-                                                <Text style={styles.errorTextCenter}>{formError}</Text>
-                                            </View>
-                                        ) : null}
-
-                                        <ScrollView
-                                            style={styles.scrollArea}
-                                            contentContainerStyle={styles.scrollContent}
-                                            showsVerticalScrollIndicator={false}
-                                            nestedScrollEnabled={true}
-                                            keyboardShouldPersistTaps="handled"
-                                            alwaysBounceVertical={true}
-                                            scrollEventThrottle={16}
-                                        >
-                                            {activeTab === "saved" ? (
-                                                <SavedAddressTab
-                                                    savedAddress={savedAddress}
-                                                    staticMapHtml={staticMapHtml}
-                                                    savedNotes={savedNotes}
-                                                    setSavedNotes={setSavedNotes}
-                                                />
-                                            ) : (
-                                                <NewAddressTab
-                                                    newMapRef={newMapRef}
-                                                    interactiveMapHtml={interactiveMapHtml}
-                                                    handleMapMessage={handleMapMessage}
-                                                    handleRecenter={handleRecenter}
-                                                    locatingUser={locatingUser}
-                                                    selectedLocation={selectedLocation}
-                                                    fullName={fullName}
-                                                    setFullName={setFullName}
-                                                    addressLine1={addressLine1}
-                                                    setAddressLine1={setAddressLine1}
-                                                    phone={phone}
-                                                    setPhone={setPhone}
-                                                    notes={notes}
-                                                    setNotes={setNotes}
-                                                />
-                                            )}
-                                        </ScrollView>
-
-                                        <View style={styles.footerArea}>
-                                            <TouchableOpacity
-                                                style={styles.submitBtn}
-                                                onPress={activeTab === "saved" ? handleCheckoutWithSaved : handleCheckoutWithNew}
-                                                disabled={loading}
-                                            >
-                                                {loading ? (
-                                                    <ActivityIndicator color="#fff" />
-                                                ) : (
-                                                    <View style={styles.btnContent}>
-                                                        <Text style={styles.submitBtnText}>إرسال الطلب عبر واتساب</Text>
-                                                        <Ionicons name="logo-whatsapp" size={22} color="#fff" />
-                                                    </View>
-                                                )}
-                                            </TouchableOpacity>
-                                        </View>
-                                    </>
-                                )}
+                                {renderContent()}
                             </Animated.View>
                         </View>
                     )}

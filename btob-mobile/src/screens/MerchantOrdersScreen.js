@@ -55,9 +55,10 @@ export default function MerchantOrdersScreen({ route, navigation }) {
         setPage(pageNum);
       }
     } catch (err) {
-      console.error('MerchantOrders fetch error', err);
+      // Errors are now handled globally by the client interceptor and NotificationContext
     } finally {
       setLoading(false);
+
       setRefreshing(false);
       setLoadingMore(false);
     }

@@ -79,10 +79,10 @@
                 <h4 class="text-sm font-black text-blue-800 mb-2">تواصل معنا</h4>
                 <p class="text-[11px] text-blue-600 mb-3">إذا كانت لديك أي أسئلة حول سياسة الخصوصية:</p>
                 <div class="flex flex-wrap gap-4">
-                    {% if system_settings.company_email %}
+                    {% if supplier.user.email or system_settings.company_email %}
                     <div class="flex items-center gap-2 text-[11px]">
                         <i class="fas fa-envelope text-blue-500"></i>
-                        <span class="text-slate-600">{{ system_settings.company_email }}</span>
+                        <span class="text-slate-600">{{ supplier.user.email|default:system_settings.company_email }}</span>
                     </div>
                     {% endif %}
                     {% if system_settings.whatsapp_number %}

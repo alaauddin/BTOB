@@ -64,156 +64,158 @@
 </div>
 
 <script>
-    let standaloneMap;
-    let standaloneMarker;
+    document.addEventListener('DOMContentLoaded', function() {
+        let standaloneMap;
+        let standaloneMarker;
 
-    // Define Custom Geolocation Control for Leaflet
-    const MyLocationControl = L.Control.extend({
-        options: { position: 'bottomright' },
-        onAdd: function(map) {
-            const btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control bg-white flex items-center justify-center gap-2 px-3 shadow-lg hover:bg-slate-50 transition-all border-2 border-slate-200/50 rounded-xl');
-            btn.type = 'button';
-            btn.title = 'تحديد موقعي الحالي';
-            btn.style.height = '40px';
-            btn.style.backgroundColor = 'white';
-            btn.style.cursor = 'pointer';
-            btn.style.border = '2px solid rgba(0,0,0,0.05)';
-            btn.innerHTML = `
-                <span class="text-[11px] font-black text-blue-600 whitespace-nowrap">موقعي الحالي</span>
-                <i class="fas fa-location-arrow text-blue-600 text-sm"></i>
-            `;
+        // Define Custom Geolocation Control for Leaflet
+        const MyLocationControl = L.Control.extend({
+            options: { position: 'bottomright' },
+            onAdd: function(map) {
+                const btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control bg-white flex items-center justify-center gap-2 px-3 shadow-lg hover:bg-slate-50 transition-all border-2 border-slate-200/50 rounded-xl');
+                btn.type = 'button';
+                btn.title = 'تحديد موقعي الحالي';
+                btn.style.height = '40px';
+                btn.style.backgroundColor = 'white';
+                btn.style.cursor = 'pointer';
+                btn.style.border = '2px solid rgba(0,0,0,0.05)';
+                btn.innerHTML = `
+                    <span class="text-[11px] font-black text-blue-600 whitespace-nowrap">موقعي الحالي</span>
+                    <i class="fas fa-location-arrow text-blue-600 text-sm"></i>
+                `;
+                
+                L.DomEvent.disableClickPropagation(btn);
+                btn.onclick = function() { useCurrentLocation(standaloneMap, standaloneMarker); };
+                return btn;
+            }
+        });
+
+        window.openMapModal = function() {
+            document.getElementById('map-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
             
-            L.DomEvent.disableClickPropagation(btn);
-            btn.onclick = function() { useCurrentLocation(); };
-            return btn;
+            // Initialize map when modal opens
+            setTimeout(() => {
+                const latField = document.getElementById('id_loc-latitude');
+                const lngField = document.getElementById('id_loc-longitude');
+                
+                if (!latField || !lngField) {
+                    console.error("Coordinate fields not found");
+                    return;
+                }
+
+                const lat = parseFloat(latField.value) || 15.3694;
+                const lng = parseFloat(lngField.value) || 44.1910;
+                
+                if (!standaloneMap) {
+                    standaloneMap = L.map('standalone-map', {
+                        zoomControl: false
+                    }).setView([lat, lng], 13);
+                    
+                    L.control.zoom({ position: 'bottomright' }).addTo(standaloneMap);
+                    
+                    // Add the custom MyLocation control
+                    new MyLocationControl({ position: 'bottomright' }).addTo(standaloneMap);
+                    
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors',
+                        maxZoom: 19
+                    }).addTo(standaloneMap);
+                    
+                    standaloneMarker = L.marker([lat, lng], {draggable: true}).addTo(standaloneMap);
+                    
+                    standaloneMarker.on('dragend', function(e) {
+                        const position = standaloneMarker.getLatLng();
+                        updateLocationInputs(position.lat, position.lng);
+                    });
+
+                    standaloneMap.on('click', function(e) {
+                        standaloneMarker.setLatLng(e.latlng);
+                        updateLocationInputs(e.latlng.lat, e.latlng.lng);
+                    });
+
+                    // Crucial for visibility in modals
+                    setTimeout(() => {
+                        standaloneMap.invalidateSize();
+                    }, 100);
+                } else {
+                    standaloneMap.invalidateSize();
+                    standaloneMap.setView([lat, lng], standaloneMap.getZoom());
+                    standaloneMarker.setLatLng([lat, lng]);
+                }
+            }, 400); 
+        };
+
+        window.closeMapModal = function() {
+            document.getElementById('map-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+
+        function updateLocationInputs(lat, lng) {
+            // Update the hidden inputs in the modal form (prefixed)
+            document.getElementById('id_loc-latitude').value = lat.toFixed(6);
+            document.getElementById('id_loc-longitude').value = lng.toFixed(6);
+            
+            // Also update the main settings form hidden inputs if they exist (for sync)
+            const mainLat = document.getElementById('id_latitude');
+            const mainLng = document.getElementById('id_longitude');
+            if (mainLat) mainLat.value = lat.toFixed(6);
+            if (mainLng) mainLng.value = lng.toFixed(6);
         }
-    });
 
-    function openMapModal() {
-        document.getElementById('map-modal').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        
-        // Initialize map when modal opens
-        setTimeout(() => {
-            const latField = document.getElementById('id_loc-latitude');
-            const lngField = document.getElementById('id_loc-longitude');
-            
-            if (!latField || !lngField) {
-                console.error("Coordinate fields not found");
+        window.useCurrentLocation = function(map, marker) {
+            if (!navigator.geolocation) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ',
+                    text: 'متصفحك لا يدعم تحديد الموقع'
+                });
                 return;
             }
 
-            const lat = parseFloat(latField.value) || 15.3694;
-            const lng = parseFloat(lngField.value) || 44.1910;
-            
-            if (!standaloneMap) {
-                standaloneMap = L.map('standalone-map', {
-                    zoomControl: false
-                }).setView([lat, lng], 13);
-                
-                L.control.zoom({ position: 'bottomright' }).addTo(standaloneMap);
-                
-                // Add the custom MyLocation control
-                new MyLocationControl({ position: 'bottomright' }).addTo(standaloneMap);
-                
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors',
-                    maxZoom: 19
-                }).addTo(standaloneMap);
-                
-                standaloneMarker = L.marker([lat, lng], {draggable: true}).addTo(standaloneMap);
-                
-                standaloneMarker.on('dragend', function(e) {
-                    const position = standaloneMarker.getLatLng();
-                    updateLocationInputs(position.lat, position.lng);
-                });
-
-                standaloneMap.on('click', function(e) {
-                    standaloneMarker.setLatLng(e.latlng);
-                    updateLocationInputs(e.latlng.lat, e.latlng.lng);
-                });
-
-                // Crucial for visibility in modals
-                setTimeout(() => {
-                    standaloneMap.invalidateSize();
-                }, 100);
-            } else {
-                standaloneMap.invalidateSize();
-                standaloneMap.setView([lat, lng], standaloneMap.getZoom());
-                standaloneMarker.setLatLng([lat, lng]);
-            }
-        }, 400); 
-    }
-
-    function updateLocationInputs(lat, lng) {
-        // Update the hidden inputs in the modal form (prefixed)
-        document.getElementById('id_loc-latitude').value = lat.toFixed(6);
-        document.getElementById('id_loc-longitude').value = lng.toFixed(6);
-        
-        // Also update the main settings form hidden inputs if they exist (for sync)
-        const mainLat = document.getElementById('id_latitude');
-        const mainLng = document.getElementById('id_longitude');
-        if (mainLat) mainLat.value = lat.toFixed(6);
-        if (mainLng) mainLng.value = lng.toFixed(6);
-    }
-
-    function useCurrentLocation() {
-        if (!navigator.geolocation) {
             Swal.fire({
-                icon: 'error',
-                title: 'خطأ',
-                text: 'متصفحك لا يدعم تحديد الموقع'
+                title: 'جاري تحديد موقعك...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
             });
-            return;
-        }
 
-        Swal.fire({
-            title: 'جاري تحديد موقعك...',
-            allowOutsideClick: false,
-            didOpen: () => { Swal.showLoading(); }
-        });
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                
-                if (standaloneMap) {
-                    standaloneMap.setView([lat, lng], 17);
-                    standaloneMarker.setLatLng([lat, lng]);
-                    updateLocationInputs(lat, lng);
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
                     
-                    // Force redraw
-                    setTimeout(() => standaloneMap.invalidateSize(), 100);
-                }
-                
-                Swal.close();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'تم التحديد',
-                    text: 'تم تحديد موقعك الحالي بنجاح',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end'
-                });
-            },
-            (error) => {
-                Swal.close();
-                let msg = 'فشل تحديد الموقع';
-                if (error.code === 1) msg = 'يرجى السماح للمتصفح بالوصول لموقعك للمتابعة';
-                Swal.fire({
-                    icon: 'info',
-                    title: 'تنبيه',
-                    text: msg
-                });
-            },
-            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-        );
-    }
-
-    function closeMapModal() {
-        document.getElementById('map-modal').classList.add('hidden');
-        document.body.style.overflow = '';
-    }
+                    if (map) {
+                        map.setView([lat, lng], 17);
+                        if (marker) marker.setLatLng([lat, lng]);
+                        updateLocationInputs(lat, lng);
+                        
+                        // Force redraw
+                        setTimeout(() => map.invalidateSize(), 100);
+                    }
+                    
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم التحديد',
+                        text: 'تم تحديد موقعك الحالي بنجاح',
+                        timer: 1500,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                },
+                (error) => {
+                    Swal.close();
+                    let msg = 'فشل تحديد الموقع';
+                    if (error.code === 1) msg = 'يرجى السماح للمتصفح بالوصول لموقعك للمتابعة';
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'تنبيه',
+                        text: msg
+                    });
+                },
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+            );
+        };
+    });
 </script>

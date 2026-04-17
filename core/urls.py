@@ -44,6 +44,9 @@ from core.views.delivery_driver_views import (
     driver_dashboard, driver_update_order_status, driver_order_map
 )
 from core.views.AcademyViews import academy_home, course_detail, lesson_view, complete_lesson
+from core.views.payment_views import manage_payment_methods, delete_payment_method, submit_payment, verify_payment
+from core.views.ai_color_gen import GenerateAIColorsView
+
 
 urlpatterns = [
     # Landing Page
@@ -186,5 +189,16 @@ urlpatterns = [
     path('dashboard/academy/course/<slug:slug>/', course_detail, name='course_detail'),
     path('dashboard/academy/course/<slug:course_slug>/lesson/<int:lesson_id>/', lesson_view, name='lesson_view'),
     path('dashboard/academy/complete-lesson/<int:lesson_id>/', complete_lesson, name='complete_lesson'),
+
+    # Payment Features
+    path('dashboard/payment-methods/', manage_payment_methods, name='manage_payment_methods'),
+    path('dashboard/payment-methods/delete/<int:method_id>/', delete_payment_method, name='delete_payment_method'),
+    path('payments/submit/', submit_payment, name='submit_payment'),
+    path('payments/verify/<int:transaction_id>/', verify_payment, name='verify_payment'),
+    path('verify-payment/<int:transaction_id>/', verify_payment), # Legacy alias to prevent 404s
+
+    
+    # AI Color Features
+    path('api/generate-ai-colors/', GenerateAIColorsView.as_view(), name='generate_ai_colors'),
 ]
 

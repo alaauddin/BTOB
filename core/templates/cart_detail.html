@@ -14,9 +14,7 @@ fbq('track', 'InitiateCheckout', {
 {% block extra_css %}
     <style>
     :root {
-        --primary-color: {{ supplier.primary_color|default:'#F58231' }};
-        --secondary-color: {{ supplier.secondary_color|default:'rgb(135, 219, 255)' }};
-        --accent-color: {{ supplier.secondary_color|default:'rgb(135, 219, 255)' }};
+        /* Variables inherited from base.html */
     }
     
     .toast-notification {
@@ -299,6 +297,66 @@ fbq('track', 'InitiateCheckout', {
                     </div>
                 </div>
 
+                <!-- Payment Method Section -->
+                <div class="payment-method-selection mb-4">
+                    <h6 class="fw-bold mb-3 small text-uppercase text-muted border-bottom pb-2">اختر طريقة الدفع</h6>
+                    <div class="row g-2">
+                        <!-- Cash on Delivery -->
+                        <div class="col-12">
+                            <label class="selection-card w-100 active py-3 px-3 d-flex align-items-center gap-3" for="pay_cod" style="cursor: pointer; border-radius: 12px; flex-direction: row; justify-content: start; text-align: right;">
+                                <input class="form-check-input flex-shrink-0" type="radio" name="payment_method_id" id="pay_cod" value="cod" checked>
+                                <div class="bg-light p-2 rounded-circle">
+                                     <i class="fas fa-hand-holding-usd text-muted" style="font-size: 1.1rem; width: 20px; display: flex; align-items: center; justify-content: center;"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold small">الدفع عند الاستلام</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">ادفع عند استلام طلبك من السائق</div>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <!-- Online Payment Methods -->
+                        {% for method in payment_methods %}
+                        <div class="col-6">
+                            <label class="selection-card w-100 py-3 px-2 d-flex flex-column align-items-center gap-2 text-center" for="pay_{{ method.id }}" style="cursor: pointer; border-radius: 12px; height: 100%;">
+                                <input class="form-check-input mb-1" type="radio" name="payment_method_id" id="pay_{{ method.id }}" value="{{ method.id }}"
+                                       data-account-name="{{ method.account_field_name }}"
+                                       data-account-value="{{ method.account_field_value }}">
+                                
+                                <div class="payment-logo-container bg-white p-2 border rounded" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+                                    <img src="{{ method.payment_method.logo.url }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                                </div>
+                                
+                                <div class="fw-bold small">{{ method.payment_method.name }}</div>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Receipt Upload Section (Hidden for COD by default) -->
+                <div id="receiptUploadSection" class="mb-4" style="display: none;">
+                    <div class="card border-0 bg-light-orange p-3" style="border-radius: 12px; background-color: rgba(245,130,49,0.05); border: 1px dashed var(--primary-color) !important;">
+                        
+                        <!-- Selected Method Summary (Dynamically updated) -->
+                        <div id="selectedPaymentSummary" class="mb-3 p-2 bg-white rounded-3 border d-flex align-items-center gap-3">
+                            <!-- Injected by JS -->
+                        </div>
+
+                        <h6 class="fw-bold mb-2 small text-primary"><i class="fas fa-camera me-1"></i> إرفاق إيصال الدفع</h6>
+                        <p class="text-muted small mb-3">يرجى رفع صورة عملية التحويل لإتمام طلبك بشكل أسرع.</p>
+                        
+                        <div class="mb-2">
+                            <input type="file" id="checkoutReceiptInput" class="form-control form-control-sm" accept="image/*">
+                        </div>
+                        
+                        <div id="checkoutReceiptPreview" class="mt-2 d-none">
+                            <img src="" class="img-fluid rounded border" style="max-height: 120px; width: 100%; object-fit: cover;">
+                            <button type="button" class="btn btn-sm btn-link text-danger p-0 mt-1 small" onclick="clearReceipt()">حذف الصورة</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Saved Address Section -->
                 <div id="savedAddressSection">
                     {% if user_address %}
@@ -481,6 +539,7 @@ fbq('track', 'InitiateCheckout', {
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -729,7 +788,7 @@ fbq('track', 'InitiateCheckout', {
         // Custom Icon Definition
         const customIcon = L.divIcon({
             className: 'custom-map-marker',
-            html: `<i class="fas fa-map-marker-alt fa-3x" style="color: ${getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#F58231'}; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>`,
+            html: `<i class="fas fa-map-marker-alt fa-3x" style="color: var(--color-action, #D48231); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>`,
             iconSize: [40, 40],
             iconAnchor: [20, 40]
         });
@@ -926,9 +985,32 @@ fbq('track', 'InitiateCheckout', {
 
             const csrftoken = getCookie('csrftoken');
             
+            // Collect Form Data including File
+            const formData = new FormData();
+            const selectedPayment = document.querySelector('input[name="payment_method_id"]:checked')?.value;
+            if (selectedPayment) {
+                formData.append('payment_method_id', selectedPayment);
+            }
+            
+            const receiptFile = document.getElementById('checkoutReceiptInput').files[0];
+            if (receiptFile) {
+                formData.append('receipt', receiptFile);
+            }
+
+            // Validation: Enforce receipt if not COD
+            if (selectedPayment && selectedPayment !== 'cod' && !receiptFile) {
+                showNotification('يرجى إرفاق إيصال الدفع لإتمام الطلب', 'error');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+                return;
+            }
+
             $.ajax({
                 url: `{% url 'existing_address' supplier.store_id %}`,
                 type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
                 headers: { "X-CSRFToken": csrftoken },
                 success: function(data) {
                     if (data.success) {
@@ -962,6 +1044,25 @@ fbq('track', 'InitiateCheckout', {
                 const formData = new FormData(newAddressForm);
                 const csrftoken = getCookie('csrftoken');
                 
+                // Add selected payment method to FormData
+                const selectedPayment = document.querySelector('input[name="payment_method_id"]:checked')?.value;
+                if (selectedPayment) {
+                    formData.append('payment_method_id', selectedPayment);
+                }
+                
+                const receiptFile = document.getElementById('checkoutReceiptInput').files[0];
+                if (receiptFile) {
+                    formData.append('receipt', receiptFile);
+                }
+
+                // Validation: Enforce receipt if not COD
+                if (selectedPayment && selectedPayment !== 'cod' && !receiptFile) {
+                    showNotification('يرجى إرفاق إيصال الدفع لإتمام الطلب', 'error');
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                    return;
+                }
+
                 // Clear previous errors
                 newAddressForm.querySelectorAll('.text-danger.small').forEach(el => el.textContent = '');
                 
@@ -1005,4 +1106,136 @@ fbq('track', 'InitiateCheckout', {
         }
     });
 </script>
+
+{% block extra_js_2 %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle Payment Selection visual feedback
+        const paymentRadios = document.querySelectorAll('input[name="payment_method_id"]');
+        const receiptSection = document.getElementById('receiptUploadSection');
+        const receiptInput = document.getElementById('checkoutReceiptInput');
+        const receiptPreviewWrap = document.getElementById('checkoutReceiptPreview');
+        const receiptPreviewImg = receiptPreviewWrap.querySelector('img');
+
+        paymentRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                paymentRadios.forEach(r => r.closest('.selection-card').classList.remove('active'));
+                if (this.checked) {
+                    const card = this.closest('.selection-card');
+                    card.classList.add('active');
+                    
+                    // Update Summary in upload form
+                    const summary = document.getElementById('selectedPaymentSummary');
+                    if (summary) {
+                        const logo = card.querySelector('.payment-logo-container img')?.src;
+                        const name = card.querySelector('.fw-bold')?.textContent;
+                        const fieldName = this.dataset.accountName;
+                        const fieldVal = this.dataset.accountValue;
+
+                        if (this.value !== 'cod') {
+                            summary.innerHTML = `
+                                <div class="bg-white border rounded p-1 shadow-sm" style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <img src="${logo}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="fw-bold small text-dark">${name}</div>
+                                        <span class="badge bg-soft-primary text-primary border-0 py-1 px-2" style="font-size: 0.6rem; background-color: rgba(245,130,49,0.1); color: var(--primary-color) !important;">وجهة التحويل</span>
+                                    </div>
+                                    <div class="small text-muted mt-1 d-flex align-items-center justify-content-between" style="font-size: 0.72rem;">
+                                        <div>
+                                            <span class="opacity-75">${fieldName}:</span> 
+                                            <strong class="text-dark" style="font-family: monospace;">${fieldVal}</strong>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-light p-1 border-0 rounded-circle text-primary hover-shadow" 
+                                                onclick="copyToClipboard('${fieldVal}', this)" 
+                                                title="نسخ الرقم"
+                                                style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: rgba(245,130,49,0.08); transition: all 0.2s;">
+                                            <i class="far fa-copy" style="font-size: 0.75rem;"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    // Show/Hide receipt section
+                    if (this.value !== 'cod' && receiptSection) {
+                        receiptSection.style.display = 'block';
+                    } else if (receiptSection) {
+                        receiptSection.style.display = 'none';
+                    }
+                }
+            });
+            
+            // Set initial state
+            if (radio.checked) {
+                radio.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Receipt Preview Logic
+        if (receiptInput) {
+            receiptInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        receiptPreviewImg.src = e.target.result;
+                        receiptPreviewWrap.classList.remove('d-none');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        window.clearReceipt = function() {
+            receiptInput.value = '';
+            receiptPreviewWrap.classList.add('d-none');
+            receiptPreviewImg.src = '';
+        }
+
+        window.copyToClipboard = function(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                const icon = btn.querySelector('i');
+                const originalClass = icon.className;
+                
+                // Success State
+                icon.className = 'fas fa-check text-success animate__animated animate__bounceIn';
+                btn.style.background = 'rgba(16, 185, 129, 0.1)';
+                
+                showNotification('تم نسخ الرقم بنجاح', 'success');
+
+                setTimeout(() => {
+                    icon.className = originalClass;
+                    btn.style.background = 'rgba(245,130,49,0.08)';
+                }, 2000);
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+            });
+        }
+    });
+</script>
+
+<style>
+    .payment-method-selection .selection-card {
+        border: 2px solid #f1f5f9;
+        transition: all 0.2s ease;
+        border-radius: 14px;
+        flex-direction: row !important;
+        justify-content: start !important;
+        text-align: right !important;
+    }
+    .payment-method-selection .selection-card.active {
+        border-color: var(--primary-color);
+        background-color: rgba(245, 130, 49, 0.05);
+    }
+    .payment-method-selection .form-check-input {
+        margin-top: 0;
+    }
+    .payment-method-selection .form-check-input:checked ~ .flex-grow-1 .fw-bold {
+        color: var(--primary-color);
+    }
+</style>
+{% endblock %}
 {% endblock %}

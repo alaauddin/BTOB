@@ -7,11 +7,13 @@ import {
 import { Feather, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import client from '../api/client';
+import { useNotifications } from '../context/NotificationContext';
 
 const { height } = Dimensions.get('window');
 
 export default function ProductEditModal({ visible, product, categories, onClose, onSaved }) {
     const isEdit = !!product;
+    const { showNotification } = useNotifications();
     const [loading, setLoading] = useState(false);
     
     // Form State
@@ -56,7 +58,7 @@ export default function ProductEditModal({ visible, product, categories, onClose
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert('عذراً', 'نحتاج إذن الوصول للصور لرفع صورة المنتج');
+            showNotification({ title: 'عذراً', message: 'نحتاج إذن الوصول للصور لرفع صورة المنتج', type: 'warning' });
             return;
         }
 
@@ -74,9 +76,9 @@ export default function ProductEditModal({ visible, product, categories, onClose
     };
 
     const handleSave = async () => {
-        if (!name.trim()) return Alert.alert('خطأ', 'يرجى إدخال اسم المنتج');
-        if (!price.trim()) return Alert.alert('خطأ', 'يرجى إدخال السعر');
-        if (!categoryId) return Alert.alert('خطأ', 'يرجى اختيار القسم');
+        if (!name.trim()) return showNotification({ title: 'خطأ', message: 'يرجى إدخال اسم المنتج', type: 'warning' });
+        if (!price.trim()) return showNotification({ title: 'خطأ', message: 'يرجى إدخال السعر', type: 'warning' });
+        if (!categoryId) return showNotification({ title: 'خطأ', message: 'يرجى اختيار القسم', type: 'warning' });
 
         setLoading(true);
         try {
@@ -106,21 +108,24 @@ export default function ProductEditModal({ visible, product, categories, onClose
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
             } else {
-                formData.append('merchant_id', (await client.getAuthMerchantId()) || ''); // Assuming we have a way or pass it
-                // Better pass merchant_id from props or context
+                formData.append('merchant_id', (await client.getAuthMerchantId()) || '');
                 res = await client.post('/merchant/products/', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
             }
 
             if (res.data.success) {
-                Alert.alert('نجاح', isEdit ? 'تم تحديث المنتج بنجاح' : 'تم إضافة المنتج بنجاح');
+                showNotification({ 
+                    title: 'نجاح', 
+                    message: isEdit ? 'تم تحديث المنتج بنجاح' : 'تم إضافة المنتج بنجاح', 
+                    type: 'success' 
+                });
                 onSaved();
                 onClose();
             }
         } catch (err) {
             console.error('Save product error', err.response?.data || err);
-            Alert.alert('خطأ', 'حدث خطأ أثناء حفظ المنتج');
+            showNotification({ title: 'خطأ', message: 'حدث خطأ أثناء حفظ المنتج', type: 'error' });
         } finally {
             setLoading(false);
         }

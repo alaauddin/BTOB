@@ -1,0 +1,48 @@
+<div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-6">
+    <!-- Top Row -->
+    <div class="flex flex-col sm:flex-row items-center sm:justify-between gap-4 mb-6">
+        <div class="flex flex-col items-center sm:items-start text-center sm:text-right">
+            <span class="text-xs font-bold text-gray-500 mb-1">النطاق الفرعي (Subdomain)</span>
+            {% if supplier.subdomain %}
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span class="text-sm font-black text-blue-600">{{ supplier.subdomain }}.{{ PLATFORM_DOMAIN }}</span>
+                </div>
+            {% else %}
+                <div class="flex items-center gap-1.5 justify-center sm:justify-start">
+                    <span class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+                    <span class="text-xs font-bold text-orange-500">لم يتم ضبط النطاق بعد</span>
+                </div>
+            {% endif %}
+        </div>
+        {% if not supplier.subdomain %}
+        <div class="relative group mt-2 sm:mt-0 flex flex-col items-center">
+            <!-- Absolute Subdomain Prompt -->
+            <div class="absolute bottom-full mb-3 z-30 whitespace-nowrap animate-breathe left-1/5 -translate-x-1/2">
+                <span class="onboarding-tooltip-blue text-white text-[11px] px-4 py-2 rounded-xl relative flex items-center caret-down-blue shadow-xl">
+                    احجز رابط متجرك! 🚀
+                </span>
+            </div>
+            <button onclick="openDomainModal()" class="bg-blue-600 text-white px-8 py-3 rounded-2xl text-xs font-black hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg shadow-blue-100 relative z-20">
+                <i class="fas fa-plus"></i>
+                ضبط النطاق
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="space-y-3">
+        <label class="text-xs font-bold text-gray-500 mr-1">رابط المتجر</label>
+        <div class="relative group" dir="ltr">
+            <input type="text" readonly 
+                value="https://{% if supplier.subdomain %}{{ supplier.subdomain }}.{{ PLATFORM_DOMAIN }}{% else %}{{ PLATFORM_DOMAIN }}/store/{{ supplier.store_id|default:supplier.id }}{% endif %}" 
+                id="storeLink"
+                class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-16 pr-4 text-sm font-medium text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all">
+            <!-- Copy Icon on the far left -->
+            <button onclick="copyStoreLink()" class="absolute left-2 top-2 bottom-2 bg-white text-[#ED7D31] px-4 rounded-xl shadow-sm border border-gray-100 hover:bg-gray-50 transition-all flex items-center justify-center">
+                <i class="fas fa-copy"></i>
+            </button>
+        </div>
+    </div>
+</div>

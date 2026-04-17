@@ -1,0 +1,47 @@
+<div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 mb-6">
+    <div class="grid grid-cols-4 gap-2">
+        <!-- Products -->
+        <div class="flex flex-col items-center justify-between gap-3 text-center">
+            <div class="bg-blue-50 p-2.5 rounded-2xl w-full flex items-center justify-center">
+                <i class="fas fa-box-open text-blue-500"></i>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-[10px] font-bold text-gray-400 leading-tight">المنتجات والعروض</span>
+                <span class="text-lg font-black text-blue-600">{{ total_products }}</span>
+            </div>
+        </div>
+
+        <!-- Orders -->
+        <div class="flex flex-col items-center justify-between gap-3 text-center">
+            <div class="bg-green-50 p-2.5 rounded-2xl w-full flex items-center justify-center">
+                <i class="fas fa-shopping-bag text-green-500"></i>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-[10px] font-bold text-gray-400 leading-tight">الطلبات</span>
+                <span class="text-lg font-black text-green-600">{{ total_orders }}</span>
+            </div>
+        </div>
+
+        <!-- Pending -->
+        <div class="flex flex-col items-center justify-between gap-3 text-center">
+            <div class="bg-orange-50 p-2.5 rounded-2xl w-full flex items-center justify-center">
+                <i class="fas fa-clock text-orange-500"></i>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-[10px] font-bold text-gray-400 leading-tight">المعلقة</span>
+                <span class="text-lg font-black text-orange-600">{{ pending_orders }}</span>
+            </div>
+        </div>
+
+        <!-- Revenue -->
+        <div class="flex flex-col items-center justify-between gap-3 text-center">
+            <div class="bg-purple-50 p-2.5 rounded-2xl w-full flex items-center justify-center">
+                <i class="fas fa-chart-line text-purple-500"></i>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-[10px] font-bold text-gray-400 leading-tight">الإيرادات</span>
+                <span class="text-lg font-black text-purple-600">  {{supplier.currency}}{{ total_revenue|floatformat:0 }} </span>
+            </div>
+        </div>
+    </div>
+</div>

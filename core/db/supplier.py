@@ -57,6 +57,7 @@ class Supplier(models.Model):
     primary_color = models.CharField(max_length=7, default='#F58231')
     secondary_color = models.CharField(max_length=7, default='#ffffff')
     navbar_color = models.CharField(max_length=7, default='#F58231')
+    navbar_text_color = models.CharField(max_length=7, default='#ffffff')
     footer_color = models.CharField(max_length=7, default='#2B6CB0')
     text_color = models.CharField(max_length=7, default='#4A5568')
     accent_color = models.CharField(max_length=7, default='#00FFFF')

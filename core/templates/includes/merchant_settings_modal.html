@@ -21,9 +21,9 @@
                 {{ settings_form.latitude }}
                 {{ settings_form.longitude }}
 
-                <div class="p-6 sm:p-8 space-y-8 sm:space-y-10 pb-12 sm:pb-16">
+                <div class="p-5 sm:p-6 space-y-6 sm:space-y-8 pb-8 sm:pb-10">
                     <!-- Branding Section -->
-                    <section class="space-y-6">
+                    <section class="space-y-4">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
                                 <i class="fas fa-paint-brush"></i>
@@ -32,10 +32,10 @@
                         </div>
                         
                         <!-- Profile & Banner Upload -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <!-- Logo Upload -->
                             <div class="relative group">
-                                <label class="block text-sm font-bold text-slate-700 mb-2">شعار المتجر</label>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">شعار المتجر</label>
                                 <div class="w-full h-32 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center bg-slate-50 group-hover:bg-blue-50 group-hover:border-blue-200 transition-all overflow-hidden relative shadow-inner cursor-pointer" onclick="document.getElementById('profile_input').click()">
                                     {% if supplier.profile_picture %}
                                         <img src="{{ supplier.profile_picture.url }}" id="profile_preview" class="w-full h-full object-cover opacity-60">
@@ -53,7 +53,7 @@
                             
                             <!-- Banner Upload -->
                             <div class="relative group">
-                                <label class="block text-sm font-bold text-slate-700 mb-2">صورة الغلاف</label>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">صورة الغلاف</label>
                                 <div class="w-full h-32 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center bg-slate-50 group-hover:bg-purple-50 group-hover:border-purple-200 transition-all overflow-hidden relative shadow-inner cursor-pointer" onclick="document.getElementById('banner_input').click()">
                                     {% if supplier.panal_picture %}
                                         <img src="{{ supplier.panal_picture.url }}" id="banner_preview" class="w-full h-full object-cover opacity-60">
@@ -108,39 +108,140 @@
                             }
                         </style>
 
-                        <div class="space-y-6">
-                            <div class="flex items-center justify-between">
-                                <label class="block text-sm font-bold text-slate-700">هوية الألوان (احترافية)</label>
-                                <div class="flex gap-2">
-                                    <button type="button" onclick="applyPickrPreset('modern')" class="text-[10px] px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl font-black hover:bg-blue-100 transition-all">عصري</button>
-                                    <button type="button" onclick="applyPickrPreset('classic')" class="text-[10px] px-3 py-1.5 bg-orange-50 text-orange-600 rounded-xl font-black hover:bg-orange-100 transition-all">كلاسيك</button>
-                                    <button type="button" onclick="applyPickrPreset('nature')" class="text-[10px] px-3 py-1.5 bg-green-50 text-green-600 rounded-xl font-black hover:bg-green-100 transition-all">طبيعي</button>
+                        <div class="space-y-4 w-full max-w-full overflow-hidden">
+                            <div class="space-y-3 w-full">
+                                <div class="flex items-center justify-between gap-4">
+                                    <label class="block text-xs font-bold text-slate-700">القوالب المقترحة (هوية جاهزة)</label>
+                                    <!-- AI Magic Button (Integrated) -->
+                                    <button type="button" onclick="openAIColorModal()" class="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg font-black text-[10px] hover:bg-blue-100 transition-all active:scale-95 border border-blue-100 shadow-sm">
+                                        <i class="fas fa-magic"></i>
+                                        <span>تنسيق ذكي (AI)</span>
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                                    <!-- Theme 1: Modern Indigo -->
+                                    <button type="button" onclick="applyPickrPreset('modern')" class="group relative flex flex-col p-2 bg-white rounded-2xl border-2 border-slate-100 hover:border-blue-500 hover:shadow-lg transition-all active:scale-95 overflow-hidden">
+                                        <div class="flex h-10 w-full rounded-lg overflow-hidden mb-2">
+                                            <div class="flex-1" style="background-color: #4F46E5;"></div>
+                                            <div class="flex-1" style="background-color: #0F172A;"></div>
+                                        </div>
+                                        <span class="text-[10px] font-black text-slate-600 group-hover:text-blue-600">عصري (Indigo)</span>
+                                    </button>
+
+                                    <!-- Theme 2: Luxury Amber -->
+                                    <button type="button" onclick="applyPickrPreset('classic')" class="group relative flex flex-col p-2 bg-white rounded-2xl border-2 border-slate-100 hover:border-orange-500 hover:shadow-lg transition-all active:scale-95 overflow-hidden">
+                                        <div class="flex h-10 w-full rounded-lg overflow-hidden mb-2">
+                                            <div class="flex-1" style="background-color: #B45309;"></div>
+                                            <div class="flex-1" style="background-color: #451A03;"></div>
+                                        </div>
+                                        <span class="text-[10px] font-black text-slate-600 group-hover:text-orange-600">كلاسيك (Gold)</span>
+                                    </button>
+
+                                    <!-- Theme 3: Earthly Green -->
+                                    <button type="button" onclick="applyPickrPreset('nature')" class="group relative flex flex-col p-2 bg-white rounded-2xl border-2 border-slate-100 hover:border-green-500 hover:shadow-lg transition-all active:scale-95 overflow-hidden">
+                                        <div class="flex h-10 w-full rounded-lg overflow-hidden mb-2">
+                                            <div class="flex-1" style="background-color: #065F46;"></div>
+                                            <div class="flex-1" style="background-color: #064E3B;"></div>
+                                        </div>
+                                        <span class="text-[10px] font-black text-slate-600 group-hover:text-green-600">طبيعي (Nature)</span>
+                                    </button>
+
+                                    <!-- Theme 4: Royal Purple -->
+                                    <button type="button" onclick="applyPickrPreset('royal')" class="group relative flex flex-col p-2 bg-white rounded-2xl border-2 border-slate-100 hover:border-purple-500 hover:shadow-lg transition-all active:scale-95 overflow-hidden">
+                                        <div class="flex h-10 w-full rounded-lg overflow-hidden mb-2">
+                                            <div class="flex-1" style="background-color: #7C3AED;"></div>
+                                            <div class="flex-1" style="background-color: #2E1065;"></div>
+                                        </div>
+                                        <span class="text-[10px] font-black text-slate-600 group-hover:text-purple-600">ملكي (Royal)</span>
+                                    </button>
+
+                                    <!-- Theme 5: Minimal Steel -->
+                                    <button type="button" onclick="applyPickrPreset('minimal')" class="group relative flex flex-col p-2 bg-white rounded-2xl border-2 border-slate-100 hover:border-slate-800 hover:shadow-lg transition-all active:scale-95 overflow-hidden">
+                                        <div class="flex h-10 w-full rounded-lg overflow-hidden mb-2">
+                                            <div class="flex-1" style="background-color: #1E293B;"></div>
+                                            <div class="flex-1 border-l border-slate-100" style="background-color: #FFFFFF;"></div>
+                                        </div>
+                                        <span class="text-[10px] font-black text-slate-600 group-hover:text-slate-900">بسيط (Minimal)</span>
+                                    </button>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Theme Preview Mockup (Smart Solution) -->
+                            <div class="p-4 bg-slate-50 rounded-[28px] border border-slate-100 overflow-hidden space-y-3 shadow-inner">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+                                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">استعراض المظهر المباشر</span>
+                                    </div>
+                                    <div id="contrast-badge" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-green-100 text-green-600 hidden">تباين ممتاز</div>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <!-- Mini Navbar Mockup -->
+                                    <div id="preview-navbar" class="h-10 w-full rounded-xl shadow-sm border border-slate-200/50 flex items-center px-4 transition-all duration-500">
+                                        <div class="w-16 h-2 rounded-full bg-slate-200/50"></div>
+                                        <div class="flex-grow"></div>
+                                        <div class="flex gap-2">
+                                            <div class="w-3 h-3 rounded-full bg-slate-200/50"></div>
+                                            <div class="w-3 h-3 rounded-full bg-slate-200/50"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Mini Body Mockup -->
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div class="h-16 rounded-xl bg-white border border-slate-100 p-2 space-y-2">
+                                            <div id="preview-primary-1" class="w-full h-4 rounded-lg bg-blue-600 transition-all duration-500"></div>
+                                            <div class="w-3/4 h-1 px-1 rounded-full bg-slate-100 preview-secondary transition-all duration-500"></div>
+                                            <div class="w-1/2 h-1 px-1 rounded-full bg-slate-100 preview-secondary transition-all duration-500"></div>
+                                        </div>
+                                        <div class="h-16 rounded-xl bg-white border border-slate-100 p-2 space-y-2">
+                                            <div id="preview-primary-2" class="w-full h-8 rounded-lg bg-blue-600/10 flex items-center justify-center transition-all duration-500">
+                                                <div id="preview-primary-text" class="w-8 h-1 rounded-full bg-blue-600"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Mini Footer Mockup -->
+                                    <div id="preview-footer" class="h-16 w-full rounded-xl shadow-inner flex flex-col justify-center px-4 space-y-2 transition-all duration-500 relative overflow-hidden">
+                                        <div id="preview-text-1" class="w-24 h-2 rounded-full bg-white opacity-90 transition-all"></div>
+                                        <div id="preview-text-2" class="w-32 h-1.5 rounded-full bg-white opacity-50 transition-all"></div>
+                                        <div class="h-px w-full bg-white/10 my-1"></div>
+                                        <div class="flex justify-between items-center">
+                                            <div id="preview-text-3" class="w-12 h-1 rounded-full bg-white opacity-30 transition-all"></div>
+                                            <div class="flex gap-1.5">
+                                                <div id="preview-accent-1" class="w-2.5 h-2.5 rounded-full bg-blue-400 opacity-60 transition-all"></div>
+                                                <div id="preview-accent-2" class="w-2.5 h-2.5 rounded-full bg-blue-400 opacity-60 transition-all"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {% for field in settings_form %}
-                                    {% if field.name in "primary_color,secondary_color,accent_color,navbar_color,footer_color,text_color" %}
-                                    <div class="p-4 bg-white rounded-3xl border border-slate-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 transition-all group relative overflow-hidden">
+                                    {% if field.name in "primary_color,secondary_color,accent_color,navbar_color,navbar_text_color,footer_color,text_color" %}
+                                    <div class="p-3 bg-white rounded-3xl border border-slate-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 transition-all group relative overflow-hidden">
                                         <!-- Hidden base input for Django -->
                                         <div class="hidden">{{ field }}</div>
                                         
                                         <div class="flex items-center justify-between mb-2">
                                             <span class="text-xs font-black text-slate-800">{{ field.label }}</span>
-                                            <div class="pickr-container" data-field="{{ field.name }}" data-initial="{{ field.value|default:'#2563eb' }}"></div>
+                                            <div class="pickr-container" border border-slate-100 p-2 rounded-lg data-field="{{ field.name }}" data-initial="{{ field.value|default:'#2563eb' }}"></div>
                                         </div>
                                         
-                                        <p class="text-[9px] font-bold text-slate-400 mb-4 leading-relaxed">
+                                        <p class="text-[9px] font-bold text-slate-400 mb-2 leading-relaxed">
                                             {% if field.name == 'primary_color' %}
                                                 يستخدم للأزرار، الروابط، والعناصر التفاعلية الرئيسية في متجرك.
                                             {% elif field.name == 'secondary_color' %}
                                                 يستخدم للعناوين الجانبية والتمييز الثانوي للهوية البصرية.
                                             {% elif field.name == 'navbar_color' %}
-                                                يتحكم في لون خلفية الشريط العلوي (النابار) للمتجر.
+                                                يتحكم في لون النصوص والروابط داخل الشريط السفلي (التذييل) للمتجر.
+                                            {% elif field.name == 'navbar_text_color' %}
+                                                يتحكم في لون النصوص والروابط داخل الشريط العلوي (النابار) للمتجر.
                                             {% elif field.name == 'footer_color' %}
                                                 يتحكم في لون خلفية الجزء السفلي (التذييل) للمتجر.
                                             {% elif field.name == 'text_color' %}
-                                                يتحكم في لون النصوص داخل منطقة التذييل السفلية.
+                                                لحماية التوافق - يستخدم كطبقة ألوان إضافية للنصوص العامة.
                                             {% elif field.name == 'accent_color' %}
                                                 يستخدم للتفاصيل الدقيقة والزخارف البرمجية الثانوية.
                                             {% endif %}
@@ -157,10 +258,10 @@
                         </div>
                     </section>
 
-                    <hr class="border-slate-100">
+                    <hr class="border-slate-50">
 
                     <!-- Basic Info Section -->
-                    <section class="space-y-6">
+                    <section class="space-y-4">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shadow-sm">
                                 <i class="fas fa-info-circle"></i>
@@ -168,40 +269,55 @@
                             <h4 class="text-lg font-bold text-slate-800">بيانات المتجر</h4>
                         </div>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-slate-500 mr-2">اسم المتجر</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="space-y-0.5">
+                                <label class="text-[10px] font-bold text-slate-500 mr-2">اسم المتجر</label>
                                 {{ settings_form.name }}
                             </div>
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-slate-500 mr-2">رقم التواصل</label>
-                                {{ settings_form.phone }}
+                            <!-- Read-Only Profile Phone (Personal) -->
+                            <div class="space-y-0.5 opacity-75">
+                                <label class="text-[10px] font-bold text-slate-400 mr-2 flex items-center gap-1">
+                                    رقم الهاتف الشخصي (للحساب)
+                                    <i class="fas fa-lock text-[9px]" title="هذا الرقم مرتبط بحسابك الشخصي ولا يمكن تعديله من هنا"></i>
+                                </label>
+                                <div class="w-full px-4 py-2 rounded-xl border border-slate-100 bg-slate-50 text-slate-500 text-xs font-medium cursor-not-allowed">
+                                    {{ request.user.profile.phone_number|default:"غير متوفر" }}
+                                </div>
                             </div>
-                            <div class="space-y-1.5 md:col-span-2">
-                                <label class="text-xs font-bold text-slate-500 mr-2">العنوان</label>
+                            <div class="space-y-0.5 opacity-75">
+                                <label class="text-[10px] font-bold text-slate-400 mr-2 flex items-center gap-1">
+                                    رقم التواصل للعمل
+                                    <i class="fas fa-lock text-[9px]"></i>
+                                </label>
+                                <div class="w-full px-4 py-2 rounded-xl border border-slate-100 bg-slate-50 text-slate-500 text-xs font-medium cursor-not-allowed">
+                                    {{ supplier.phone|default:"غير متوفر" }}
+                                </div>
+                                <input type="hidden" name="phone" value="{{ supplier.phone }}">
+                            </div>
+
+                            <!-- Editable Secondary Phone -->
+                            <div class="space-y-0.5">
+                                <label class="text-[10px] font-bold text-slate-500 mr-2">رقم هاتف إضافي (تواصل)</label>
+                                {{ settings_form.secondary_phone }}
+                            </div>
+                            <div class="space-y-0.5 md:col-span-2">
+                                <label class="text-[10px] font-bold text-slate-500 mr-2">العنوان</label>
                                 {{ settings_form.address }}
                             </div>
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-slate-500 mr-2">المدينة</label>
+                            <div class="space-y-0.5">
+                                <label class="text-[10px] font-bold text-slate-500 mr-2">المدينة</label>
                                 {{ settings_form.city }}
                             </div>
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-slate-500 mr-2">الدولة</label>
+                            <div class="space-y-0.5">
+                                <label class="text-[10px] font-bold text-slate-500 mr-2">الدولة</label>
                                 {{ settings_form.country }}
                             </div>
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-slate-500 mr-2">العملة</label>
+                            <div class="space-y-0.5">
+                                <label class="text-[10px] font-bold text-slate-500 mr-2">العملة</label>
                                 {{ settings_form.currency }}
                             </div>
                         </div>
 
-                        <!-- Secondary Phone (Requested earlier) -->
-                        {% if settings_form.secondary_phone %}
-                        <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-500 mr-2">رقم التواصل الإضافي</label>
-                            {{ settings_form.secondary_phone }}
-                        </div>
-                        {% endif %}
 
                         <!-- Map Preview -->
                         <div class="space-y-2">
@@ -210,10 +326,10 @@
                         </div>
                     </section>
 
-                    <hr class="border-slate-100">
+                    <hr class="border-slate-50">
 
                     <!-- Domain Settings Section -->
-                    <section class="space-y-6">
+                    <section class="space-y-4">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
                                 <i class="fas fa-globe"></i>
@@ -233,10 +349,10 @@
                         </div>
                     </section>
 
-                    <hr class="border-slate-100">
+                    <hr class="border-slate-50">
 
                     <!-- Footer & Social Section -->
-                    <section class="space-y-6">
+                    <section class="space-y-4">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center shadow-sm">
                                 <i class="fas fa-hashtag"></i>
@@ -244,35 +360,35 @@
                             <h4 class="text-lg font-bold text-slate-800">التذييل وروابط التواصل</h4>
                         </div>
 
-                        <div class="space-y-1.5">
-                            <label class="text-xs font-bold text-slate-500 mr-2">وصف التذييل (Footer Description)</label>
+                        <div class="space-y-0.5">
+                            <label class="text-[10px] font-bold text-slate-500 mr-2">وصف التذييل (Footer Description)</label>
                             {{ settings_form.footer_description }}
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-slate-500 mr-2"><i class="fab fa-facebook text-blue-600 ml-1"></i>رابط فيسبوك</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="space-y-0.5">
+                                <label class="text-[10px] font-bold text-slate-500 mr-2"><i class="fab fa-facebook text-blue-600 ml-1"></i>رابط فيسبوك</label>
                                 {{ settings_form.facebook_url }}
                             </div>
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-slate-500 mr-2"><i class="fab fa-instagram text-pink-600 ml-1"></i>رابط انستقرام</label>
+                            <div class="space-y-0.5">
+                                <label class="text-[10px] font-bold text-slate-500 mr-2"><i class="fab fa-instagram text-pink-600 ml-1"></i>رابط انستقرام</label>
                                 {{ settings_form.instagram_url }}
                             </div>
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-slate-500 mr-2"><i class="fab fa-twitter text-blue-400 ml-1"></i>رابط تويتر</label>
+                            <div class="space-y-0.5">
+                                <label class="text-[10px] font-bold text-slate-500 mr-2"><i class="fab fa-twitter text-blue-400 ml-1"></i>رابط تويتر</label>
                                 {{ settings_form.twitter_url }}
                             </div>
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-slate-500 mr-2"><i class="fab fa-tiktok text-black ml-1"></i>رابط تيك توك</label>
+                            <div class="space-y-0.5">
+                                <label class="text-[10px] font-bold text-slate-500 mr-2"><i class="fab fa-tiktok text-black ml-1"></i>رابط تيك توك</label>
                                 {{ settings_form.tiktok_url }}
                             </div>
                         </div>
                     </section>
 
-                    <hr class="border-slate-100">
+                    <hr class="border-slate-50">
 
                     <!-- Controls Section -->
-                    <section class="space-y-6">
+                    <section class="space-y-4">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center shadow-sm">
                                 <i class="fas fa-toggle-on"></i>
@@ -280,9 +396,9 @@
                             <h4 class="text-lg font-bold text-slate-800">تفضيلات العرض</h4>
                         </div>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <!-- Toggle 1 -->
-                            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200 shadow-sm" onclick="this.querySelector('input').click()">
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200 shadow-sm" onclick="this.querySelector('input').click()">
                                 <div>
                                     <h5 class="text-sm font-bold text-slate-800">عرض المبالغ</h5>
                                     <p class="text-[10px] text-slate-500">إظهار أرقام المبيعات في اللوحة</p>
@@ -294,7 +410,7 @@
                             </div>
 
                             <!-- Toggle 2 -->
-                            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200 shadow-sm" onclick="this.querySelector('input').click()">
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200 shadow-sm" onclick="this.querySelector('input').click()">
                                 <div>
                                     <h5 class="text-sm font-bold text-slate-800">إعلانات المنصة</h5>
                                     <p class="text-[10px] text-slate-500">السماح بعرض الإعلانات العامة</p>
@@ -306,7 +422,7 @@
                             </div>
 
                             <!-- Toggle 3 -->
-                            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200 shadow-sm" onclick="this.querySelector('input').click()">
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200 shadow-sm" onclick="this.querySelector('input').click()">
                                 <div>
                                     <h5 class="text-sm font-bold text-slate-800">شعار المنصة</h5>
                                     <p class="text-[10px] text-slate-500">عرض شعار المنصة في الـ Navbar</p>
@@ -349,17 +465,241 @@
         </div>
 </div>
 
+<!-- AI Color Generation Modal -->
+<div id="ai-color-modal" class="fixed inset-0 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md" style="z-index: 5000000 !important;">
+    <div class="bg-white w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl flex flex-col animate-in fade-in zoom-in duration-300">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white flex-shrink-0">
+            <div>
+                <h4 class="font-black text-slate-800">استخراج الألوان بالذكاء الاصطناعي</h4>
+                <p class="text-[10px] text-slate-400">قم برفع شعارك لاستخراج هويتك البصرية</p>
+            </div>
+            <button type="button" onclick="closeAIColorModal()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="p-8 space-y-6">
+            <div id="ai-upload-zone" class="w-full aspect-square rounded-[32px] border-4 border-dashed border-blue-100 bg-blue-50/30 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 hover:border-blue-200 transition-all group overflow-hidden relative" onclick="document.getElementById('ai_logo_input').click()">
+                <img id="ai_logo_preview" class="absolute inset-0 w-full h-full object-contain p-8 hidden">
+                <div id="ai-upload-empty" class="flex flex-col items-center justify-center text-center space-y-3">
+                    <div class="w-16 h-16 rounded-3xl bg-white shadow-lg flex items-center justify-center text-2xl text-blue-500 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div>
+                        <span class="block text-sm font-black text-slate-700">اضغط لرفع الشعار</span>
+                        <span class="text-[10px] font-bold text-slate-400">يدعم PNG, JPG, SVG</span>
+                    </div>
+                </div>
+                <input type="file" id="ai_logo_input" class="hidden" accept="image/*" onchange="handleAILogoSelection(this)">
+            </div>
+
+            <div id="ai-loading-state" class="hidden space-y-4">
+                <div class="flex items-center justify-center gap-3 py-4">
+                    <div class="w-2 h-2 rounded-full bg-blue-600 animate-bounce" style="animation-delay: 0.1s"></div>
+                    <div class="w-2 h-2 rounded-full bg-blue-600 animate-bounce" style="animation-delay: 0.2s"></div>
+                    <div class="w-2 h-2 rounded-full bg-blue-600 animate-bounce" style="animation-delay: 0.3s"></div>
+                </div>
+                <p class="text-center text-sm font-bold text-slate-600">جاري تحليل الشعار باستخراج الألوان المناسبة...</p>
+            </div>
+        </div>
+
+        <div class="px-6 py-5 bg-slate-50 border-t border-slate-100 flex gap-3">
+            <button id="ai-generate-btn" type="button" onclick="generateAIColors()" class="flex-grow py-4 bg-blue-600 text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none" disabled>
+                استخراج الألوان الذكي
+            </button>
+            <button type="button" onclick="closeAIColorModal()" class="px-6 py-4 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-50">إلغاء</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    const pickrInstances = {};
+    window.pickrInstances = window.pickrInstances || {};
+
+    window.openAIColorModal = function() {
+        const modal = document.getElementById('ai-color-modal');
+        if (modal) {
+            modal.style.setProperty('display', 'flex', 'important');
+            modal.classList.remove('hidden');
+        }
+    };
+
+    window.closeAIColorModal = function() {
+        const modal = document.getElementById('ai-color-modal');
+        if (modal) {
+            modal.style.setProperty('display', 'none', 'important');
+            modal.classList.add('hidden');
+        }
+        resetAIModal();
+    };
+
+    function resetAIModal() {
+        document.getElementById('ai_logo_input').value = '';
+        document.getElementById('ai_logo_preview').classList.add('hidden');
+        document.getElementById('ai-upload-empty').classList.remove('hidden');
+        document.getElementById('ai-generate-btn').disabled = true;
+        document.getElementById('ai-loading-state').classList.add('hidden');
+        document.getElementById('ai-upload-zone').classList.remove('opacity-30', 'pointer-events-none');
+    }
+
+    function handleAILogoSelection(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('ai_logo_preview').src = e.target.result;
+                document.getElementById('ai_logo_preview').classList.remove('hidden');
+                document.getElementById('ai-upload-empty').classList.add('hidden');
+                document.getElementById('ai-generate-btn').disabled = false;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function generateAIColors() {
+        const input = document.getElementById('ai_logo_input');
+        if (!input.files || !input.files[0]) return;
+
+        const formData = new FormData();
+        formData.append('logo', input.files[0]);
+        formData.append('supplier_id', '{{ supplier.id }}');
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        // Show loading state
+        document.getElementById('ai-generate-btn').disabled = true;
+        document.getElementById('ai-upload-zone').classList.add('opacity-30', 'pointer-events-none');
+        document.getElementById('ai-loading-state').classList.remove('hidden');
+
+        fetch('{% url "generate_ai_colors" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                applyAIColors(data.colors);
+                closeAIColorModal();
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم استخراج الألوان بنجاح!',
+                        text: 'قام الذكاء الاصطناعي بتحديد هويتكم وتم تطبيقها على المعاينة.',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#2563eb',
+                        customClass: { popup: 'rounded-[32px]' }
+                    });
+                }
+            } else {
+                throw new Error(data.error || 'فشل في استخراج الألوان');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: 'خطأ', text: error.message });
+            }
+            resetAIModal();
+        });
+    }
+
+    function applyAIColors(colors) {
+        Object.keys(colors).forEach(key => {
+            const hex = colors[key];
+            const instance = pickrInstances[key];
+            if (instance) {
+                instance.setColor(hex);
+                const hiddenInput = document.querySelector('input[name="' + key + '"]');
+                if (hiddenInput) {
+                    hiddenInput.value = hex;
+                    hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+        });
+        updateThemePreview();
+    }
 
     /**
-     * Initialize Pickr for all color fields
+     * Helper to calculate relative luminance for contrast checking
      */
-    function initPickr() {
-        if (typeof Pickr === 'undefined') {
-            console.error('Pickr not loaded');
-            return;
+    function getLuminance(hex) {
+        if (!hex) return 0;
+        try {
+            const cleanHex = hex.startsWith('#') ? hex.slice(1) : hex;
+            const rgb = cleanHex.match(/[A-Za-z0-9]{2}/g).map(v => parseInt(v, 16) / 255);
+            const r = rgb[0] <= 0.03928 ? rgb[0] / 12.92 : Math.pow((rgb[0] + 0.055) / 1.055, 2.4);
+            const g = rgb[1] <= 0.03928 ? rgb[1] / 12.92 : Math.pow((rgb[1] + 0.055) / 1.055, 2.4);
+            const b = rgb[2] <= 0.03928 ? rgb[2] / 12.92 : Math.pow((rgb[2] + 0.055) / 1.055, 2.4);
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        } catch (e) { return 0; }
+    }
+
+    /**
+     * Visual Mockup Update Logic
+     */
+    function updateThemePreview() {
+        function getPickrHex(key, fallback) {
+            const inst = pickrInstances[key];
+            if (inst && inst.getColor) {
+                return inst.getColor().toHEXA().toString();
+            }
+            return fallback;
         }
+
+        const primary = getPickrHex('primary_color', '#2563eb');
+        const secondary = getPickrHex('secondary_color', '#64748b');
+        const navbar = getPickrHex('navbar_color', '#ffffff');
+        const navbarText = getPickrHex('navbar_text_color', '#1e293b');
+        const footer = getPickrHex('footer_color', '#0f172a');
+        const text = getPickrHex('text_color', '#ffffff');
+        const footerText = getPickrHex('navbar_color', '#ffffff'); // navbar_color is used for footer text
+        const accent = getPickrHex('accent_color', '#3b82f6');
+
+        const navEl = document.getElementById('preview-navbar');
+        const footerEl = document.getElementById('preview-footer');
+        const p1 = document.getElementById('preview-primary-1');
+        const p2 = document.getElementById('preview-primary-2');
+        const pt = document.getElementById('preview-primary-text');
+        const a1 = document.getElementById('preview-accent-1');
+        const a2 = document.getElementById('preview-accent-2');
+        
+        if (navEl) {
+            navEl.style.backgroundColor = primary; // Defaulting navbar background to primary for balance
+            const navTextEls = navEl.querySelectorAll('div');
+            navTextEls.forEach(function(el) { el.style.backgroundColor = navbarText; });
+        }
+        if (footerEl) footerEl.style.backgroundColor = footer;
+        if (p1) p1.style.backgroundColor = primary;
+        if (p2) p2.style.backgroundColor = primary + '1A'; 
+        if (pt) pt.style.backgroundColor = primary;
+        if (a1) a1.style.backgroundColor = accent;
+        if (a2) a2.style.backgroundColor = accent;
+
+        // Apply secondary color to the 'labels' in the mockup items
+        const secondaryEls = document.querySelectorAll('.preview-secondary');
+        secondaryEls.forEach(function(el) { el.style.backgroundColor = secondary; });
+
+        // Apply footer text color (navbar_color mapping)
+        ['preview-text-1', 'preview-text-2', 'preview-text-3'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.backgroundColor = footerText;
+        });
+
+        // Contrast Analysis (Footer background vs navbar_color used as text)
+        const fLum = getLuminance(footer);
+        const tLum = getLuminance(footerText);
+        const contrast = Math.abs(fLum - tLum);
+        const badge = document.getElementById('contrast-badge');
+        
+        if (badge) {
+            badge.classList.remove('hidden');
+            if (contrast > 0.4) {
+                badge.className = "px-2 py-0.5 rounded-full text-[9px] font-bold bg-green-100 text-green-600";
+                badge.innerText = "تباين ممتاز ✓";
+            } else {
+                badge.className = "px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-600 animate-pulse";
+                badge.innerText = "تباين ضعيف جداً ⚠";
+            }
+        }
+    }
+
+    function initPickr() {
+        if (typeof Pickr === 'undefined') return;
 
         document.querySelectorAll('.pickr-container').forEach(container => {
             const fieldName = container.dataset.field;
@@ -368,7 +708,7 @@
 
             const pickr = Pickr.create({
                 el: container,
-                theme: 'nano', // Modern, smallest theme
+                theme: 'nano',
                 default: initialColor,
                 swatches: [
                     '#2563eb', '#dc2626', '#d97706', '#059669', '#7c3aed', 
@@ -380,96 +720,81 @@
                     hue: true,
                     interaction: {
                         hex: true,
-                        rgba: false,
-                        hsla: false,
-                        hsva: false,
-                        cmyk: false,
                         input: true,
-                        clear: false,
                         save: true
                     }
                 },
-                strings: {
-                    save: 'حفظ'
-                }
+                strings: { save: 'حفظ' }
             });
 
             pickr.on('save', (color, instance) => {
                 const hex = color.toHEXA().toString();
                 if (hiddenInput) {
                     hiddenInput.value = hex;
-                    // Trigger manual change for any other listeners
                     hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
                 }
+                updateThemePreview();
                 instance.hide();
             }).on('change', (color) => {
                 const hex = color.toHEXA().toString();
-                if (hiddenInput) hiddenInput.value = hex;
+                if (hiddenInput) {
+                    hiddenInput.value = hex;
+                    requestAnimationFrame(function() { updateThemePreview(); });
+                }
             });
 
             pickrInstances[fieldName] = pickr;
         });
     }
 
-    /**
-     * Applies professional color presets to all Pickr instances
-     */
     function applyPickrPreset(type) {
-        const presets = {
-            modern: {
-                primary_color: '#2563EB',
-                secondary_color: '#1E293B',
-                navbar_color: '#FFFFFF',
-                footer_color: '#0F172A',
-                accent_color: '#3B82F6',
-                text_color: '#1E293B'
-            },
-            classic: {
-                primary_color: '#ED7D31',
-                secondary_color: '#2B5876',
-                navbar_color: '#2B5876',
-                footer_color: '#1E293B',
-                accent_color: '#F4B183',
-                text_color: '#1E293B'
-            },
-            nature: {
-                primary_color: '#059669',
-                secondary_color: '#064E3B',
-                navbar_color: '#F0FDF4',
-                footer_color: '#064E3B',
-                accent_color: '#10B981',
-                text_color: '#111827'
-            }
+        var presets = {
+            modern: { primary_color: '#4F46E5', secondary_color: '#0F172A', navbar_color: '#FFFFFF', navbar_text_color: '#1E293B', footer_color: '#0F172A', accent_color: '#818CF8', text_color: '#FFFFFF' },
+            classic: { primary_color: '#B45309', secondary_color: '#451A03', navbar_color: '#451A03', navbar_text_color: '#FFFFFF', footer_color: '#1C1917', accent_color: '#F59E0B', text_color: '#FFFFFF' },
+            nature: { primary_color: '#065F46', secondary_color: '#064E3B', navbar_color: '#F0FDF4', navbar_text_color: '#064E3B', footer_color: '#064E3B', accent_color: '#34D399', text_color: '#FFFFFF' },
+            royal: { primary_color: '#7C3AED', secondary_color: '#2E1065', navbar_color: '#FFFFFF', navbar_text_color: '#2E1065', footer_color: '#1E1B4B', accent_color: '#A78BFA', text_color: '#FFFFFF' },
+            minimal: { primary_color: '#111827', secondary_color: '#374151', navbar_color: '#FFFFFF', navbar_text_color: '#111827', footer_color: '#F9FAFB', accent_color: '#6B7280', text_color: '#111827' }
         };
 
-        const theme = presets[type];
+        var theme = presets[type];
         if (!theme) return;
 
-        Object.entries(theme).forEach(([key, value]) => {
-            const instance = pickrInstances[key];
+        Object.keys(theme).forEach(function(key) {
+            var value = theme[key];
+            var instance = pickrInstances[key];
             if (instance) {
                 instance.setColor(value);
-                const hiddenInput = document.querySelector(`input[name="${key}"]`);
-                if (hiddenInput) hiddenInput.value = value;
+                var hiddenInput = document.querySelector('input[name="' + key + '"]');
+                if (hiddenInput) {
+                    hiddenInput.value = value;
+                    hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+                }
             }
         });
+
+        updateThemePreview();
 
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 icon: 'success',
-                title: 'تم تطبيق السمة المقترحة',
+                title: 'تم تطبيق السمة الجديدة',
+                text: 'يمكنك رؤية التغييرات في معاينة المتجر المباشرة',
                 toast: true,
                 position: 'top-end',
-                timer: 2000,
+                timer: 3000,
                 showConfirmButton: false
             });
         }
     }
 
-    // Initialize on load or when modal might be re-rendered
+    // Initialize on load
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initPickr);
+        document.addEventListener('DOMContentLoaded', function() {
+            initPickr();
+            setTimeout(updateThemePreview, 500);
+        });
     } else {
         initPickr();
+        setTimeout(updateThemePreview, 500);
     }
 </script>

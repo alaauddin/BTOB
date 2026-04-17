@@ -8,7 +8,8 @@ import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import { useNotifications } from '../context/NotificationContext';
+import MapView, { Marker, Polyline } from '../components/MapModule';
 import client from '../api/client';
 
 const { width } = Dimensions.get('window');
@@ -56,13 +57,16 @@ const DetailItem = ({ label, value, icon, isCopyable = false }) => (
 export default function MerchantOrderDetailScreen({ route, navigation }) {
   const { orderId } = route.params || {};
   const { activeMerchant } = useAuth();
+  const { showNotification } = useNotifications();
   const [order, setOrder] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [showMap, setShowMap] = useState(false);
   const [routeCoordinates, setRouteCoordinates] = useState([]);
   const [showAddDriver, setShowAddDriver] = useState(false);
   const [isCreatingDriver, setIsCreatingDriver] = useState(false);
   const [newDriver, setNewDriver] = useState({ first_name: '', phone: '', username: '', password: '' });
+  const [showReceiptViewer, setShowReceiptViewer] = useState(false);
 
   const fetchRoute = async () => {
     if (!order.merchant?.latitude || !order.shipping?.latitude) return;
@@ -86,11 +90,14 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
   }, [showMap, order]);
 
   useEffect(() => {
-    if (!orderId || !activeMerchant?.id) return;
-    client.get(`/merchant/orders/${orderId}/?merchant_id=${activeMerchant.id}`)
-      .then(res => { if (res.data.success) setOrder(res.data.order); })
-      .catch(err => console.error('Order detail error', err))
-      .finally(() => setLoading(false));
+    if (orderId && activeMerchant && activeMerchant.id) {
+      client.get(`/merchant/orders/${orderId}/?merchant_id=${activeMerchant.id}`)
+        .then(res => { if (res.data.success) setOrder(res.data.order); })
+        .catch(err => console.error('Order detail error', err))
+        .finally(() => setLoading(false));
+    } else if (!orderId) {
+       setLoading(false);
+    }
   }, [orderId, activeMerchant?.id]);
 
   const updateOrder = async (params) => {
@@ -102,14 +109,12 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
       });
       if (res.data.success) {
         setOrder(res.data.order);
-      } else {
-        Alert.alert('خطأ', res.data.message || 'فشل تحديث الطلب');
+        showNotification({ title: 'تم التحديث', message: 'تم تحديث حالة الطلب', type: 'success' });
       }
     } catch (e) {
-      console.error(e);
-      const msg = e.response?.data?.message || 'حدث خطأ أثناء الاتصال بالخادم';
-      Alert.alert('خطأ', msg);
+      // Handled globally
     } finally {
+
       setLoading(false);
     }
   };
@@ -117,33 +122,86 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
   const handleAddDriver = async () => {
     const { first_name, phone, username, password } = newDriver;
     if (!first_name || !phone || !username || !password) {
-      Alert.alert('تنبيه', 'يرجى ملء جميع الحقول المطلوبة');
+      showNotification({ title: 'تنبيه', message: 'يرجى ملء جميع الحقول المطلوبة', type: 'warning' });
       return;
     }
 
     try {
       setIsCreatingDriver(true);
       const res = await client.post('/merchant/drivers/', {
-        merchant_id: activeMerchant.id,
+        merchant_id: activeMerchant?.id,
         ...newDriver
       });
 
       if (res.data.success) {
-        Alert.alert('نجاح', 'تم إنشاء حساب السائق وإرسال البيانات عبر الواتساب');
+        showNotification({ 
+          title: 'تم بنجاح', 
+          message: 'تم إنشاء حساب السائق وإرسال البيانات عبر الواتساب', 
+          type: 'success' 
+        });
         setShowAddDriver(false);
         setNewDriver({ first_name: '', phone: '', username: '', password: '' });
         // Auto assign the new driver to this order
         updateOrder({ driver_id: res.data.driver.id });
-      } else {
-        Alert.alert('خطأ', res.data.message || 'فشل إنشاء الحساب');
       }
     } catch (e) {
-      console.error(e);
-      const msg = e.response?.data?.message || 'حدث خطأ أثناء الاتصال بالخادم';
-      Alert.alert('خطأ', msg);
+      // Handled globally
     } finally {
+
       setIsCreatingDriver(false);
     }
+  };
+
+  const handleVerifyPayment = async (txId) => {
+    try {
+      setLoading(true);
+      const res = await client.post(`/merchant/verify-payment/`, {
+        merchant_id: activeMerchant.id,
+        transaction_id: txId,
+        action: 'approve'
+      });
+      if (res.data.success) {
+        showNotification({ title: 'نجاح', message: 'تم تأكيد استلام المبلغ', type: 'success' });
+        setOrder(res.data.order);
+      }
+    } catch (e) {
+      showNotification({ title: 'خطأ', message: 'فشل تحديث حالة الدفع', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectPayment = async (txId) => {
+    Alert.prompt(
+      "سبب الرفض",
+      "يرجى إدخال سبب رفض الدفع (اختياري)",
+      [
+        { text: "إلغاء", style: "cancel" },
+        {
+          text: "رفض",
+          style: "destructive",
+          onPress: async (notes) => {
+            try {
+              setLoading(true);
+              const res = await client.post(`/merchant/verify-payment/`, {
+                merchant_id: activeMerchant.id,
+                transaction_id: txId,
+                action: 'reject',
+                notes: notes
+              });
+              if (res.data.success) {
+                showNotification({ title: 'تم', message: 'تم رفض إيصال الدفع', type: 'success' });
+                setOrder(res.data.order);
+              }
+            } catch (e) {
+              showNotification({ title: 'خطأ', message: 'فشل تحديث حالة الدفع', type: 'error' });
+            } finally {
+              setLoading(false);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const merchant = order?.merchant || activeMerchant;
@@ -460,6 +518,74 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
             </View>
           ))}
         </View>
+        
+        {/* ── Payment Transaction Status ── */}
+        {order.payment_transaction && (
+          <View style={styles.card}>
+            <SectionHeader title="حالة الدفع" icon="credit-card" color={primaryColor} />
+            <View style={styles.paymentInfoRow}>
+              <View style={styles.paymentMethodLabel}>
+                <Ionicons name="card-outline" size={20} color={primaryColor} />
+                <Text style={styles.paymentMethodName}>{order.payment_transaction.method_name}</Text>
+              </View>
+              <View style={[
+                  styles.txStatusBadge, 
+                  order.payment_transaction.status === 'verified' && styles.txVerified,
+                  order.payment_transaction.status === 'rejected' && styles.txRejected,
+                  order.payment_transaction.status === 'pending' && styles.txPending,
+                ]}>
+                <Text style={[
+                    styles.txStatusText,
+                    order.payment_transaction.status === 'verified' && { color: '#059669' },
+                    order.payment_transaction.status === 'rejected' && { color: '#DC2626' },
+                    order.payment_transaction.status === 'pending' && { color: '#D97706' },
+                  ]}>
+                  {order.payment_transaction.status_display}
+                </Text>
+              </View>
+            </View>
+
+            {order.payment_transaction.receipt && (
+              <View style={styles.receiptPreviewBox}>
+                <Text style={styles.receiptHint}>إيصال السداد المرفق:</Text>
+                <TouchableOpacity 
+                   onPress={() => setShowReceiptViewer(true)}
+                   style={styles.receiptThumbnailBtn}
+                >
+                  <Image source={{ uri: order.payment_transaction.receipt }} style={styles.receiptThumbnail} />
+                  <View style={styles.blurOverlay}>
+                    <Feather name="maximize" size={20} color="#FFF" />
+                    <Text style={styles.maximizeText}>عرض الإيصال</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {order.payment_transaction.status === 'pending' && (
+              <View style={styles.txActions}>
+                <TouchableOpacity 
+                   style={[styles.txBtn, { backgroundColor: '#10B981' }]} 
+                   onPress={() => handleVerifyPayment(order.payment_transaction.id)}
+                >
+                  <Text style={styles.txBtnText}>تأكيد الاستلام</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                   style={[styles.txBtn, { backgroundColor: '#FEE2E2', borderWidth: 1, borderColor: '#FECACA' }]} 
+                   onPress={() => handleRejectPayment(order.payment_transaction.id)}
+                >
+                  <Text style={[styles.txBtnText, { color: '#B91C1C' }]}>رفض الإيصال</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {order.payment_transaction.verification_notes ? (
+              <View style={styles.verificationNotes}>
+                <Text style={styles.notesLabel}>ملاحظات التحقق:</Text>
+                <Text style={styles.notesValue}>{order.payment_transaction.verification_notes}</Text>
+              </View>
+            ) : null}
+          </View>
+        )}
 
         {/* ── Grand Summary (Receipt Style) ── */}
         <View style={styles.receiptContainer}>
@@ -522,8 +648,8 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
           <MapView
             style={styles.map}
             initialRegion={{
-              latitude: parseFloat(order.merchant?.latitude || 15.3694),
-              longitude: parseFloat(order.merchant?.longitude || 44.1910),
+              latitude: parseFloat(order.merchant?.latitude || activeMerchant?.latitude || 15.3694),
+              longitude: parseFloat(order.merchant?.longitude || activeMerchant?.longitude || 44.1910),
               latitudeDelta: 0.05,
               longitudeDelta: 0.05,
             }}
@@ -666,6 +792,22 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
               <Text style={styles.hintText}>* سيتم إرسال بيانات الدخول للسائق عبر الواتساب فور الإنشاء</Text>
             </ScrollView>
           </View>
+        </View>
+      </Modal>
+
+      {/* ── Receipt Viewer Modal ── */}
+      <Modal visible={showReceiptViewer} transparent animationType="fade" onRequestClose={() => setShowReceiptViewer(false)}>
+        <View style={styles.viewerBackground}>
+          <TouchableOpacity style={styles.viewerClose} onPress={() => setShowReceiptViewer(false)}>
+             <Ionicons name="close" size={32} color="#FFF" />
+          </TouchableOpacity>
+          {order.payment_transaction?.receipt && (
+            <Image 
+              source={{ uri: order.payment_transaction.receipt }} 
+              style={styles.fullReceipt} 
+              resizeMode="contain" 
+            />
+          )}
         </View>
       </Modal>
     </View>
@@ -1001,6 +1143,32 @@ const styles = StyleSheet.create({
   input: { backgroundColor: '#F8FAFC', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'right', fontSize: 14, color: '#1E293B' },
   submitBtn: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 16, borderRadius: 16, marginTop: 10 },
   submitBtnText: { color: '#FFF', fontSize: 15, fontWeight: '800' },
-  hintText: { fontSize: 11, color: '#94A3B8', marginTop: 12, textAlign: 'center', lineHeight: 16 },
-});
+  hintText: { fontSize: 11, color: '#94A3B8', marginTop: 15, textAlign: 'center' },
 
+  /* Payment Section Styles */
+  paymentInfoRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+  paymentMethodLabel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
+  paymentMethodName: { fontSize: 16, fontWeight: '800', color: '#1E293B' },
+  txStatusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, backgroundColor: '#F1F5F9' },
+  txPending: { backgroundColor: '#FFF7ED' },
+  txVerified: { backgroundColor: '#F0FDF4' },
+  txRejected: { backgroundColor: '#FEF2F2' },
+  txStatusText: { fontSize: 13, fontWeight: '700' },
+  receiptPreviewBox: { marginTop: 10, marginBottom: 20 },
+  receiptHint: { fontSize: 13, fontWeight: '700', color: '#64748B', marginBottom: 10, textAlign: 'right' },
+  receiptThumbnailBtn: { height: 180, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9' },
+  receiptThumbnail: { width: '100%', height: '100%' },
+  blurOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center' },
+  maximizeText: { color: '#FFF', fontSize: 14, fontWeight: '700', marginTop: 8 },
+  txActions: { flexDirection: 'row', gap: 12, marginTop: 10 },
+  txBtn: { flex: 1, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  txBtnText: { color: '#FFF', fontSize: 14, fontWeight: '800' },
+  verificationNotes: { marginTop: 15, padding: 12, backgroundColor: '#F8FAFC', borderRadius: 12, borderWidth: 1, borderColor: '#F1F5F9' },
+  notesLabel: { fontSize: 12, fontWeight: '700', color: '#64748B', marginBottom: 4, textAlign: 'right' },
+  notesValue: { fontSize: 13, color: '#1E293B', textAlign: 'right' },
+
+  /* Viewer Modal */
+  viewerBackground: { flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center' },
+  viewerClose: { position: 'absolute', top: 50, right: 20, zIndex: 10 },
+  fullReceipt: { width: width, height: '80%' },
+});

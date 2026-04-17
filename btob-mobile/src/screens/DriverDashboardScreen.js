@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import client from '../api/client';
 import CustomHeader from '../components/CustomHeader';
 
@@ -99,6 +100,7 @@ const DriverOrderCard = ({ order, onUpdateStatus, onOpenMap }) => {
 /* ── Main Dashboard Screen ────────────────────────────────────────── */
 export default function DriverDashboardScreen({ navigation }) {
   const { logout } = useAuth();
+  const { showNotification } = useNotifications();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -176,10 +178,10 @@ export default function DriverDashboardScreen({ navigation }) {
               if (res.data.success) {
                 fetchDashboard(true);
               } else {
-                Alert.alert('تنبيه', res.data.message);
+                showNotification({ title: 'تنبيه', message: res.data.message, type: 'warning' });
               }
             } catch (err) {
-              Alert.alert('خطأ', 'تعذر تحديث الحالة.');
+              showNotification({ title: 'خطأ', message: 'تعذر تحديث الحالة.', type: 'error' });
             }
           } 
         }
@@ -190,7 +192,7 @@ export default function DriverDashboardScreen({ navigation }) {
   const handleOpenMap = (order) => {
     const { latitude, longitude } = order.shipping || {};
     if (!latitude || !longitude) {
-      Alert.alert('تنبيه', 'موقع العميل غير محدد على الخريطة.');
+      showNotification({ title: 'تنبيه', message: 'موقع العميل غير محدد على الخريطة.', type: 'warning' });
       return;
     }
     navigation.navigate('DriverMap', { orderId: order.id });

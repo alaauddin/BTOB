@@ -14,6 +14,10 @@ admin.site.register(Address)
 admin.site.register(Review)
 admin.site.register(OrderNote)
 admin.site.register(ProductAttributeOption)
+admin.site.register(PaymentMethod)
+admin.site.register(SupplierPaymentMethod)
+admin.site.register(PaymentTransaction)
+
 
 @admin.register(BusinessRequest)
 class BusinessRequestAdmin(admin.ModelAdmin):

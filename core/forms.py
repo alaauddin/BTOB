@@ -538,7 +538,7 @@ class SupplierSettingsForm(forms.ModelForm):
         model = Supplier
         fields = [
             'name', 'phone', 'secondary_phone', 'subdomain', 'address', 'city', 'country', 
-            'primary_color', 'secondary_color', 'navbar_color', 
+            'primary_color', 'secondary_color', 'navbar_color', 'navbar_text_color',
             'footer_color', 'text_color', 'accent_color',
             'profile_picture', 'panal_picture', 'latitude', 'longitude', 
             'show_order_amounts', 'show_platform_ads', 'show_system_logo',
@@ -548,30 +548,31 @@ class SupplierSettingsForm(forms.ModelForm):
         ]
         widgets = {
             'name': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'class': 'w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
                 'placeholder': 'اسم المتجر'
             }),
             'phone': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'class': 'w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
                 'placeholder': 'رقم الهاتف'
             }),
             'secondary_phone': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'class': 'w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
                 'placeholder': 'رقم هاتف إضافي (اختياري)'
             }),
             'address': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'class': 'w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
                 'placeholder': 'العنوان التفصيلي'
             }),
             'city': forms.Select(attrs={
-                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm cursor-pointer'
+                'class': 'w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm cursor-pointer'
             }),
             'country': forms.Select(attrs={
-                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm cursor-pointer'
+                'class': 'w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm cursor-pointer'
             }),
             'primary_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
             'secondary_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
             'navbar_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
+            'navbar_text_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
             'footer_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
             'text_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
             'accent_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
@@ -592,7 +593,7 @@ class SupplierSettingsForm(forms.ModelForm):
                 'rows': 4
             }),
             'subdomain': forms.TextInput(attrs={
-                'class': 'w-full pl-4 pr-32 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm text-left',
+                'class': 'w-full pl-4 pr-32 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm text-left',
                 'placeholder': 'mystore',
                 'dir': 'ltr'
             }),
@@ -602,23 +603,23 @@ class SupplierSettingsForm(forms.ModelForm):
                 'rows': 3
             }),
             'facebook_url': forms.URLInput(attrs={
-                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'class': 'w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
                 'placeholder': 'https://facebook.com/yourpage'
             }),
             'instagram_url': forms.URLInput(attrs={
-                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'class': 'w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
                 'placeholder': 'https://instagram.com/yourprofile'
             }),
             'twitter_url': forms.URLInput(attrs={
-                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'class': 'w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
                 'placeholder': 'https://twitter.com/yourprofile'
             }),
             'tiktok_url': forms.URLInput(attrs={
-                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'class': 'w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
                 'placeholder': 'https://tiktok.com/@yourprofile'
             }),
             'currency': forms.Select(attrs={
-                'class': 'w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm cursor-pointer'
+                'class': 'w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm cursor-pointer'
             }),
         }
         labels = {
@@ -630,6 +631,7 @@ class SupplierSettingsForm(forms.ModelForm):
             'primary_color': 'اللون الأساسي',
             'secondary_color': 'اللون الثانوي',
             'navbar_color': 'لون الشريط العلوي',
+            'navbar_text_color': 'لون نصوص الشريط العلوي',
             'footer_color': 'لون التذييل',
             'text_color': 'لون النصوص',
             'accent_color': 'لون التميز',
@@ -647,6 +649,13 @@ class SupplierSettingsForm(forms.ModelForm):
             'tiktok_url': 'رابط تيك توك',
             'currency': 'عملة المتجر'
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Enforce Read-Only mode for the primary work phone at the backend level
+        if 'phone' in self.fields:
+            self.fields['phone'].disabled = True
+            self.fields['phone'].required = False
 
 class DomainOnlyForm(forms.ModelForm):
     class Meta:
@@ -718,3 +727,36 @@ class SupplierAdPlatfromForm(forms.ModelForm):
             if not image.name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
                 raise forms.ValidationError('صيغة الملف غير مدعومة')
         return image
+
+
+class SupplierPaymentMethodForm(forms.ModelForm):
+    class Meta:
+        model = SupplierPaymentMethod
+        fields = ['payment_method', 'account_field_name', 'account_field_value', 'is_active']
+        widgets = {
+            'payment_method': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm cursor-pointer'
+            }),
+            'account_field_name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'placeholder': 'مثال: رقم المحفظة، رقم الحساب'
+            }),
+            'account_field_value': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all outline-none text-sm',
+                'placeholder': 'القيمة (مثال: 77XXXXXXX)'
+            }),
+            'is_active': forms.CheckboxInput(attrs={
+                'class': 'w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-200'
+            })
+        }
+        labels = {
+            'payment_method': 'وسيلة الدفع',
+            'account_field_name': 'اسم حقل الحساب',
+            'account_field_value': 'قيمة الحساب',
+            'is_active': 'نشط'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only show active global payment methods
+        self.fields['payment_method'].queryset = PaymentMethod.objects.filter(is_active=True)

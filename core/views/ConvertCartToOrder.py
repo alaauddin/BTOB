@@ -50,11 +50,29 @@ def checkout_select_address_or_custom_address(request, store_id):
         if form.is_valid():           
             address = form.save(commit=False)
             
+            spm_id = request.POST.get('payment_method_id')
+            spm = None
+            if spm_id and spm_id.isdigit():
+                spm = SupplierPaymentMethod.objects.filter(id=spm_id, supplier=supplier).first()
+
             created_order = Order.objects.create(
                 user=request.user, 
                 total_amount=cart.get_total_after_discount(),
-                delivery_fee=estimated_fee
+                delivery_fee=estimated_fee,
+                selected_payment_method=spm
             )
+            
+            # Handle Receipt Upload during Checkout
+            receipt_file = request.FILES.get('receipt')
+            if spm and receipt_file:
+                from core.models import PaymentTransaction
+                PaymentTransaction.objects.create(
+                    order=created_order,
+                    user=request.user,
+                    supplier_payment_method=spm,
+                    receipt=receipt_file,
+                    status='pending'
+                )
             for cart_item in cart.cart_items.all():
                 order_item = OrderItem.objects.create(
                     order=created_order, 
@@ -88,6 +106,9 @@ def checkout_select_address_or_custom_address(request, store_id):
     else:
         form = ShippingAddressForm()
  
+    # Get available payment methods for the supplier
+    payment_methods = supplier.payment_methods.filter(is_active=True).select_related('payment_method')
+
     return render(request, 'checkout_select_address_or_custom_address.html', {
         'form': form ,
         'cart': cart, 
@@ -96,7 +117,8 @@ def checkout_select_address_or_custom_address(request, store_id):
         'user_address': user_address, 
         'supplier': supplier,
         'estimated_fee': estimated_fee,
-        'estimated_distance': estimated_distance
+        'estimated_distance': estimated_distance,
+        'payment_methods': payment_methods
     })
 
   
@@ -105,11 +127,29 @@ def checkout_select_address_or_custom_address(request, store_id):
 def existing_address(request, store_id):
     supplier = get_object_or_404(Supplier, store_id=store_id)
     cart = Cart.objects.get(user=request.user, supplier=supplier) 
+    spm_id = request.POST.get('payment_method_id')
+    spm = None
+    if spm_id and spm_id.isdigit():
+        spm = SupplierPaymentMethod.objects.filter(id=spm_id, supplier=supplier).first()
+
     order = Order.objects.create(
         user=request.user, 
         total_amount=cart.get_total_after_discount(),
-        delivery_fee=Decimal('0') # Will be updated below
+        delivery_fee=Decimal('0'), # Will be updated below
+        selected_payment_method=spm
     )
+    
+    # Handle Receipt Upload during Checkout
+    receipt_file = request.FILES.get('receipt')
+    if spm and receipt_file:
+        from core.models import PaymentTransaction
+        PaymentTransaction.objects.create(
+            order=order,
+            user=request.user,
+            supplier_payment_method=spm,
+            receipt=receipt_file,
+            status='pending'
+        )
     for cart_item in cart.cart_items.all():
         order_item = OrderItem.objects.create(
             order=order, 

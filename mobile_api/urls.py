@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
 from .core_views import CurrenciesAPIView
 
+
 app_name = 'mobile_api'
 
 router = DefaultRouter()
@@ -12,6 +13,10 @@ router.register(r'categories', views.CategoryViewSet, basename='category')
 router.register(r'products', views.ProductViewSet, basename='product')
 router.register(r'carts', views.CartViewSet, basename='cart')
 router.register(r'orders', views.OrderViewSet, basename='order')
+router.register(r'merchant/wholesale/products', views.WholesaleProductViewSet, basename='wholesale_product')
+router.register(r'merchant/wholesale/suppliers', views.WholesaleSupplierViewSet, basename='wholesale_supplier')
+router.register(r'payment-methods', views.GlobalPaymentMethodViewSet, basename='payment_method')
+router.register(r'merchant/payment-settings', views.MerchantPaymentMethodViewSet, basename='merchant_payment_method')
 
 urlpatterns = [
     # Auth endpoints
@@ -35,8 +40,12 @@ urlpatterns = [
     path('merchant/product-categories/', views.MerchantProductCategoriesAPIView.as_view(), name='merchant_product_categories'),
     path('merchant/profile/', views.MerchantProfileAPIView.as_view(), name='merchant_profile'),
     path('merchant/branding/', views.MerchantBrandingAPIView.as_view(), name='merchant_branding'),
+    path('merchant/generate-ai-colors/', views.GenerateAIColorsAPIView.as_view(), name='merchant_gen_colors'),
     path('merchant/agree-terms/', views.MerchantAgreeTermsAPIView.as_view(), name='merchant_agree_terms'),
     path('merchant/drivers/', views.MerchantDriversAPIView.as_view(), name='merchant_drivers'),
+    path('merchant/verify-payment/', views.MerchantVerifyPaymentAPIView.as_view(), name='merchant_verify_payment'),
+
+    path('merchant/wholesale/products/<int:pk>/inherit/', views.InheritWholesaleProductAPIView.as_view(), name='wholesale_inherit'),
     
     # Driver management endpoints
     path('driver/dashboard/', views.DriverDashboardAPIView.as_view(), name='driver_dashboard'),

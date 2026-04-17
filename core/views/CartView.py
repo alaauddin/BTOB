@@ -63,6 +63,11 @@ class CartView(DetailView):
         
         context['estimated_fee'] = estimated_fee
         context['estimated_distance'] = estimated_distance
+        
+        # Payment Methods
+        from core.models import SupplierPaymentMethod
+        context['payment_methods'] = SupplierPaymentMethod.objects.filter(supplier=supplier, is_active=True)
+        
         return context
 
     def post(self, request, *args, **kwargs):
@@ -74,9 +79,16 @@ class CartView(DetailView):
         if form.is_valid():
             # Create Order
             # Note: Logic adapted from ConvertCartToOrder.checkout_select_address_or_custom_address
+            payment_method_id = request.POST.get('payment_method_id')
+            selected_payment_method = None
+            if payment_method_id and payment_method_id.isdigit():
+                from core.models import SupplierPaymentMethod
+                selected_payment_method = SupplierPaymentMethod.objects.filter(id=payment_method_id, supplier=supplier).first()
+
             order = Order.objects.create(
                 user=request.user, 
-                total_amount=0 # will be calculated in set_total_amount
+                total_amount=0, # will be calculated in set_total_amount
+                selected_payment_method=selected_payment_method
             )
             
             # Create Order Items

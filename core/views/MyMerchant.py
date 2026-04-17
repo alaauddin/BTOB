@@ -21,25 +21,11 @@ logger = logging.getLogger("core.views.MyMerchant")
 
 
 
-@merchant_required
-def my_merchant(request):
-    template_name = 'my_merchant.html'
-
-    # Allow superuser to view other suppliers
-    supplier = get_active_supplier(request)
+def get_dashboard_stats_context(supplier):
+    """ Centralized helper to gather all dashboard statistics and suggestions """
     
-    if not supplier:
-        logger.warning(f"No active supplier found for user {request.user} in my_merchant")
-        if request.user.is_superuser:
-             return redirect('suppliers_list')
-        # Should be caught by decorator, but as fallback
-        return redirect('join_business')
-    
-    # Simple Router Stats
+    # 1. Basic Stats
     orders = Order.objects.filter(order_items__product__supplier=supplier).distinct()
-    import logging
-    logger = logging.getLogger('core')
-    logger.info(f"Accessing merchant dashboard for supplier: {supplier} (ID: {supplier.id})")
     pending_orders = orders.filter(pipeline_status__slug='pending').count()
     total_products = Product.objects.filter(supplier=supplier).count()
     
@@ -56,27 +42,10 @@ def my_merchant(request):
     
     avg_rating = Product.objects.filter(supplier=supplier).aggregate(avg=Avg('review__rating'))['avg'] or 0
 
-    context = {
-        'supplier': supplier,
-        'pending_orders': pending_orders,
-        'total_orders': orders.count(),
-        'total_products': total_products,
-        'total_revenue': total_revenue,
-        'recent_orders_list': recent_orders_list,
-        'top_selling_products': top_selling_products,
-        'avg_rating': avg_rating,
-        'settings_form': SupplierSettingsForm(instance=supplier),
-        'domain_form': DomainOnlyForm(instance=supplier),
-        'branding_form': BrandingOnlyForm(instance=supplier),
-        'location_form': LocationOnlyForm(instance=supplier, prefix='loc'),
-        'currency_form': CurrencyOnlyForm(instance=supplier),
-    }
-    
-    # --- Statistics & Analytics ---
+    # 2. Statistics & Analytics (Last 30 days)
     today = timezone.now().date()
     thirty_days_ago = today - timedelta(days=29)
     
-    # 1. Visitor stats (Last 30 days)
     visitor_stats_qs = WebsiteStatistic.objects.filter(
         supplier=supplier,
         visited_at__date__gte=thirty_days_ago
@@ -86,7 +55,6 @@ def my_merchant(request):
         count=Count('id')
     ).order_by('date')
     
-    # Fill missing dates with 0
     stats_dict = {stat['date'].strftime('%Y-%m-%d'): stat['count'] for stat in visitor_stats_qs}
     visitor_labels = []
     visitor_data = []
@@ -97,23 +65,56 @@ def my_merchant(request):
         visitor_labels.append(ds)
         visitor_data.append(stats_dict.get(ds, 0))
     
-    # 2. Product Views (Top 10)
+    # 3. Product Views (Top 10)
     top_viewed_products = Product.objects.filter(supplier=supplier).order_by('-views_count')[:10]
     product_labels = [p.name for p in top_viewed_products]
     product_views = [p.views_count for p in top_viewed_products]
     
-    # 3. Wholesale Suggestions (Sourcing Hub)
+    # 4. Wholesale Suggestions
     from core.db.wholesale import WholesaleProduct
     wholesale_suggestions = WholesaleProduct.objects.filter(is_active=True).order_by('-created_at')[:5]
 
-    # Add to context after JSON serialization
-    context.update({
+    return {
+        'pending_orders': pending_orders,
+        'total_orders': orders.count(),
+        'total_products': total_products,
+        'total_revenue': total_revenue,
+        'recent_orders_list': recent_orders_list,
+        'top_selling_products': top_selling_products,
+        'avg_rating': avg_rating,
         'visitor_labels_json': json.dumps(visitor_labels),
         'visitor_data_json': json.dumps(visitor_data),
         'product_labels_json': json.dumps(product_labels),
         'product_views_json': json.dumps(product_views),
         'wholesale_suggestions': wholesale_suggestions,
-    })
+    }
+
+
+@merchant_required
+def my_merchant(request):
+    template_name = 'my_merchant.html'
+
+    # Allow superuser to view other suppliers
+    supplier = get_active_supplier(request)
+    
+    if not supplier:
+        logger.warning(f"No active supplier found for user {request.user} in my_merchant")
+        if request.user.is_superuser:
+             return redirect('suppliers_list')
+        # Should be caught by decorator, but as fallback
+        return redirect('join_business')
+    
+    context = {
+        'supplier': supplier,
+        'settings_form': SupplierSettingsForm(instance=supplier),
+        'domain_form': DomainOnlyForm(instance=supplier),
+        'branding_form': BrandingOnlyForm(instance=supplier),
+        'location_form': LocationOnlyForm(instance=supplier, prefix='loc'),
+        'currency_form': CurrencyOnlyForm(instance=supplier),
+    }
+    
+    # Add Statistics Content
+    context.update(get_dashboard_stats_context(supplier))
     
     return render(request, template_name, context)
 
@@ -193,6 +194,7 @@ def update_merchant_settings(request):
         'currency_form': CurrencyOnlyForm(instance=supplier),
         'supplier': supplier
     }
+    context.update(get_dashboard_stats_context(supplier))
     return render(request, 'my_merchant.html', context)
 
 

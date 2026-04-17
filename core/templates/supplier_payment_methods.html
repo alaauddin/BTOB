@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}إدارة وسائل الدفع - {{ supplier.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-methods-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    .payment-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    .method-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.2s;
+    }
+    .method-item:hover {
+        background: #f8fafc;
+    }
+    .method-logo {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        margin-left: 1rem;
+        background: #f1f5f9;
+        border-radius: 8px;
+        padding: 4px;
+    }
+    .method-details {
+        flex: 1;
+    }
+    .method-name {
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0.2rem;
+    }
+    .method-info {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+    .delete-btn {
+        color: #ef4444;
+        background: #fef2f2;
+        padding: 8px;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .delete-btn:hover {
+        background: #fee2e2;
+        transform: scale(1.05);
+    }
+    .add-method-form {
+        padding: 2rem;
+        background: #f8fafc;
+        border-top: 2px dashed #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="payment-methods-card">
+                <div class="payment-header">
+                    <h2 class="fw-bold mb-2">إدارة وسائل الدفع</h2>
+                    <p class="mb-0 opacity-75">قم بإعداد وسائل الدفع التي يمكن لعملائك استخدامها</p>
+                </div>
+                
+                <div class="p-4">
+                    <h4 class="mb-4">وسائل الدفع الحالية</h4>
+                    {% if payment_methods %}
+                        <div class="methods-list">
+                            {% for method in payment_methods %}
+                            <div class="method-item">
+                                <img src="{{ method.payment_method.logo.url }}" alt="{{ method.payment_method.name }}" class="method-logo">
+                                <div class="method-details">
+                                    <div class="method-name">{{ method.payment_method.name }}</div>
+                                    <div class="method-info">
+                                        <span class="badge bg-light text-dark">{{ method.account_field_name }}: {{ method.account_field_value }}</span>
+                                        {% if not method.is_active %}
+                                            <span class="badge bg-warning ms-2">غير نشط</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <a href="{% url 'delete_payment_method' method.id %}" class="delete-btn" onclick="return confirm('هل أنت متأكد من حذف وسيلة الدفع هذه؟')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-wallet fa-3x mb-3 opacity-25"></i>
+                            <p>لم تقم بإضافة أي وسائل دفع بعد.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="add-method-form">
+                    <h4 class="mb-4">إضافة وسيلة دفع جديدة</h4>
+                    <form method="post" class="row g-3">
+                        {% csrf_token %}
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.payment_method.label }}</label>
+                            {{ form.payment_method }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.account_field_name.label }}</label>
+                            {{ form.account_field_name }}
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">{{ form.account_field_value.label }}</label>
+                            {{ form.account_field_value }}
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary w-100 py-3 rounded-xl fw-bold">
+                                <i class="fas fa-plus-circle me-1"></i> حفظ وسيلة الدفع
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="{% url 'my_merchant' %}" class="text-decoration-none text-muted">
+                    <i class="fas fa-arrow-right me-1"></i> العودة للوحة التحكم
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

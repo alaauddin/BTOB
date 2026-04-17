@@ -215,4 +215,62 @@ export default StyleSheet.create({
     },
     btnContent: { flexDirection: "row", alignItems: "center", gap: 12 },
     submitBtnText: { fontSize: 18, fontWeight: "800", color: "#fff" },
+
+    /* Stepper */
+    stepperContainer: {
+        flexDirection: "row", alignItems: "center", justifyContent: "center",
+        marginTop: 15, marginBottom: 10, alignSelf: "flex-end"
+    },
+    stepCircle: {
+        width: 32, height: 32, borderRadius: 16,
+        backgroundColor: "#e2e8f0", justifyContent: "center", alignItems: "center",
+    },
+    activeStep: { backgroundColor: "#0ea5e9" },
+    stepConnector: {
+        width: 40, height: 2, backgroundColor: "#e2e8f0", marginHorizontal: 4
+    },
+
+    /* Payment Methods */
+    paymentContainer: { marginTop: 10 },
+    paymentGrid: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 12, marginBottom: 20 },
+    paymentItem: {
+        width: "48%", padding: 16, borderRadius: 16,
+        backgroundColor: "#fff", borderWidth: 1, borderColor: "#e2e8f0",
+        alignItems: "center", justifyContent: "center", gap: 10
+    },
+    selectedPaymentItem: { borderColor: "#0ea5e9", backgroundColor: "#f0f9ff" },
+    paymentItemText: { fontSize: 14, fontWeight: "700", color: "#64748b", textAlign: "center" },
+    selectedPaymentItemText: { color: "#0ea5e9" },
+    noMethodsText: { textAlign: "right", color: "#64748b", fontSize: 14, fontStyle: "italic" },
+
+    /* Account Details */
+    accountCard: {
+        backgroundColor: "#fff", borderRadius: 16, padding: 16,
+        borderWidth: 1, borderColor: "#0ea5e9", borderStyle: "dashed",
+        marginBottom: 20
+    },
+    accountHeader: { flexDirection: "row-reverse", justifyContent: "space-between", marginBottom: 8 },
+    accountLabel: { fontSize: 13, fontWeight: "700", color: "#64748b" },
+    accountNumber: { fontSize: 20, fontWeight: "800", color: "#0f172a", textAlign: "right" },
+
+    /* Receipt Upload */
+    receiptSection: { marginBottom: 20 },
+    receiptLabel: { fontSize: 15, fontWeight: "800", color: "#334155", textAlign: "right", marginBottom: 10 },
+    uploadBox: {
+        height: 100, borderRadius: 16, backgroundColor: "#fff",
+        borderWidth: 2, borderColor: "#cbd5e1", borderStyle: "dashed",
+        justifyContent: "center", alignItems: "center", gap: 8
+    },
+    uploadText: { fontSize: 13, color: "#94a3b8", fontWeight: "600" },
+    receiptPreview: { flexDirection: "row-reverse", alignItems: "center", gap: 12, width: "100%", paddingHorizontal: 20 },
+    receiptName: { flex: 1, fontSize: 14, color: "#334155", fontWeight: "600", textAlign: "right" },
+    removeReceipt: { padding: 4 },
+
+    /* Final Footer */
+    finalFooter: { flexDirection: "row", alignItems: "center" },
+    backBtn: {
+        flexDirection: "row", alignItems: "center", paddingHorizontal: 16,
+        height: 60, borderRadius: 18, backgroundColor: "#f1f5f9"
+    },
+    backBtnText: { marginLeft: 6, fontSize: 16, color: "#64748b", fontWeight: "700" },
 });

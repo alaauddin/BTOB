@@ -360,7 +360,10 @@ class CartViewSet(viewsets.ModelViewSet):
             request._request.POST = request._request.POST.copy()
             request._request.POST['full_name'] = request.data['full_name']
 
-        result = complete_order_and_notify(request, order, cart, shipping_address, supplier)
+        payment_method_id = request.data.get('payment_method_id')
+        receipt = request.FILES.get('receipt')
+
+        result = complete_order_and_notify(request, order, cart, shipping_address, supplier, payment_method_id, receipt)
         return Response(result)
 
     @action(detail=False, methods=['POST'])
@@ -439,6 +442,9 @@ class CartViewSet(viewsets.ModelViewSet):
         if 'full_name' in request.data:
             request._request.POST = request._request.POST.copy()
             request._request.POST['full_name'] = request.data['full_name']
+
+        payment_method_id = request.data.get('payment_method_id')
+        receipt = request.FILES.get('receipt')
             
-        result = complete_order_and_notify(request, order, cart, shipping_address, supplier)
+        result = complete_order_and_notify(request, order, cart, shipping_address, supplier, payment_method_id, receipt)
         return Response(result)

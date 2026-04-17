@@ -1,18 +1,31 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import client from '../api/client';
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as SecureStore from 'expo-secure-store';
+import client, { setUnauthorizedHandler } from '../api/client';
+import { Alert } from 'react-native';
+import { navigate } from '../navigation/navigationRef';
 
 export const AuthContext = createContext();
-export const useAuth = () => useContext(AuthContext);
+
+export function useAuth() {
+    const context = useContext(AuthContext);
+    if (context === undefined) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+}
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
     // Merchant-scope state
-    const [userScope, setUserScope] = useState('visitor'); // 'visitor' | 'merchant'
+    const [userScope, setUserScope] = useState('visitor'); // 'visitor' | 'merchant' | 'driver'
     const [manageableMerchants, setManageableMerchants] = useState([]);
     const [activeMerchant, setActiveMerchantState] = useState(null);
+    const [biometricsAvailable, setBiometricsAvailable] = useState(false);
+    const [biometricsEnabled, setBiometricsEnabled] = useState(false);
 
     /** true iff the logged-in user has the merchant scope */
     const isMerchant = userScope === 'merchant';
@@ -31,6 +44,15 @@ export const AuthProvider = ({ children }) => {
                         'active_merchant',
                     ]);
 
+                // Check Biometrics Support
+                const hasHardware = await LocalAuthentication.hasHardwareAsync();
+                const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+                setBiometricsAvailable(hasHardware && isEnrolled);
+                
+                // Check if user enabled biometrics
+                const isEnabled = await AsyncStorage.getItem('biometrics_enabled');
+                setBiometricsEnabled(isEnabled === 'true');
+
                 if (token[1] && userData[1]) {
                     setUser(JSON.parse(userData[1]));
                     setUserScope(scopeData[1] || 'visitor');
@@ -43,7 +65,22 @@ export const AuthProvider = ({ children }) => {
             setIsLoading(false);
         };
         bootstrapAsync();
+        
+        // Register the global logout handler for 401 errors
+        setUnauthorizedHandler(() => {
+            handleAutoLogout();
+        });
     }, []);
+
+    const handleAutoLogout = () => {
+        client.notify({
+            title: 'انتهت الجلسة',
+            message: 'انتهت صلاحية الجلسة الخاصة بك. يرجى تسجيل الدخول مرة أخرى للمتابعة.',
+            type: 'warning'
+        });
+        logout();
+        navigate('Home');
+    };
 
     // ── Helpers ────────────────────────────────────────────────────
 
@@ -147,6 +184,59 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    /** Biometric Operations */
+    const enableBiometrics = async (username, password) => {
+        try {
+            await SecureStore.setItemAsync('user_credentials', JSON.stringify({ username, password }));
+            await AsyncStorage.setItem('biometrics_enabled', 'true');
+            setBiometricsEnabled(true);
+            return true;
+        } catch (e) {
+            console.error('Failed to enable biometrics', e);
+            return false;
+        }
+    };
+
+    const disableBiometrics = async () => {
+        try {
+            await SecureStore.deleteItemAsync('user_credentials');
+            await AsyncStorage.setItem('biometrics_enabled', 'false');
+            setBiometricsEnabled(false);
+            return true;
+        } catch (e) {
+            console.error('Failed to disable biometrics', e);
+            return false;
+        }
+    };
+
+    const loginWithBiometrics = async () => {
+        try {
+            const hasHardware = await LocalAuthentication.hasHardwareAsync();
+            const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+            if (!hasHardware || !isEnrolled) {
+                return { success: false, message: 'البصمة غير مدعومة أو غير مفعلة في جهازك' };
+            }
+
+            const result = await LocalAuthentication.authenticateAsync({
+                promptMessage: 'قم بتسجيل الدخول باستخدام البصمة',
+                cancelLabel: 'إلغاء',
+                disableDeviceFallback: false,
+            });
+
+            if (result.success) {
+                const credentials = await SecureStore.getItemAsync('user_credentials');
+                if (credentials) {
+                    const { username, password } = JSON.parse(credentials);
+                    return await login(username, password);
+                }
+            }
+            return { success: false, message: 'فشلت عملية التحقق' };
+        } catch (e) {
+            console.error('Biometric login error', e);
+            return { success: false, message: 'حدث خطأ أثناء المحاولة' };
+        }
+    };
+
     const logout = async () => {
         try {
             await AsyncStorage.multiRemove([
@@ -179,6 +269,12 @@ export const AuthProvider = ({ children }) => {
                 activeMerchant,
                 setActiveMerchant,
                 updateMerchantList,
+                // Biometrics
+                biometricsAvailable,
+                biometricsEnabled,
+                enableBiometrics,
+                disableBiometrics,
+                loginWithBiometrics,
             }}
         >
             {children}

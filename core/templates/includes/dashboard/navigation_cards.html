@@ -1,0 +1,111 @@
+<!-- Navigation Cards Section -->
+<div class="space-y-4">
+    <!-- Sourcing Hub Card (Wholesale) -->
+    {% if supplier.can_buy_wholesale %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <a href="{% url 'wholesale_market' %}" class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-4 shadow-lg shadow-blue-100 flex items-center justify-between hover:scale-[1.01] transition-all group overflow-hidden relative">
+            <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="flex items-center gap-4 relative z-10">
+                <div class="w-12 h-12 bg-white/20 text-white rounded-2xl flex items-center justify-center text-xl backdrop-blur-sm">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <div class="text-right">
+                    <h3 class="font-black text-white">مركز التوريد (الجملة)</h3>
+                    <p class="text-[10px] text-blue-100">ابحث عن منتجات لبيعها في متجرك بدون مخزون</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 relative z-10">
+                <i class="fas fa-chevron-left text-white/50 text-xs"></i>
+            </div>
+        </a>
+
+        <!-- Smart Suggestions Trigger Card -->
+        <button onclick="triggerWholesaleSmartPopup()" class="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:scale-[1.01] transition-all group">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-xl group-hover:bg-amber-100 transition-colors">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <div class="text-right">
+                    <h3 class="font-black text-gray-900">اقتراحات ذكية</h3>
+                    <p class="text-[10px] text-gray-400">منتجات مقترحة تناسب تخصص متجرك</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="bg-amber-100 text-amber-600 text-[10px] font-black px-2.5 py-1 rounded-full">جديد</span>
+                <i class="fas fa-chevron-left text-gray-300 text-xs"></i>
+            </div>
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Orders Card -->
+    <a href="{% url 'merchant_orders' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" 
+       class="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:scale-[1.01] transition-all">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="text-right">
+                <h3 class="font-black text-gray-900">إدارة الطلبات</h3>
+                <p class="text-xs text-gray-400">متابعة الطلبات، تحديث الحالات، وإدارة الفواتير</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            {% if pending_orders > 0 %}
+            <span class="bg-orange-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full">{{ pending_orders }} معلق</span>
+            {% endif %}
+            <i class="fas fa-chevron-left text-gray-300 text-xs"></i>
+        </div>
+    </a>
+    
+    <!-- Products Card -->
+    <a href="{% url 'merchant_products' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" 
+       class="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:scale-[1.01] transition-all">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center text-xl">
+                <i class="fas fa-box"></i>
+            </div>
+            <div class="text-right">
+                <h3 class="font-black text-gray-900">المنتجات </h3>
+                <p class="text-xs text-gray-400">إضافة منتجات، تعديل الأسعار، وإدارة العروض</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="bg-emerald-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full">{{ total_products }} منتج</span>
+            <i class="fas fa-chevron-left text-gray-300 text-xs"></i>
+        </div>
+    </a>
+
+    <!-- Marketing Card -->
+    <a href="{% url 'merchant_marketing' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" 
+       class="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:scale-[1.01] transition-all">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-xl">
+                <i class="fas fa-bullhorn"></i>
+            </div>
+            <div class="text-right">
+                <h3 class="font-black text-gray-900">التسويق والإعلانات</h3>
+                <p class="text-xs text-gray-400">إدارة الإعلانات، الترويجات، والوصول للعملاء</p>
+            </div>
+        </div>
+        <i class="fas fa-chevron-left text-gray-300 text-xs"></i>
+    </a>
+
+    <!-- Academy Card -->
+    <a href="{% url 'academy_home' %}{% if request.GET.supplier_id %}?supplier_id={{ supplier.id }}{% endif %}" 
+       class="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:scale-[1.01] transition-all">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="text-right">
+                <h3 class="font-black text-gray-900 text-sm">أكاديمية التجار</h3>
+                <p class="text-[10px] text-gray-400">دورات تعليمية احترافية لتطوير مهاراتك</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="bg-blue-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full">إصدار جديد</span>
+            <i class="fas fa-chevron-left text-gray-300 text-xs"></i>
+        </div>
+    </a>
+</div>

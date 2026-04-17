@@ -15,6 +15,7 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import AuthModal from "./AuthModal";
+import Logo from "./Logo";
 
 /**
  * CustomHeader — self-managing app header.
@@ -155,11 +156,7 @@ export default function CustomHeader() {
                 {activeMerchant.name}
               </Text>
             ) : (
-              <Image
-                source={require("../../assets/images/logo.png")}
-                style={styles.logo}
-                resizeMode="contain"
-              />
+              <Logo size={100} />
             )}
           </View>
 

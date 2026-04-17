@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
+import Logo from "./Logo";
 
 export default function AuthModal({ visible, onClose, onSuccess }) {
   const { unifiedLoginPhone, login } = useAuth();
@@ -126,10 +127,7 @@ export default function AuthModal({ visible, onClose, onSuccess }) {
             <View style={styles.modalContent}>
               {/* Logo Header Header */}
               <View style={styles.logoContainer}>
-                <Image
-                  source={require("../../assets/images/logo.png")}
-                  style={styles.logoImage}
-                />
+                <Logo size={45} />
               </View>
 
               {/* Close Button */}

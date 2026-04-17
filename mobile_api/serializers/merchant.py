@@ -11,7 +11,7 @@ class MerchantMiniSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Supplier
-        fields = ['id', 'name', 'store_id', 'profile_picture', 'panal_picture', 'primary_color', 'latitude', 'longitude']
+        fields = ['id', 'name', 'store_id', 'profile_picture', 'panal_picture', 'primary_color', 'latitude', 'longitude', 'can_buy_wholesale']
 
     def _abs(self, obj, field_name):
         f = getattr(obj, field_name, None)
@@ -48,7 +48,8 @@ class MerchantProfileSerializer(serializers.ModelSerializer):
             'primary_color', 'secondary_color', 'navbar_color', 'footer_color',
             'text_color', 'accent_color',
             'return_policy', 'footer_description',
-            'facebook_url', 'instagram_url', 'twitter_url', 'tiktok_url'
+            'facebook_url', 'instagram_url', 'twitter_url', 'tiktok_url',
+            'can_buy_wholesale'
         ]
         read_only_fields = ['id', 'store_id', 'profile_picture', 'panal_picture']
 
@@ -127,6 +128,7 @@ class MerchantOrderSerializer(serializers.ModelSerializer):
     assigned_driver = serializers.SerializerMethodField()
     available_drivers = serializers.SerializerMethodField()
     enable_delivery_drivers = serializers.SerializerMethodField()
+    payment_transaction = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -135,6 +137,7 @@ class MerchantOrderSerializer(serializers.ModelSerializer):
             'status_name', 'status_slug', 'merchant', 'items', 'shipping',
             'workflow_steps', 'current_priority', 'current_requires_driver',
             'assigned_driver', 'available_drivers', 'enable_delivery_drivers',
+            'payment_transaction',
         ]
 
     def get_customer_name(self, obj):
@@ -223,6 +226,18 @@ class MerchantOrderSerializer(serializers.ModelSerializer):
             'latitude': addr.latitude,
             'longitude': addr.longitude,
         }
+
+    def get_payment_transaction(self, obj):
+        from .payment import PaymentTransactionSerializer
+        tx = getattr(obj, 'payment_transaction', None)
+        if not tx:
+            # Fallback for OneToOneField if not prefetched or accessed via related name
+            from core.models import PaymentTransaction
+            tx = PaymentTransaction.objects.filter(order=obj).first()
+        
+        if tx:
+            return PaymentTransactionSerializer(tx, context=self.context).data
+        return None
 
 class MerchantProductSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField(read_only=True)

@@ -7,7 +7,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from './MapModule';
 import { LinearGradient } from 'expo-linear-gradient';
 import client from '../api/client';
 import { useAuth } from '../context/AuthContext';

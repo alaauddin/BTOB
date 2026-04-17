@@ -528,3 +528,106 @@ class MerchantDriversAPIView(APIView):
             })
         except Exception as e:
             return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+import base64
+import json
+import os
+import openai
+
+class GenerateAIColorsAPIView(APIView):
+    """
+    Mobile API view for merchants to generate brand colors from their logo using AI.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        merchant_id = request.data.get('merchant_id')
+        
+        # Verify access
+        supplier, err = _assert_merchant_access(request.user, merchant_id)
+        if err: return err
+
+        logo_file = request.FILES.get('logo')
+        base64_image = None
+
+        if logo_file:
+            # Read and encode uploaded image to base64
+            try:
+                image_data = logo_file.read()
+                base64_image = base64.b64encode(image_data).decode('utf-8')
+            except Exception as e:
+                return Response({'error': f'Failed to process uploaded image: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        elif supplier.profile_picture:
+            # Re-use existing profile picture
+            try:
+                if hasattr(supplier.profile_picture, 'path') and os.path.exists(supplier.profile_picture.path):
+                    with open(supplier.profile_picture.path, "rb") as image_file:
+                        base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+                else:
+                    # If using cloud storage (S3), we would need to fetch it. 
+                    # For local storage, we can use the path.
+                    # Fallback to fetching via URL if path is not local
+                    import requests
+                    response = requests.get(request.build_absolute_uri(supplier.profile_picture.url))
+                    base64_image = base64.b64encode(response.content).decode('utf-8')
+            except Exception as e:
+                return Response({'error': f'Failed to process existing logo: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        if not base64_image:
+            return Response({'error': 'No logo provided or found on profile'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Initialize OpenAI Client
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            return Response({'error': 'OpenAI API key not configured on server'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+        client_ai = openai.OpenAI(api_key=api_key)
+
+
+        prompt = (
+            """
+                ### ROLE: Senior UI/UX Engineer (E-commerce Specialist)
+                ### TASK: Analyze the uploaded logo and extract a 7-color high-contrast palette.
+                ### STRICT JSON STRUCTURE:
+                {
+                "primary_color": "Hex",
+                "secondary_color": "Hex",
+                "navbar_color": "Hex",
+                "navbar_text_color": "Hex",
+                "footer_color": "Hex",
+                "text_color": "Hex",
+                "accent_color": "Hex"
+                }
+            """
+        )
+
+        try:
+            response = client_ai.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{base64_image}",
+                                },
+                            },
+                        ],
+                    }
+                ],
+                max_tokens=300,
+                response_format={"type": "json_object"}
+            )
+            
+            colors_json = json.loads(response.choices[0].message.content)
+            
+            return Response({
+                'success': True,
+                'colors': colors_json
+            })
+
+        except Exception as e:
+            return Response({'error': f'AI Generation failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

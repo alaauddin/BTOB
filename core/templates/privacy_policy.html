@@ -140,10 +140,10 @@
                         <h2 class="section-title">تواصل معنا</h2>
                         <p>إذا كانت لديك أي أسئلة حول سياسة الخصوصية، يمكنك التواصل معنا عبر:</p>
                         <div class="contact-info mt-4 space-y-2">
-                            {% if system_settings.company_email %}
+                            {% if supplier.user.email or system_settings.company_email %}
                             <p class="flex items-center gap-2">
                                 <i class="fas fa-envelope text-[var(--primary-color)]"></i>
-                                <span>{{ system_settings.company_email }}</span>
+                                <span>{{ supplier.user.email|default:system_settings.company_email }}</span>
                             </p>
                             {% endif %}
                             {% if system_settings.whatsapp_number %}

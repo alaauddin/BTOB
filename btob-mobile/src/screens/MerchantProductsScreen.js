@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 
 const { width } = Dimensions.get('window');
 
@@ -20,6 +21,7 @@ const FILTERS = [
 
 export default function MerchantProductsScreen({ navigation }) {
   const { activeMerchant } = useAuth();
+  const { showNotification } = useNotifications();
   const primaryColor = activeMerchant?.primary_color || '#2B5876';
 
   const [products, setProducts] = useState([]);
@@ -37,7 +39,7 @@ export default function MerchantProductsScreen({ navigation }) {
     try {
       const prodRes = await client.get('/merchant/products/', {
         params: {
-          merchant_id: activeMerchant.id,
+          merchant_id: activeMerchant?.id,
           q: searchQuery,
           category_id: selectedCategoryId,
           status: activeTab
@@ -55,7 +57,7 @@ export default function MerchantProductsScreen({ navigation }) {
       }
     } catch (error) {
       console.error('Fetch error', error);
-      Alert.alert('خطأ', 'فشل في تحميل البيانات');
+      showNotification({ title: 'خطأ', message: 'فشل في تحميل البيانات', type: 'error' });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -84,7 +86,7 @@ export default function MerchantProductsScreen({ navigation }) {
         fetchData(true);
       }
     } catch (e) {
-      Alert.alert('خطأ', 'فشل في تحديث الحالة');
+      showNotification({ title: 'خطأ', message: 'فشل في تحديث الحالة', type: 'error' });
     }
   };
 
@@ -99,7 +101,7 @@ export default function MerchantProductsScreen({ navigation }) {
             const res = await client.delete('/merchant/products/', { params: { product_id: productId } });
             if (res.data.success) fetchData(true);
           } catch (e) {
-            Alert.alert('خطأ', 'فشل الحذف');
+            showNotification({ title: 'خطأ', message: 'فشل الحذف', type: 'error' });
           }
         }
       }

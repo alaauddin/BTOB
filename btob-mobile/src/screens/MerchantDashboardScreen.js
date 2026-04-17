@@ -292,6 +292,12 @@ export default function MerchantDashboardScreen({ navigation }) {
             icon="grid" label="المتجر" color="#10B981"
             onPress={() => navigation.navigate('StoreView', { storeId: merchantInfo?.store_id || activeMerchant?.store_id })}
           />
+          {activeMerchant?.can_buy_wholesale && (
+            <QuickAction
+              icon="shopping-cart" label="سوق الجملة" color="#8B5CF6"
+              onPress={() => navigation.navigate('WholesaleMarket')}
+            />
+          )}
         </View>
         <View style={[styles.actionsRow, { marginTop: 12 }]}>
           <QuickAction

@@ -36,3 +36,4 @@ from core.db.business import BusinessRequest  # noqa: F401
 from core.db.analytics import WebsiteStatistic, WhatsAppInquiryClick  # noqa: F401
 from core.db.delivery_driver import DeliveryDriver, DriverLocation  # noqa: F401
 from core.db.academy import Course, Chapter, Lesson, UserLessonProgress  # noqa: F401
+from core.db.payment import PaymentMethod, SupplierPaymentMethod, PaymentTransaction  # noqa: F401

@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { 
+    View, Text, TextInput, TouchableOpacity, 
+    StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView 
+} from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import client from '../api/client';
+import { useNotifications } from '../context/NotificationContext';
+import Logo from '../components/Logo';
 
 export default function SignupScreen({ navigation }) {
     const [username, setUsername] = useState('');
     const [firstName, setFirstName] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const { showNotification } = useNotifications();
 
     const handleSignup = async () => {
         if (!username || !password) {
-            Alert.alert('Error', 'Username and password are required.');
+            showNotification({ title: 'خطأ', message: 'اسم المستخدم وكلمة المرور مطلوبان.', type: 'error' });
             return;
         }
 
@@ -23,124 +30,168 @@ export default function SignupScreen({ navigation }) {
             });
 
             if (response.data.success) {
-                Alert.alert('Success', 'Account created! Please log in.', [
-                    { text: 'OK', onPress: () => navigation.navigate('Login') }
-                ]);
+                showNotification({ title: 'نجاح', message: 'تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن.', type: 'success' });
+                navigation.navigate('Login');
             } else {
-                Alert.alert('Error', response.data.message || 'Signup failed');
+                showNotification({ title: 'خطأ', message: response.data.message || 'فشل إنشاء الحساب', type: 'error' });
             }
         } catch (error) {
-            Alert.alert('Error', error.response?.data?.message || 'Error connecting to server');
+            showNotification({ title: 'خطأ', message: error.response?.data?.message || 'حدث خطأ في الاتصال بالخادم', type: 'error' });
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Create Account</Text>
+        <KeyboardAvoidingView 
+            style={styles.root}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+            <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+                <Logo size={140} style={styles.logo} />
+                
+                <Text style={styles.title}>إنشاء حساب جديد</Text>
+                <Text style={styles.subtitle}>انضم إلى منصة رواج ووسع نطاق أعمالك</Text>
 
-            <View style={styles.inputContainer}>
-                <Text style={styles.label}>Phone Number (Username)</Text>
-                <TextInput
-                    style={styles.input}
-                    value={username}
-                    onChangeText={setUsername}
-                    autoCapitalize="none"
-                    keyboardType="phone-pad"
-                />
-            </View>
+                <View style={styles.field}>
+                    <Text style={styles.label}>رقم الهاتف (اسم المستخدم)</Text>
+                    <View style={styles.inputWrap}>
+                        <Feather name="phone" size={16} color="#94A3B8" style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            value={username}
+                            onChangeText={setUsername}
+                            autoCapitalize="none"
+                            keyboardType="phone-pad"
+                            placeholder="77XXXXXXX"
+                            placeholderTextColor="#CBD5E1"
+                            textAlign="right"
+                        />
+                    </View>
+                </View>
 
-            <View style={styles.inputContainer}>
-                <Text style={styles.label}>Full Name (Optional)</Text>
-                <TextInput
-                    style={styles.input}
-                    value={firstName}
-                    onChangeText={setFirstName}
-                />
-            </View>
+                <View style={styles.field}>
+                    <Text style={styles.label}>الاسم الكامل (اختياري)</Text>
+                    <View style={styles.inputWrap}>
+                        <Feather name="user" size={16} color="#94A3B8" style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            value={firstName}
+                            onChangeText={setFirstName}
+                            placeholder="أدخل اسمك الكامل"
+                            placeholderTextColor="#CBD5E1"
+                            textAlign="right"
+                        />
+                    </View>
+                </View>
 
-            <View style={styles.inputContainer}>
-                <Text style={styles.label}>Password</Text>
-                <TextInput
-                    style={styles.input}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                />
-            </View>
+                <View style={styles.field}>
+                    <Text style={styles.label}>كلمة المرور</Text>
+                    <View style={styles.inputWrap}>
+                        <Feather name="lock" size={16} color="#94A3B8" style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry
+                            placeholder="أدخل كلمة المرور"
+                            placeholderTextColor="#CBD5E1"
+                            textAlign="right"
+                        />
+                    </View>
+                </View>
 
-            <TouchableOpacity
-                style={styles.button}
-                onPress={handleSignup}
-                disabled={loading}
-            >
-                {loading ? (
-                    <ActivityIndicator color="#fff" />
-                ) : (
-                    <Text style={styles.buttonText}>Sign Up</Text>
-                )}
-            </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.btn, loading && { opacity: 0.7 }]}
+                    onPress={handleSignup}
+                    disabled={loading}
+                >
+                    {loading ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <Text style={styles.btnText}>إنشاء الحساب</Text>
+                    )}
+                </TouchableOpacity>
 
-            <TouchableOpacity
-                style={styles.linkButton}
-                onPress={() => navigation.goBack()}
-            >
-                <Text style={styles.linkText}>Already have an account? Log in</Text>
-            </TouchableOpacity>
-        </View>
+                <TouchableOpacity
+                    style={styles.linkBtn}
+                    onPress={() => navigation.goBack()}
+                >
+                    <Text style={styles.linkText}>لديك حساب بالفعل؟ تسجيل الدخول</Text>
+                </TouchableOpacity>
+            </ScrollView>
+        </KeyboardAvoidingView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 24,
-        backgroundColor: '#f8f9fa',
-        justifyContent: 'center',
+    root: { flex: 1, backgroundColor: '#F8FAFC' },
+    container: { padding: 28, paddingTop: 60 },
+    logo: {
+        alignSelf: 'center',
+        marginBottom: 24,
     },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#343a40',
-        marginBottom: 40,
-        textAlign: 'center',
+    title: { 
+        fontSize: 26, 
+        fontWeight: '800', 
+        color: '#0F172A', 
+        textAlign: 'center', 
+        marginBottom: 8 
     },
-    inputContainer: {
-        marginBottom: 20,
+    subtitle: { 
+        fontSize: 14, 
+        color: '#64748B', 
+        textAlign: 'center', 
+        marginBottom: 36 
     },
-    label: {
-        fontSize: 14,
-        color: '#495057',
-        marginBottom: 8,
-        fontWeight: '600',
+    field: { marginBottom: 20 },
+    label: { 
+        fontSize: 13, 
+        fontWeight: '600', 
+        color: '#475569', 
+        marginBottom: 8, 
+        textAlign: 'right' 
     },
-    input: {
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#ced4da',
-        borderRadius: 8,
-        padding: 12,
-        fontSize: 16,
-    },
-    button: {
-        backgroundColor: '#28a745',
-        padding: 16,
-        borderRadius: 8,
+    inputWrap: {
+        flexDirection: 'row', 
         alignItems: 'center',
-        marginTop: 10,
+        backgroundColor: '#fff', 
+        borderWidth: 1.5, 
+        borderColor: '#E2E8F0',
+        borderRadius: 12, 
+        paddingHorizontal: 12, 
+        height: 52,
     },
-    buttonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
+    inputIcon: { marginRight: 8 },
+    input: { 
+        flex: 1, 
+        fontSize: 15, 
+        color: '#0F172A' 
     },
-    linkButton: {
-        marginTop: 20,
+    btn: {
+        backgroundColor: '#2B5876', 
+        paddingVertical: 16,
+        borderRadius: 14, 
         alignItems: 'center',
+        marginTop: 12, 
+        marginBottom: 24,
+        shadowColor: '#2B5876', 
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3, 
+        shadowRadius: 8, 
+        elevation: 6,
     },
-    linkText: {
-        color: '#007bff',
-        fontSize: 14,
+    btnText: { 
+        color: '#fff', 
+        fontSize: 16, 
+        fontWeight: '700' 
+    },
+    linkBtn: { 
+        alignItems: 'center' 
+    },
+    linkText: { 
+        color: '#2B5876', 
+        fontSize: 14, 
+        fontWeight: '600' 
     },
 });

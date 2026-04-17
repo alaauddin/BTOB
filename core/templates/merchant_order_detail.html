@@ -698,6 +698,49 @@
             <div class="glass-card">
                 <h3 class="section-title"><i class="fas fa-bolt"></i> إجراءات سريعة</h3>
                 
+                {% if order.selected_payment_method %}
+                <div class="mb-4">
+                    <label class="form-label fw-bold small text-uppercase">التحقق من الدفع</label>
+                    <div class="p-3 rounded-3 border bg-light">
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="{{ order.selected_payment_method.payment_method.logo.url }}" style="height: 24px; margin-left: 8px;">
+                            <span class="small fw-bold">{{ order.selected_payment_method.payment_method.name }}</span>
+                        </div>
+                        
+                        {% if order.payment_transaction %}
+                            <div class="mb-2">
+                                <a href="{{ order.payment_transaction.receipt.url }}" target="_blank" class="d-block mb-2">
+                                    <img src="{{ order.payment_transaction.receipt.url }}" class="img-fluid rounded border" style="max-height: 100px;">
+                                </a>
+                                <span class="badge {% if order.payment_transaction.status == 'pending' %}bg-info{% elif order.payment_transaction.status == 'verified' %}bg-success{% else %}bg-danger{% endif %} w-100 py-2">
+                                    حالة الدفع: {{ order.payment_transaction.get_status_display }}
+                                </span>
+                            </div>
+                            
+                            {% if order.payment_transaction.status == 'pending' %}
+                            <div class="d-flex gap-2">
+                                <form method="post" action="{% url 'verify_payment' order.payment_transaction.id %}" class="flex-grow-1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">تفعيل</button>
+                                </form>
+                                <form method="post" action="{% url 'verify_payment' order.payment_transaction.id %}" class="flex-grow-1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject">
+                                    <button type="submit" class="btn btn-danger btn-sm w-100 fw-bold">رفض</button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="small text-muted py-2">
+                                <i class="fas fa-info-circle me-1"></i> بانتظار رفع العميل للإيصال
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr>
+                {% endif %}
+
                 {% if order.get_next_status %}
                 <form id="nextStepForm" method="post" action="{% url 'update_order_status' order.id %}{% if request.GET.supplier_id %}?supplier_id={{ request.GET.supplier_id }}{% endif %}" class="mb-4">
                         {% if request.GET.supplier_id %}

@@ -27,6 +27,12 @@ class Order(models.Model):
     )
     is_stock_decreased = models.BooleanField(default=False, verbose_name="تم تقليل المخزون")
     cancellation_reason = models.TextField(blank=True, null=True, verbose_name="سبب الإلغاء")
+    selected_payment_method = models.ForeignKey(
+        'SupplierPaymentMethod', on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='orders',
+        verbose_name="وسيلة الدفع المختارة"
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

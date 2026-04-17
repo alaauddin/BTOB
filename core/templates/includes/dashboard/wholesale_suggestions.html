@@ -1,0 +1,102 @@
+<div id="wholesale-smart-popup" class="fixed inset-0 hidden items-start justify-center p-4 sm:p-6 overflow-y-auto" style="z-index: 9000 !important;">
+    <!-- Backdrop with explicit z-index -->
+    <div class="fixed inset-0 bg-slate-900/60 transition-opacity z-10" onclick="closeSmartSuggestionsPopup()"></div>
+    
+    <!-- Content Box with explicit z-index and mirrored structural classes -->
+    <div class="bg-white w-full max-w-4xl rounded-[32px] shadow-2xl relative z-20 overflow-hidden flex flex-col animate-slide-up mt-8 sm:mt-16 mb-8">
+        <!-- Header -->
+        <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-30">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-primary-bg-medium" style="background-color: var(--primary-bg-soft); color: var(--primary-base);">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-gray-900">اقتراحات ذكية</h3>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">منتجات مقترحة تناسب تخصص متجرك</p>
+                </div>
+            </div>
+            <button onclick="closeSmartSuggestionsPopup()" class="w-10 h-10 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center hover:bg-gray-100 transition-all border border-gray-100">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Body -->
+        <div class="p-3 sm:p-6 overflow-y-auto bg-gray-50/30 custom-scrollbar flex-grow max-h-[70vh]">
+            {% if wholesale_suggestions %}
+            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+                {% for p in wholesale_suggestions %}
+                <div class="bg-white p-3 sm:p-4 rounded-[24px] sm:rounded-[28px] border border-slate-100 group transition-all duration-500 hover:border-primary-base/20 hover:shadow-2xl hover:shadow-primary-base/10 flex flex-col h-full">
+                    <!-- Image Container -->
+                    <div class="aspect-square rounded-xl sm:rounded-2xl overflow-hidden mb-3 sm:mb-4 relative bg-slate-50 flex-shrink-0">
+                        <img src="{{ p.image.url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" loading="lazy">
+                        
+                        <!-- Premium Profit Badge -->
+                        <div class="absolute top-2 right-2 left-2 flex justify-end">
+                            <div class="shadow-lg flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-lg sm:rounded-xl backdrop-blur-md" style="background-color: #f59e0b !important; border: 1px solid rgba(255,255,255,0.4) !important;">
+                                <span class="font-black" style="color: white !important; font-size: 10px !important; line-height: 1 !important;">+{{ p.potential_profit|floatformat:0 }}</span>
+                                <span class="font-bold whitespace-nowrap" style="color: white !important; font-size: 8px !important; line-height: 1 !important;">ربح متوقع</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info Area -->
+                    <div class="mb-2 sm:mb-4 min-h-[32px] sm:min-h-[48px] flex-grow">
+                        <h4 class="text-[10px] sm:text-[11px] font-black text-slate-800 leading-snug line-clamp-2 transition-colors group-hover:text-primary-base">{{ p.name }}</h4>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-3 sm:mb-4 px-1">
+                        <div class="flex flex-col">
+                            <span class="text-[8px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider">سعر الجملة</span>
+                            <span class="text-[10px] sm:text-xs font-black" style="color: var(--primary-base);">{{ p.sale_price|floatformat:0 }} <small class="text-[7px] sm:text-[8px] opacity-70">{{ supplier.currency }}</small></span>
+                        </div>
+                        <div class="w-1.5 h-1.5 rounded-full bg-slate-100 hidden sm:block"></div>
+                    </div>
+
+                    <button onclick="inheritProduct(this, {{ p.id }}, '{{ p.name }}', {{ p.sale_price }})" class="w-full py-2.5 sm:py-3.5 text-white rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-black transition-all flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg shadow-primary-bg-medium hover:scale-[1.02] active:scale-95 flex-shrink-0" style="background-color: var(--primary-base);">
+                        <i class="fas fa-plus-circle text-xs sm:text-sm"></i>
+                        <span>إضافة للمتجر</span>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-16">
+                <div class="w-24 h-24 bg-white shadow-xl rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6 text-gray-200">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <h4 class="text-lg font-black text-gray-800 mb-2">لا توجد اقتراحات حالياً</h4>
+                <p class="text-xs text-gray-400">سنقوم بإخطارك فور توفر صفقات رابحة لمتجرك</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 sm:p-6 border-t border-gray-100 bg-white flex-shrink-0 sticky bottom-0">
+            <a href="{% url 'wholesale_market' %}" class="w-full py-3.5 sm:py-4 flex items-center justify-center rounded-xl sm:rounded-2xl text-[10px] sm:text-[11px] font-black transition-all hover:translate-y-[-2px] active:translate-y-[0] shadow-sm" style="background-color: var(--primary-bg-soft); color: var(--primary-base); border: 1px dashed var(--primary-base);">
+                <i class="fas fa-store-alt me-2"></i> استكشف سوق الجملة بالكامل
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function triggerWholesaleSmartPopup() {
+        const modal = document.getElementById('wholesale-smart-popup');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            if (typeof toggleModalFocus === 'function') toggleModalFocus(true);
+        }
+    }
+
+    function closeSmartSuggestionsPopup() {
+        const modal = document.getElementById('wholesale-smart-popup');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+            if (typeof toggleModalFocus === 'function') toggleModalFocus(false);
+        }
+    }
+</script>
