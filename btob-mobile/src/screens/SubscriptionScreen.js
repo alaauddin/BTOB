@@ -38,7 +38,7 @@ const PlanCard = ({ plan, isSelected, onSelect, primaryColor }) => {
             <Text style={styles.planDuration}>{plan.duration_days} يوم</Text>
          </View>
          <View style={styles.planPriceWrap}>
-            <Text style={[styles.planPrice, { color: primaryColor }]}>{parseFloat(plan.price).toLocaleString()} د.ك</Text>
+            <Text style={[styles.planPrice, { color: primaryColor }]}>{parseFloat(plan.price).toLocaleString()} {plan.currency}</Text>
          </View>
       </View>
       

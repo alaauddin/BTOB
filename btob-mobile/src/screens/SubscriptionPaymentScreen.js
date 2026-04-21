@@ -167,7 +167,9 @@ export default function SubscriptionPaymentScreen({ route, navigation }) {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.summaryCard}>
           <Text style={styles.summaryLabel}>باقة {subscription.plan_name}</Text>
-          <Text style={[styles.summaryAmount, { color: BRAND.colors.primary }]}>{subscription.plan_price} د.ك</Text>
+          <Text style={[styles.summaryAmount, { color: BRAND.colors.primary }]}>
+            {subscription.plan_price} {subscription.plan_currency}
+          </Text>
         </View>
 
         <Text style={styles.sectionTitle}>اختر طريقة الدفع</Text>

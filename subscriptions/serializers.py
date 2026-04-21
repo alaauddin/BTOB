@@ -25,11 +25,13 @@ class PlanSerializer(serializers.ModelSerializer):
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     plan_name = serializers.CharField(source='plan.name', read_only=True)
+    plan_price = serializers.ReadOnlyField(source='plan.price', read_only=True)
+    plan_currency = serializers.ReadOnlyField(source='plan.currency', read_only=True)
     days_left = serializers.SerializerMethodField()
 
     class Meta:
         model = Subscription
-        fields = ['id', 'plan', 'plan_name', 'start_date', 'end_date', 'status', 'is_trial', 'days_left']
+        fields = ['id', 'plan', 'plan_name', 'plan_price', 'plan_currency', 'start_date', 'end_date', 'status', 'is_trial', 'days_left']
 
     def get_days_left(self, obj):
         from django.utils import timezone
