@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
-import styles from './CheckoutStyles';
+import { getCheckoutStyles } from './CheckoutStyles';
 
 const DEFAULT_LAT = 15.3694;
 const DEFAULT_LNG = 44.191;
 
-export default function TabHeader({ activeTab, setActiveTab, setFormError, setUserTabInteracted, savedAddress, selectedLocation, requestCurrentLocation }) {
+export default function TabHeader({ activeTab, setActiveTab, setFormError, setUserTabInteracted, savedAddress, selectedLocation, requestCurrentLocation, primaryColor, theme }) {
+    const styles = useMemo(() => getCheckoutStyles(theme), [theme]);
     return (
         <View style={styles.tabsWrapper}>
             <View style={styles.tabsContainer}>
@@ -22,7 +23,7 @@ export default function TabHeader({ activeTab, setActiveTab, setFormError, setUs
                     }}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
-                    <Ionicons name="location" size={20} color={activeTab === "new" ? "#0ea5e9" : "#64748b"} />
+                    <Ionicons name="location" size={20} color={activeTab === "new" ? primaryColor : "#64748b"} />
                     <Text style={[styles.tabText, activeTab === "new" && styles.activeTabText]}>عنوان جديد</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -38,7 +39,7 @@ export default function TabHeader({ activeTab, setActiveTab, setFormError, setUs
                     }}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
-                    <Ionicons name="home" size={20} color={activeTab === "saved" ? "#0ea5e9" : "#64748b"} />
+                    <Ionicons name="home" size={20} color={activeTab === "saved" ? primaryColor : "#64748b"} />
                     <Text style={[styles.tabText, activeTab === "saved" && styles.activeTabText]}>العنوان المحفوظ</Text>
                 </TouchableOpacity>
             </View>

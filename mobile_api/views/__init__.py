@@ -3,7 +3,7 @@ from .auth import (
 )
 from .buyer import (
     HomeAPIView, StoreProfileAPIView, SupplierViewSet, 
-    ProductViewSet, CategoryViewSet
+    ProductViewSet, CategoryViewSet, ToggleWishlistAPIView, WishlistStatusAPIView
 )
 from .cart import CartViewSet
 from .orders import OrderViewSet

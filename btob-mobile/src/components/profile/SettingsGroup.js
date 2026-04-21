@@ -18,7 +18,7 @@ const SettingsGroup = ({ title, icon, iconColor, children, headerAction, fadeAni
         transform: [{ 
           translateY: fadeAnim.interpolate({ 
             inputRange: [0, 1], 
-            outputRange: [20, 0] 
+            outputRange: [30, 0] 
           }) 
         }] 
       } : {} 
@@ -26,8 +26,8 @@ const SettingsGroup = ({ title, icon, iconColor, children, headerAction, fadeAni
   >
     <View style={styles.groupHeader}>
       <View style={styles.groupHeaderTitle}>
-        <View style={[styles.groupIconWrap, { backgroundColor: iconColor + '15' }]}>
-          <Feather name={icon} size={16} color={iconColor} />
+        <View style={[styles.groupIconWrap, { backgroundColor: iconColor + '10' }]}>
+          <Feather name={icon} size={18} color={iconColor} />
         </View>
         <Text style={styles.groupHeaderText}>{title}</Text>
       </View>

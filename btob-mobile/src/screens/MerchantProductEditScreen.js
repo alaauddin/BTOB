@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
   ScrollView, Image, ActivityIndicator, Alert, KeyboardAvoidingView,
-  Platform, Dimensions, Switch
+  Platform, Dimensions, Switch, StatusBar
 } from 'react-native';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -10,17 +10,46 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Video, ResizeMode } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
 import client from '../api/client';
+import Logo from '../components/Logo';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
+import { BRAND } from '../theme/brand';
 
 const { width } = Dimensions.get('window');
+
+const FormSection = ({ title, icon, children }) => (
+  <View style={styles.section}>
+    <View style={styles.sectionHeader}>
+       <View style={styles.sectionIconTitle}>
+          <Feather name={icon} size={16} color={BRAND.colors.primary} />
+          <Text style={styles.sectionTitle}>{title}</Text>
+       </View>
+    </View>
+    <View style={styles.sectionBody}>
+       {children}
+    </View>
+  </View>
+);
+
+const InputField = ({ label, icon, ...props }) => (
+  <View style={styles.inputGroup}>
+    <View style={styles.labelRow}>
+       <Feather name={icon} size={12} color="#94A3B8" />
+       <Text style={styles.inputLabel}>{label}</Text>
+    </View>
+    <TextInput 
+      style={[styles.input, props.multiline && styles.textArea]} 
+      placeholderTextColor="#CBD5E1"
+      {...props} 
+    />
+  </View>
+);
 
 export default function MerchantProductEditScreen({ route, navigation }) {
   const { product, categories = [] } = route.params || {};
   const isEdit = !!product;
   const { activeMerchant } = useAuth();
   const { showNotification } = useNotifications();
-  const primaryColor = activeMerchant?.primary_color || '#2B5876';
 
   const [loading, setLoading] = useState(false);
   
@@ -47,7 +76,7 @@ export default function MerchantProductEditScreen({ route, navigation }) {
 
   const pickMainImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaType.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
@@ -61,7 +90,7 @@ export default function MerchantProductEditScreen({ route, navigation }) {
 
   const pickAdditionalImages = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaType.Images,
       allowsMultipleSelection: true,
       quality: 0.7,
     });
@@ -73,7 +102,7 @@ export default function MerchantProductEditScreen({ route, navigation }) {
 
   const pickVideo = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      mediaTypes: ImagePicker.MediaType.Videos,
       allowsEditing: true,
       quality: 0.7,
     });
@@ -132,7 +161,6 @@ export default function MerchantProductEditScreen({ route, navigation }) {
       formData.append('is_new', isNew);
       formData.append('merchant_id', activeMerchant.id);
 
-      // Simple Variations processing: only send non-empty ones
       const cleanedVariations = (variations || []).filter(v => 
         v && v.name && typeof v.name === 'string' && v.name.trim() && 
         v.options && Array.isArray(v.options) && v.options.some(o => o && o.value && typeof o.value === 'string' && o.value.trim())
@@ -198,464 +226,283 @@ export default function MerchantProductEditScreen({ route, navigation }) {
     }
   };
 
-  return (
-    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Feather name="arrow-right" size={24} color="#0F172A" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{isEdit ? 'تعديل منتج' : 'منتج جديد'}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+  const primaryColor = BRAND.colors.primary;
 
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-        style={{ flex: 1 }}
-      >
-        <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
-          {/* Media Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>الصور والوسائط</Text>
-            <View style={styles.mediaRow}>
+  return (
+    <View style={styles.root}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      
+      <LinearGradient colors={BRAND.gradients.primary} style={styles.headerGradient}>
+        <SafeAreaView edges={['top']} style={styles.safeHeader}>
+           <View style={styles.headerContent}>
+              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtn}>
+                 <Feather name="arrow-right" size={24} color="#FFF" />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>{isEdit ? 'تعديل منتج' : 'إضافة منتج جديد'}</Text>
+              <Logo variant="circle" size={32} />
+           </View>
+        </SafeAreaView>
+      </LinearGradient>
+
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <ScrollView style={styles.form} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+          
+          {/* ── Media ── */}
+          <FormSection title="الصور والوسائط" icon="image">
+            <View style={styles.mediaContainer}>
               <TouchableOpacity style={styles.mainImagePicker} onPress={pickMainImage}>
                 {mainImagePreview ? (
                   <Image source={{ uri: mainImagePreview }} style={styles.mainImage} />
                 ) : (
                   <View style={styles.imagePlaceholder}>
-                    <Feather name="image" size={32} color="#CBD5E1" />
-                    <Text style={styles.placeholderText}>الصورة الأساسية</Text>
+                    <LinearGradient colors={['#F8FAFC', '#F1F5F9']} style={styles.placeholderGradient}>
+                       <Feather name="plus" size={32} color="#CBD5E1" />
+                       <Text style={styles.placeholderText}>الصورة الأساسية</Text>
+                    </LinearGradient>
                   </View>
                 )}
                 <View style={[styles.editBadge, { backgroundColor: primaryColor }]}>
-                  <Feather name="camera" size={14} color="#fff" />
+                  <Feather name="camera" size={14} color="#FFF" />
                 </View>
               </TouchableOpacity>
 
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.galleryScroller}>
+              <View style={styles.galleryRow}>
                 <TouchableOpacity style={styles.addGalleryBtn} onPress={pickAdditionalImages}>
-                  <Feather name="plus" size={24} color="#64748B" />
+                  <Feather name="grid" size={20} color="#64748B" />
+                  <Text style={styles.addGalText}>معرض الصور</Text>
                 </TouchableOpacity>
                 
-                {additionalImages.map((img, i) => (
-                  <View key={`new-${i}`} style={styles.galleryItem}>
-                    <Image source={{ uri: img.uri }} style={styles.galleryImg} />
-                    <TouchableOpacity 
-                      style={styles.removeImgBtn} 
-                      onPress={() => setAdditionalImages(additionalImages.filter((_, idx) => idx !== i))}
-                    >
-                      <Feather name="x" size={12} color="#fff" />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-                
-                {existingAdditionalImages.map((url, i) => (
-                  <View key={`ext-${i}`} style={styles.galleryItem}>
-                    <Image source={{ uri: url }} style={styles.galleryImg} />
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
-
-            {/* Video Preview Section */}
-            {videoPreview && (
-              <View style={styles.videoPreviewContainer}>
-                <Video
-                  source={{ uri: videoPreview }}
-                  style={styles.videoPreview}
-                  useNativeControls
-                  resizeMode={ResizeMode.COVER}
-                />
-                <TouchableOpacity 
-                   style={styles.removeVideoBtn}
-                   onPress={() => { setVideo(null); setVideoPreview(null); }}
-                >
-                   <Feather name="trash-2" size={16} color="#fff" />
-                   <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', marginLeft: 5 }}>إزالة الفيديو</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {!videoPreview && (
-              <TouchableOpacity style={styles.addVideoBtn} onPress={pickVideo}>
-                <Feather name="video" size={20} color={primaryColor} />
-                <Text style={{ color: primaryColor, fontWeight: '700', marginLeft: 10 }}>إضافة فيديو للمنتج</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* Basic Info Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>المعلومات الأساسية</Text>
-            
-            <View style={styles.inputCard}>
-              <Text style={styles.label}>اسم المنتج</Text>
-              <TextInput 
-                style={styles.input} 
-                value={name} 
-                onChangeText={setName} 
-                placeholder="أدخل اسم المنتج..."
-                textAlign="right"
-              />
-
-              <View style={styles.formRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>السعر (ر.ي)</Text>
-                  <TextInput 
-                    style={styles.input} 
-                    value={price} 
-                    onChangeText={setPrice} 
-                    keyboardType="numeric"
-                    placeholder="0.00"
-                    textAlign="right"
-                  />
-                </View>
-                <View style={{ width: 15 }} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>المخزون</Text>
-                  <TextInput 
-                    style={styles.input} 
-                    value={stock} 
-                    onChangeText={setStock} 
-                    keyboardType="numeric"
-                    placeholder="0"
-                    textAlign="right"
-                  />
-                </View>
-              </View>
-
-              <Text style={styles.label}>القسم</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catRow}>
-                {categories.map(cat => (
-                  <TouchableOpacity 
-                    key={cat.id} 
-                    onPress={() => setCategoryId(cat.id)}
-                    style={[styles.catChip, categoryId === cat.id && { backgroundColor: primaryColor, borderColor: primaryColor }]}
-                  >
-                    <Text style={[styles.catText, categoryId === cat.id && { color: '#fff' }]}>{cat.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-
-              <Text style={styles.label}>وصف المنتج</Text>
-              <TextInput 
-                style={[styles.input, styles.textArea]} 
-                value={description} 
-                onChangeText={setDescription} 
-                multiline
-                placeholder="اكتب تفاصيل المنتج..."
-                textAlign="right"
-              />
-            </View>
-          </View>
-
-          {/* Variations Section */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>الخيارات (المقاس، اللون، إلخ)</Text>
-              <TouchableOpacity onPress={addVariationGroup}>
-                <Text style={{ color: primaryColor, fontWeight: '700', fontSize: 13 }}>+ إضافة مجموعة</Text>
-              </TouchableOpacity>
-            </View>
-
-            {variations.map((group, gIdx) => (
-              <View key={gIdx} style={styles.variationGroup}>
-                <View style={styles.groupHeader}>
-                  <TextInput 
-                    style={styles.groupTitleInput}
-                    value={group.name}
-                    onChangeText={(val) => updateVariationGroupName(gIdx, val)}
-                    placeholder="اسم المجموعة (مثلاً: اللون)"
-                    textAlign="right"
-                  />
-                  <TouchableOpacity onPress={() => {
-                    const next = [...variations];
-                    next.splice(gIdx, 1);
-                    setVariations(next);
-                  }}>
-                    <Feather name="trash-2" size={16} color="#EF4444" />
-                  </TouchableOpacity>
-                </View>
-
-                {(group.options || []).map((opt, oIdx) => (
-                  <View key={oIdx} style={styles.optionRow}>
-                    <TouchableOpacity onPress={() => removeOption(gIdx, oIdx)}>
-                      <Feather name="minus-circle" size={20} color="#EF4444" />
-                    </TouchableOpacity>
-                    
-                    <View style={styles.priceModInput}>
-                      <Text style={styles.plusSign}>+</Text>
-                      <TextInput 
-                        style={styles.modInput}
-                        value={String(opt.price_modifier)}
-                        onChangeText={(val) => updateOption(gIdx, oIdx, 'price_modifier', val)}
-                        keyboardType="numeric"
-                        placeholder="0"
-                      />
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.galleryScroll}>
+                  {additionalImages.map((img, i) => (
+                    <View key={`new-${i}`} style={styles.galleryItem}>
+                      <Image source={{ uri: img.uri }} style={styles.galleryImg} />
+                      <TouchableOpacity style={styles.removeImgBtn} onPress={() => setAdditionalImages(additionalImages.filter((_, idx) => idx !== i))}>
+                        <Feather name="x" size={12} color="#FFF" />
+                      </TouchableOpacity>
                     </View>
+                  ))}
+                  {existingAdditionalImages.map((url, i) => (
+                    <View key={`ext-${i}`} style={styles.galleryItem}>
+                      <Image source={{ uri: url }} style={styles.galleryImg} />
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
 
-                    <TextInput 
-                      style={[styles.input, { flex: 1, height: 44 }]}
-                      value={opt.value}
-                      onChangeText={(val) => updateOption(gIdx, oIdx, 'value', val)}
-                      placeholder="القيمة (مثلاً: أحمر)"
-                      textAlign="right"
-                    />
-                  </View>
-                ))}
-                
-                <TouchableOpacity style={styles.addOptBtn} onPress={() => addOption(gIdx)}>
-                  <Feather name="plus-circle" size={16} color={primaryColor} />
-                  <Text style={{ color: primaryColor, fontWeight: '600', fontSize: 12 }}>إضافة قيمة</Text>
+              {videoPreview ? (
+                <View style={styles.videoCard}>
+                  <Video source={{ uri: videoPreview }} style={styles.videoPreview} useNativeControls resizeMode={ResizeMode.COVER} />
+                  <TouchableOpacity style={styles.removeVideoBtn} onPress={() => { setVideo(null); setVideoPreview(null); }}>
+                    <Feather name="trash-2" size={16} color="#FFF" />
+                    <Text style={styles.removeVideoText}>إزالة الفيديو</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.addVideoBtn} onPress={pickVideo}>
+                  <Feather name="video" size={18} color={primaryColor} />
+                  <Text style={[styles.addVideoText, { color: primaryColor }]}>أضف فيديو ترويجي للمنتج</Text>
                 </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-
-          {/* Settings Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>الإعدادات</Text>
-            <View style={styles.inputCard}>
-              <View style={styles.switchRow}>
-                <View>
-                  <Text style={styles.switchLabel}>الحالة (نشط/مخفي)</Text>
-                  <Text style={styles.switchSublabel}>هل يظهر المنتج للعملاء في المتجر؟</Text>
-                </View>
-                <Switch 
-                  value={isActive} 
-                  onValueChange={setIsActive} 
-                  trackColor={{ true: primaryColor }}
-                />
-              </View>
-              <View style={[styles.switchRow, { borderTopWidth: 1, borderTopColor: '#F1F5F9', marginTop: 15, paddingTop: 15 }]}>
-                <View>
-                  <Text style={styles.switchLabel}>منتج جديد</Text>
-                  <Text style={styles.switchSublabel}>عرض شارة "جديد" على المنتج</Text>
-                </View>
-                <Switch 
-                  value={isNew} 
-                  onValueChange={setIsNew} 
-                  trackColor={{ true: primaryColor }}
-                />
-              </View>
+              )}
             </View>
-          </View>
-          
-          <View style={{ height: 100 }} />
+          </FormSection>
+
+          {/* ── Basic Info ── */}
+          <FormSection title="المعلومات الأساسية" icon="edit-3">
+             <View style={styles.inputCard}>
+               <InputField 
+                 label="اسم المنتج" 
+                 icon="box" 
+                 value={name} 
+                 onChangeText={setName} 
+                 placeholder="أدخل الاسم بوضوح..." 
+               />
+
+               <View style={styles.priceRow}>
+                 <View style={{ flex: 1.2 }}>
+                   <InputField label="السعر (د.ك)" icon="dollar-sign" value={price} onChangeText={setPrice} keyboardType="numeric" placeholder="0.00" />
+                 </View>
+                 <View style={{ flex: 1 }}>
+                   <InputField label="المخزون" icon="layers" value={stock} onChangeText={setStock} keyboardType="numeric" placeholder="0" />
+                 </View>
+               </View>
+
+               <Text style={styles.subLabel}>التصنيف</Text>
+               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catRow}>
+                 {categories.map(cat => (
+                   <TouchableOpacity 
+                     key={cat.id} 
+                     onPress={() => setCategoryId(cat.id)}
+                     style={[styles.catChip, categoryId === cat.id && { backgroundColor: primaryColor, borderColor: primaryColor }]}
+                   >
+                     <Text style={[styles.catText, categoryId === cat.id && { color: '#FFF' }]}>{cat.name}</Text>
+                   </TouchableOpacity>
+                 ))}
+               </ScrollView>
+
+               <InputField label="الوصف" icon="align-right" value={description} onChangeText={setDescription} multiline placeholder="اكتب تفاصيل ومواصفات المنتج..." />
+             </View>
+          </FormSection>
+
+          {/* ── Variations ── */}
+          <FormSection title="الخيارات والبدائل" icon="copy">
+             <TouchableOpacity style={styles.addGroupBtn} onPress={addVariationGroup}>
+                <Feather name="plus-circle" size={18} color={primaryColor} />
+                <Text style={[styles.addGroupText, { color: primaryColor }]}>إضافة مجموعة خيارات (مثلاً: المقاس)</Text>
+             </TouchableOpacity>
+
+             {variations.map((group, gIdx) => (
+               <View key={gIdx} style={styles.variationCard}>
+                 <View style={styles.groupHeader}>
+                   <View style={styles.groupTitleWrap}>
+                      <Feather name="tag" size={14} color={primaryColor} />
+                      <TextInput style={styles.groupTitleInput} value={group.name} onChangeText={(val) => updateVariationGroupName(gIdx, val)} placeholder="اسم المجموعة..." />
+                   </View>
+                   <TouchableOpacity onPress={() => { const next = [...variations]; next.splice(gIdx, 1); setVariations(next); }}>
+                     <Feather name="trash-2" size={18} color="#EF4444" />
+                   </TouchableOpacity>
+                 </View>
+
+                 {group.options.map((opt, oIdx) => (
+                   <View key={oIdx} style={styles.optionRow}>
+                     <View style={styles.optValInput}>
+                        <TextInput style={styles.flexInput} value={opt.value} onChangeText={(val) => updateOption(gIdx, oIdx, 'value', val)} placeholder="القيمة..." />
+                     </View>
+                     <View style={styles.optPriceInput}>
+                        <Text style={styles.plusSign}>+</Text>
+                        <TextInput style={styles.priceModInput} value={String(opt.price_modifier)} onChangeText={(val) => updateOption(gIdx, oIdx, 'price_modifier', val)} keyboardType="numeric" placeholder="0" />
+                     </View>
+                     <TouchableOpacity style={styles.optRemove} onPress={() => removeOption(gIdx, oIdx)}>
+                        <Feather name="x" size={18} color="#CBD5E1" />
+                     </TouchableOpacity>
+                   </View>
+                 ))}
+                 
+                 <TouchableOpacity style={styles.addOptLine} onPress={() => addOption(gIdx)}>
+                   <Feather name="plus" size={14} color={primaryColor} />
+                   <Text style={[styles.addOptText, { color: primaryColor }]}>إضافة اختيار</Text>
+                 </TouchableOpacity>
+               </View>
+             ))}
+          </FormSection>
+
+          {/* ── Visibility ── */}
+          <FormSection title="الإعدادات" icon="settings">
+             <View style={styles.settingCard}>
+                <View style={styles.switchItem}>
+                   <View>
+                      <Text style={styles.switchTitle}>تفعيل المنتج</Text>
+                      <Text style={styles.switchDesc}>يظهر للعملاء عند التفعيل</Text>
+                   </View>
+                   <Switch value={isActive} onValueChange={setIsActive} trackColor={{ true: primaryColor }} />
+                </View>
+                <View style={styles.divider} />
+                <View style={styles.switchItem}>
+                   <View>
+                      <Text style={styles.switchTitle}>تمييز كـ "جديد"</Text>
+                      <Text style={styles.switchDesc}>عرض شارة المنتج الجديد</Text>
+                   </View>
+                   <Switch value={isNew} onValueChange={setIsNew} trackColor={{ true: primaryColor }} />
+                </View>
+             </View>
+          </FormSection>
+
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Persistent Save Button */}
       <View style={styles.footer}>
         <TouchableOpacity 
-          style={[styles.saveBtn, { backgroundColor: primaryColor, opacity: loading ? 0.7 : 1 }]} 
+          style={[styles.saveBtn, { backgroundColor: primaryColor }]} 
           onPress={handleSave}
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color="#FFF" />
           ) : (
-            <>
-              <Text style={styles.saveText}>{isEdit ? 'حفظ التغييرات' : 'إضافة المنتج للمتجر'}</Text>
-              <Feather name="check-circle" size={20} color="#fff" />
-            </>
+            <LinearGradient colors={BRAND.gradients.primary} style={styles.saveGradient}>
+               <Feather name="check" size={20} color="#FFF" />
+               <Text style={styles.saveBtnText}>{isEdit ? 'تحديث البيانات' : 'إضافة المنتج للمتجر'}</Text>
+            </LinearGradient>
           )}
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F8FAFC' },
-  header: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-  },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
-  backBtn: { padding: 8, backgroundColor: '#F1F5F9', borderRadius: 12 },
+  headerGradient: { borderBottomLeftRadius: 30, borderBottomRightRadius: 30, paddingBottom: 15 },
+  safeHeader: { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  headerContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, height: 60 },
+  headerBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#FFF' },
 
-  form: { flex: 1, padding: 20 },
-  section: { marginBottom: 30 },
-  sectionHeader: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionTitle: { fontSize: 15, fontWeight: '800', color: '#64748B', marginBottom: 12, textAlign: 'right' },
-  
-  mediaRow: { flexDirection: 'row-reverse', alignItems: 'center' },
-  mainImagePicker: {
-    width: 100,
-    height: 100,
-    borderRadius: 20,
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#E2E8F0',
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative'
-  },
-  mainImage: { width: '100%', height: '100%', borderRadius: 18 },
-  imagePlaceholder: { alignItems: 'center' },
-  placeholderText: { fontSize: 9, color: '#94A3B8', marginTop: 4, fontWeight: '700' },
-  editBadge: {
-    position: 'absolute',
-    bottom: -5,
-    right: -5,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#fff'
-  },
-  
-  galleryScroller: { marginRight: 15 },
-  addGalleryBtn: {
-    width: 60,
-    height: 60,
-    borderRadius: 15,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderStyle: 'dashed',
-    marginRight: 10
-  },
-  galleryItem: { position: 'relative', marginRight: 10 },
-  galleryImg: { width: 60, height: 60, borderRadius: 15 },
-  removeImgBtn: {
-    position: 'absolute',
-    top: -5,
-    right: -5,
-    backgroundColor: '#EF4444',
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
+  form: { flex: 1, padding: 16 },
+  section: { marginBottom: 24 },
+  sectionHeader: { marginBottom: 12 },
+  sectionIconTitle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  sectionTitle: { fontSize: 15, fontWeight: 'bold', color: '#1E293B' },
+  sectionBody: { gap: 12 },
 
-  inputCard: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  label: { fontSize: 13, fontWeight: '700', color: '#475569', marginBottom: 8, textAlign: 'right' },
-  input: {
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 14,
-    color: '#0F172A',
-    marginBottom: 20
-  },
-  formRow: { flexDirection: 'row-reverse' },
-  textArea: { height: 100, textAlignVertical: 'top' },
-  catRow: { flexDirection: 'row-reverse', gap: 10, paddingBottom: 10, marginBottom: 10 },
-  catChip: {
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#F1F5F9',
-    borderWidth: 1,
-    borderColor: '#E2E8F0'
-  },
-  catText: { fontSize: 12, fontWeight: '700', color: '#64748B' },
+  mediaContainer: { gap: 16 },
+  mainImagePicker: { width: 140, height: 140, alignSelf: 'center', borderRadius: 24, overflow: 'hidden', borderWidth: 2, borderColor: '#E2E8F0', borderStyle: 'dashed' },
+  mainImage: { width: '100%', height: '100%' },
+  imagePlaceholder: { flex: 1 },
+  placeholderGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  placeholderText: { fontSize: 11, color: '#94A3B8', marginTop: 8, fontWeight: 'bold' },
+  editBadge: { position: 'absolute', bottom: 10, right: 10, width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#FFF' },
 
-  variationGroup: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 15,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  groupHeader: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
-  groupTitleInput: { fontSize: 14, fontWeight: '800', color: '#0F172A', flex: 1, marginLeft: 10 },
-  
-  optionRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10, marginBottom: 10 },
-  priceModInput: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    backgroundColor: '#F0F9FF',
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    height: 44,
-    borderWidth: 1,
-    borderColor: '#BAE6FD'
-  },
-  plusSign: { fontSize: 12, color: '#0369A1', fontWeight: '800' },
-  modInput: { width: 40, textAlign: 'center', fontSize: 13, fontWeight: '700', color: '#0369A1' },
-  addOptBtn: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, marginTop: 5 },
+  galleryRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  addGalleryBtn: { width: 80, height: 80, borderRadius: 20, backgroundColor: '#FFF', borderStyle: 'dashed', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center', gap: 6 },
+  addGalText: { fontSize: 9, color: '#64748B', fontWeight: 'bold' },
+  galleryScroll: { gap: 10 },
+  galleryItem: { width: 80, height: 80, borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9' },
+  galleryImg: { width: '100%', height: '100%' },
+  removeImgBtn: { position: 'absolute', top: 5, right: 5, backgroundColor: '#EF4444', width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
 
-  switchRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center' },
-  switchLabel: { fontSize: 14, fontWeight: '700', color: '#1E293B', textAlign: 'right' },
-  switchSublabel: { fontSize: 11, color: '#94A3B8', marginTop: 2, textAlign: 'right' },
+  videoCard: { borderRadius: 20, overflow: 'hidden', backgroundColor: '#000', elevation: 4 },
+  videoPreview: { width: '100%', height: 180 },
+  removeVideoBtn: { position: 'absolute', top: 12, right: 12, flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(239, 68, 68, 0.9)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, gap: 6 },
+  removeVideoText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
+  addVideoBtn: { height: 56, borderRadius: 16, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E2E8F0', borderStyle: 'dashed', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10 },
+  addVideoText: { fontSize: 14, fontWeight: 'bold' },
 
-  footer: {
-    padding: 20,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-  },
-  saveBtn: {
-    height: 56,
-    borderRadius: 16,
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8
-  },
-  saveText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  inputCard: { backgroundColor: '#FFF', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#F1F5F9', elevation: 2 },
+  inputGroup: { marginBottom: 16 },
+  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  inputLabel: { fontSize: 13, fontWeight: 'bold', color: '#64748B' },
+  input: { backgroundColor: '#F8FAFC', borderRadius: 14, paddingHorizontal: 16, height: 52, borderWidth: 1, borderColor: '#E2E8F0', fontSize: 15, color: '#1E293B', textAlign: 'right' },
+  textArea: { height: 100, paddingTop: 12, textAlignVertical: 'top' },
+  priceRow: { flexDirection: 'row', gap: 16 },
+  subLabel: { fontSize: 13, fontWeight: 'bold', color: '#64748B', marginBottom: 10 },
+  catRow: { gap: 10, paddingBottom: 15 },
+  catChip: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 14, backgroundColor: '#F1F5F9', borderWidth: 1, borderColor: '#E2E8F0' },
+  catText: { fontSize: 13, fontWeight: 'bold', color: '#64748B' },
 
-  // Video Preview Styles
-  videoPreviewContainer: {
-    marginTop: 20,
-    backgroundColor: '#000',
-    borderRadius: 20,
-    overflow: 'hidden',
-    position: 'relative'
-  },
-  videoPreview: {
-    width: '100%',
-    height: 200,
-  },
-  removeVideoBtn: {
-    position: 'absolute',
-    top: 15,
-    left: 15,
-    backgroundColor: 'rgba(239, 68, 68, 0.9)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-  },
-  addVideoBtn: {
-    marginTop: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderStyle: 'dashed',
-    borderRadius: 15,
-    paddingVertical: 12,
-  }
+  addGroupBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E2E8F0', borderStyle: 'dashed', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 15 },
+  addGroupText: { fontSize: 13, fontWeight: 'bold' },
+  variationCard: { backgroundColor: '#FFF', borderRadius: 20, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#F1F5F9' },
+  groupHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#F8FAFC' },
+  groupTitleWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  groupTitleInput: { flex: 1, fontSize: 15, fontWeight: 'bold', color: '#1E293B', textAlign: 'right' },
+  optionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
+  optValInput: { flex: 1.5, backgroundColor: '#F8FAFC', borderRadius: 10, height: 44, paddingHorizontal: 12, borderWidth: 1, borderColor: '#E2E8F0' },
+  flexInput: { flex: 1, fontSize: 14, color: '#1E293B', textAlign: 'right' },
+  optPriceInput: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0F9FF', borderRadius: 10, height: 44, paddingHorizontal: 10, borderWidth: 1, borderColor: '#BAE6FD' },
+  plusSign: { fontSize: 14, fontWeight: 'bold', color: '#0369A1', marginRight: 4 },
+  priceModInput: { flex: 1, fontSize: 14, fontWeight: 'bold', color: '#0369A1', textAlign: 'center' },
+  optRemove: { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
+  addOptLine: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: 4 },
+  addOptText: { fontSize: 12, fontWeight: 'bold' },
+
+  settingCard: { backgroundColor: '#FFF', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#F1F5F9' },
+  switchItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  switchTitle: { fontSize: 15, fontWeight: 'bold', color: '#1E293B' },
+  switchDesc: { fontSize: 11, color: '#94A3B8', marginTop: 2 },
+  divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 16 },
+
+  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, backgroundColor: '#FFF', borderTopWidth: 1, borderTopColor: '#F1F5F9' },
+  saveBtn: { height: 58, borderRadius: 18, overflow: 'hidden' },
+  saveGradient: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12 },
+  saveBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
 });

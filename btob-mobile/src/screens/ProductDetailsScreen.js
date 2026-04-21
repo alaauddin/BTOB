@@ -14,6 +14,7 @@ import {
   StatusBar,
 } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
+import { BRAND } from "../theme/brand";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Alert } from "react-native";
 import { Video, ResizeMode } from "expo-av";
@@ -22,6 +23,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNotifications } from "../context/NotificationContext";
 import AuthModal from "../components/AuthModal";
 import CartIconBadge from "../components/CartIconBadge";
+import { getSupplierTheme } from "../theme/supplierTheme";
 
 const { width, height } = Dimensions.get("window");
 const HERO_HEIGHT = height * 0.45;
@@ -228,7 +230,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
   if (loading) {
     return (
       <View style={styles.centerMode}>
-        <ActivityIndicator size="large" color="#2B5876" />
+        <ActivityIndicator size="large" color={BRAND.colors.primary} />
       </View>
     );
   }
@@ -265,7 +267,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
 
   const finalPrice = parseFloat(basePrice) + modifierTotal;
   const totalPrice = (finalPrice * quantity).toFixed(2);
-  const primaryColor = product.supplier?.primary_color || "#2B5876";
+  const theme = getSupplierTheme(product.supplier);
   const mediaSlides = buildMediaSlides(product);
 
   const isSelectionComplete = !product.attributes || product.attributes.length === 0 || 
@@ -302,7 +304,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.bg }]}>
       <StatusBar
         barStyle="dark-content"
         backgroundColor="transparent"
@@ -325,7 +327,11 @@ export default function ProductDetailsScreen({ route, navigation }) {
             <Feather name="share-2" size={22} color="#1e293b" />
           </TouchableOpacity>
           <View style={styles.iconButton}>
-            <CartIconBadge supplierId={product.supplier?.id} size={22} />
+            <CartIconBadge 
+              supplierId={product.supplier?.id} 
+              size={22} 
+              badgeColor={theme.primary}
+            />
           </View>
         </View>
       </View>
@@ -381,7 +387,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
                       style={[
                         styles.dot,
                         idx === activeSlide
-                          ? [styles.dotActive, { backgroundColor: primaryColor }]
+                          ? [styles.dotActive, { backgroundColor: theme.primary }]
                           : styles.dotInactive,
                         // Give the video dot a slightly distinct icon-like look
                         slide.type === "video" && styles.dotVideo,
@@ -421,7 +427,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
                 <Text style={styles.ratingText}>4.8 (120 تقييم)</Text>
               </View>
             </View>
-            <Text style={styles.productTitle}>{product.name}</Text>
+            <Text style={[styles.productTitle, { color: theme.text }]}>{product.name}</Text>
           </View>
 
           {/* Pricing Section */}
@@ -433,11 +439,11 @@ export default function ProductDetailsScreen({ route, navigation }) {
                 </Text>
               )}
               <View style={styles.currentPriceRow}>
-                <Text style={[styles.currencySymbol, { color: primaryColor }]}>
+                <Text style={[styles.currencySymbol, { color: theme.primary }]}>
                   {currencySymbol}
                 </Text>
                 <Text
-                  style={[styles.currentPriceNumber, { color: primaryColor }]}
+                  style={[styles.currentPriceNumber, { color: theme.primary }]}
                 >
                   {parseFloat(finalPrice).toFixed(2)}
                 </Text>
@@ -522,7 +528,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
                             key={opt.id}
                             style={[
                               styles.optionChip,
-                              isSelected && { borderColor: primaryColor, backgroundColor: primaryColor + "08" },
+                              isSelected && { borderColor: theme.primary, backgroundColor: theme.primary + "08" },
                               isError && !isSelected && { borderColor: "#fecaca" }
                             ]}
                             onPress={() => {
@@ -534,11 +540,11 @@ export default function ProductDetailsScreen({ route, navigation }) {
                               }
                             }}
                           >
-                            <Text style={[styles.optionText, isSelected && { color: primaryColor, fontWeight: "bold" }]}>
+                            <Text style={[styles.optionText, isSelected && { color: theme.primary, fontWeight: "bold" }]}>
                               {opt.value}
                             </Text>
                             {hasModifier && (
-                              <Text style={[styles.modifierText, isSelected && { color: primaryColor }]}>
+                              <Text style={[styles.modifierText, isSelected && { color: theme.primary }]}>
                                 {parseFloat(opt.price_modifier) > 0 ? "+" : ""}{parseFloat(opt.price_modifier).toFixed(0)}
                               </Text>
                             )}
@@ -559,10 +565,10 @@ export default function ProductDetailsScreen({ route, navigation }) {
               <View
                 style={[
                   styles.highlightIconBg,
-                  { backgroundColor: primaryColor + "15" },
+                  { backgroundColor: theme.primaryMuted },
                 ]}
               >
-                <Feather name="shield" size={18} color={primaryColor} />
+                <Feather name="shield" size={18} color={theme.primary} />
               </View>
               <Text style={styles.highlightText}>منتج أصلي 100%</Text>
             </View>
@@ -570,10 +576,10 @@ export default function ProductDetailsScreen({ route, navigation }) {
               <View
                 style={[
                   styles.highlightIconBg,
-                  { backgroundColor: primaryColor + "15" },
+                  { backgroundColor: theme.primaryMuted },
                 ]}
               >
-                <Feather name="truck" size={18} color={primaryColor} />
+                <Feather name="truck" size={18} color={theme.primary} />
               </View>
               <Text style={styles.highlightText}>توصيل سريع</Text>
             </View>
@@ -581,10 +587,10 @@ export default function ProductDetailsScreen({ route, navigation }) {
               <View
                 style={[
                   styles.highlightIconBg,
-                  { backgroundColor: primaryColor + "15" },
+                  { backgroundColor: theme.primaryMuted },
                 ]}
               >
-                <Feather name="refresh-ccw" size={18} color={primaryColor} />
+                <Feather name="refresh-ccw" size={18} color={theme.primary} />
               </View>
               <Text style={styles.highlightText}>إرجاع خلال 14 يوم</Text>
             </View>
@@ -604,16 +610,16 @@ export default function ProductDetailsScreen({ route, navigation }) {
       </Animated.ScrollView>
 
       {/* Sticky Bottom Bar */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { backgroundColor: theme.footer }]}>
         <View style={styles.totalContainer}>
-          <Text style={styles.totalLabel}>{isSelectionComplete ? "السعر الإجمالي" : "يبدأ من"}</Text>
+          <Text style={[styles.totalLabel, { color: theme.footerText }]}>{isSelectionComplete ? "السعر الإجمالي" : "يبدأ من"}</Text>
           <View style={{ flexDirection: "row", alignItems: "baseline" }}>
-            <Text style={styles.currentPriceNumber}>
+            <Text style={[styles.currentPriceNumber, { color: theme.footerText }]}>
               {cartQty > 0
                 ? (parseFloat(finalPrice) * cartQty).toFixed(2)
                 : (isSelectionComplete ? totalPrice : parseFloat(basePrice).toFixed(2))}
             </Text>
-            <Text style={styles.currencySymbol}>{currencySymbol}</Text>
+            <Text style={[styles.currencySymbol, { color: theme.footerText }]}>{currencySymbol}</Text>
           </View>
         </View>
 
@@ -621,28 +627,28 @@ export default function ProductDetailsScreen({ route, navigation }) {
           <View
             style={[
               styles.interactiveCartContainer,
-              { borderColor: primaryColor },
+              { borderColor: theme.primary },
             ]}
           >
             <TouchableOpacity
               style={[
                 styles.interactiveQtyButton,
-                { backgroundColor: primaryColor + "15" },
+                { backgroundColor: theme.primary + "15" },
               ]}
               onPress={() => handleUpdateQuantity(-1)}
               disabled={addingToCart}
             >
-              <Ionicons name="remove" size={24} color={primaryColor} />
+              <Ionicons name="remove" size={24} color={theme.primary} />
             </TouchableOpacity>
 
-            <Text style={[styles.interactiveQtyText, { color: primaryColor }]}>
+            <Text style={[styles.interactiveQtyText, { color: theme.primary }]}>
               {cartQty}
             </Text>
 
             <TouchableOpacity
               style={[
                 styles.interactiveQtyButton,
-                { backgroundColor: primaryColor },
+                { backgroundColor: theme.primary },
               ]}
               onPress={() => handleUpdateQuantity(1)}
               disabled={addingToCart}
@@ -654,7 +660,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
           <TouchableOpacity
             style={[
               styles.addToCartBtn,
-              { backgroundColor: primaryColor },
+              { backgroundColor: theme.primary },
               addingToCart && { opacity: 0.7 },
             ]}
             onPress={() => handleUpdateQuantity(0, false)}
@@ -683,6 +689,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
       <AuthModal
         visible={authModalVisible}
         onClose={() => setAuthModalVisible(false)}
+        primaryColor={theme.primary}
         onSuccess={(loggedInUser) => {
           fetchCartQty();
         }}

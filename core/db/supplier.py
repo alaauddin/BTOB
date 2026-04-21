@@ -59,7 +59,7 @@ class Supplier(models.Model):
     navbar_color = models.CharField(max_length=7, default='#F58231')
     navbar_text_color = models.CharField(max_length=7, default='#ffffff')
     footer_color = models.CharField(max_length=7, default='#2B6CB0')
-    text_color = models.CharField(max_length=7, default='#4A5568')
+    footer_text_color = models.CharField(max_length=7, default='#4A5568')
     accent_color = models.CharField(max_length=7, default='#00FFFF')
     currency = models.ForeignKey(Currency, on_delete=models.SET_NULL, null=True, blank=True)
     profile_picture = models.ImageField(upload_to=upload_to_path, blank=True, null=True)
@@ -157,6 +157,22 @@ class Supplier(models.Model):
         from django.db.models import Avg
         avg_rating = Review.objects.filter(product__supplier=self).aggregate(Avg('rating'))['rating__avg']
         return round(float(avg_rating), 1) if avg_rating is not None else 0.0
+
+    @property
+    def plan_name(self):
+        """Returns the name of the active or most recent plan."""
+        sub = self.subscriptions.filter(status='active').order_by('-end_date').first()
+        if not sub:
+            sub = self.subscriptions.order_by('-end_date').first()
+        return sub.plan.name if sub else "مجانية"
+
+    @property
+    def plan_status(self):
+        """Returns the status of the current subscription."""
+        sub = self.subscriptions.order_by('-end_date').first()
+        if not sub:
+            return "نشط" # Free plan is always active
+        return sub.get_status_display()
 
 
 class SupplierAdPlatfrom(models.Model):

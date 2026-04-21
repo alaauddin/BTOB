@@ -2,19 +2,31 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, RefreshControl, StatusBar, Dimensions, Animated,
-  Image, ImageBackground,
+  Image, ImageBackground, Modal, FlatList, Platform
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import client from '../api/client';
-import CustomHeader from '../components/CustomHeader';
 import OnboardingModal from '../components/OnboardingModal';
 
 const { width } = Dimensions.get('window');
 
 /* ── Helpers ──────────────────────────────────────────────────────── */
+/* ── Color Identity ────────────────────────────────────────────────── */
+const COLORS = {
+  primarySteel: '#2B587E',    // Base Text & Main UI
+  vibrantOrange: '#D27321',   // Accents & Actions
+  goldAccent: '#CBA660',      // Premium Highlights
+  lightBlue: '#5C8EAE',       // Gradients & Text Edges
+  success: '#10B981',
+  danger: '#EF4444',
+  warning: '#F59E0B',
+  bgLight: '#F8FAFC',
+  border: '#F1F5F9'
+};
+
 const STATUS_COLORS = {
   pending: { bg: '#FEF3C7', text: '#92400E' },
   confirmed: { bg: '#D1FAE5', text: '#065F46' },
@@ -25,23 +37,36 @@ const STATUS_COLORS = {
 const statusColor = (slug) => STATUS_COLORS[slug] || { bg: '#F1F5F9', text: '#475569' };
 
 /* ── KPI Card ─────────────────────────────────────────────────────── */
-const KpiCard = ({ icon, label, value, gradient, width: cardWidth }) => (
-  <LinearGradient
-    colors={gradient}
-    start={{ x: 0, y: 0 }}
-    end={{ x: 1, y: 1 }}
-    style={[styles.kpiCard, { width: cardWidth }]}
-  >
-    <View style={styles.kpiIconWrap}>
-      <Feather name={icon} size={18} color="rgba(255,255,255,0.9)" />
+const KpiCard = ({ icon, label, value, subValue, iconBg, width: cardWidth, isLarge }) => (
+  <View style={[isLarge ? styles.kpiCardLarge : styles.kpiCardSmall, { width: cardWidth }]}>
+    <View style={styles.kpiHeader}>
+      <View style={[styles.kpiIconWrap, { backgroundColor: iconBg || 'rgba(255,255,255,0.2)' }]}>
+        <Feather name={icon} size={isLarge ? 24 : 18} color="#fff" />
+      </View>
+      {isLarge && (
+        <View style={styles.kpiLargeInfo}>
+           <Text style={styles.kpiLargeLabel}>{label}</Text>
+           <Text style={styles.kpiLargeValue}>{value}</Text>
+           {subValue && (
+             <View style={styles.kpiSubValueRow}>
+                <Feather name="trending-up" size={12} color="#4ADE80" />
+                <Text style={styles.kpiSubValueText}>{subValue}</Text>
+             </View>
+           )}
+        </View>
+      )}
     </View>
-    <Text style={styles.kpiValue}>{value ?? '—'}</Text>
-    <Text style={styles.kpiLabel}>{label}</Text>
-  </LinearGradient>
+    {!isLarge && (
+      <>
+        <Text style={styles.kpiSmallValue}>{value}</Text>
+        <Text style={styles.kpiSmallLabel}>{label}</Text>
+      </>
+    )}
+  </View>
 );
 
 /* ── Order Row ─────────────────────────────────────────────────────── */
-const OrderRow = ({ order, onPress }) => {
+const OrderRow = ({ order, onPress, curr }) => {
   const sc = statusColor(order.status_slug);
   return (
     <TouchableOpacity style={styles.orderRow} onPress={onPress} activeOpacity={0.72}>
@@ -55,7 +80,7 @@ const OrderRow = ({ order, onPress }) => {
         </View>
         <Text style={styles.orderRowCustomer}>{order.customer_name}</Text>
         <View style={styles.orderRowBottom}>
-          <Text style={styles.orderRowAmount}>{parseFloat(order.total_amount).toFixed(2)} ر.ي</Text>
+          <Text style={styles.orderRowAmount}>{parseFloat(order.total_amount).toFixed(2)} {curr}</Text>
           <Text style={styles.orderRowDate}>{new Date(order.created_at).toLocaleDateString('ar-SA')}</Text>
         </View>
       </View>
@@ -65,15 +90,17 @@ const OrderRow = ({ order, onPress }) => {
 
 /* ── Main Screen ─────────────────────────────────────────────────── */
 export default function MerchantDashboardScreen({ navigation }) {
-  const { activeMerchant } = useAuth();
+  const { activeMerchant, manageableMerchants, setActiveMerchant, updateMerchantList, logout } = useAuth();
 
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [onboardingModal, setOnboardingModal] = useState({ visible: false, stepKey: null });
+  const [switcherVisible, setSwitcherVisible] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [switchingId, setSwitchingId] = useState(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const primaryColor = activeMerchant?.primary_color || '#2B5876';
 
   /* ── Fetch ──────────────────────────────────────────────────── */
   const fetchDashboard = useCallback(async (id, silent = false) => {
@@ -86,7 +113,9 @@ export default function MerchantDashboardScreen({ navigation }) {
         Animated.spring(fadeAnim, { toValue: 1, useNativeDriver: true, tension: 80, friction: 10 }).start();
       }
     } catch (err) {
-      console.error('Dashboard error', err);
+      if (err.response?.status !== 402) {
+        console.error('Dashboard error', err);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -103,11 +132,37 @@ export default function MerchantDashboardScreen({ navigation }) {
 
   const onRefresh = () => { setRefreshing(true); fetchDashboard(activeMerchant?.id, true); };
 
+  const handleSwitch = async (merchant) => {
+    if (merchant.id === activeMerchant?.id) {
+      setSwitcherVisible(false);
+      return;
+    }
+    setSwitchingId(merchant.id);
+    try {
+      const res = await client.post("/merchant/switch/", { merchant_id: merchant.id });
+      if (res.data.success) {
+        await setActiveMerchant(res.data.merchant);
+        await updateMerchantList(res.data.manageable_merchants);
+        setSwitcherVisible(false);
+      }
+    } catch (err) {
+      console.error("Switch merchant error", err);
+    } finally {
+      setSwitchingId(null);
+    }
+  };
+
+  const handleLogout = () => {
+    setMenuVisible(false);
+    logout();
+    navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+  };
+
   /* ── Loading ─────────────────────────────────────────────────── */
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={primaryColor} />
+        <ActivityIndicator size="large" color={COLORS.primarySteel} />
         <Text style={styles.loadingText}>جاري تحميل لوحة التحكم…</Text>
       </View>
     );
@@ -115,66 +170,96 @@ export default function MerchantDashboardScreen({ navigation }) {
 
   const stats = dashboard?.stats || {};
   const recentOrders = dashboard?.recent_orders || [];
-  // Prefer fresh data from API (absolute URLs) over stale AsyncStorage data
   const merchantInfo = dashboard?.merchant || activeMerchant || {};
-
-  /* Small derived helpers */
-  const kpiRow1 = [
-    { icon: 'shopping-bag', label: 'طلبات اليوم', value: stats.orders_today, gradient: [primaryColor, adjustColor(primaryColor, -30)] },
-    { icon: 'calendar', label: 'طلبات الشهر', value: stats.orders_this_month, gradient: ['#8B5CF6', '#6D28D9'] },
-  ];
-  const kpiRow2 = [
-    { icon: 'dollar-sign', label: 'إيرادات الشهر', value: `${parseFloat(stats.revenue_this_month || 0).toFixed(0)} ر.ي`, gradient: ['#10B981', '#059669'] },
-    { icon: 'clock', label: 'طلبات معلقة', value: stats.pending_orders, gradient: ['#F59E0B', '#D97706'] },
-    { icon: 'package', label: 'المنتجات', value: stats.total_products, gradient: ['#3B82F6', '#2563EB'] },
-  ];
-  const kpiRow3 = [
-    { icon: 'list', label: 'الطلبات (الكل)', value: stats.total_orders, gradient: ['#EC4899', '#BE185D'] },
-    { icon: 'star', label: 'التقييم العام', value: stats.average_rating || '-', gradient: ['#F59E0B', '#D97706'] },
-    { icon: 'pie-chart', label: 'إيرادات (الكل)', value: `${parseFloat(stats.total_revenue || 0).toFixed(0)} ر.ي`, gradient: ['#10B981', '#059669'] },
-  ];
+  const curr = merchantInfo?.currency_symbol || 'د.ك';
 
   /* ── JSX ──────────────────────────────────────────────────────── */
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <CustomHeader />
-
-      <Animated.ScrollView
-        style={{ flex: 1, opacity: fadeAnim }}
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.primarySteel} />
+      
+      <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primaryColor} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />}
       >
-        {/* ── Welcome Strip ── */}
-        <ImageBackground
-          source={merchantInfo?.panal_picture ? { uri: merchantInfo.panal_picture } : null}
-          style={styles.welcomeStripWrap}
-          imageStyle={styles.coverBgImg}
-          resizeMode="cover"
+        <LinearGradient
+          colors={[COLORS.primarySteel, COLORS.lightBlue]}
+          style={styles.topGradient}
         >
-          <LinearGradient
-            colors={[primaryColor + 'EE', adjustColor(primaryColor, -40) + 'EE']}
-            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-            style={styles.welcomeStrip}
-          >
-            <View style={styles.welcomeTextBlock}>
-              <Text style={[styles.welcomeHello, { textAlign: 'right' }]}>مرحباً 👋</Text>
-              <Text style={[styles.welcomeStore, { textAlign: 'right' }]}>{activeMerchant?.name || 'المتجر'}</Text>
-            </View>
-            {/* Merchant logo — use fresh API data for absolute URLs */}
-            <View style={styles.welcomeLogoWrap}>
-              {merchantInfo?.profile_picture
-                ? <Image source={{ uri: merchantInfo.profile_picture }} style={styles.welcomeLogo} />
-                : <View style={styles.welcomeLogoPlaceholder}>
-                  <Text style={[styles.welcomeLogoInitial, { color: primaryColor }]}>
-                    {(activeMerchant?.name?.[0] || 'M').toUpperCase()}
-                  </Text>
+          <SafeAreaView edges={['top']} style={styles.headerSafe}>
+             <View style={styles.headerRow}>
+                <TouchableOpacity style={styles.notificationBtn}>
+                   <Feather name="bell" size={24} color="#fff" />
+                   <View style={styles.badge}>
+                      <Text style={styles.badgeText}>3</Text>
+                   </View>
+                </TouchableOpacity>
+
+                <View style={styles.headerCenter}>
+                   <TouchableOpacity 
+                     style={styles.merchantPicker}
+                     onPress={() => manageableMerchants.length > 1 && setSwitcherVisible(true)}
+                   >
+                      {activeMerchant?.profile_picture && (
+                        <Image source={{ uri: activeMerchant.profile_picture }} style={styles.merchantLogoHeader} />
+                      )}
+                      <Text style={styles.merchantNameHead}>{activeMerchant?.name}</Text>
+                      {manageableMerchants.length > 1 && <Feather name="chevron-down" size={14} color="#fff" style={{marginLeft: 4}} />}
+                   </TouchableOpacity>
+                   <Text style={styles.welcomeRawaage}>مرحباً بك في رواج</Text>
                 </View>
-              }
-            </View>
-          </LinearGradient>
-        </ImageBackground>
+
+                <View style={styles.headerRight}>
+                   <View style={styles.logoCircle}>
+                      <Image source={require('../../assets/images/logo.png')} style={styles.logoImg} resizeMode="contain" />
+                   </View>
+                   <TouchableOpacity style={styles.menuBtn} onPress={() => setMenuVisible(true)}>
+                      <Feather name="menu" size={26} color="#fff" />
+                   </TouchableOpacity>
+                </View>
+             </View>
+          </SafeAreaView>
+
+          {/* Large KPI Card */}
+          <View style={{ paddingHorizontal: 16, marginTop: 10 }}>
+             <KpiCard 
+                isLarge
+                icon="dollar-sign" 
+                label="إجمالي المبيعات" 
+                value={`${parseFloat(stats.total_revenue || 0).toLocaleString()} ${curr}`}
+                subValue={`${stats.revenue_change_percentage || 0}% مقارنة بالشهر الماضي`}
+                iconBg={COLORS.vibrantOrange}
+                width={width - 32}
+             />
+          </View>
+
+          {/* KPI Row */}
+          <View style={styles.kpiRow}>
+             <KpiCard 
+                icon="shopping-bag" 
+                label="طلب اليوم" 
+                value={stats.orders_today || 0}
+                iconBg={COLORS.vibrantOrange}
+                width={(width - 52) / 3}
+             />
+             <KpiCard 
+                icon="trending-up" 
+                label="معدل النجاح" 
+                value={`${stats.success_rate || 0}%`}
+                iconBg={COLORS.lightBlue}
+                width={(width - 52) / 3}
+             />
+             <KpiCard 
+                icon="users" 
+                label="عملاء جدد" 
+                value={stats.new_customers || 0}
+                iconBg={COLORS.lightBlue}
+                width={(width - 52) / 3}
+             />
+          </View>
+        </LinearGradient>
 
         {/* ── Low Stock Alert ── */}
         {stats.low_stock_count > 0 && (
@@ -191,7 +276,7 @@ export default function MerchantDashboardScreen({ navigation }) {
           <View style={styles.onboardingCard}>
              <View style={{flexDirection: 'row-reverse', justifyContent: 'space-between', marginBottom: 8, alignItems: 'center'}}>
                <Text style={styles.onboardingTitle}>إعداد المتجر</Text>
-               <Text style={[styles.onboardingTitle, {color: primaryColor, fontSize: 18}]}>{dashboard.onboarding.progress_percentage}%</Text>
+               <Text style={[styles.onboardingTitle, {color: COLORS.primarySteel, fontSize: 18}]}>{dashboard.onboarding.progress_percentage}%</Text>
              </View>
              
              <Text style={[styles.onboardingSub, { textAlign: 'right' }]}>
@@ -202,10 +287,9 @@ export default function MerchantDashboardScreen({ navigation }) {
              </Text>
 
              <View style={[styles.progressBarWrap, { marginTop: 12, marginBottom: 16 }]}>
-               <View style={[styles.progressBarFill, { width: `${dashboard.onboarding.progress_percentage}%`, backgroundColor: primaryColor }]} />
+               <View style={[styles.progressBarFill, { width: `${dashboard.onboarding.progress_percentage}%`, backgroundColor: COLORS.primarySteel }]} />
              </View>
 
-             {/* Progress Markers Row */}
              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8, flexDirection: 'row-reverse' }}>
                 {[
                   { key: 'has_logo', icon: 'image', label: 'الشعار', target: 'Profile' },
@@ -231,7 +315,7 @@ export default function MerchantDashboardScreen({ navigation }) {
                      >
                        <View style={{ 
                          width: 44, height: 44, borderRadius: 22, 
-                         backgroundColor: isDone ? primaryColor : '#F1F5F9',
+                         backgroundColor: isDone ? COLORS.primarySteel : '#F1F5F9',
                          justifyContent: 'center', alignItems: 'center', marginBottom: 6,
                          borderWidth: isDone ? 0 : 1, borderColor: '#E2E8F0'
                        }}>
@@ -244,108 +328,126 @@ export default function MerchantDashboardScreen({ navigation }) {
                    );
                 })}
              </ScrollView>
-
-             <TouchableOpacity 
-               onPress={() => navigation.navigate('Profile')}
-               style={{ backgroundColor: '#F8FAFC', paddingVertical: 12, borderRadius: 10, marginTop: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', borderWidth: 1, borderColor: '#E2E8F0' }}
-             >
-               <Feather name="settings" size={16} color="#475569" style={{ marginRight: 8 }} />
-               <Text style={{ color: '#0F172A', fontWeight: 'bold', fontSize: 14 }}>إعدادات ملف المتجر</Text>
-             </TouchableOpacity>
           </View>
         )}
 
-        {/* ── KPI Grid — Row 1 (two wide) ── */}
-        <Text style={styles.sectionLabel}>إحصائيات</Text>
-        <View style={styles.kpiRow}>
-          {kpiRow1.map((k, i) => (
-            <KpiCard key={i} {...k} width={(width - 44) / 2} />
-          ))}
-        </View>
-
-        {/* ── KPI Grid — Row 2 (three slim) ── */}
-        <View style={styles.kpiRow}>
-          {kpiRow2.map((k, i) => (
-            <KpiCard key={i} {...k} width={(width - 52) / 3} />
-          ))}
-        </View>
-
-        {/* ── KPI Grid — Row 3 (three slim) ── */}
-        <View style={styles.kpiRow}>
-          {kpiRow3.map((k, i) => (
-            <KpiCard key={i} {...k} width={(width - 52) / 3} />
-          ))}
-        </View>
+        {/* ── Special Offer Banner ── */}
+        {dashboard?.active_offer && (
+          <TouchableOpacity 
+            style={styles.offerBanner} 
+            activeOpacity={0.9}
+            onPress={() => navigation.navigate('MerchantOffers')}
+          >
+             <LinearGradient
+               colors={[COLORS.vibrantOrange, COLORS.goldAccent]}
+               start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+               style={styles.offerGradient}
+             >
+                <View style={styles.offerIconWrap}>
+                   <Feather name="gift" size={20} color="#fff" />
+                </View>
+                <View style={styles.offerContent}>
+                   <Text style={styles.offerTitle}>{dashboard.active_offer.product_name} 🔥</Text>
+                   <Text style={styles.offerSub}>
+                     خصم {dashboard.active_offer.discount_percentage}% لفترة محدودة
+                   </Text>
+                </View>
+                <View style={styles.offerAction}>
+                   <Text style={styles.offerActionText}>التفاصيل</Text>
+                   <Feather name="arrow-left" size={14} color="#B45309" />
+                </View>
+             </LinearGradient>
+          </TouchableOpacity>
+        )}
 
         {/* ── Quick Actions ── */}
         <Text style={styles.sectionLabel}>إجراءات سريعة</Text>
-        <View style={styles.actionsRow}>
-          <QuickAction
-            icon="package" label="المنتجات" color="#3B82F6"
-            onPress={() => navigation.navigate('Products')}
-          />
-          <QuickAction
-            icon="tag" label="العروض" color="#EC4899"
-            onPress={() => navigation.navigate('MerchantOffers')}
-          />
-          <QuickAction
-            icon="grid" label="المتجر" color="#10B981"
-            onPress={() => navigation.navigate('StoreView', { storeId: merchantInfo?.store_id || activeMerchant?.store_id })}
-          />
-          {activeMerchant?.can_buy_wholesale && (
-            <QuickAction
-              icon="shopping-cart" label="سوق الجملة" color="#8B5CF6"
-              onPress={() => navigation.navigate('WholesaleMarket')}
-            />
-          )}
+        <View style={styles.actionsGrid}>
+           <QuickAction
+             icon="grid" label="المتجر" color={activeMerchant?.primary_color || '#2B5876'}
+             onPress={() => navigation.navigate('StoreView', { storeId: merchantInfo?.store_id || activeMerchant?.store_id })}
+           />
+           <QuickAction
+             icon="tag" label="العروض" color="#D48D3B"
+             onPress={() => navigation.navigate('MerchantOffers')}
+           />
+           <QuickAction
+             icon="package" label="المنتجات" color="#2B5876"
+             onPress={() => navigation.navigate('Products')}
+           />
+           <QuickAction
+             icon="users" label="الإعدادات" color="#D48D3B"
+             onPress={() => navigation.navigate('Profile')}
+           />
+           <QuickAction
+             icon="file-text" label="الطلبات" color="#2B5876"
+             onPress={() => navigation.navigate('Orders', { merchantId: activeMerchant?.id })}
+           />
+           <QuickAction
+             icon="pie-chart" label="مظهر" color="#D48D3B"
+             onPress={() => {}}
+           />
         </View>
-        <View style={[styles.actionsRow, { marginTop: 12 }]}>
-          <QuickAction
-            icon="clock" label="معلّقة" color="#F59E0B"
-            onPress={() => navigation.navigate('Orders', { filter: 'pending', merchantId: activeMerchant?.id })}
-          />
-          <QuickAction
-            icon="list" label="الطلبات" color="#6366F1"
-            onPress={() => navigation.navigate('Orders', { merchantId: activeMerchant?.id })}
-          />
-          <QuickAction
-            icon="user" label="الإعدادات" color="#8B5CF6"
-            onPress={() => navigation.navigate('Profile')}
-          />
+
+        {/* ── Statistics (Detailed) ── */}
+        <Text style={styles.sectionLabel}>إحصائيات</Text>
+        <View style={styles.statsCol}>
+           <StatsCard 
+             label="إيرادات الأسبوع"
+             value={`${parseFloat(stats.revenue_this_week || 0).toLocaleString()} ${curr}`}
+             subValue="مباشرة من المتجر"
+             icon="dollar-sign"
+             color={COLORS.primarySteel}
+           />
+           <StatsCard 
+             label="التقييم العام"
+             value={`${stats.average_rating || 0}/5`}
+             subValue="تقييمات العملاء الحقيقية"
+             icon="trending-up"
+             color={COLORS.vibrantOrange}
+           />
+           <StatsCard 
+             label="إجراءات (مهام)"
+             value={stats.tasks_count || 0}
+             subValue="طلبات معلقة ومنتجات منخفضة"
+             icon="shopping-cart"
+             color={COLORS.lightBlue}
+           />
         </View>
 
         {/* ── Top Products ── */}
-        {dashboard?.top_products && dashboard.top_products.length > 0 && (
-          <View style={{marginTop: 10}}>
-             <Text style={styles.sectionLabel}>المنتجات الأكثر مبيعاً</Text>
-             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 10, paddingBottom: 10 }}>
-               {dashboard.top_products.map((p, i) => (
-                  <View key={`top_${i}`} style={styles.topProdCard}>
-                     {p.image ? (
-                        <Image source={{uri: p.image}} style={styles.topProdImg} />
-                     ) : (
-                        <View style={[styles.topProdImg, {backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center'}]}>
-                           <Feather name="image" size={24} color="#CBD5E1" />
-                        </View>
-                     )}
-                     <View style={styles.topProdInfo}>
-                        <Text style={styles.topProdName} numberOfLines={1}>{p.name}</Text>
-                        <Text style={styles.topProdPrice}>{p.price_after_discount} ر.ي</Text>
-                     </View>
-                  </View>
-               ))}
-             </ScrollView>
-          </View>
-        )}
+        <View style={styles.sectionHeader}>
+           <Text style={styles.sectionLabel}>المنتجات الأكثر مبيعاً</Text>
+           <TouchableOpacity onPress={() => navigation.navigate('Products')}>
+              <Text style={styles.seeAll}>عرض الكل</Text>
+           </TouchableOpacity>
+        </View>
+        
+        {dashboard?.top_products?.map((p, i) => (
+           <TouchableOpacity key={i} style={styles.topProdRow}>
+              <Image source={p.image_url ? { uri: p.image_url } : require('../../assets/images/logo.png')} style={styles.topProdImgRow} />
+              <View style={styles.topProdInfoRow}>
+                 <Text style={styles.topProdNameRow}>{p.name}</Text>
+                 <Text style={styles.topProdStockRow}>متوفر حالياً</Text>
+                 <Text style={styles.topProdPriceRow}>{p.price_after_discount} {curr}</Text>
+              </View>
+              <TouchableOpacity style={styles.viewDetailsBtn}>
+                 <Text style={styles.viewDetailsText}>عرض التفاصيل</Text>
+              </TouchableOpacity>
+              {i === 0 && (
+                <View style={[styles.prodBadge, { backgroundColor: COLORS.goldAccent }]}>
+                   <Text style={styles.prodBadgeText}>الأكثر مبيعاً</Text>
+                </View>
+              )}
+           </TouchableOpacity>
+        ))}
 
         {/* ── Recent Orders ── */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionLabel}>آخر الطلبات</Text>
-          {recentOrders.length > 0 && (
-            <TouchableOpacity onPress={() => navigation.navigate('Orders', { merchantId: activeMerchant?.id })}>
-              <Text style={[styles.seeAll, { color: primaryColor }]}>عرض الكل</Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity onPress={() => navigation.navigate('Orders', { merchantId: activeMerchant?.id })}>
+            <Text style={styles.seeAll}>عرض الكل</Text>
+          </TouchableOpacity>
         </View>
 
         {recentOrders.length === 0 ? (
@@ -359,6 +461,7 @@ export default function MerchantDashboardScreen({ navigation }) {
               <React.Fragment key={order.id}>
                 <OrderRow
                   order={order}
+                  curr={curr}
                   onPress={() => navigation.navigate('MerchantOrderDetail', { orderId: order.id, merchantId: activeMerchant?.id })}
                 />
                 {idx < recentOrders.length - 1 && <View style={styles.orderDivider} />}
@@ -368,7 +471,7 @@ export default function MerchantDashboardScreen({ navigation }) {
         )}
 
         <View style={{ height: 24 }} />
-      </Animated.ScrollView>
+      </ScrollView>
 
       {/* ── Onboarding Modal ── */}
       <OnboardingModal
@@ -381,123 +484,197 @@ export default function MerchantDashboardScreen({ navigation }) {
           fetchDashboard(activeMerchant?.id, true);
         }}
       />
+
+      {/* ── Merchant Menu Modal ── */}
+      <Modal visible={menuVisible} transparent animationType="fade" onRequestClose={() => setMenuVisible(false)} statusBarTranslucent>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setMenuVisible(false)}>
+          <View style={styles.menuSheet}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>القائمة</Text>
+            
+            <View style={styles.menuGrid}>
+              <MenuItem 
+                icon="user" label="الملف الشخصي" 
+                onPress={() => { setMenuVisible(false); navigation.navigate('Profile'); }} 
+              />
+              <MenuItem 
+                icon="package" label="المنتجات" 
+                onPress={() => { setMenuVisible(false); navigation.navigate('Products'); }} 
+              />
+              <MenuItem 
+                icon="shopping-cart" label="الطلبات" 
+                onPress={() => { setMenuVisible(false); navigation.navigate('Orders', { merchantId: activeMerchant?.id }); }} 
+              />
+              <MenuItem 
+                icon="tag" label="العروض" 
+                onPress={() => { setMenuVisible(false); navigation.navigate('MerchantOffers'); }} 
+              />
+              <MenuItem 
+                icon="credit-card" label="إعدادات الدفع" 
+                onPress={() => { setMenuVisible(false); navigation.navigate('MerchantPaymentSettings'); }} 
+              />
+              <MenuItem 
+                icon="log-out" label="خروج" color={COLORS.danger}
+                onPress={handleLogout} 
+              />
+            </View>
+            <View style={{ height: 40 }} />
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* ── Merchant Switcher Modal ── */}
+      <Modal visible={switcherVisible} transparent animationType="slide" onRequestClose={() => setSwitcherVisible(false)} statusBarTranslucent>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setSwitcherVisible(false)}>
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>اختر المتجر</Text>
+            <FlatList
+              data={manageableMerchants}
+              keyExtractor={(m) => String(m.id)}
+              ItemSeparatorComponent={() => <View style={styles.modalDivider} />}
+              renderItem={({ item }) => {
+                const isActive = item.id === activeMerchant?.id;
+                const isSwitching = item.id === switchingId;
+                return (
+                  <TouchableOpacity
+                    style={[styles.switcherItem, isActive && { backgroundColor: "#F0F9FF" }]}
+                    onPress={() => handleSwitch(item)}
+                    disabled={!!switchingId}
+                  >
+                    <View style={[styles.switcherDot, { backgroundColor: item.primary_color || "#2B5876" }]} />
+                    <Text style={[styles.switcherName, isActive && { fontWeight: "700", color: "#2B5876" }]}>
+                      {item.name}
+                    </Text>
+                    {isSwitching
+                      ? <ActivityIndicator size="small" color="#2B5876" />
+                      : isActive
+                        ? <Feather name="check-circle" size={20} color="#2B5876" />
+                        : null}
+                  </TouchableOpacity>
+                );
+              }}
+            />
+            <View style={{ height: 30 }} />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
 
-/* ── Quick Action Tile ────────────────────────────────────────────── */
+/* ── Components ────────────────────────────────────────────────── */
 const QuickAction = ({ icon, label, color, onPress }) => (
-  <TouchableOpacity style={styles.qaTile} onPress={onPress} activeOpacity={0.75}>
-    <View style={[styles.qaIconWrap, { backgroundColor: color + '18' }]}>
-      <Feather name={icon} size={22} color={color} />
+  <TouchableOpacity style={styles.qaItem} onPress={onPress} activeOpacity={0.7}>
+    <View style={styles.qaCard}>
+      <View style={[styles.qaIconBox, { backgroundColor: color }]}>
+        <Feather name={icon} size={22} color="#fff" />
+      </View>
+      <Text style={styles.qaLabel}>{label}</Text>
     </View>
-    <Text style={styles.qaLabel}>{label}</Text>
   </TouchableOpacity>
 );
 
-/* ── Helper to lighten/darken hex colour ─────────────────────────── */
-function adjustColor(hex, amount) {
-  try {
-    const num = parseInt(hex.replace('#', ''), 16);
-    const r = Math.min(255, Math.max(0, (num >> 16) + amount));
-    const g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + amount));
-    const b = Math.min(255, Math.max(0, (num & 0xff) + amount));
-    return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
-  } catch { return hex; }
-}
+const StatsCard = ({ label, value, subValue, icon, color }) => (
+  <View style={[styles.statsCard, { backgroundColor: color }]}>
+     <View style={styles.statsIconWrap}>
+        <Feather name={icon} size={20} color="#fff" />
+     </View>
+     <View style={styles.statsBody}>
+        <Text style={styles.statsLabel}>{label}</Text>
+        <Text style={styles.statsValue}>{value}</Text>
+        <Text style={styles.statsSub}>{subValue}</Text>
+     </View>
+  </View>
+);
+
+const MenuItem = ({ icon, label, onPress, color = '#475569' }) => (
+  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
+    <View style={[styles.menuIconWrap, { backgroundColor: color + '10' }]}>
+      <Feather name={icon} size={22} color={color} />
+    </View>
+    <Text style={[styles.menuItemLabel, { color }]}>{label}</Text>
+  </TouchableOpacity>
+);
 
 /* ── Styles ─────────────────────────────────────────────────────── */
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#F8FAFC' },
+  root: { flex: 1, backgroundColor: '#FFFFFF' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC' },
   loadingText: { marginTop: 12, color: '#64748B', fontSize: 14 },
-
   scroll: { paddingBottom: 24 },
-
-  /* Welcome strip */
-  welcomeStripWrap: {
-    marginHorizontal: 16, marginTop: 16, borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15, shadowRadius: 12, elevation: 6,
+  topGradient: { paddingBottom: 20, borderBottomLeftRadius: 35, borderBottomRightRadius: 35 },
+  headerSafe: { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, height: 60 },
+  notificationBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+  badge: {
+     position: 'absolute', top: 5, right: 5,
+     backgroundColor: COLORS.vibrantOrange, width: 16, height: 16, borderRadius: 8,
+     justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: COLORS.primarySteel
   },
-  coverBgImg: { borderRadius: 20 },
-  welcomeStrip: {
-    padding: 22, flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center',
-  },
-  welcomeTextBlock: { flex: 1 },
-  welcomeHello: { color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: '500', marginBottom: 4 },
-  welcomeStore: { color: '#fff', fontSize: 22, fontWeight: '800' },
-  welcomeLogoWrap: {
-    width: 64, height: 64, borderRadius: 32,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center', alignItems: 'center', overflow: 'hidden',
-  },
-  welcomeLogo: { width: 64, height: 64, borderRadius: 32 },
-  welcomeLogoPlaceholder: {
-    width: 64, height: 64, borderRadius: 32,
-    backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center',
-  },
-  welcomeLogoInitial: { fontSize: 26, fontWeight: '800' },
-
-  /* Alert */
-  alertRow: {
-    flexDirection: 'row-reverse', alignItems: 'center', gap: 8,
-    marginHorizontal: 16, marginTop: 12,
-    backgroundColor: '#FEF3C7', borderRadius: 12, padding: 12,
-    borderRightWidth: 3, borderRightColor: '#F59E0B',
-  },
-  alertText: { color: '#92400E', fontSize: 12, fontWeight: '500', flex: 1 },
-
-  /* Onboarding Card */
-  onboardingCard: {
-    marginHorizontal: 16, marginTop: 12, backgroundColor: '#fff', borderRadius: 16, padding: 16,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
-  },
-  onboardingTitle: { fontSize: 14, fontWeight: '700', color: '#0F172A' },
-  progressBarWrap: { height: 8, backgroundColor: '#F1F5F9', borderRadius: 4, overflow: 'hidden', marginVertical: 8 },
+  badgeText: { color: '#fff', fontSize: 8, fontWeight: 'bold' },
+  headerCenter: { alignItems: 'center' },
+  merchantPicker: { flexDirection: 'row-reverse', alignItems: 'center' },
+  merchantLogoHeader: { width: 28, height: 28, borderRadius: 14, marginLeft: 10, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.4)' },
+  merchantNameHead: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  welcomeRawaage: { color: 'rgba(255,255,255,0.7)', fontSize: 11 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  logoCircle: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
+  logoImg: { width: 24, height: 24 },
+  menuBtn: { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
+  kpiCardLarge: { backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  kpiHeader: { flexDirection: 'row-reverse', alignItems: 'center' },
+  kpiIconWrap: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+  kpiLargeInfo: { flex: 1, marginRight: 16 },
+  kpiLargeLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 12, textAlign: 'right' },
+  kpiLargeValue: { color: '#fff', fontSize: 28, fontWeight: 'bold', textAlign: 'right', marginVertical: 2 },
+  kpiSubValueRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4 },
+  kpiSubValueText: { color: 'rgba(255,255,255,0.6)', fontSize: 11 },
+  kpiRow: { flexDirection: 'row-reverse', paddingHorizontal: 16, gap: 10, marginTop: 12 },
+  kpiCardSmall: { backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 18, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  kpiSmallValue: { color: '#fff', fontSize: 18, fontWeight: 'bold', marginTop: 8 },
+  kpiSmallLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 10, marginTop: 2 },
+  alertRow: { flexDirection: 'row-reverse', backgroundColor: '#FFFBEB', marginHorizontal: 16, marginTop: 12, padding: 10, borderRadius: 10, alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#FEF3C7' },
+  alertText: { color: '#B45309', fontSize: 12, fontWeight: '600' },
+  onboardingCard: { backgroundColor: '#fff', marginHorizontal: 16, marginTop: 20, borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
+  onboardingTitle: { fontSize: 16, fontWeight: 'bold', color: '#1E293B' },
+  onboardingSub: { fontSize: 12, color: '#64748B', lineHeight: 18 },
+  progressBarWrap: { height: 8, backgroundColor: '#F1F5F9', borderRadius: 4, overflow: 'hidden' },
   progressBarFill: { height: '100%', borderRadius: 4 },
-  onboardingSub: { fontSize: 11, color: '#64748B' },
-
-  /* Sections */
-  sectionLabel: { fontSize: 16, fontWeight: '700', color: '#0F172A', marginRight: 16, marginTop: 20, marginBottom: 12, textAlign: 'right' },
-  sectionHeader: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginLeft: 16 },
-  seeAll: { fontSize: 13, fontWeight: '600' },
-
-  /* KPI cards */
-  kpiRow: { flexDirection: 'row-reverse', paddingHorizontal: 16, gap: 10, marginBottom: 10 },
-  kpiCard: {
-    borderRadius: 18, padding: 16,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12, shadowRadius: 8, elevation: 4,
-  },
-  kpiIconWrap: {
-    width: 34, height: 34, borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center', alignItems: 'center', marginBottom: 10,
-  },
-  kpiValue: { fontSize: 22, fontWeight: '800', color: '#fff', marginBottom: 3 },
-  kpiLabel: { fontSize: 11, color: 'rgba(255,255,255,0.8)', fontWeight: '500' },
-
-  /* Quick Actions */
-  actionsRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 10 },
-  qaTile: {
-    flex: 1, alignItems: 'center', backgroundColor: '#fff', borderRadius: 18,
-    paddingVertical: 16, gap: 8,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
-  },
-  qaIconWrap: { width: 46, height: 46, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  qaLabel: { fontSize: 12, fontWeight: '700', color: '#0F172A', textAlign: 'center' },
-
-  /* Orders */
-  ordersCard: {
-    marginHorizontal: 16, backgroundColor: '#fff', borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
-    direction: 'rtl'
-  },
+  offerBanner: { marginHorizontal: 16, marginTop: 20, elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8 },
+  offerGradient: { borderRadius: 20, padding: 16, flexDirection: 'row-reverse', alignItems: 'center' },
+  offerIconWrap: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' },
+  offerContent: { flex: 1, marginRight: 12 },
+  offerTitle: { color: '#fff', fontSize: 14, fontWeight: 'bold', textAlign: 'right' },
+  offerSub: { color: 'rgba(255,255,255,0.9)', fontSize: 11, textAlign: 'right' },
+  offerAction: { backgroundColor: '#fff', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 15, flexDirection: 'row', alignItems: 'center', gap: 4 },
+  offerActionText: { color: '#B45309', fontSize: 11, fontWeight: 'bold' },
+  sectionLabel: { fontSize: 18, fontWeight: 'bold', color: '#1E293B', marginHorizontal: 16, marginTop: 24, marginBottom: 16, textAlign: 'right' },
+  actionsGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', paddingHorizontal: 11 },
+  qaItem: { width: '33.33%', padding: 5 },
+  qaCard: { backgroundColor: '#fff', borderRadius: 20, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4, elevation: 1 },
+  qaIconBox: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  qaLabel: { fontSize: 12, fontWeight: '600', color: '#475569' },
+  statsCol: { paddingHorizontal: 16, gap: 12 },
+  statsCard: { borderRadius: 20, padding: 16, flexDirection: 'row-reverse', alignItems: 'center' },
+  statsIconWrap: { width: 40, height: 40, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center' },
+  statsBody: { flex: 1, marginRight: 16 },
+  statsLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 11, textAlign: 'right' },
+  statsValue: { color: '#fff', fontSize: 20, fontWeight: 'bold', textAlign: 'right' },
+  statsSub: { color: 'rgba(255,255,255,0.6)', fontSize: 10, textAlign: 'right' },
+  sectionHeader: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginTop: 24, marginBottom: 12 },
+  seeAll: { color: '#94A3B8', fontSize: 13 },
+  topProdRow: { flexDirection: 'row-reverse', alignItems: 'center', padding: 12, backgroundColor: '#fff', borderRadius: 20, marginHorizontal: 16, marginBottom: 12, borderWidth: 1, borderColor: '#F1F5F9' },
+  topProdImgRow: { width: 60, height: 60, borderRadius: 12 },
+  topProdInfoRow: { flex: 1, marginRight: 12 },
+  topProdNameRow: { fontSize: 14, fontWeight: 'bold', color: '#1E293B', textAlign: 'right' },
+  topProdStockRow: { fontSize: 11, color: '#2ECC71', textAlign: 'right', marginVertical: 2 },
+  topProdPriceRow: { fontSize: 14, fontWeight: 'bold', color: '#1E293B', textAlign: 'right' },
+  viewDetailsBtn: { backgroundColor: COLORS.lightBlue, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 },
+  viewDetailsText: { color: '#fff', fontSize: 11, fontWeight: 'bold' },
+  prodBadge: { position: 'absolute', top: -5, left: 10, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 5 },
+  prodBadgeText: { color: '#fff', fontSize: 9, fontWeight: 'bold' },
+  ordersCard: { marginHorizontal: 16, backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9' },
   orderRow: { flexDirection: 'row-reverse', alignItems: 'stretch' },
   orderAccent: { width: 4 },
   orderRowBody: { flex: 1, paddingHorizontal: 14, paddingVertical: 14 },
@@ -510,16 +687,20 @@ const styles = StyleSheet.create({
   orderRowAmount: { fontSize: 14, fontWeight: '700', color: '#0F172A', textAlign: 'right' },
   orderRowDate: { fontSize: 11, color: '#94A3B8' },
   orderDivider: { height: 1, backgroundColor: '#F1F5F9', marginRight: 4 },
-
   emptyBox: { alignItems: 'center', paddingVertical: 40, gap: 12, marginHorizontal: 16 },
   emptyText: { color: '#94A3B8', fontSize: 14 },
-
-  topProdCard: {
-    backgroundColor: '#fff', borderRadius: 12, width: 140, padding: 8,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
-  },
-  topProdImg: { width: '100%', height: 100, borderRadius: 8, marginBottom: 8 },
-  topProdInfo: { paddingHorizontal: 4 },
-  topProdName: { fontSize: 12, fontWeight: '600', color: '#0F172A', marginBottom: 4 },
-  topProdPrice: { fontSize: 11, fontWeight: '700', color: '#10B981' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalSheet: { backgroundColor: '#fff', borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingHorizontal: 20, paddingTop: 12 },
+  modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: '#E2E8F0', alignSelf: 'center', marginBottom: 20 },
+  modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#1E293B', textAlign: 'center', marginBottom: 20 },
+  modalDivider: { height: 1, backgroundColor: '#F1F5F9' },
+  switcherItem: { flexDirection: 'row-reverse', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 12, borderRadius: 12 },
+  switcherDot: { width: 12, height: 12, borderRadius: 6, marginLeft: 12 },
+  switcherName: { flex: 1, fontSize: 16, color: '#1E293B', textAlign: 'right' },
+  /* Menu Styles */
+  menuSheet: { backgroundColor: '#fff', borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingHorizontal: 20, paddingTop: 12, width: '100%' },
+  menuGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap' },
+  menuItem: { width: '33.33%', alignItems: 'center', paddingVertical: 20 },
+  menuIconWrap: { width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+  menuItemLabel: { fontSize: 13, fontWeight: '600' },
 });

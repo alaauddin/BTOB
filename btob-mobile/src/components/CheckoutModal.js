@@ -23,17 +23,21 @@ import apiClient from "../api/client";
 import { useNotifications } from "../context/NotificationContext";
 
 // Modular Sub-components
-import styles from './checkout/CheckoutStyles';
+import { getCheckoutStyles } from './checkout/CheckoutStyles';
 import { getMapHtml } from './checkout/MapHelper';
 import TabHeader from './checkout/TabHeader';
 import SavedAddressTab from './checkout/SavedAddressTab';
 import NewAddressTab from './checkout/NewAddressTab';
+import { getSupplierTheme } from "../theme/supplierTheme";
 
 // Default to Sana'a, Yemen
 const DEFAULT_LAT = 15.3694;
 const DEFAULT_LNG = 44.191;
 
-export default function CheckoutModal({ visible, onClose, cart, supplierId, onSuccess }) {
+export default function CheckoutModal({ visible, onClose, cart, supplierId, onSuccess, primaryColor: initialPrimaryColor, supplierData }) {
+    const theme = getSupplierTheme(supplierData);
+    const styles = useMemo(() => getCheckoutStyles(theme), [theme]);
+    const primaryColor = theme.primary;
     const [activeTab, setActiveTab] = useState("saved");
     const [loading, setLoading] = useState(false);
     const [fetchingAddress, setFetchingAddress] = useState(true);
@@ -85,7 +89,7 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                 Animated.timing(slideAnimation, { toValue: 1, duration: 350, useNativeDriver: true }),
                 Animated.timing(fadeAnimation, { toValue: 1, duration: 300, useNativeDriver: true }),
             ]).start();
-            if (supplierId) {
+            if (supplierId && String(supplierId) !== 'undefined') {
                 fetchSavedAddress();
                 fetchPaymentMethods();
             }
@@ -350,11 +354,11 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
             <View style={styles.headerArea}>
                 <Text style={styles.modalTitle}>إتمام الطلب</Text>
                 <View style={styles.stepperContainer}>
-                    <View style={[styles.stepCircle, currentStep === 'address' && styles.activeStep]}>
+                    <View style={[styles.stepCircle, currentStep === 'address' && { backgroundColor: primaryColor }]}>
                         <Ionicons name="location-outline" size={16} color={currentStep === 'address' ? "#fff" : "#94a3b8"} />
                     </View>
                     <View style={styles.stepConnector} />
-                    <View style={[styles.stepCircle, currentStep === 'payment' && styles.activeStep]}>
+                    <View style={[styles.stepCircle, currentStep === 'payment' && { backgroundColor: primaryColor }]}>
                         <Ionicons name="card-outline" size={16} color={currentStep === 'payment' ? "#fff" : "#94a3b8"} />
                     </View>
                 </View>
@@ -365,7 +369,7 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
 
             {fetchingAddress ? (
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#0ea5e9" />
+                    <ActivityIndicator size="large" color={primaryColor} />
                     <Text style={styles.loadingText}>جاري تحميل البيانات...</Text>
                 </View>
             ) : (
@@ -379,6 +383,8 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                             savedAddress={savedAddress}
                             selectedLocation={selectedLocation}
                             requestCurrentLocation={requestCurrentLocation}
+                            primaryColor={primaryColor}
+                            theme={theme}
                         />
                     )}
 
@@ -405,6 +411,7 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                                     staticMapHtml={staticMapHtml}
                                     savedNotes={savedNotes}
                                     setSavedNotes={setSavedNotes}
+                                    theme={theme}
                                 />
                             ) : (
                                 <NewAddressTab
@@ -422,12 +429,14 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                                     setPhone={setPhone}
                                     notes={notes}
                                     setNotes={setNotes}
+                                    primaryColor={primaryColor}
+                                    theme={theme}
                                 />
                             )
                         ) : (
                             <View style={styles.paymentContainer}>
                                 {fetchingMethods ? (
-                                    <ActivityIndicator size="small" color="#0ea5e9" />
+                                    <ActivityIndicator size="small" color={primaryColor} />
                                 ) : (
                                     <>
                                         <View style={styles.paymentGrid}>
@@ -436,18 +445,18 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                                                     key={method.id}
                                                     style={[
                                                         styles.paymentItem,
-                                                        selectedMethod?.id === method.id && styles.selectedPaymentItem
+                                                        selectedMethod?.id === method.id && { borderColor: primaryColor, backgroundColor: theme.primaryMuted }
                                                     ]}
                                                     onPress={() => setSelectedMethod(method)}
                                                 >
                                                     <Ionicons 
                                                         name={method.requires_proof ? "wallet-outline" : "cash-outline"} 
                                                         size={24} 
-                                                        color={selectedMethod?.id === method.id ? "#0ea5e9" : "#64748b"} 
+                                                        color={selectedMethod?.id === method.id ? primaryColor : "#64748b"} 
                                                     />
                                                     <Text style={[
                                                         styles.paymentItemText,
-                                                        selectedMethod?.id === method.id && styles.selectedPaymentItemText
+                                                        selectedMethod?.id === method.id && { color: primaryColor, fontWeight: "bold" }
                                                     ]}>
                                                         {method.method_name}
                                                     </Text>
@@ -463,7 +472,7 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                                                 <View style={styles.accountHeader}>
                                                     <Text style={styles.accountLabel}>{selectedMethod.account_field_name || "رقم الحساب"}</Text>
                                                     <TouchableOpacity onPress={() => copyToClipboard(selectedMethod.account_field_value)}>
-                                                        <Ionicons name="copy-outline" size={20} color="#0ea5e9" />
+                                                        <Ionicons name="copy-outline" size={20} color={primaryColor} />
                                                     </TouchableOpacity>
                                                 </View>
                                                 <Text style={styles.accountNumber}>{selectedMethod.account_field_value}</Text>
@@ -476,7 +485,7 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                                                 <TouchableOpacity style={styles.uploadBox} onPress={pickReceipt}>
                                                     {receiptImage ? (
                                                         <View style={styles.receiptPreview}>
-                                                            <Ionicons name="image" size={30} color="#0ea5e9" />
+                                                            <Ionicons name="image" size={30} color={primaryColor} />
                                                             <Text style={styles.receiptName} numberOfLines={1}>{receiptImage.name || 'تم اختيار الصورة'}</Text>
                                                             <TouchableOpacity onPress={() => setReceiptImage(null)} style={styles.removeReceipt}>
                                                                 <Ionicons name="close-circle" size={20} color="#ef4444" />
@@ -500,7 +509,7 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                     <View style={styles.footerArea}>
                         {currentStep === 'address' ? (
                             <TouchableOpacity
-                                style={styles.submitBtn}
+                                style={[styles.submitBtn, { backgroundColor: primaryColor, shadowColor: primaryColor }]}
                                 onPress={handleProceedToPayment}
                             >
                                 <View style={styles.btnContent}>
@@ -518,7 +527,7 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                                     <Text style={styles.backBtnText}>رجوع</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.submitBtn, { flex: 1, marginLeft: 12 }]}
+                                    style={[styles.submitBtn, { flex: 1, marginLeft: 12, backgroundColor: primaryColor, shadowColor: primaryColor }]}
                                     onPress={handleCheckout}
                                     disabled={loading}
                                 >
@@ -554,7 +563,7 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                             <Animated.View style={[styles.modalContent, { transform: [{ translateY }] }]}>
                                 <View style={styles.dragIndicator} />
                                 <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                                    <Ionicons name="close-circle" size={32} color="#e2e8f0" />
+                                    <Ionicons name="close-circle" size={32} color={theme.text} />
                                 </TouchableOpacity>
                                 {renderContent()}
                             </Animated.View>
@@ -564,7 +573,7 @@ export default function CheckoutModal({ visible, onClose, cart, supplierId, onSu
                             <Animated.View style={[styles.modalContent, { transform: [{ translateY }] }]}>
                                 <View style={styles.dragIndicator} />
                                 <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                                    <Ionicons name="close-circle" size={32} color="#e2e8f0" />
+                                    <Ionicons name="close-circle" size={32} color={theme.text} />
                                 </TouchableOpacity>
                                 {renderContent()}
                             </Animated.View>

@@ -539,7 +539,7 @@ class SupplierSettingsForm(forms.ModelForm):
         fields = [
             'name', 'phone', 'secondary_phone', 'subdomain', 'address', 'city', 'country', 
             'primary_color', 'secondary_color', 'navbar_color', 'navbar_text_color',
-            'footer_color', 'text_color', 'accent_color',
+            'footer_color', 'footer_text_color', 'accent_color',
             'profile_picture', 'panal_picture', 'latitude', 'longitude', 
             'show_order_amounts', 'show_platform_ads', 'show_system_logo',
             'return_policy', 'footer_description',
@@ -574,7 +574,7 @@ class SupplierSettingsForm(forms.ModelForm):
             'navbar_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
             'navbar_text_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
             'footer_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
-            'text_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
+            'footer_text_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
             'accent_color': forms.TextInput(attrs={'type': 'color', 'class': 'w-12 h-12 rounded-lg border-0 cursor-pointer p-0 overflow-hidden'}),
             
             'profile_picture': forms.FileInput(attrs={'class': 'hidden', 'accept': 'image/*', 'id': 'profile_input'}),
@@ -633,7 +633,7 @@ class SupplierSettingsForm(forms.ModelForm):
             'navbar_color': 'لون الشريط العلوي',
             'navbar_text_color': 'لون نصوص الشريط العلوي',
             'footer_color': 'لون التذييل',
-            'text_color': 'لون النصوص',
+            'footer_text_color': 'لون نصوص التذييل',
             'accent_color': 'لون التميز',
             'profile_picture': 'شعار المتجر',
             'panal_picture': 'صورة الغلاف',

@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 // Global cache dictionary to prevent fetch spamming across unmounts in React Navigation
 const hasFetchedForSupplier = {};
 
-export default function CartIconBadge({ supplierId, iconColor = "#1e293b", size = 22 }) {
+export default function CartIconBadge({ supplierId, iconColor = "#1e293b", size = 22, badgeColor }) {
     const [itemCount, setItemCount] = useState(0);
     const { user } = useAuth();
     const navigation = useNavigation();
@@ -54,7 +54,7 @@ export default function CartIconBadge({ supplierId, iconColor = "#1e293b", size 
         <TouchableOpacity onPress={handlePress} style={styles.container}>
             <Feather name="shopping-bag" size={size} color={iconColor} />
             {itemCount > 0 && (
-                <View style={styles.badgeContainer}>
+                <View style={[styles.badgeContainer, badgeColor && { backgroundColor: badgeColor }]}>
                     <Text style={styles.badgeText}>{itemCount > 99 ? '99+' : itemCount}</Text>
                 </View>
             )}

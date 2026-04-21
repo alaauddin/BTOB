@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.utils import timezone
-from django.db.models import Sum, Avg, Q, Max, Count
+from django.db.models import Sum, Avg, Q, Max, Count, Min
 from django.core.paginator import Paginator
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
@@ -25,12 +25,55 @@ def _build_dashboard_stats(supplier):
         order_items__product__supplier=supplier
     ).distinct()
     
+    # 1. Revenue This Month
     revenue_this_month = (
         supplier_orders
         .filter(created_at__year=today.year, created_at__month=today.month, pipeline_status__slug='confirmed')
         .aggregate(total=Sum('total_amount'))['total'] or 0
     )
     
+    # 2. Revenue Last Month (for change percentage)
+    first_day_this_month = today.replace(day=1)
+    last_day_prev_month = first_day_this_month - timezone.timedelta(days=1)
+    first_day_prev_month = last_day_prev_month.replace(day=1)
+    
+    revenue_last_month = (
+        supplier_orders
+        .filter(created_at__date__range=[first_day_prev_month, last_day_prev_month], pipeline_status__slug='confirmed')
+        .aggregate(total=Sum('total_amount'))['total'] or 0
+    )
+    
+    revenue_change_pct = 0
+    if revenue_last_month > 0:
+        revenue_change_pct = ((revenue_this_month - revenue_last_month) / revenue_last_month) * 100
+    elif revenue_this_month > 0:
+        revenue_change_pct = 100
+
+    # 3. Success Rate (Delivered / Total)
+    total_orders_count = supplier_orders.count()
+    delivered_orders_count = supplier_orders.filter(pipeline_status__slug='delivered').count()
+    success_rate = (delivered_orders_count / total_orders_count * 100) if total_orders_count > 0 else 0
+
+    # 4. New Customers (Users whose first order is this month)
+    customer_first_orders = supplier_orders.values('user').annotate(first_order_date=Min('created_at'))
+    new_customers_count = 0
+    for entry in customer_first_orders:
+        if entry['first_order_date'].year == today.year and entry['first_order_date'].month == today.month:
+            new_customers_count += 1
+
+    # 5. Revenue This Week
+    start_of_week = today - timezone.timedelta(days=today.weekday()) # Monday as start
+    revenue_this_week = (
+        supplier_orders
+        .filter(created_at__date__gte=start_of_week, pipeline_status__slug='confirmed')
+        .aggregate(total=Sum('total_amount'))['total'] or 0
+    )
+
+    # 6. Tasks Count (Pending Orders + Low Stock Products)
+    low_stock_products = Product.objects.filter(supplier=supplier, is_active=True, stock__lt=5).count()
+    pending_orders_count = supplier_orders.filter(pipeline_status__slug='pending').count()
+    tasks_count = pending_orders_count + low_stock_products
+
     total_revenue = supplier_orders.filter(pipeline_status__slug='confirmed').aggregate(
         total=Sum('total_amount')
     )['total'] or 0
@@ -42,14 +85,17 @@ def _build_dashboard_stats(supplier):
         'orders_this_month': supplier_orders.filter(
             created_at__year=today.year, created_at__month=today.month
         ).count(),
-        'total_orders': supplier_orders.count(),
+        'total_orders': total_orders_count,
         'revenue_this_month': str(revenue_this_month),
         'total_revenue': str(total_revenue),
-        'pending_orders': supplier_orders.filter(pipeline_status__slug='pending').count(),
+        'revenue_this_week': str(revenue_this_week),
+        'revenue_change_percentage': round(revenue_change_pct, 1),
+        'success_rate': round(success_rate, 1),
+        'new_customers': new_customers_count,
+        'pending_orders': pending_orders_count,
+        'tasks_count': tasks_count,
         'total_products': Product.objects.filter(supplier=supplier).count(),
-        'low_stock_count': Product.objects.filter(
-            supplier=supplier, is_active=True, stock__lt=5
-        ).count(),
+        'low_stock_count': low_stock_products,
         'average_rating': round(avg_rating, 1),
     }
 
@@ -135,6 +181,10 @@ class MerchantDashboardAPIView(APIView):
             'top_products': MerchantProductSerializer(
                 _top_products_qs(supplier), many=True, context={'request': request}
             ).data,
+            'active_offer': MerchantOfferSerializer(
+                ProductOffer.objects.filter(product__supplier=supplier, is_active=True).order_by('-create_at').first(),
+                context={'request': request}
+            ).data if ProductOffer.objects.filter(product__supplier=supplier, is_active=True).exists() else None,
         })
 
 class MerchantSwitchAPIView(APIView):
@@ -403,10 +453,11 @@ class MerchantProfileAPIView(APIView):
         supplier, err = _assert_merchant_access(request.user, merchant_id)
         if err: return err
 
+        from ..serializers import MerchantProfileSerializer
         return Response({
             'success': True,
-            'merchant': SupplierSerializer(supplier, context={'request': request}).data,
-            'profile': SupplierSerializer(supplier, context={'request': request}).data
+            'merchant': MerchantProfileSerializer(supplier, context={'request': request}).data,
+            'profile': MerchantProfileSerializer(supplier, context={'request': request}).data
         })
 
     def patch(self, request):
@@ -421,14 +472,22 @@ class MerchantProfileAPIView(APIView):
         # Create a mutable copy if it's a QueryDict
         data = request.data.copy() if hasattr(request.data, 'copy') else request.data
         
-        serializer = SupplierSerializer(supplier, data=data, partial=True, context={'request': request})
+        # LOGGING for debugging
+        print(f"DEBUG: Updating profile for merchant {merchant_id}")
+        print(f"DEBUG: Data received: {data}")
+
+        from ..serializers import MerchantProfileSerializer
+        serializer = MerchantProfileSerializer(supplier, data=data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
+            print(f"DEBUG: Profile updated successfully for {merchant_id}")
             return Response({
                 'success': True, 
                 'merchant': serializer.data,
                 'profile': serializer.data
             })
+        
+        print(f"DEBUG: Serializer errors for {merchant_id}: {serializer.errors}")
         return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class MerchantBrandingAPIView(APIView):
@@ -586,8 +645,20 @@ class GenerateAIColorsAPIView(APIView):
 
         prompt = (
             """
-                ### ROLE: Senior UI/UX Engineer (E-commerce Specialist)
-                ### TASK: Analyze the uploaded logo and extract a 7-color high-contrast palette.
+                ### ROLE: World-Class Visual Identity Expert (خبير تصميم هويات بصرية)
+                
+                ### YOUR PHILOSOPHY:
+                You understand "تجانس الألوان" (Color Harmony) and act with artistic intuition (احساس). You don't just pick colors; you craft a professional brand experience.
+
+                ### VISUAL MAPPING:
+                1. `primary_color`: Brand soul (Main buttons & focus).
+                2. `secondary_color`: Atmosphere (Store background & surfaces).
+                3. `navbar_color`: Anchor (Top header background).
+                4. `navbar_text_color`: Clarity (Header text & icons).
+                5. `footer_color`: Foundation (Footer & action bars background).
+                6. `footer_text_color`: Signature (Footer text & links).
+                7. `accent_color`: Trigger (Vibrant 'Add to Cart' CTA).
+
                 ### STRICT JSON STRUCTURE:
                 {
                 "primary_color": "Hex",
@@ -595,9 +666,14 @@ class GenerateAIColorsAPIView(APIView):
                 "navbar_color": "Hex",
                 "navbar_text_color": "Hex",
                 "footer_color": "Hex",
-                "text_color": "Hex",
+                "footer_text_color": "Hex",
                 "accent_color": "Hex"
                 }
+
+                ### GOLDEN RULES:
+                - **Harmony (تجانس):** Palette must be balanced and cohesive.
+                - **Contrast:** Text must achieve 7:1 ratio for accessibility.
+                - **Conversion:** accent_color MUST pop and drive sales.
             """
         )
 
@@ -630,4 +706,6 @@ class GenerateAIColorsAPIView(APIView):
             })
 
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return Response({'error': f'AI Generation failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

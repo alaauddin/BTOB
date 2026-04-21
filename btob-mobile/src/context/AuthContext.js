@@ -26,6 +26,8 @@ export const AuthProvider = ({ children }) => {
     const [activeMerchant, setActiveMerchantState] = useState(null);
     const [biometricsAvailable, setBiometricsAvailable] = useState(false);
     const [biometricsEnabled, setBiometricsEnabled] = useState(false);
+    const [subModalVisible, setSubModalVisible] = useState(false);
+    const [subErrorData, setSubErrorData] = useState(null);
 
     /** true iff the logged-in user has the merchant scope */
     const isMerchant = userScope === 'merchant';
@@ -74,6 +76,12 @@ export const AuthProvider = ({ children }) => {
         // Register the global logout handler for 401 errors
         setUnauthorizedHandler(() => {
             handleAutoLogout();
+        });
+
+        // Register the global subscription handler for 402 errors
+        client.setPaymentRequiredHandler((data) => {
+            setSubErrorData(data);
+            setSubModalVisible(true);
         });
     }, []);
 
@@ -283,6 +291,11 @@ export const AuthProvider = ({ children }) => {
                 enableBiometrics,
                 disableBiometrics,
                 loginWithBiometrics,
+                // Subscription Modal
+                subModalVisible,
+                setSubModalVisible,
+                subErrorData,
+                setSubErrorData,
             }}
         >
             {children}

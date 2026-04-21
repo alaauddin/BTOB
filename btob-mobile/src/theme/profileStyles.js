@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions, Platform } from 'react-native';
+import { StyleSheet, Dimensions, Platform, StatusBar } from 'react-native';
 import { THEME } from './profileTheme';
 
 const { width } = Dimensions.get('window');
@@ -7,126 +7,286 @@ const { width } = Dimensions.get('window');
  * profileStyles.js
  * 
  * Shared premium styles for the Merchant Profile components.
+ * Optimized for 'Steel & Fire' identity and RTL compatibility.
  */
 
 export const styles = StyleSheet.create({
   // Root and Base
   root: { flex: 1, backgroundColor: THEME.colors.slate[50] },
-  scroll: { paddingBottom: 100 },
-  stickyHeader: { position: 'absolute', top: 0, left: 0, right: 0, height: 60, zIndex: 100, borderBottomWidth: 1, borderBottomColor: THEME.colors.slate[100] },
-  headerContent: { flex: 1, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
-  headerTitle: { fontSize: 16, fontWeight: '800', color: THEME.colors.slate[800] },
-  backBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(0,0,0,0.03)', justifyContent: 'center', alignItems: 'center' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadingText: { marginTop: 16, color: THEME.colors.slate[400], fontWeight: '700' },
+  scroll: { paddingBottom: 120 },
+  
+  stickyHeader: { 
+    position: 'absolute', 
+    top: 0, 
+    left: 0, 
+    right: 0, 
+    zIndex: 100, 
+    overflow: 'hidden',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30
+  },
+  headerSafe: { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  headerContent: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between', 
+    paddingHorizontal: 20, 
+    height: 75 
+  },
+  headerTitle: { fontSize: 20, fontWeight: '900', color: '#FFF' },
+  floatingBackBtn: { 
+    width: 44, 
+    height: 44, 
+    borderRadius: 15, 
+    backgroundColor: 'rgba(0,0,0,0.3)', 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFF' },
+  loadingText: { marginTop: 16, color: THEME.colors.slate[400], fontWeight: '800', fontSize: 13 },
 
   // Hero Section
-  heroSection: { marginBottom: 20 },
-  coverWrapper: { height: 220, overflow: 'hidden' },
-  heroCover: { width: '100%', height: 220, justifyContent: 'center', alignItems: 'center' },
-  meshBlob: { position: 'absolute', width: 250, height: 250, borderRadius: 125 },
+  heroSection: { marginBottom: 25 },
+  coverWrapper: { height: 240, overflow: 'hidden' },
+  heroCover: { width: '100%', height: 240, justifyContent: 'center', alignItems: 'center' },
   coverPlaceholder: { alignItems: 'center' },
-  heroMain: { paddingHorizontal: 20, marginTop: -40 },
-  identityRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 16 },
+  
+  heroMain: { paddingHorizontal: 20, marginTop: -60 },
+  identityRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 20 },
   logoAnchor: { position: 'relative' },
-  logoOutline: { width: 96, height: 96, borderRadius: 48, backgroundColor: '#FFF', borderWidth: 4, elevation: 10, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 10, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
-  heroLogoImg: { width: '100%', height: '100%' },
-  logoInitialWrap: { flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' },
-  heroLogoText: { fontSize: 36, fontWeight: '900' },
-  logoEditBadge: { position: 'absolute', bottom: 0, left: 0, width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#FFF' },
-  titleStack: { flex: 1, paddingTop: 30 },
-  heroTitle: { fontSize: 22, fontWeight: '900', color: THEME.colors.slate[900], textAlign: 'right' },
-  heroSub: { fontSize: 12, color: THEME.colors.primary, fontWeight: '700', marginTop: 2, textAlign: 'right' },
-  statsStrip: { flexDirection: 'row-reverse', backgroundColor: '#FFF', borderRadius: 20, marginTop: 20, padding: 16, elevation: 2, shadowOpacity: 0.05, shadowRadius: 10 },
+  logoOutline: { 
+    width: 110, 
+    height: 110, 
+    borderRadius: 30, 
+    backgroundColor: '#FFF', 
+    padding: 4,
+    elevation: 12, 
+    shadowColor: '#000', 
+    shadowOpacity: 0.15, 
+    shadowRadius: 15, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)'
+  },
+  heroLogoImg: { width: '100%', height: '100%', borderRadius: 26 },
+  logoInitialWrap: { flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center', borderRadius: 26 },
+  heroLogoText: { fontSize: 42, fontWeight: '900' },
+  logoEditBadge: { 
+    position: 'absolute', 
+    bottom: -6, 
+    left: -6, 
+    width: 34, 
+    height: 34, 
+    borderRadius: 12, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    borderWidth: 3, 
+    borderColor: '#FFF',
+    elevation: 5
+  },
+  
+  titleStack: { flex: 1, paddingBottom: 10 },
+  heroTitle: { fontSize: 22, fontWeight: '900', color: THEME.colors.slate[900] },
+  heroSub: { fontSize: 13, color: THEME.colors.primary, fontWeight: '800', marginTop: 4 },
+
+  statsStrip: { 
+    flexDirection: 'row', 
+    backgroundColor: '#FFF', 
+    borderRadius: 24, 
+    marginTop: 25, 
+    padding: 20, 
+    elevation: 5, 
+    shadowColor: '#000',
+    shadowOpacity: 0.05, 
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9'
+  },
   statItem: { flex: 1, alignItems: 'center' },
-  statVal: { fontSize: 14, fontWeight: '900', color: THEME.colors.slate[800] },
-  statLab: { fontSize: 10, color: THEME.colors.slate[400], marginTop: 2, fontWeight: '700' },
-  divider: { width: 1, height: '80%', backgroundColor: THEME.colors.slate[100], alignSelf: 'center' },
+  statVal: { fontSize: 16, fontWeight: '900', color: THEME.colors.slate[800] },
+  statLab: { fontSize: 11, color: THEME.colors.slate[400], marginTop: 4, fontWeight: '800' },
+  divider: { width: 1, height: '70%', backgroundColor: '#F1F5F9', alignSelf: 'center' },
 
   // Content Cards
-  contentBody: { paddingHorizontal: 16, marginTop: 10 },
-  groupCard: { backgroundColor: '#FFF', borderRadius: 28, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: THEME.colors.slate[100] },
-  groupHeader: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  groupHeaderTitle: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12 },
-  groupIconWrap: { width: 36, height: 36, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  groupHeaderText: { fontSize: 16, fontWeight: '800', color: THEME.colors.slate[800] },
-  groupBody: { gap: 16 },
+  contentBody: { paddingHorizontal: 20 },
+  groupCard: { 
+    backgroundColor: '#FFF', 
+    borderRadius: 30, 
+    padding: 24, 
+    marginBottom: 20, 
+    borderWidth: 1, 
+    borderColor: '#F1F5F9',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.02,
+    shadowRadius: 10
+  },
+  groupHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
+  groupHeaderTitle: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  groupIconWrap: { width: 42, height: 42, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+  groupHeaderText: { fontSize: 18, fontWeight: '900', color: THEME.colors.slate[800] },
+  groupBody: { gap: 20 },
 
   // Premium Inputs
-  premInputWrap: { marginBottom: 4 },
-  premInputLabel: { fontSize: 12, fontWeight: '700', color: THEME.colors.slate[400], marginBottom: 8, marginRight: 4, textAlign: 'right' },
-  premInputInner: { flexDirection: 'row-reverse', alignItems: 'center', backgroundColor: THEME.colors.slate[50], borderRadius: 16, borderWidth: 1, borderColor: THEME.colors.slate[100], height: 56, paddingHorizontal: 16 },
-  premInputDisabled: { backgroundColor: THEME.colors.slate[100] },
-  premInputIcon: { marginLeft: 12 },
-  premInputField: { flex: 1, fontSize: 15, fontWeight: '600', color: THEME.colors.slate[800], height: '100%' },
-  premInputMulti: { height: 100, paddingTop: 16, textAlignVertical: 'top' },
-  colorPreview: { width: 22, height: 22, borderRadius: 8, borderWidth: 1.5, borderColor: '#FFF', marginLeft: 10 },
+  premInputWrap: { marginBottom: 6 },
+  premInputLabel: { fontSize: 13, fontWeight: '800', color: THEME.colors.slate[500], marginBottom: 10, marginLeft: 4 },
+  premInputInner: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#F8FAFC', 
+    borderRadius: 18, 
+    borderWidth: 1, 
+    borderColor: '#F1F5F9', 
+    minHeight: 60, 
+    paddingHorizontal: 18 
+  },
+  premInputDisabled: { backgroundColor: '#F1F5F9', opacity: 0.7 },
+  premInputIcon: { marginRight: 14 },
+  premInputField: { 
+    flex: 1, 
+    fontSize: 16, 
+    fontWeight: '700', 
+    color: THEME.colors.slate[800], 
+    height: '100%',
+    paddingVertical: 12
+  },
+  premInputMulti: { minHeight: 120, textAlignVertical: 'top' },
+  colorPreview: { width: 26, height: 26, borderRadius: 8, borderWidth: 2, borderColor: '#FFF', marginLeft: 12, elevation: 2 },
   
   // Toggles
-  premToggleRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 },
-  premToggleLabelSide: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12 },
-  tinyIconBox: { width: 32, height: 32, borderRadius: 10, backgroundColor: THEME.colors.slate[50], justifyContent: 'center', alignItems: 'center' },
-  premToggleLabel: { fontSize: 14, fontWeight: '700', color: THEME.colors.slate[700] },
+  premToggleRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    paddingVertical: 6,
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 16,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#F1F5F9'
+  },
+  premToggleLabelSide: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  tinyIconBox: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
+  premToggleLabel: { fontSize: 15, fontWeight: '800', color: THEME.colors.slate[700] },
 
   // Mockup Preview
-  mockupFrame: { backgroundColor: THEME.colors.slate[900], borderRadius: 36, padding: 8, marginVertical: 20, alignSelf: 'center', width: 220, elevation: 20 },
-  mockupBezel: { backgroundColor: '#FFF', borderRadius: 28, overflow: 'hidden' },
-  mockupStatusBar: { height: 24, justifyContent: 'center', alignItems: 'center' },
-  mockupIsland: { width: 60, height: 12, backgroundColor: THEME.colors.slate[900], borderRadius: 6 },
-  mockupNav: { height: 40, paddingHorizontal: 12, justifyContent: 'center' },
-  mockupNavItems: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center' },
-  mockupBrandName: { fontSize: 10, fontWeight: '900' },
-  mockupContent: { height: 140, padding: 12, justifyContent: 'center', alignItems: 'center', gap: 12 },
-  mockupHeroMock: { width: '100%', flex: 1, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  mockupBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
-  mockupBtnText: { color: '#FFF', fontSize: 10, fontWeight: '900' },
-  mockupFooter: { height: 30 },
+  mockupFrame: { backgroundColor: THEME.colors.slate[900], borderRadius: 45, padding: 10, marginVertical: 25, alignSelf: 'center', width: 240, elevation: 25 },
+  mockupBezel: { backgroundColor: '#FFF', borderRadius: 36, overflow: 'hidden' },
+  mockupStatusBar: { height: 26, justifyContent: 'center', alignItems: 'center' },
+  mockupIsland: { width: 65, height: 14, backgroundColor: THEME.colors.slate[900], borderRadius: 7 },
+  mockupNav: { height: 45, paddingHorizontal: 15, justifyContent: 'center' },
+  mockupNavItems: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  mockupBrandName: { fontSize: 11, fontWeight: '900' },
+  mockupContent: { height: 160, padding: 15, justifyContent: 'center', alignItems: 'center', gap: 15 },
+  mockupHeroMock: { width: '100%', flex: 1, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
+  mockupBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
+  mockupBtnText: { color: '#FFF', fontSize: 11, fontWeight: '900' },
+  mockupFooter: { height: 35 },
 
   // Map Component
-  mapContainer: { height: 200, borderRadius: 24, overflow: 'hidden', marginBottom: 16 },
+  mapContainer: { height: 220, borderRadius: 28, overflow: 'hidden', marginBottom: 20, borderWidth: 1, borderColor: '#F1F5F9' },
   profileMap: { flex: 1 },
-  mapHintBadge: { position: 'absolute', bottom: 12, alignSelf: 'center', paddingHorizontal: 12, paddingVertical: 6 },
-  mapHintText: { fontSize: 11, fontWeight: '800' },
+  mapHintBadge: { position: 'absolute', bottom: 15, alignSelf: 'center', borderRadius: 14, overflow: 'hidden' },
+  mapHintText: { fontSize: 12, fontWeight: '900', paddingHorizontal: 16, paddingVertical: 8 },
 
   // Presets List
-  presetList: { marginBottom: 16 },
-  presetItem: { width: 90, height: 90, borderRadius: 20, backgroundColor: '#FFF', marginRight: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 2, gap: 8 },
-  presetIconWrap: { width: 36, height: 36, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  presetItemName: { fontSize: 11, fontWeight: '800', color: THEME.colors.slate[600] },
+  presetList: { marginBottom: 20 },
+  presetItem: { 
+    width: 100, 
+    height: 100, 
+    borderRadius: 24, 
+    backgroundColor: '#FFF', 
+    marginRight: 15, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    borderWidth: 2, 
+    gap: 10,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 5
+  },
+  presetIconWrap: { width: 40, height: 40, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+  presetItemName: { fontSize: 12, fontWeight: '900', color: THEME.colors.slate[600] },
 
   // Footer & Save Actions
-  footerActions: { marginTop: 20, gap: 16 },
-  simpleAction: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12, paddingVertical: 8 },
-  simpleActionText: { fontSize: 13, fontWeight: '700', color: THEME.colors.slate[500], marginRight: 8 },
-
-  // Payment Link in Profile
-  paymentLinkCard: { 
-    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', 
-    backgroundColor: THEME.colors.slate[50], padding: 16, borderRadius: 20, marginTop: 4,
-    borderWidth: 1, borderColor: THEME.colors.slate[100]
+  footerActions: { marginTop: 30, gap: 10, paddingBottom: 20 },
+  simpleAction: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 14, 
+    padding: 16, 
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#F1F5F9'
   },
-  paymentLinkContent: { flexDirection: 'row-reverse', alignItems: 'center', flex: 1 },
-  paymentActiveList: { flexDirection: 'row-reverse', marginLeft: 16, alignItems: 'center', width: 60 },
-  tinyMethodCircle: { width: 32, height: 32, borderRadius: 10, borderWidth: 2, borderColor: '#FFF', elevation: 2, shadowOpacity: 0.1, shadowRadius: 2 },
-  paymentTitle: { fontSize: 15, fontWeight: '800', color: THEME.colors.slate[800] },
-  paymentSub: { fontSize: 11, color: THEME.colors.slate[400], marginTop: 2 },
-  noPaymentsText: { fontSize: 10, color: THEME.colors.slate[400], fontWeight: '700' },
-  logoutAction: { opacity: 0.8 },
-  floatingAction: { position: 'absolute', bottom: 20, left: 20, right: 20 },
-  mainSaveBtn: { height: 64, borderRadius: 24, justifyContent: 'center', alignItems: 'center', elevation: 8, shadowColor: THEME.colors.primary, shadowOpacity: 0.3, shadowRadius: 15 },
-  btnInner: { flexDirection: 'row-reverse', alignItems: 'center' },
-  saveBtnText: { color: '#FFF', fontSize: 17, fontWeight: '900' },
+  simpleActionText: { fontSize: 14, fontWeight: '800', color: THEME.colors.slate[500] },
+  logoutAction: { borderColor: THEME.colors.rose + '20' },
+
+  // Floating Save Button
+  floatingAction: { position: 'absolute', bottom: 25, left: 20, right: 20 },
+  mainSaveBtn: { 
+    height: 70, 
+    borderRadius: 28, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    elevation: 10, 
+    shadowColor: THEME.colors.primary, 
+    shadowOpacity: 0.3, 
+    shadowRadius: 20 
+  },
+  btnInner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  saveBtnText: { color: '#FFF', fontSize: 18, fontWeight: '900' },
 
   // Misc
-  merchantItem: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: THEME.colors.slate[50] },
-  merchantMain: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12 },
-  merchantLogo: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  merchantInitial: { color: '#FFF', fontSize: 18, fontWeight: '900' },
-  merchantName: { fontSize: 15, fontWeight: '700', color: THEME.colors.slate[700] },
-  activePill: { backgroundColor: THEME.colors.primarySoft, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
-  activePillText: { fontSize: 10, fontWeight: '900', color: THEME.colors.primary },
-  aiTag: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
-  aiTagText: { color: '#FFF', fontSize: 12, fontWeight: '900' },
+  merchantItem: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    padding: 16, 
+    backgroundColor: '#F8FAFC',
+    borderRadius: 20,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9'
+  },
+  merchantMain: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  merchantLogo: { width: 48, height: 48, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  merchantInitial: { color: '#FFF', fontSize: 20, fontWeight: '900' },
+  merchantName: { fontSize: 16, fontWeight: '800', color: THEME.colors.slate[700] },
+  activePill: { backgroundColor: '#FFF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: THEME.colors.emerald + '30' },
+  activePillText: { fontSize: 11, fontWeight: '900', color: THEME.colors.emerald },
+  
+  aiTag: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 15, paddingVertical: 10, borderRadius: 14 },
+  aiTagText: { color: '#FFF', fontSize: 13, fontWeight: '900' },
   gridRow: { flexDirection: 'row', gap: 16 },
-  groupSubTitle: { fontSize: 13, fontWeight: '900', color: THEME.colors.slate[400], marginBottom: 12, marginTop: 10, textAlign: 'right' },
+  groupSubTitle: { fontSize: 14, fontWeight: '900', color: THEME.colors.slate[400], marginBottom: 15, marginTop: 15 },
+
+  // Payment Link Card
+  paymentLinkCard: { 
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', 
+    backgroundColor: '#F8FAFC', padding: 20, borderRadius: 24, marginTop: 10,
+    borderWidth: 1, borderColor: '#F1F5F9'
+  },
+  paymentLinkContent: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 16 },
+  paymentActiveList: { flexDirection: 'row', alignItems: 'center' },
+  tinyMethodCircle: { 
+    width: 36, 
+    height: 36, 
+    borderRadius: 12, 
+    borderWidth: 2, 
+    borderColor: '#FFF', 
+    elevation: 4, 
+    shadowColor: '#000', 
+    shadowOpacity: 0.1, 
+    shadowRadius: 5,
+    backgroundColor: '#FFF'
+  },
+  paymentTitle: { fontSize: 16, fontWeight: '900', color: THEME.colors.slate[800] },
+  paymentSub: { fontSize: 12, color: THEME.colors.slate[400], marginTop: 4, fontWeight: '800' },
+  noPaymentsText: { fontSize: 11, color: THEME.colors.slate[400], fontWeight: '800' },
 });
+

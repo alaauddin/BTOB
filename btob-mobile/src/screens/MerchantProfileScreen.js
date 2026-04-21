@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   View, Text, ScrollView, Modal, TouchableOpacity, Image, Alert, 
-  ActivityIndicator, KeyboardAvoidingView, Platform, Animated, StyleSheet
+  ActivityIndicator, KeyboardAvoidingView, Platform, Animated, StyleSheet, StatusBar
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -13,9 +13,10 @@ import * as ImagePicker from 'expo-image-picker';
 import MapView, { Marker } from '../components/MapModule';
 import { LinearGradient } from 'expo-linear-gradient';
 import client from '../api/client';
+import Logo from '../components/Logo';
 import BrandGenModal from '../components/BrandGenModal';
 
-// Imported Refactored Components
+// Theme & Components
 import { THEME } from '../theme/profileTheme';
 import { styles } from '../theme/profileStyles';
 import ProfileHero from '../components/profile/ProfileHero';
@@ -23,6 +24,7 @@ import SettingsGroup from '../components/profile/SettingsGroup';
 import PremiumInput from '../components/profile/PremiumInput';
 import PremiumToggle from '../components/profile/PremiumToggle';
 import DeviceMockup from '../components/profile/DeviceMockup';
+import { BRAND } from '../theme/brand';
 
 export default function MerchantProfileScreen() {
   const navigation = useNavigation();
@@ -34,7 +36,6 @@ export default function MerchantProfileScreen() {
   } = useAuth();
   const { showNotification } = useNotifications();
   
-  const [errorStatus, setErrorStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
@@ -43,27 +44,48 @@ export default function MerchantProfileScreen() {
   const [imagesData, setImagesData] = useState({ profile_picture: null, panal_picture: null });
   const [isAiModalVisible, setIsAiModalVisible] = useState(false);
 
+  // Detect changes to show/hide save button
+  const hasChanges = useMemo(() => {
+    if (!activeMerchant) return false;
+    if (imagesData.profile_picture || imagesData.panal_picture) return true;
+
+    const fields = [
+        'name', 'store_id', 'secondary_phone', 'subdomain', 'latitude', 'longitude', 
+        'city', 'country', 'address', 'primary_color', 'secondary_color', 'accent_color', 
+        'footer_text_color', 'navbar_color', 'navbar_text_color', 'footer_color',
+        'delivery_fee_ratio', 'facebook_url', 'instagram_url', 'twitter_url', 
+        'tiktok_url', 'footer_description', 'return_policy', 'is_active'
+    ];
+
+    return fields.some(key => {
+        const val1 = formData[key];
+        const val2 = activeMerchant[key];
+        // Handle potential null/undefined vs empty string
+        if (!val1 && !val2) return false;
+        return String(val1) !== String(val2);
+    });
+  }, [formData, activeMerchant, imagesData]);
+
   // Animations
   const scrollY = useRef(new Animated.Value(0)).current;
-  const fadeAnims = useRef([
-    new Animated.Value(0), new Animated.Value(0), 
-    new Animated.Value(0), new Animated.Value(0), 
-    new Animated.Value(0), new Animated.Value(0),
-    new Animated.Value(0)
-  ]).current;
+  const fadeAnims = useRef([...Array(10)].map(() => new Animated.Value(0))).current;
 
   // Design Presets
   const PRESETS = [
-    { name: 'Modern', primary: '#4F46E5', secondary: '#0F172A', navbar: '#F8FAFC', text: '#1E293B', accent: '#3B82F6', icon: 'zap' },
-    { name: 'Luxury', primary: '#B45309', secondary: '#451A03', navbar: '#1C1917', text: '#FDE68A', accent: '#D97706', icon: 'award' },
-    { name: 'Nature', primary: '#065F46', secondary: '#064E3B', navbar: '#ECFDF5', text: '#065F46', accent: '#10B981', icon: 'feather' },
-    { name: 'Royal', primary: '#7C3AED', secondary: '#2E1065', navbar: '#F5F3FF', text: '#4C1D95', accent: '#8B5CF6', icon: 'command' },
-    { name: 'Minimal', primary: '#1E293B', secondary: '#FFFFFF', navbar: '#FFFFFF', text: '#334155', accent: '#0F172A', icon: 'minus' },
+    { name: 'رواج الافتراضي', primary: '#2B5876', secondary: '#F8FAFC', navbar: '#FFFFFF', text: '#1E293B', accent: '#D48231', icon: 'shield' },
+    { name: 'احترافي داكن', primary: '#0F172A', secondary: '#0F172A', navbar: '#0F172A', text: '#F8FAFC', accent: '#3B82F6', icon: 'zap' },
+    { name: 'ذهبي ملكي', primary: '#78350F', secondary: '#FFFBEB', navbar: '#1C1917', text: '#F59E0B', accent: '#FCD34D', icon: 'award' },
+    { name: 'وردي عصري', primary: '#BE185D', secondary: '#FDF2F8', navbar: '#FFFFFF', text: '#831843', accent: '#F472B6', icon: 'heart' },
+    { name: 'أخضر طبيعي', primary: '#065F46', secondary: '#F0FDF4', navbar: '#065F46', text: '#FFFFFF', accent: '#34D399', icon: 'feather' },
+    { name: 'نيلي أنيق', primary: '#4338CA', secondary: '#F5F3FF', navbar: '#1E1B4B', text: '#FFFFFF', accent: '#A5B4FC', icon: 'moon' },
+    { name: 'رملي وبحر', primary: '#0D9488', secondary: '#FEFCE8', navbar: '#0D9488', text: '#FFFFFF', accent: '#99F6E4', icon: 'sun' },
+    { name: 'بسيط كلاسيكي', primary: '#18181B', secondary: '#FAFAFA', navbar: '#FFFFFF', text: '#18181B', accent: '#71717A', icon: 'box' },
   ];
 
-  const primaryColor = String(formData?.primary_color || activeMerchant?.primary_color || THEME.colors.primary);
+  const primaryColor = String(formData?.primary_color || activeMerchant?.primary_color || BRAND.colors.primary);
 
   const [paymentMethods, setPaymentMethods] = useState([]);
+  const [currencies, setCurrencies] = useState([]);
 
   const fetchProfile = useCallback(async () => {
     if (!activeMerchant?.id) {
@@ -71,9 +93,10 @@ export default function MerchantProfileScreen() {
        return;
     }
     try {
-      const [profRes, payRes] = await Promise.all([
+      const [profRes, payRes, currRes] = await Promise.all([
         client.get(`/merchant/profile/?merchant_id=${activeMerchant?.id}`),
-        client.get(`/merchant/payment-settings/?merchant_id=${activeMerchant?.id}`)
+        client.get(`/merchant/payment-settings/?merchant_id=${activeMerchant?.id}`),
+        client.get('/core/currencies/')
       ]);
       
       if (profRes.data.success) {
@@ -81,9 +104,12 @@ export default function MerchantProfileScreen() {
         if (profileData) setFormData(profileData);
       }
       
-      setPaymentMethods(payRes.data.results || payRes.data || []);
+      setPaymentMethods(Array.isArray(payRes.data.results) ? payRes.data.results : (Array.isArray(payRes.data) ? payRes.data : []));
+      if (currRes.data.success) setCurrencies(currRes.data.currencies || []);
     } catch (err) {
-      console.error('Failed to fetch profile/payments', err);
+      if (err.response?.status !== 402) {
+        console.error('Failed to fetch profile/payments', err);
+      }
     } finally {
       setLoading(false);
     }
@@ -98,8 +124,8 @@ export default function MerchantProfileScreen() {
       const animations = fadeAnims.map((anim, i) => 
         Animated.timing(anim, {
           toValue: 1,
-          duration: 500,
-          delay: i * 80,
+          duration: 600,
+          delay: i * 100,
           useNativeDriver: true,
         })
       );
@@ -115,7 +141,7 @@ export default function MerchantProfileScreen() {
     }
 
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: 'images',
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 0.8,
     });
@@ -137,6 +163,8 @@ export default function MerchantProfileScreen() {
         navbar_color: preset.navbar,
         footer_color: preset.secondary,
         navbar_text_color: preset.text,
+        footer_text_color: preset.text,
+        accent_color: preset.accent,
     }));
   };
 
@@ -148,13 +176,25 @@ export default function MerchantProfileScreen() {
     setSaving(true);
     try {
       const cleanData = {};
-      const skipFields = ['id', 'store_id', 'profile_picture', 'panal_picture', 'profile_picture_url', 'cover_picture_url', 'store_link', 'phone'];
+      const skipFields = [
+        'id', 'profile_picture', 'panal_picture', 'profile_picture_url', 
+        'cover_picture_url', 'store_link', 'category', 'currency', 'managing_users',
+        'agreed_to_terms', 'terms_agreed_at', 'show_system_logo', 'show_out_of_stock',
+        'enable_delivery_drivers', 'can_buy_wholesale', 'can_add_products', 
+        'can_add_product_categories', 'can_add_categories', 'show_platform_ads',
+        'enable_delivery_fees', 'show_order_amounts'
+      ];
       
       Object.keys(formData).forEach(key => {
         if (!skipFields.includes(key) && formData[key] !== null) {
           cleanData[key] = formData[key];
         }
       });
+
+      // Special handling for currency_id if needed
+      if (formData.currency?.id) {
+          cleanData.currency_id = formData.currency.id;
+      }
 
       const patchRes = await client.patch('/merchant/profile/', {
         merchant_id: activeMerchant?.id,
@@ -193,16 +233,17 @@ export default function MerchantProfileScreen() {
         }
       }
 
-      showNotification({ title: 'تم الحفظ', message: 'تم تحديث بيانات المتجر بنجاح', type: 'success' });
+      showNotification({ title: 'تم الحفظ', message: 'تم تحديث كافة بيانات المتجر بنجاح', type: 'success' });
     } catch (err) {
        console.error(err);
+       showNotification({ title: 'خطأ', message: 'فشل في حفظ البيانات، يرجى المحاولة لاحقاً', type: 'error' });
     } finally {
       setSaving(false);
     }
   };
 
   const handleLogout = () => {
-    Alert.alert('تسجيل الخروج', 'هل تريد تسجيل الخروج؟', [
+    Alert.alert('تسجيل الخروج', 'هل أنت متأكد من رغبتك في تسجيل الخروج من حساب التاجر؟', [
       { text: 'إلغاء', style: 'cancel' },
       { text: 'خروج', style: 'destructive', onPress: async () => {
           await logout();
@@ -211,41 +252,68 @@ export default function MerchantProfileScreen() {
     ]);
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={[styles.root, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={THEME.colors.primary} />
-        <Text style={styles.loadingText}>جاري تحميل عالمك الخاص...</Text>
-      </SafeAreaView>
-    );
-  }
-
   const coverSrc = String(imagesData.panal_picture?.uri || formData?.cover_picture_url || activeMerchant?.panal_picture || '');
   const logoSrc = String(imagesData.profile_picture?.uri || formData?.profile_picture_url || activeMerchant?.profile_picture || '');
 
   const headerOpacity = scrollY.interpolate({
-    inputRange: [180, 240],
+    inputRange: [80, 160],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
 
+  const headerTitleOpacity = scrollY.interpolate({
+    inputRange: [140, 200],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const backBtnBg = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: ['rgba(0,0,0,0.3)', 'rgba(0,0,0,0)'],
+    extrapolate: 'clamp',
+  });
+
   return (
-    <SafeAreaView style={styles.root} edges={['top']}>
-      <Animated.View style={[styles.stickyHeader, { opacity: headerOpacity }]}>
-          <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFill} />
+    <View style={styles.root}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      
+      {/* Animated Sticky Header */}
+      <View style={styles.stickyHeader}>
+        <Animated.View style={[StyleSheet.absoluteFill, { opacity: headerOpacity }]}>
+          <BlurView intensity={Platform.OS === 'ios' ? 60 : 100} tint="dark" style={StyleSheet.absoluteFill} />
+          <LinearGradient 
+            colors={BRAND.gradients.primary} 
+            style={[StyleSheet.absoluteFill, { opacity: 0.85 }]} 
+            start={{ x: 0, y: 0 }} 
+            end={{ x: 1, y: 1 }} 
+          />
+        </Animated.View>
+        
+        <SafeAreaView edges={['top']} style={styles.headerSafe}>
           <View style={styles.headerContent}>
-             <Text style={styles.headerTitle}>{String(formData?.name || '')}</Text>
-             <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-                <Feather name="chevron-right" size={24} color={THEME.colors.slate[800]} />
-             </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.floatingBackBtn} 
+              onPress={() => navigation.goBack()}
+              activeOpacity={0.7}
+            >
+              <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: backBtnBg, borderRadius: 15 }]} />
+              <Feather name="arrow-right" size={24} color="#FFF" />
+            </TouchableOpacity>
+
+            <Animated.Text style={[styles.headerTitle, { opacity: headerTitleOpacity }]} numberOfLines={1}>
+              {formData?.name || 'إعدادات المتجر'}
+            </Animated.Text>
+
+            <Logo variant="circle" size={32} />
           </View>
-      </Animated.View>
+        </SafeAreaView>
+      </View>
 
       <KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <Animated.ScrollView 
             contentContainerStyle={styles.scroll} 
             showsVerticalScrollIndicator={false}
-            onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+            onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
             scrollEventThrottle={16}
         >
 
@@ -256,19 +324,23 @@ export default function MerchantProfileScreen() {
             onEditLogo={() => pickImage('profile_picture')}
             storeName={formData?.name}
             primaryColor={primaryColor}
-            activeMerchant={activeMerchant}
+            activeMerchant={formData}
             scrollY={scrollY}
           />
 
           <View style={styles.contentBody}>
-            <SettingsGroup title="المعلومات الأساسية" icon="info" iconColor={THEME.colors.primary} fadeAnim={fadeAnims[0]}>
+            {/* Basic Identity */}
+            <SettingsGroup title="الهوية الأساسية" icon="info" iconColor={BRAND.colors.primary} fadeAnim={fadeAnims[0]}>
+              <PremiumToggle label="حالة المتجر (نشط)" icon="activity" value={formData?.is_active} onValueChange={v => updateField('is_active', v)} color={BRAND.colors.success} />
               <PremiumInput label="اسم المتجر" icon="tag" value={formData?.name} onChangeText={t => updateField('name', t)} />
-              <PremiumInput label="رقم الهاتف (أساسي)" icon="lock" value={formData?.phone} editable={false} />
+              <PremiumInput label="المعرف الفريد (Slug)" icon="at-sign" value={formData?.store_id} onChangeText={t => updateField('store_id', t)} />
+              <PremiumInput label="رقم الهاتف الأساسي" icon="lock" value={formData?.phone} editable={false} />
               <PremiumInput label="رقم هاتف إضافي" icon="phone" value={formData?.secondary_phone} onChangeText={t => updateField('secondary_phone', t)} keyboardType="phone-pad" />
-              <PremiumInput label="النطاق الفرعي" icon="globe" value={formData?.subdomain} onChangeText={t => updateField('subdomain', t)} />
+              <PremiumInput label="النطاق الفرعي (Subdomain)" icon="globe" value={formData?.subdomain} onChangeText={t => updateField('subdomain', t)} />
             </SettingsGroup>
 
-            <SettingsGroup title="الموقع الجغرافي" icon="map-pin" iconColor={THEME.colors.amber} fadeAnim={fadeAnims[1]}>
+            {/* Geographical Presence */}
+            <SettingsGroup title="الموقع والانتشار" icon="map-pin" iconColor={THEME.colors.amber} fadeAnim={fadeAnims[1]}>
               <View style={styles.mapContainer}>
                 <MapView
                   style={styles.profileMap}
@@ -294,42 +366,41 @@ export default function MerchantProfileScreen() {
                     pinColor={primaryColor}
                   />
                 </MapView>
-                <View style={[styles.mapHintBadge, { backgroundColor: 'rgba(255,255,255,0.8)', overflow: 'hidden', borderRadius: 12 }]}>
-                 <BlurView intensity={20} tint="light" style={StyleSheet.absoluteFill} />
-                 <Text style={[styles.mapHintText, { color: '#000', paddingHorizontal: 10, paddingVertical: 4 }]}>اضغط لتعديل الموقع</Text>
-                </View>
+                <LinearGradient colors={['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.7)']} style={styles.mapHintBadge}>
+                  <Text style={[styles.mapHintText, { color: BRAND.colors.primary }]}>انقر على الخريطة لتحديد الموقع</Text>
+                </LinearGradient>
               </View>
 
               <View style={styles.gridRow}>
-                <PremiumInput label="خط العرض" value={String(formData?.latitude || '')} onChangeText={t => updateField('latitude', t)} keyboardType="numeric" flex={1} />
-                <PremiumInput label="خط الطول" value={String(formData?.longitude || '')} onChangeText={t => updateField('longitude', t)} keyboardType="numeric" flex={1} />
+                <PremiumInput label="المدينة" icon="map" value={formData?.city} onChangeText={t => updateField('city', t)} flex={1} />
+                <PremiumInput label="الدولة" icon="flag" value={formData?.country} onChangeText={t => updateField('country', t)} flex={1} />
               </View>
-              <PremiumInput label="المدينة" icon="map" value={formData?.city} onChangeText={t => updateField('city', t)} />
-              <PremiumInput label="العنوان" icon="navigation" value={formData?.address} onChangeText={t => updateField('address', t)} />
+              <PremiumInput label="العنوان التفصيلي" icon="navigation" value={formData?.address} onChangeText={t => updateField('address', t)} />
             </SettingsGroup>
 
-            <SettingsGroup title="الهوية البصرية" icon="eye" iconColor="#7C3AED" fadeAnim={fadeAnims[2]}
+            {/* Branding & Design */}
+            <SettingsGroup title="تصميم المتجر (UI)" icon="layout" iconColor="#7C3AED" fadeAnim={fadeAnims[2]}
               headerAction={
                 <TouchableOpacity onPress={() => setIsAiModalVisible(true)}>
-                  <LinearGradient colors={['#8B5CF6', '#6366F1']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.aiTag, { overflow: 'hidden' }]}>
-                    <Feather name="zap" size={12} color="#FFF" />
-                    <Text style={styles.aiTagText}>المولد الذكي</Text>
+                  <LinearGradient colors={['#8B5CF6', '#6366F1']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.aiTag}>
+                    <Ionicons name="sparkles" size={14} color="#FFF" />
+                    <Text style={styles.aiTagText}>تنسيق ذكي</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               }
             >
               <DeviceMockup formData={formData} primaryColor={primaryColor} />
 
-              <Text style={styles.groupSubTitle}>القوالب الجاهزة</Text>
+              <Text style={styles.groupSubTitle}>القوالب اللونية المقترحة</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.presetList}>
                 {PRESETS.map(p => (
                   <TouchableOpacity 
                     key={p.name} 
-                    style={[styles.presetItem, { borderColor: formData?.primary_color === p.primary ? p.primary : THEME.colors.slate[100] }]}
+                    style={[styles.presetItem, { borderColor: formData?.primary_color === p.primary ? p.primary : '#F1F5F9' }]}
                     onPress={() => applyPreset(p)}
                   >
                     <View style={[styles.presetIconWrap, { backgroundColor: p.primary + '15' }]}>
-                      <Feather name={p.icon} size={16} color={p.primary} />
+                      <Feather name={p.icon} size={18} color={p.primary} />
                     </View>
                     <Text style={styles.presetItemName}>{p.name}</Text>
                   </TouchableOpacity>
@@ -337,14 +408,29 @@ export default function MerchantProfileScreen() {
               </ScrollView>
 
               <View style={styles.gridRow}>
-                <PremiumInput label="الأساسي" value={formData?.primary_color} onChangeText={t => updateField('primary_color', t)} flex={1} isColor />
-                <PremiumInput label="التذييل" value={formData?.footer_color} onChangeText={t => updateField('footer_color', t)} flex={1} isColor />
+                <PremiumInput label="اللون الأساسي" value={formData?.primary_color} onChangeText={t => updateField('primary_color', t)} flex={1} isColor />
+                <PremiumInput label="اللون الثانوي" value={formData?.secondary_color} onChangeText={t => updateField('secondary_color', t)} flex={1} isColor />
+              </View>
+              <View style={styles.gridRow}>
+                <PremiumInput label="لون التمييز" value={formData?.accent_color} onChangeText={t => updateField('accent_color', t)} flex={1} isColor />
+                <PremiumInput label="لون نصوص التذييل" value={formData?.footer_text_color} onChangeText={t => updateField('footer_text_color', t)} flex={1} isColor />
+              </View>
+              <View style={styles.gridRow}>
+                <PremiumInput label="لون القائمة" value={formData?.navbar_color} onChangeText={t => updateField('navbar_color', t)} flex={1} isColor />
+                <PremiumInput label="نص القائمة" value={formData?.navbar_text_color} onChangeText={t => updateField('navbar_text_color', t)} flex={1} isColor />
+              </View>
+              <View style={styles.gridRow}>
+                <PremiumInput label="لون التذييل" value={formData?.footer_color} onChangeText={t => updateField('footer_color', t)} flex={1} isColor />
+                <View style={{ flex: 1 }} />
               </View>
             </SettingsGroup>
 
-            <SettingsGroup title="طرق الدفع الإلكتروني" icon="credit-card" iconColor="#10B981" fadeAnim={fadeAnims[3]}>
-              <TouchableOpacity 
-                activeOpacity={0.7} 
+            {/* Financials & Delivery */}
+            <SettingsGroup title="المالية والتوصيل" icon="credit-card" iconColor={BRAND.colors.success} fadeAnim={fadeAnims[3]}>
+               <PremiumInput label="نسبة رسوم التوصيل (لكل كم)" icon="truck" value={String(formData?.delivery_fee_ratio || '0')} onChangeText={t => updateField('delivery_fee_ratio', t)} keyboardType="numeric" />
+               
+               <TouchableOpacity 
+                activeOpacity={0.8} 
                 onPress={() => navigation.navigate('MerchantPaymentSettings')}
                 style={styles.paymentLinkCard}
               >
@@ -352,75 +438,88 @@ export default function MerchantProfileScreen() {
                   <View style={styles.paymentActiveList}>
                     {paymentMethods.filter(m => m.is_active).length > 0 ? (
                       paymentMethods.filter(m => m.is_active).slice(0, 3).map((pm, idx) => (
-                        <View key={idx} style={[styles.tinyMethodCircle, { zIndex: 10 - idx, marginLeft: idx === 0 ? 0 : -10 }]}>
+                        <View key={idx} style={[styles.tinyMethodCircle, { zIndex: 10 - idx, marginStart: idx === 0 ? 0 : -15 }]}>
                           {pm.method_logo ? (
                             <Image source={{ uri: pm.method_logo }} style={{ width: '100%', height: '100%', borderRadius: 10 }} />
                           ) : (
-                            <View style={{ width: '100%', height: '100%', borderRadius: 10, backgroundColor: THEME.colors.slate[100], justifyContent: 'center', alignItems: 'center' }}>
-                               <Feather name="wallet" size={10} color={primaryColor} />
+                            <View style={{ width: '100%', height: '100%', borderRadius: 10, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' }}>
+                               <Feather name="credit-card" size={14} color={BRAND.colors.primary} />
                             </View>
                           )}
                         </View>
                       ))
                     ) : (
-                      <Text style={styles.noPaymentsText}>لم يتم تفعيل أي وسيلة</Text>
+                      <View style={styles.tinyMethodCircle}>
+                         <View style={{ flex: 1, backgroundColor: '#F1F5F9', borderRadius: 10, justifyContent: 'center', alignItems: 'center' }}>
+                            <Feather name="plus" size={14} color={BRAND.colors.slate[400]} />
+                         </View>
+                      </View>
                     )}
                   </View>
-                  <View style={{ alignItems: 'flex-start' }}>
-                    <Text style={styles.paymentTitle}>إدارة الحسابات البنكية</Text>
-                    <Text style={styles.paymentSub}>التحصيل عبر الكريمي، المحافظ، والتحويلات</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.paymentTitle}>الحسابات والتحصيل</Text>
+                    <Text style={styles.paymentSub} numberOfLines={1}>إدارة المحافظ والتحصيل الإلكتروني</Text>
                   </View>
                 </View>
-                <Feather name="chevron-left" size={18} color={THEME.colors.slate[300]} />
+                <Feather name="chevron-left" size={20} color={THEME.colors.slate[400]} />
               </TouchableOpacity>
             </SettingsGroup>
 
+            {/* Social Media Links */}
+            <SettingsGroup title="روابط التواصل الاجتماعي" icon="share-2" iconColor="#3B82F6" fadeAnim={fadeAnims[4]}>
+               <PremiumInput label="فيسبوك" icon="facebook" value={formData?.facebook_url} onChangeText={t => updateField('facebook_url', t)} keyboardType="url" />
+               <PremiumInput label="انستقرام" icon="instagram" value={formData?.instagram_url} onChangeText={t => updateField('instagram_url', t)} keyboardType="url" />
+               <PremiumInput label="تويتر (X)" icon="twitter" value={formData?.twitter_url} onChangeText={t => updateField('twitter_url', t)} keyboardType="url" />
+               <PremiumInput label="تيك توك" icon="video" value={formData?.tiktok_url} onChangeText={t => updateField('tiktok_url', t)} keyboardType="url" />
+            </SettingsGroup>
+
+            {/* Policies & Long Text */}
+            <SettingsGroup title="سياسات المتجر" icon="file-text" iconColor="#64748B" fadeAnim={fadeAnims[5]}>
+              <PremiumInput label="وصف التذييل (Footer)" icon="edit-3" value={formData?.footer_description} onChangeText={t => updateField('footer_description', t)} multiline />
+              <PremiumInput label="سياسة الاستبدال والاسترجاع" icon="refresh-ccw" value={formData?.return_policy} onChangeText={t => updateField('return_policy', t)} multiline />
+            </SettingsGroup>
+
+            {/* Security */}
             {biometricsAvailable && (
-              <SettingsGroup title="الأمان والخصوصية" icon="shield" iconColor={THEME.colors.slate[600]} fadeAnim={fadeAnims[4]}>
-                <View style={{ paddingVertical: 4 }}>
+              <SettingsGroup title="الأمان والخصوصية" icon="shield" iconColor="#6366F1" fadeAnim={fadeAnims[6]}>
                   <PremiumToggle 
-                    label="تسجيل الدخول بالبصمة" 
-                    icon="shield" 
+                    label="الدخول بالبصمة" 
+                    icon="cpu" 
                     value={biometricsEnabled} 
                     onValueChange={async (v) => {
                       if (v) {
                         Alert.alert('تفعيل البصمة', 'لتفعيل الدخول بالبصمة، يرجى تسجيل الدخول يدوياً في المرة القادمة والموافقة على طلب التفعيل.');
                       } else {
                         await disableBiometrics();
-                        showNotification({ title: 'نجاح', message: 'تم تعطيل الدخول بالبصمة', type: 'success' });
+                        showNotification({ title: 'تراجع', message: 'تم تعطيل الدخول بالبصمة', type: 'info' });
                       }
                     }} 
                     color={primaryColor} 
                   />
-                  <Text style={{ fontSize: 11, color: THEME.colors.slate[500], paddingHorizontal: 16, marginTop: -4, textAlign: 'right' }}>
-                    استخدم بصمة الإصبع أو الوجه للدخول السريع مستقبلاً
+                  <Text style={{ fontSize: 11, color: THEME.colors.slate[400], paddingHorizontal: 16, marginTop: 8, textAlign: 'right' }}>
+                    استخدم التقنيات البيومترية لتأمين حسابك وسرعة الوصول
                   </Text>
-                </View>
               </SettingsGroup>
             )}
 
-            <SettingsGroup title="التواصل والسياسات" icon="share-2" iconColor="#4F46E5" fadeAnim={fadeAnims[5]}>
-              <PremiumInput label="وصف التذييل" icon="file-text" value={formData?.footer_description} onChangeText={t => updateField('footer_description', t)} multiline />
-              <PremiumInput label="سياسة الاسترجاع" icon="refresh-cw" value={formData?.return_policy} onChangeText={t => updateField('return_policy', t)} multiline />
-            </SettingsGroup>
-
+            {/* Managed Merchants */}
             {manageableMerchants && manageableMerchants.length > 1 && (
-              <SettingsGroup title="المتاجر المُدارة" icon="layers" iconColor={THEME.colors.primary} fadeAnim={fadeAnims[6]}>
+              <SettingsGroup title="المتاجر المُدارة" icon="users" iconColor={BRAND.colors.primary} fadeAnim={fadeAnims[7]}>
                 {manageableMerchants.map(m => (
                   <View key={m.id} style={styles.merchantItem}>
                     <View style={styles.merchantMain}>
                       {m.profile_picture ? (
                         <Image source={{ uri: m.profile_picture }} style={styles.merchantLogo} />
                       ) : (
-                        <View style={[styles.merchantLogo, { backgroundColor: m.primary_color || THEME.colors.slate[200] }]}>
+                        <View style={[styles.merchantLogo, { backgroundColor: m.primary_color || '#E2E8F0' }]}>
                            <Text style={styles.merchantInitial}>{String(m.name || 'M')[0].toUpperCase()}</Text>
                         </View>
                       )}
-                      <Text style={[styles.merchantName, m.id === activeMerchant?.id && { color: THEME.colors.primary }]}>{String(m.name || '')}</Text>
+                      <Text style={[styles.merchantName, m.id === activeMerchant?.id && { color: BRAND.colors.primary }]}>{String(m.name || '')}</Text>
                     </View>
                     {m.id === activeMerchant?.id && (
                       <View style={styles.activePill}>
-                         <Text style={styles.activePillText}>نشط الآن</Text>
+                         <Text style={styles.activePillText}>المتجر الحالي</Text>
                       </View>
                     )}
                   </View>
@@ -430,12 +529,12 @@ export default function MerchantProfileScreen() {
 
             <View style={styles.footerActions}>
               <TouchableOpacity style={styles.simpleAction} onPress={() => navigation.navigate('Home')}>
-                <Feather name="home" size={20} color={THEME.colors.slate[500]} />
-                <Text style={styles.simpleActionText}>العودة للرئيسية</Text>
+                <Feather name="external-link" size={18} color={THEME.colors.slate[400]} />
+                <Text style={styles.simpleActionText}>زيارة المتجر كعميل</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.simpleAction, styles.logoutAction]} onPress={handleLogout}>
-                <Feather name="log-out" size={20} color={THEME.colors.rose} />
-                <Text style={[styles.simpleActionText, { color: THEME.colors.rose }]}>تسجيل الخروج</Text>
+                <Feather name="log-out" size={18} color={THEME.colors.rose} />
+                <Text style={[styles.simpleActionText, { color: THEME.colors.rose }]}>تسجيل الخروج النهائي</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -444,16 +543,29 @@ export default function MerchantProfileScreen() {
         </Animated.ScrollView>
       </KeyboardAvoidingView>
 
-      <View style={styles.floatingAction}>
-        <TouchableOpacity style={[styles.mainSaveBtn, { backgroundColor: primaryColor }]} onPress={handleSave} disabled={saving}>
-          {saving ? <ActivityIndicator color="#fff" /> : (
-            <View style={styles.btnInner}>
-              <Text style={styles.saveBtnText}>حفظ كافة التغييرات</Text>
-              <Feather name="check-circle" size={20} color="#FFF" style={{ marginLeft: 8 }} />
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
+      {hasChanges && (
+        <View style={styles.floatingAction}>
+          <TouchableOpacity 
+            style={styles.mainSaveBtn} 
+            onPress={handleSave} 
+            disabled={saving}
+            activeOpacity={0.9}
+          >
+            <LinearGradient 
+                colors={BRAND.gradients.primary} 
+                start={{ x: 0, y: 0 }} 
+                end={{ x: 1, y: 1 }} 
+                style={[StyleSheet.absoluteFill, { borderRadius: 28 }]} 
+            />
+            {saving ? <ActivityIndicator color="#fff" /> : (
+              <View style={styles.btnInner}>
+                <Text style={styles.saveBtnText}>حفظ كافة التغييرات</Text>
+                <Feather name="save" size={22} color="#FFF" />
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+      )}
 
       <BrandGenModal 
         visible={isAiModalVisible}
@@ -461,6 +573,6 @@ export default function MerchantProfileScreen() {
         onSuccess={handleAiColorsGenerated}
         merchantId={activeMerchant?.id}
       />
-    </SafeAreaView>
+    </View>
   );
 }

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
 import { WebView } from "react-native-webview";
-import styles from './CheckoutStyles';
+import { getCheckoutStyles } from './CheckoutStyles';
 
-export default function SavedAddressTab({ savedAddress, staticMapHtml, savedNotes, setSavedNotes }) {
+export default function SavedAddressTab({ savedAddress, staticMapHtml, savedNotes, setSavedNotes, theme }) {
+    const styles = useMemo(() => getCheckoutStyles(theme), [theme]);
     if (!savedAddress) return null;
 
     return (
@@ -27,7 +28,7 @@ export default function SavedAddressTab({ savedAddress, staticMapHtml, savedNote
             <View style={styles.savedCard}>
                 <View style={styles.savedCardHeader}>
                     <View style={styles.iconCircle}>
-                        <Ionicons name="home" size={24} color="#0ea5e9" />
+                        <Ionicons name="home" size={24} color={theme.primary || "#0ea5e9"} />
                     </View>
                     <View style={styles.savedTextColumn}>
                         <Text style={styles.savedCardTitle}>عنوان التوصيل</Text>
@@ -48,10 +49,9 @@ export default function SavedAddressTab({ savedAddress, staticMapHtml, savedNote
                     <TextInput
                         style={[styles.standardInput, styles.textArea]}
                         placeholder="اكتب ملاحظاتك لمندوب التوصيل..."
-                        placeholderTextColor="#94a3b8"
+                        placeholderTextColor={theme.textMuted || "#94a3b8"}
                         value={savedNotes}
                         onChangeText={setSavedNotes}
-                        textAlign="right"
                         multiline
                     />
                 </View>

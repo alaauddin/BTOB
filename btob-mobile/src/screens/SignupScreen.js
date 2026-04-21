@@ -8,12 +8,15 @@ import client from '../api/client';
 import { useNotifications } from '../context/NotificationContext';
 import Logo from '../components/Logo';
 
-export default function SignupScreen({ navigation }) {
+export default function SignupScreen({ route, navigation }) {
     const [username, setUsername] = useState('');
     const [firstName, setFirstName] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const { showNotification } = useNotifications();
+
+    const { primaryColor: initialPrimaryColor } = route.params || {};
+    const primaryColor = initialPrimaryColor || '#2B5876';
 
     const handleSignup = async () => {
         if (!username || !password) {
@@ -31,7 +34,7 @@ export default function SignupScreen({ navigation }) {
 
             if (response.data.success) {
                 showNotification({ title: 'نجاح', message: 'تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن.', type: 'success' });
-                navigation.navigate('Login');
+                navigation.navigate('Login', { primaryColor });
             } else {
                 showNotification({ title: 'خطأ', message: response.data.message || 'فشل إنشاء الحساب', type: 'error' });
             }
@@ -102,7 +105,7 @@ export default function SignupScreen({ navigation }) {
                 </View>
 
                 <TouchableOpacity
-                    style={[styles.btn, loading && { opacity: 0.7 }]}
+                    style={[styles.btn, { backgroundColor: primaryColor, shadowColor: primaryColor }, loading && { opacity: 0.7 }]}
                     onPress={handleSignup}
                     disabled={loading}
                 >
@@ -117,7 +120,7 @@ export default function SignupScreen({ navigation }) {
                     style={styles.linkBtn}
                     onPress={() => navigation.goBack()}
                 >
-                    <Text style={styles.linkText}>لديك حساب بالفعل؟ تسجيل الدخول</Text>
+                    <Text style={[styles.linkText, { color: primaryColor }]}>لديك حساب بالفعل؟ تسجيل الدخول</Text>
                 </TouchableOpacity>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -169,13 +172,11 @@ const styles = StyleSheet.create({
         color: '#0F172A' 
     },
     btn: {
-        backgroundColor: '#2B5876', 
         paddingVertical: 16,
         borderRadius: 14, 
         alignItems: 'center',
         marginTop: 12, 
         marginBottom: 24,
-        shadowColor: '#2B5876', 
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3, 
         shadowRadius: 8, 
@@ -190,7 +191,6 @@ const styles = StyleSheet.create({
         alignItems: 'center' 
     },
     linkText: { 
-        color: '#2B5876', 
         fontSize: 14, 
         fontWeight: '600' 
     },

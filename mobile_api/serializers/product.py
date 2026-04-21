@@ -50,10 +50,18 @@ class ProductSerializer(serializers.ModelSerializer):
     has_discount = serializers.SerializerMethodField()
     discount_percentage = serializers.SerializerMethodField()
     has_attributes = serializers.SerializerMethodField()
+    is_wishlisted = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = '__all__'
+
+    def get_is_wishlisted(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            from core.models import WishList
+            return WishList.objects.filter(user=request.user, product=obj).exists()
+        return False
 
     def get_has_attributes(self, obj):
         return obj.has_attributes()

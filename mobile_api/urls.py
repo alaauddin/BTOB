@@ -28,6 +28,11 @@ urlpatterns = [
     # Core & Buyer endpoints
     path('home/', views.HomeAPIView.as_view(), name='home'),
     path('stores/<str:store_id>/profile/', views.StoreProfileAPIView.as_view(), name='store_profile'),
+    
+    # Wishlist
+    path('wishlist/toggle/<int:product_id>/', views.ToggleWishlistAPIView.as_view(), name='toggle_wishlist'),
+    path('wishlist/status/<int:product_id>/', views.WishlistStatusAPIView.as_view(), name='wishlist_status'),
+
     path('', include(router.urls)),
 
     # Merchant management endpoints

@@ -8,10 +8,11 @@ class MerchantMiniSerializer(serializers.ModelSerializer):
     """Compact serializer used in the merchant switcher list."""
     profile_picture = serializers.SerializerMethodField()
     panal_picture   = serializers.SerializerMethodField()
+    currency_symbol = serializers.CharField(source='currency.symbol', read_only=True, default='د.ك')
 
     class Meta:
         model = Supplier
-        fields = ['id', 'name', 'store_id', 'profile_picture', 'panal_picture', 'primary_color', 'latitude', 'longitude', 'can_buy_wholesale']
+        fields = ['id', 'name', 'store_id', 'profile_picture', 'panal_picture', 'primary_color', 'latitude', 'longitude', 'can_buy_wholesale', 'currency_symbol', 'plan_name', 'plan_status', 'navbar_text_color']
 
     def _abs(self, obj, field_name):
         f = getattr(obj, field_name, None)
@@ -46,10 +47,10 @@ class MerchantProfileSerializer(serializers.ModelSerializer):
             'cover_picture_url', 'store_link', 'currency_id',
             'show_order_amounts', 'show_platform_ads', 'show_system_logo',
             'primary_color', 'secondary_color', 'navbar_color', 'footer_color',
-            'text_color', 'accent_color',
+            'footer_text_color', 'accent_color', 'navbar_text_color',
             'return_policy', 'footer_description',
             'facebook_url', 'instagram_url', 'twitter_url', 'tiktok_url',
-            'can_buy_wholesale'
+            'can_buy_wholesale', 'plan_name', 'plan_status'
         ]
         read_only_fields = ['id', 'store_id', 'profile_picture', 'panal_picture']
 

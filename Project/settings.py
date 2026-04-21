@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     'accounts',   
     'service_provider',
     'mobile_api',
+    'subscriptions',
 ]
 
 SITE_ID = 1
@@ -134,6 +135,7 @@ MIDDLEWARE = [
     'core.middleware.NavigationMiddleware',
     'core.middleware.VisitTrackingMiddleware',
     'core.middleware.DriverRedirectMiddleware',
+    'subscriptions.middleware.SubscriptionMiddleware',
 ]
 
 # Add allauth middleware if available (required for version >= 0.56.0)
@@ -223,6 +225,11 @@ LOGGING = {
         'service_provider': {
             'handlers': ['console'],
             'level': 'INFO',
+            'propagate': True,
+        },
+        'subscriptions': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
             'propagate': True,
         },
     },

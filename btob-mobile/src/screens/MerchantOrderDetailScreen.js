@@ -11,7 +11,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import MapView, { Marker, Polyline } from '../components/MapModule';
 import client from '../api/client';
-import { THEME } from '../theme/profileTheme';
+import { BRAND } from '../theme/brand';
+import Logo from '../components/Logo';
 
 const { width } = Dimensions.get('window');
 
@@ -45,7 +46,7 @@ const SectionHeader = ({ title, icon, color }) => (
   </View>
 );
 
-const DetailItem = ({ label, value, icon, isCopyable = false }) => (
+const DetailItem = ({ label, value, icon }) => (
   <View style={styles.detailItem}>
     <View style={styles.detailLabelRow}>
       <Feather name={icon} size={14} color="#94A3B8" />
@@ -91,7 +92,7 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
   }, [showMap, order]);
 
   useEffect(() => {
-    if (orderId && activeMerchant && activeMerchant.id) {
+    if (orderId && activeMerchant?.id) {
       client.get(`/merchant/orders/${orderId}/?merchant_id=${activeMerchant.id}`)
         .then(res => { if (res.data.success) setOrder(res.data.order); })
         .catch(err => console.error('Order detail error', err))
@@ -115,7 +116,6 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
     } catch (e) {
       // Handled globally
     } finally {
-
       setLoading(false);
     }
   };
@@ -142,13 +142,11 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
         });
         setShowAddDriver(false);
         setNewDriver({ first_name: '', phone: '', username: '', password: '' });
-        // Auto assign the new driver to this order
         updateOrder({ driver_id: res.data.driver.id });
       }
     } catch (e) {
       // Handled globally
     } finally {
-
       setIsCreatingDriver(false);
     }
   };
@@ -205,9 +203,8 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
     );
   };
 
-  const merchant = order?.merchant || activeMerchant;
-  const primaryColor = merchant?.primary_color || THEME.colors.primary;
-  const accentColor = THEME.colors.amber;
+  const primaryColor = BRAND.colors.primary;
+  const accentColor = BRAND.colors.gold;
 
   if (loading) {
     return (
@@ -231,37 +228,29 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
   }
 
   const status = STATUS_CONFIG[order.status_slug] || STATUS_CONFIG.pending;
+  const curr = activeMerchant?.currency?.symbol || 'د.ك';
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       
-      {/* ── Dynamic Header & Branding ── */}
-      <LinearGradient
-        colors={[primaryColor, primaryColor + 'DD']}
-        style={styles.headerGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+      <LinearGradient colors={BRAND.gradients.primary} style={styles.headerGradient}>
         <SafeAreaView edges={['top']} style={styles.safeHeader}>
           <View style={styles.headerContent}>
             <TouchableOpacity style={styles.headerBtn} onPress={() => navigation.goBack()}>
-              <Ionicons name="chevron-back" size={24} color="#FFF" />
+              <Feather name="arrow-right" size={24} color="#FFF" />
             </TouchableOpacity>
             
             <View style={styles.headerTitleGroup}>
-              <Text style={styles.headerSubtitle}>تفاصيل الطلب</Text>
+              <Text style={styles.headerSubtitle}>إدارة الطلب</Text>
               <Text style={styles.headerTitleText}>#{order.id}</Text>
             </View>
 
-            <View style={styles.merchantMiniBox}>
-              {merchant?.profile_picture ? (
-                <Image source={{ uri: merchant.profile_picture }} style={styles.merchantLogo} />
-              ) : (
-                <View style={styles.merchantLogoPlaceholder}>
-                  <Feather name="shopping-bag" size={14} color="#FFF" />
-                </View>
-              )}
+            <View style={styles.headerActionGroup}>
+              <TouchableOpacity style={styles.headerIconButton} onPress={() => Linking.openURL(`tel:${order.shipping?.phone}`)}>
+                 <Feather name="phone" size={20} color="#FFF" />
+              </TouchableOpacity>
+              <Logo variant="circle" size={32} />
             </View>
           </View>
         </SafeAreaView>
@@ -271,6 +260,18 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* ── Quick Summary Stats ── */}
+        <View style={styles.quickStatsRow}>
+           <View style={styles.statCard}>
+              <Text style={styles.statLabel}>إجمالي المبلغ</Text>
+              <Text style={[styles.statValue, { color: primaryColor }]}>{parseFloat(order.total_amount).toLocaleString()} {curr}</Text>
+           </View>
+           <View style={styles.statCard}>
+              <Text style={styles.statLabel}>عدد القطع</Text>
+              <Text style={[styles.statValue, { color: BRAND.colors.secondary }]}>{order.items?.length || 0} قطع</Text>
+           </View>
+        </View>
+
         {/* ── High-Impact Status Section ── */}
         <View style={styles.statusCard}>
           <View style={[styles.statusIconBox, { backgroundColor: status.bg }]}>
@@ -278,18 +279,26 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
           </View>
           <View style={styles.statusInfo}>
             <Text style={[styles.statusLabel, { color: status.text }]}>{status.label || order.status_name}</Text>
-            <Text style={styles.statusTime}>آخر تحديث: {new Date(order.updated_at).toLocaleString('ar-SA', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</Text>
+            <View style={styles.statusTimeRow}>
+               <Feather name="clock" size={12} color="#94A3B8" />
+               <Text style={styles.statusTime}>تحديث: {new Date(order.updated_at).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}</Text>
+            </View>
           </View>
-          <View style={styles.statusBadge}>
+          <View style={[styles.statusIndicator, { backgroundColor: status.text + '20' }]}>
              <View style={[styles.dot, { backgroundColor: status.text }]} />
-             <Text style={[styles.badgeText, { color: status.text }]}>نشط</Text>
+             <Text style={[styles.badgeText, { color: status.text }]}>حالة نشطة</Text>
           </View>
         </View>
 
         {/* ── Interactive Workflow Stepper ── */}
-        {order.workflow_steps && order.workflow_steps.length > 0 && (
+        {order.workflow_steps?.length > 0 && (
           <View style={styles.workflowSection}>
-            <Text style={styles.sectionTitleSmall}>مرحلة الطلب</Text>
+            <View style={styles.workflowHeader}>
+               <Text style={styles.sectionTitleSmall}>المسار الزمني للطلب</Text>
+               <View style={styles.workflowBadge}>
+                  <Text style={styles.workflowBadgeText}>المرحلة {order.current_priority} من {order.workflow_steps.length}</Text>
+               </View>
+            </View>
             <ScrollView 
               horizontal 
               showsHorizontalScrollIndicator={false}
@@ -301,37 +310,44 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
                 else if (step.priority < order.current_priority) statusVariant = 'completed';
 
                 return (
-                  <TouchableOpacity 
-                    key={idx} 
-                    style={[styles.stepItem, statusVariant === 'active' && { borderColor: primaryColor, backgroundColor: '#F8FAFC' }]}
-                    onPress={() => {
-                        if (statusVariant === 'pending') {
-                           Alert.alert(
-                             'تحديث الحالة',
-                             `هل أنت متأكد من تغيير حالة الطلب إلى "${step.name}"؟`,
-                             [
-                               { text: 'إلغاء', style: 'cancel' },
-                               { text: 'تأكيد', onPress: () => updateOrder({ status: step.slug }) }
-                             ]
-                           );
-                        }
-                    }}
-                  >
-                    <View style={[styles.stepIconCircle, 
-                      statusVariant === 'completed' && { backgroundColor: '#10B981' },
-                      statusVariant === 'active' && { backgroundColor: primaryColor },
-                      statusVariant === 'pending' && { backgroundColor: '#E2E8F0' }
-                    ]}>
-                      {statusVariant === 'completed' ? (
-                        <Ionicons name="checkmark" size={12} color="#FFF" />
-                      ) : (
-                        <Text style={styles.stepNumberText}>{idx + 1}</Text>
-                      )}
-                    </View>
-                    <Text style={[styles.stepLabelText, statusVariant === 'active' && { color: primaryColor, fontWeight: '800' }]}>
-                      {step.name}
-                    </Text>
-                  </TouchableOpacity>
+                  <View key={idx} style={styles.stepWrapper}>
+                    <TouchableOpacity 
+                      style={[
+                        styles.stepItem, 
+                        statusVariant === 'active' && { borderColor: primaryColor, backgroundColor: '#F0F9FF', elevation: 3 }
+                      ]}
+                      onPress={() => {
+                          if (statusVariant === 'pending') {
+                             Alert.alert(
+                               'تحديث الحالة',
+                               `هل أنت متأكد من تغيير حالة الطلب إلى "${step.name}"؟`,
+                               [
+                                 { text: 'إلغاء', style: 'cancel' },
+                                 { text: 'تأكيد', onPress: () => updateOrder({ status: step.slug }) }
+                               ]
+                             );
+                          }
+                      }}
+                    >
+                      <View style={[styles.stepIconCircle, 
+                        statusVariant === 'completed' && { backgroundColor: BRAND.colors.success },
+                        statusVariant === 'active' && { backgroundColor: primaryColor },
+                        statusVariant === 'pending' && { backgroundColor: BRAND.colors.slate[200] }
+                      ]}>
+                        {statusVariant === 'completed' ? (
+                          <Ionicons name="checkmark" size={12} color="#FFF" />
+                        ) : (
+                          <Text style={styles.stepNumberText}>{idx + 1}</Text>
+                        )}
+                      </View>
+                      <Text style={[styles.stepLabelText, statusVariant === 'active' && { color: primaryColor, fontWeight: '800' }]}>
+                        {step.name}
+                      </Text>
+                    </TouchableOpacity>
+                    {idx < order.workflow_steps.length - 1 && (
+                      <View style={[styles.stepConnector, statusVariant === 'completed' && { backgroundColor: BRAND.colors.success }]} />
+                    )}
+                  </View>
                 );
               })}
             </ScrollView>
@@ -343,16 +359,18 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
           <View style={styles.driverSection}>
             <View style={styles.sectionHeaderLine}>
                <View style={styles.sectionIconTitle}>
-                  <MaterialCommunityIcons name="moped" size={20} color={accentColor} />
-                  <Text style={styles.sectionTitleSmall}>سائق التوصيل</Text>
+                  <View style={[styles.miniIconBox, { backgroundColor: BRAND.colors.secondary + '15' }]}>
+                    <MaterialCommunityIcons name="moped" size={18} color={BRAND.colors.secondary} />
+                  </View>
+                  <Text style={styles.sectionTitleSmall}>السائق المسؤول</Text>
                </View>
-               <View style={{ flexDirection: 'row-reverse', alignItems: 'center', gap: 8 }}>
+               <View style={styles.driverActionsHeader}>
                  <TouchableOpacity 
                    onPress={() => setShowAddDriver(true)}
                    style={styles.quickAddBtn}
                  >
-                    <Feather name="user-plus" size={14} color={primaryColor} />
-                    <Text style={[styles.quickAddText, { color: primaryColor }]}>إضافة سريع</Text>
+                    <Feather name="plus" size={14} color={primaryColor} />
+                    <Text style={[styles.quickAddText, { color: primaryColor }]}>إضافة جديد</Text>
                  </TouchableOpacity>
 
                  {order.assigned_driver && (
@@ -360,7 +378,7 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
                      onPress={() => updateOrder({ driver_id: '' })}
                      style={styles.unassignBtn}
                    >
-                      <Text style={styles.unassignBtnText}>إلغاء التعيين</Text>
+                      <Feather name="trash-2" size={12} color="#EF4444" />
                    </TouchableOpacity>
                  )}
                </View>
@@ -368,25 +386,36 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
 
             {order.assigned_driver ? (
                <View style={styles.assignedDriverCard}>
-                  <View style={styles.driverAvatar}>
-                     <Text style={styles.driverLetter}>{order.assigned_driver.name.charAt(0).toUpperCase()}</Text>
+                  <View style={styles.driverMainInfo}>
+                    <View style={[styles.driverAvatar, { backgroundColor: primaryColor + '10' }]}>
+                       <Text style={[styles.driverLetter, { color: primaryColor }]}>{order.assigned_driver.name.charAt(0).toUpperCase()}</Text>
+                    </View>
+                    <View style={styles.driverInfo}>
+                       <Text style={styles.driverNameText}>{order.assigned_driver.name}</Text>
+                       <Text style={styles.driverStatusActive}>سائق نشط</Text>
+                    </View>
                   </View>
-                  <View style={styles.driverInfo}>
-                     <Text style={styles.driverNameText}>{order.assigned_driver.name}</Text>
-                     <TouchableOpacity onPress={() => Linking.openURL(`tel:${order.assigned_driver.phone}`)}>
-                        <Text style={styles.driverPhoneText}>{order.assigned_driver.phone}</Text>
-                     </TouchableOpacity>
+                  <View style={styles.driverActions}>
+                    <TouchableOpacity 
+                      style={[styles.driverCircleBtn, { backgroundColor: '#F0FDF4' }]}
+                      onPress={() => {
+                        const ph = String(order.assigned_driver.phone).replace(/[^0-9]/g, '');
+                        Linking.openURL(`https://wa.me/${ph}`);
+                      }}
+                    >
+                       <MaterialCommunityIcons name="whatsapp" size={18} color="#16A34A" />
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={[styles.driverCircleBtn, { backgroundColor: '#F0F9FF' }]}
+                      onPress={() => Linking.openURL(`tel:${order.assigned_driver.phone}`)}
+                    >
+                       <Feather name="phone" size={18} color={primaryColor} />
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity 
-                    style={styles.driverCallBtn}
-                    onPress={() => Linking.openURL(`tel:${order.assigned_driver.phone}`)}
-                  >
-                     <Feather name="phone" size={18} color={primaryColor} />
-                  </TouchableOpacity>
                </View>
             ) : (
                <View style={styles.driverPickerWrapper}>
-                  {order.available_drivers && order.available_drivers.length > 0 ? (
+                  {order.available_drivers?.length > 0 ? (
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingVertical: 5 }}>
                        {order.available_drivers.map((drv, idx) => (
                          <TouchableOpacity 
@@ -394,20 +423,26 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
                            style={styles.driverOption}
                            onPress={() => updateOrder({ driver_id: drv.id })}
                          >
-                            <Text style={styles.driverOptionName}>{drv.name}</Text>
-                            <Text style={styles.driverOptionPhone}>{drv.phone}</Text>
+                            <View style={styles.drvOptIcon}>
+                               <Feather name="user" size={12} color={BRAND.colors.slate[400]} />
+                            </View>
+                            <View>
+                               <Text style={styles.driverOptionName}>{drv.name}</Text>
+                               <Text style={styles.driverOptionPhone}>{drv.phone}</Text>
+                            </View>
                          </TouchableOpacity>
                        ))}
                     </ScrollView>
                   ) : (
                     <View style={styles.noDriversBox}>
-                       <Text style={styles.noDriversText}>لا يوجد سائقون متاحون حالياً</Text>
+                       <Feather name="alert-circle" size={16} color={BRAND.colors.slate[300]} />
+                       <Text style={styles.noDriversText}>لا يوجد سائقون متاحون حالياً في القائمة</Text>
                     </View>
                   )}
                   {order.current_requires_driver && (
                     <View style={styles.warningBox}>
-                       <Feather name="alert-triangle" size={14} color="#D97706" />
-                       <Text style={styles.warningText}>يجب تعيين سائق للانتقال للمرحلة التالية</Text>
+                       <Feather name="info" size={14} color={BRAND.colors.warning} />
+                       <Text style={styles.warningText}>يجب تعيين سائق لتتمكن من تحديث الحالة للمرحلة التالية</Text>
                     </View>
                   )}
                </View>
@@ -415,83 +450,88 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
           </View>
         )}
 
-        {/* ── Customer & Shipping Info ── */}
-        <View style={styles.card}>
-          <SectionHeader title="معلومات العميل والشحن" icon="user" color={primaryColor} />
+        {/* ── Shipping Card Refined ── */}
+        <View style={styles.premiumCard}>
+          <View style={styles.cardHeader}>
+             <Text style={styles.cardTitle}>بيانات العميل والشحن</Text>
+             <View style={[styles.cardTag, { backgroundColor: primaryColor + '10' }]}>
+                <Text style={[styles.cardTagText, { color: primaryColor }]}>شحن محلي</Text>
+             </View>
+          </View>
           
           <View style={styles.detailsGrid}>
-            <DetailItem label="صاحب الطلب" value={order.customer_name} icon="user" />
-            <DetailItem label="تاريخ الطلب" value={new Date(order.created_at).toLocaleDateString('ar-SA')} icon="calendar" />
-          </View>
+            <View style={styles.detailRowPremium}>
+               <View style={styles.detailItemPremium}>
+                  <Text style={styles.premiumLabel}>الاسم</Text>
+                  <Text style={styles.premiumValue}>{order.customer_name}</Text>
+               </View>
+               <View style={styles.detailItemPremium}>
+                  <Text style={styles.premiumLabel}>التاريخ</Text>
+                  <Text style={styles.premiumValue}>{new Date(order.created_at).toLocaleDateString('ar-SA')}</Text>
+               </View>
+            </View>
 
-          {order.shipping && (
-            <>
-              <View style={styles.divider} />
-              <View style={styles.contactContainer}>
-                <View style={styles.contactRowMain}>
-                  <View style={styles.contactIcon}>
-                    <Feather name="phone" size={16} color="#FFF" />
+            {order.shipping && (
+              <View style={styles.shippingInfoBox}>
+                <View style={styles.shippingMainRow}>
+                  <View style={styles.shippingAddress}>
+                    <Text style={styles.premiumLabel}>العنوان</Text>
+                    <Text style={styles.addressTextLarge}>
+                      {order.shipping.city} — {[order.shipping.address_line1, order.shipping.address_line2].filter(Boolean).join(', ')}
+                    </Text>
                   </View>
-                  <Text style={styles.contactText}>{order.shipping.phone}</Text>
+                  <TouchableOpacity style={styles.miniMapBtn} onPress={() => setShowMap(true)}>
+                    <Feather name="map" size={18} color={primaryColor} />
+                  </TouchableOpacity>
                 </View>
-                <View style={styles.contactActions}>
-                  <TouchableOpacity 
-                    style={[styles.actionBtn, { backgroundColor: '#F59E0B' }]}
-                    onPress={() => setShowMap(true)}
-                  >
-                    <Feather name="map-pin" size={16} color="#FFF" />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity 
-                    style={[styles.actionBtn, { backgroundColor: '#3B82F6' }]}
-                    onPress={() => Linking.openURL(`tel:${order.shipping.phone}`)}
-                  >
-                    <Feather name="phone" size={16} color="#FFF" />
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={[styles.actionBtn, { backgroundColor: '#25D366' }]}
-                    onPress={() => {
+                
+                <View style={styles.actionButtonsRow}>
+                   <TouchableOpacity 
+                     style={[styles.bigActionBtn, { backgroundColor: BRAND.colors.success }]}
+                     onPress={() => {
                         const ph = String(order.shipping.phone || '').replace(/[^0-9]/g, '');
                         if (ph) Linking.openURL(`https://wa.me/${ph}`);
-                    }}
-                  >
-                    <MaterialCommunityIcons name="whatsapp" size={20} color="#FFF" />
-                  </TouchableOpacity>
+                     }}
+                   >
+                     <MaterialCommunityIcons name="whatsapp" size={20} color="#FFF" />
+                     <Text style={styles.bigActionText}>واتساب</Text>
+                   </TouchableOpacity>
+
+                   <TouchableOpacity 
+                     style={[styles.bigActionBtn, { backgroundColor: primaryColor }]}
+                     onPress={() => Linking.openURL(`tel:${order.shipping.phone}`)}
+                   >
+                     <Feather name="phone" size={18} color="#FFF" />
+                     <Text style={styles.bigActionText}>اتصال</Text>
+                   </TouchableOpacity>
                 </View>
               </View>
-
-              <View style={styles.addressBox}>
-                <Feather name="map-pin" size={14} color={primaryColor} />
-                <Text style={styles.addressText}>
-                  {order.shipping.city} — {[order.shipping.address_line1, order.shipping.address_line2].filter(Boolean).join(', ')}
-                </Text>
-              </View>
-            </>
-          )}
+            )}
+          </View>
         </View>
 
-        {/* ── Order Items ── */}
+        {/* ── Order Items Section ── */}
         <View style={styles.itemsSection}>
           <View style={styles.itemsHeader}>
-            <Text style={styles.itemsTitle}>المنتجات المطلوبة</Text>
-            <View style={styles.itemsCount}>
-              <Text style={styles.itemsCountText}>{order.items?.length || 0}</Text>
+            <Text style={styles.itemsTitle}>تفاصيل السلة</Text>
+            <View style={[styles.itemsCountBadge, { backgroundColor: BRAND.colors.secondary }]}>
+              <Text style={styles.itemsCountText}>{order.items?.length || 0} منتجات</Text>
             </View>
           </View>
 
           {(order.items || []).map((item, idx) => (
-            <View key={idx} style={styles.itemCard}>
+            <View key={idx} style={styles.premiumItemCard}>
               <View style={styles.itemMainRow}>
-                <Image 
-                  source={{ uri: item.product_image }} 
-                  style={styles.itemImage} 
-                  resizeMode="cover"
-                />
+                <View style={styles.itemImageWrap}>
+                   <Image source={{ uri: item.product_image }} style={styles.itemImage} />
+                   <View style={styles.itemQtyOverlay}>
+                      <Text style={styles.itemQtyOverlayText}>×{item.quantity}</Text>
+                   </View>
+                </View>
                 <View style={styles.itemCoreInfo}>
                   <Text style={styles.itemName} numberOfLines={2}>{item.product_name}</Text>
                   
-                  {item.selected_options_details && item.selected_options_details.length > 0 && (
+                  {item.selected_options_details?.length > 0 && (
                     <View style={styles.itemOptionsRow}>
                       {item.selected_options_details.map((opt) => (
                         <View key={opt.id} style={styles.variationBadge}>
@@ -501,316 +541,203 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
                     </View>
                   )}
 
-                  <View style={styles.priceQtyRow}>
-                    <Text style={styles.itemUnitPrice}>{parseFloat(item.unit_price).toLocaleString()} <Text style={styles.currencySmall}>ر.ي</Text></Text>
-                    <View style={styles.qtyBubble}>
-                      <Text style={styles.qtyText}>× {item.quantity}</Text>
-                    </View>
+                  <View style={styles.itemPricingRow}>
+                    <Text style={styles.itemUnitPrice}>{parseFloat(item.unit_price).toLocaleString()} {curr}</Text>
+                    <Text style={[styles.itemTotalPrice, { color: primaryColor }]}>
+                      {(parseFloat(item.unit_price) * item.quantity).toLocaleString()} {curr}
+                    </Text>
                   </View>
                 </View>
-              </View>
-              
-              <View style={[styles.itemSubtotalPart, { borderTopColor: '#F1F5F9' }]}>
-                <Text style={styles.subtotalLabel}>الإجمالي الجزئي</Text>
-                <Text style={[styles.subtotalValue, { color: primaryColor }]}>
-                  {(parseFloat(item.unit_price) * item.quantity).toLocaleString()} <Text style={styles.currencySmaller}>ر.ي</Text>
-                </Text>
               </View>
             </View>
           ))}
         </View>
         
-        {/* ── Payment Transaction Status ── */}
+        {/* ── Payment Section Refined ── */}
         {order.payment_transaction && (
-          <View style={styles.card}>
-            <SectionHeader title="حالة الدفع" icon="credit-card" color={primaryColor} />
-            <View style={styles.paymentInfoRow}>
-              <View style={styles.paymentMethodLabel}>
-                <View style={[styles.tinyMethodIcon, { backgroundColor: primaryColor + '10' }]}>
-                  <Feather name="credit-card" size={16} color={primaryColor} />
-                </View>
-                <Text style={styles.paymentMethodName}>{order.payment_transaction.method_name}</Text>
-              </View>
-              <View style={[
-                  styles.txStatusBadge, 
-                  order.payment_transaction.status === 'verified' && styles.txVerified,
-                  order.payment_transaction.status === 'rejected' && styles.txRejected,
-                  order.payment_transaction.status === 'pending' && styles.txPending,
-                ]}>
-                <Text style={[
-                    styles.txStatusText,
-                    order.payment_transaction.status === 'verified' && { color: '#059669' },
-                    order.payment_transaction.status === 'rejected' && { color: THEME.colors.rose },
-                    order.payment_transaction.status === 'pending' && { color: THEME.colors.amber },
-                  ]}>
-                  {order.payment_transaction.status_display}
-                </Text>
-              </View>
+          <View style={styles.premiumCard}>
+            <View style={styles.cardHeader}>
+               <Text style={styles.cardTitle}>عملية الدفع</Text>
+               <View style={[
+                  styles.statusBadgeSmall, 
+                  order.payment_transaction.status === 'verified' ? { backgroundColor: '#ECFDF5' } : { backgroundColor: '#FFF7ED' }
+               ]}>
+                 <Text style={[
+                   styles.statusBadgeTextSmall,
+                   { color: order.payment_transaction.status === 'verified' ? BRAND.colors.success : BRAND.colors.warning }
+                 ]}>
+                   {order.payment_transaction.status_display}
+                 </Text>
+               </View>
+            </View>
+
+            <View style={styles.paymentDetailRow}>
+               <View style={styles.payMethodBox}>
+                  <View style={[styles.payMethodIcon, { backgroundColor: primaryColor + '10' }]}>
+                    <Feather name="credit-card" size={16} color={primaryColor} />
+                  </View>
+                  <Text style={styles.payMethodName}>{order.payment_transaction.method_name}</Text>
+               </View>
+               <Text style={styles.payAmountText}>{parseFloat(order.total_amount).toLocaleString()} {curr}</Text>
             </View>
 
             {order.payment_transaction.receipt && (
-              <View style={styles.receiptPreviewBox}>
-                <Text style={styles.receiptHint}>إيصال السداد المرفق:</Text>
+              <View style={styles.receiptActionBox}>
                 <TouchableOpacity 
                    onPress={() => setShowReceiptViewer(true)}
-                   style={styles.receiptThumbnailBtn}
+                   style={styles.viewReceiptBar}
                 >
-                  <Image source={{ uri: order.payment_transaction.receipt }} style={styles.receiptThumbnail} />
-                  <View style={styles.blurOverlay}>
-                    <Feather name="maximize" size={20} color="#FFF" />
-                    <Text style={styles.maximizeText}>عرض الإيصال</Text>
-                  </View>
+                  <Feather name="file-text" size={16} color={primaryColor} />
+                  <Text style={[styles.viewReceiptText, { color: primaryColor }]}>عرض إيصال السداد المرفق</Text>
+                  <Feather name="chevron-left" size={16} color={primaryColor} />
                 </TouchableOpacity>
               </View>
             )}
 
             {order.payment_transaction.status === 'pending' && (
-              <View style={styles.txActions}>
+              <View style={styles.paymentActionButtons}>
                 <TouchableOpacity 
-                   style={[styles.txBtn, { backgroundColor: '#10B981' }]} 
+                   style={[styles.verifyPayBtn, { backgroundColor: BRAND.colors.success }]} 
                    onPress={() => handleVerifyPayment(order.payment_transaction.id)}
                 >
-                  <Text style={styles.txBtnText}>تأكيد الاستلام</Text>
+                  <Feather name="check-circle" size={18} color="#FFF" />
+                  <Text style={styles.verifyPayBtnText}>تأكيد الدفع</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                   style={[styles.txBtn, { backgroundColor: THEME.colors.rose + '10', borderWidth: 1, borderColor: THEME.colors.rose + '20' }]} 
+                   style={styles.rejectPayBtn} 
                    onPress={() => handleRejectPayment(order.payment_transaction.id)}
                 >
-                  <Text style={[styles.txBtnText, { color: THEME.colors.rose }]}>رفض الإيصال</Text>
+                  <Text style={styles.rejectPayBtnText}>رفض</Text>
                 </TouchableOpacity>
               </View>
             )}
-
-            {order.payment_transaction.verification_notes ? (
-              <View style={styles.verificationNotes}>
-                <Text style={styles.notesLabel}>ملاحظات التحقق:</Text>
-                <Text style={styles.notesValue}>{order.payment_transaction.verification_notes}</Text>
-              </View>
-            ) : null}
           </View>
         )}
 
-        {/* ── Grand Summary (Receipt Style) ── */}
-        <View style={styles.receiptContainer}>
-          <View style={styles.receiptHeader}>
-            <View style={styles.receiptCircleLeft} />
-            <View style={styles.receiptCircleRight} />
-            <Text style={styles.receiptTitle}>ملخص الحساب</Text>
+        {/* ── Bill Summary ── */}
+        <View style={styles.premiumReceiptContainer}>
+          <View style={styles.receiptTopper}>
+             <View style={styles.receiptNotch} />
+             <Text style={styles.receiptMainTitle}>ملخص الحساب</Text>
           </View>
           
-          <View style={styles.receiptBody}>
-            <View style={styles.receiptRow}>
+          <View style={styles.receiptContent}>
+            <View style={styles.receiptLine}>
               <Text style={styles.receiptLabel}>إجمالي المنتجات</Text>
-              <Text style={styles.receiptValue}>{parseFloat(order.total_amount).toLocaleString()} ر.ي</Text>
+              <Text style={styles.receiptValue}>{parseFloat(order.total_amount).toLocaleString()} {curr}</Text>
             </View>
-            <View style={styles.receiptRow}>
-              <Text style={styles.receiptLabel}>ضريبة / رسوم</Text>
-              <Text style={styles.receiptValue}>0.00 ر.ي</Text>
+            <View style={styles.receiptLine}>
+              <Text style={styles.receiptLabel}>رسوم التوصيل</Text>
+              <Text style={styles.receiptValue}>0.00 {curr}</Text>
             </View>
             
-            <View style={styles.receiptDivider} />
+            <View style={styles.receiptDashDivider} />
             
-            <View style={styles.receiptTotalRow}>
-              <Text style={styles.receiptTotalLabel}>الإجمالي النهائي</Text>
-              <View style={styles.totalAmountContainer}>
-                <Text style={[styles.receiptTotalValue, { color: primaryColor }]}>
-                  {parseFloat(order.total_amount).toLocaleString()}
-                </Text>
-                <Text style={[styles.receiptCurrency, { color: primaryColor }]}> ر.ي</Text>
-              </View>
+            <View style={styles.receiptGrandTotal}>
+              <Text style={styles.grandTotalLabel}>المبلغ المطلوب</Text>
+              <Text style={[styles.grandTotalValue, { color: primaryColor }]}>
+                {parseFloat(order.total_amount).toLocaleString()} {curr}
+              </Text>
             </View>
           </View>
           
-          <LinearGradient
-            colors={['#F8FAFC', '#F1F5F9']}
-            style={styles.receiptFooter}
-          >
-            <Feather name="shield" size={12} color="#94A3B8" />
-            <Text style={styles.footerText}>معاملة آمنة وموثقة عبر رواج</Text>
-          </LinearGradient>
+          <View style={styles.receiptSecurityFooter}>
+            <Feather name="shield" size={12} color={BRAND.colors.slate[400]} />
+            <Text style={styles.securityText}>معاملة آمنة - نظام رواج التجاري</Text>
+          </View>
         </View>
 
-        <View style={{ height: 60 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* ── Interactive Map Modal ── */}
-      <Modal
-        visible={showMap}
-        animationType="slide"
-        onRequestClose={() => setShowMap(false)}
-      >
+      {/* ── Modals & Overlay (Map, Driver Add) ── */}
+      <Modal visible={showMap} animationType="slide" onRequestClose={() => setShowMap(false)}>
         <SafeAreaView style={styles.mapModalContainer}>
           <View style={styles.mapHeader}>
             <TouchableOpacity style={styles.closeMapBtn} onPress={() => setShowMap(false)}>
               <Ionicons name="close" size={24} color="#1E293B" />
             </TouchableOpacity>
-            <Text style={styles.mapTitle}>موقع التوصيل</Text>
+            <Text style={styles.mapTitle}>موقع الشحن</Text>
             <View style={{ width: 44 }} />
           </View>
-          
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: Number.isFinite(parseFloat(order.merchant?.latitude)) ? parseFloat(order.merchant?.latitude) : (Number.isFinite(parseFloat(activeMerchant?.latitude)) ? parseFloat(activeMerchant?.latitude) : 15.3694),
-              longitude: Number.isFinite(parseFloat(order.merchant?.longitude)) ? parseFloat(order.merchant?.longitude) : (Number.isFinite(parseFloat(activeMerchant?.longitude)) ? parseFloat(activeMerchant?.longitude) : 44.1910),
-              latitudeDelta: 0.05,
-              longitudeDelta: 0.05,
-            }}
-          >
+          <MapView style={styles.map} initialRegion={{ latitude: parseFloat(order.merchant?.latitude) || 15.3694, longitude: parseFloat(order.merchant?.longitude) || 44.1910, latitudeDelta: 0.05, longitudeDelta: 0.05 }}>
             {order.merchant?.latitude && (
-              <Marker
-                coordinate={{
-                  latitude: Number.isFinite(parseFloat(order.merchant?.latitude)) ? parseFloat(order.merchant.latitude) : 15.3694,
-                  longitude: Number.isFinite(parseFloat(order.merchant?.longitude)) ? parseFloat(order.merchant.longitude) : 44.1910,
-                }}
-                title="متجرك"
-                description={merchant?.name}
-              >
-                <View style={[styles.markerBubble, { backgroundColor: primaryColor }]}>
+              <Marker coordinate={{ latitude: parseFloat(order.merchant.latitude), longitude: parseFloat(order.merchant.longitude) }} title="المتجر">
+                <View style={[styles.markerPin, { backgroundColor: primaryColor }]}>
                   <Feather name="shopping-bag" size={14} color="#FFF" />
                 </View>
               </Marker>
             )}
-
             {order.shipping?.latitude && (
-              <Marker
-                coordinate={{
-                  latitude: Number.isFinite(parseFloat(order.shipping?.latitude)) ? parseFloat(order.shipping.latitude) : 15.3694,
-                  longitude: Number.isFinite(parseFloat(order.shipping?.longitude)) ? parseFloat(order.shipping.longitude) : 44.1910,
-                }}
-                title="موقع العميل"
-                description={order.customer_name}
-              >
-                <View style={[styles.markerBubble, { backgroundColor: '#EF4444' }]}>
-                  <Feather name="map-pin" size={14} color="#FFF" />
+              <Marker coordinate={{ latitude: parseFloat(order.shipping.latitude), longitude: parseFloat(order.shipping.longitude) }} title="العميل">
+                <View style={[styles.markerPin, { backgroundColor: BRAND.colors.danger }]}>
+                  <Feather name="user" size={14} color="#FFF" />
                 </View>
               </Marker>
             )}
-
             {order.merchant?.latitude && order.shipping?.latitude && (
-               <Polyline
-                 coordinates={routeCoordinates.length > 0 ? routeCoordinates : [
-                   { latitude: parseFloat(order.merchant.latitude), longitude: parseFloat(order.merchant.longitude) },
-                   { latitude: parseFloat(order.shipping.latitude), longitude: parseFloat(order.shipping.longitude) }
-                 ]}
-                 strokeColor={primaryColor}
-                 strokeWidth={4}
-                 lineDashPattern={routeCoordinates.length > 0 ? null : [5, 5]}
-               />
+               <Polyline coordinates={routeCoordinates.length > 0 ? routeCoordinates : [{ latitude: parseFloat(order.merchant.latitude), longitude: parseFloat(order.merchant.longitude) }, { latitude: parseFloat(order.shipping.latitude), longitude: parseFloat(order.shipping.longitude) }]} strokeColor={primaryColor} strokeWidth={4} />
             )}
           </MapView>
-          
           <View style={styles.mapFooter}>
-             <Text style={styles.mapFooterText}>المسافة التقريبية للموقع الموضح</Text>
-             <TouchableOpacity 
-               style={[styles.navigateBtn, { backgroundColor: primaryColor }]}
-               onPress={() => {
-                 const scheme = Platform.OS === 'ios' ? 'maps:' : 'geo:';
-                 const url = `${scheme}${order.shipping.latitude},${order.shipping.longitude}?q=${order.shipping.latitude},${order.shipping.longitude}`;
-                 Linking.openURL(url);
-               }}
-             >
-                <Feather name="navigation" size={16} color="#FFF" style={{ marginLeft: 8 }} />
-                <Text style={styles.navigateBtnText}>فتح في خرائط جوجل</Text>
+             <TouchableOpacity style={[styles.navBtn, { backgroundColor: primaryColor }]} onPress={() => { const url = Platform.OS === 'ios' ? `maps:${order.shipping.latitude},${order.shipping.longitude}` : `geo:${order.shipping.latitude},${order.shipping.longitude}?q=${order.shipping.latitude},${order.shipping.longitude}`; Linking.openURL(url); }}>
+                <Feather name="navigation" size={18} color="#FFF" />
+                <Text style={styles.navBtnText}>فتح في الخرائط</Text>
              </TouchableOpacity>
           </View>
         </SafeAreaView>
       </Modal>
 
-      {/* ── Quick Add Driver Modal ── */}
-      <Modal
-        visible={showAddDriver}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowAddDriver(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>إضافة سائق جديد</Text>
-              <TouchableOpacity onPress={() => setShowAddDriver(false)}>
-                <Feather name="x" size={24} color="#64748B" />
+      {/* Quick Driver Modal */}
+      {/* ── Receipt Viewer Modal ── */}
+      <Modal visible={showReceiptViewer} transparent animationType="fade" onRequestClose={() => setShowReceiptViewer(false)}>
+        <View style={styles.viewerOverlay}>
+          <SafeAreaView style={styles.viewerContent}>
+            <View style={styles.viewerHeader}>
+              <TouchableOpacity style={styles.viewerCloseBtn} onPress={() => setShowReceiptViewer(false)}>
+                <Ionicons name="close" size={28} color="#FFF" />
               </TouchableOpacity>
+              <Text style={styles.viewerTitle}>إيصال السداد</Text>
+              <Logo variant="circle" size={32} />
+            </View>
+            
+            <View style={styles.viewerImageContainer}>
+               <Image 
+                 source={{ uri: order.payment_transaction?.receipt }} 
+                 style={styles.fullReceiptImage}
+                 resizeMode="contain"
+               />
             </View>
 
-            <ScrollView contentContainerStyle={styles.modalBody}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>الاسم الأول</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="مثال: أحمد"
-                  value={newDriver.first_name}
-                  onChangeText={(t) => setNewDriver({...newDriver, first_name: t})}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>رقم الهاتف</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="77xxxxxxx"
-                  keyboardType="phone-pad"
-                  value={newDriver.phone}
-                  onChangeText={(t) => setNewDriver({...newDriver, phone: t})}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>اسم المستخدم (للدخول)</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="driver_name"
-                  autoCapitalize="none"
-                  value={newDriver.username}
-                  onChangeText={(t) => setNewDriver({...newDriver, username: t})}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>كلمة المرور</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="••••••••"
-                  secureTextEntry
-                  value={newDriver.password}
-                  onChangeText={(t) => setNewDriver({...newDriver, password: t})}
-                />
-              </View>
-
-              <TouchableOpacity 
-                style={[styles.submitBtn, { backgroundColor: primaryColor }]}
-                onPress={handleAddDriver}
-                disabled={isCreatingDriver}
-              >
-                {isCreatingDriver ? (
-                  <ActivityIndicator color="#FFF" />
-                ) : (
-                  <>
-                    <Feather name="check" size={18} color="#FFF" />
-                    <Text style={styles.submitBtnText}>إنشاء الحساب وإرسال البيانات</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-
-              <Text style={styles.hintText}>* سيتم إرسال بيانات الدخول للسائق عبر الواتساب فور الإنشاء</Text>
-            </ScrollView>
-          </View>
+            <View style={styles.viewerFooter}>
+               <Text style={styles.viewerFooterText}>بإمكانك أخذ لقطة شاشة للاحتفاظ بالإيصال</Text>
+            </View>
+          </SafeAreaView>
         </View>
       </Modal>
 
-      {/* ── Receipt Viewer Modal ── */}
-      <Modal visible={showReceiptViewer} transparent animationType="fade" onRequestClose={() => setShowReceiptViewer(false)}>
-        <View style={styles.viewerBackground}>
-          <TouchableOpacity style={styles.viewerClose} onPress={() => setShowReceiptViewer(false)}>
-             <Ionicons name="close" size={32} color="#FFF" />
-          </TouchableOpacity>
-          {order.payment_transaction?.receipt && (
-            <Image 
-              source={{ uri: order.payment_transaction.receipt }} 
-              style={styles.fullReceipt} 
-              resizeMode="contain" 
-            />
-          )}
+      <Modal visible={showAddDriver} transparent animationType="fade" onRequestClose={() => setShowAddDriver(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>سائق جديد</Text>
+              <TouchableOpacity onPress={() => setShowAddDriver(false)}><Feather name="x" size={24} color="#64748B" /></TouchableOpacity>
+            </View>
+            <ScrollView contentContainerStyle={styles.modalScroll}>
+              {['الاسم الأول', 'رقم الهاتف', 'اسم المستخدم', 'كلمة المرور'].map((label, i) => {
+                const keys = ['first_name', 'phone', 'username', 'password'];
+                return (
+                  <View key={i} style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>{label}</Text>
+                    <TextInput style={styles.input} secureTextEntry={i === 3} keyboardType={i === 1 ? 'phone-pad' : 'default'} value={newDriver[keys[i]]} onChangeText={(t) => setNewDriver({...newDriver, [keys[i]]: t})} />
+                  </View>
+                )
+              })}
+              <TouchableOpacity style={[styles.modalSubmit, { backgroundColor: primaryColor }]} onPress={handleAddDriver} disabled={isCreatingDriver}>
+                {isCreatingDriver ? <ActivityIndicator color="#FFF" /> : <Text style={styles.modalSubmitText}>إنشاء وتعيين</Text>}
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
         </View>
       </Modal>
     </View>
@@ -819,360 +746,185 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8FAFC' },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  loadingText: { marginTop: 16, color: '#64748B', fontWeight: '500' },
-  errorText: { marginTop: 12, color: '#64748B', textAlign: 'center', fontSize: 16 },
-  retryBtn: { marginTop: 20, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, backgroundColor: '#2B5876' },
-  retryBtnText: { color: '#FFF', fontWeight: 'bold' },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { marginTop: 12, color: '#64748B', fontSize: 14 },
 
-  /* Header */
-  headerGradient: { paddingBottom: 24 },
+  headerGradient: { borderBottomLeftRadius: 35, borderBottomRightRadius: 35, paddingBottom: 25 },
   safeHeader: { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
-  headerContent: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginTop: 10,
-  },
-  headerBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitleGroup: { alignItems: 'flex-end' },
-  headerSubtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: '500' },
-  headerTitleText: { color: '#FFF', fontSize: 22, fontWeight: '800' },
-  merchantMiniBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
+  headerContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, height: 70 },
+  headerBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
+  headerTitleGroup: { flex: 1, alignItems: 'flex-start' },
+  headerSubtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },
+  headerTitleText: { color: '#FFF', fontSize: 24, fontWeight: 'bold' },
+  headerActionGroup: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  headerIconButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center' },
+  merchantMiniBox: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
   merchantLogo: { width: '100%', height: '100%' },
+  merchantLogoPlaceholder: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
 
-  /* Content */
-  scrollContent: { paddingHorizontal: 20, paddingTop: 20 },
+  scrollContent: { paddingHorizontal: 16, paddingTop: 20 },
+  
+  quickStatsRow: { flexDirection: 'row', gap: 12, marginBottom: 20 },
+  statCard: { flex: 1, backgroundColor: '#FFF', padding: 16, borderRadius: 20, borderWidth: 1, borderColor: '#F1F5F9', elevation: 2 },
+  hintText: { fontSize: 11, color: '#94A3B8', textAlign: 'center', marginTop: 8 },
+  
+  viewerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.9)' },
+  viewerContent: { flex: 1 },
+  viewerHeader: { height: 60, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 },
+  viewerCloseBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
+  viewerTitle: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
+  viewerImageContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  fullReceiptImage: { width: '100%', height: '100%', borderRadius: 12 },
+  viewerFooter: { padding: 20, alignItems: 'center' },
+  viewerFooterText: { color: 'rgba(255,255,255,0.5)', fontSize: 12 },
+  
+  statLabel: { fontSize: 12, color: '#94A3B8', marginBottom: 4 },
+  statValue: { fontSize: 18, fontWeight: 'bold' },
 
-  /* Status Card */
   statusCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 24,
-    padding: 16,
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.05,
-    shadowRadius: 15,
-    elevation: 3,
-    marginBottom: 20,
+    backgroundColor: '#FFF', borderRadius: 24, padding: 18, flexDirection: 'row', alignItems: 'center',
+    marginBottom: 20, borderWidth: 1, borderColor: '#F1F5F9', elevation: 3
   },
-  statusIconBox: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  statusInfo: { flex: 1, marginRight: 16, alignItems: 'flex-end' },
-  statusLabel: { fontSize: 18, fontWeight: '800' },
-  statusTime: { fontSize: 12, color: '#94A3B8', marginTop: 2 },
-  statusBadge: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 100,
-  },
-  dot: { width: 6, height: 6, borderRadius: 3, marginLeft: 6 },
-  badgeText: { fontSize: 11, fontWeight: '700' },
+  statusIconBox: { width: 56, height: 56, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+  statusInfo: { flex: 1, marginLeft: 16 },
+  statusLabel: { fontSize: 17, fontWeight: 'bold' },
+  statusTimeRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+  statusTime: { fontSize: 12, color: '#94A3B8' },
+  statusIndicator: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 },
+  dot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
+  badgeText: { fontSize: 10, fontWeight: 'bold' },
 
-  /* General Card */
-  card: {
-    backgroundColor: '#FFF',
-    borderRadius: 24,
-    padding: 24,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  sectionHeader: { flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 20 },
-  sectionIcon: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginLeft: 12 },
-  sectionTitle: { fontSize: 16, fontWeight: '800', color: '#1E293B' },
-
-  detailsGrid: { flexDirection: 'row-reverse', justifyContent: 'space-between' },
-  detailItem: { flex: 1, alignItems: 'flex-end' },
-  detailLabelRow: { flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 4 },
-  detailLabel: { fontSize: 12, color: '#94A3B8', fontWeight: '600', marginRight: 6 },
-  detailValue: { fontSize: 14, color: '#1E293B', fontWeight: '700' },
-
-  divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 20 },
-
-  contactContainer: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 20,
-    padding: 12,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  contactRowMain: { flexDirection: 'row-reverse', alignItems: 'center' },
-  contactIcon: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#3B82F6', justifyContent: 'center', alignItems: 'center', marginLeft: 12 },
-  contactText: { fontSize: 15, color: '#1E293B', fontWeight: '800' },
-  contactActions: { flexDirection: 'row-reverse', gap: 10 },
-  actionBtn: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-
-  addressBox: { 
-    flexDirection: 'row-reverse', 
-    backgroundColor: '#F1F5F9', 
-    padding: 16, 
-    borderRadius: 16,
-    gap: 10
-  },
-  addressText: { flex: 1, color: '#475569', fontSize: 13, lineHeight: 20, textAlign: 'right', fontWeight: '500' },
-
-  /* Items Section */
-  itemsSection: { marginBottom: 20 },
-  itemsHeader: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingHorizontal: 4 },
-  itemsTitle: { fontSize: 17, fontWeight: '800', color: '#1E293B' },
-  itemsCount: { backgroundColor: '#3B82F610', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 10 },
-  itemsCountText: { color: '#3B82F6', fontWeight: '800', fontSize: 12 },
-
-  itemCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 24,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  itemMainRow: { flexDirection: 'row-reverse', gap: 16 },
-  itemImage: { width: 90, height: 90, borderRadius: 18, backgroundColor: '#F8FAFC' },
-  itemCoreInfo: { flex: 1, alignItems: 'flex-end' },
-  itemName: { fontSize: 15, fontWeight: '700', color: '#1E293B', textAlign: 'right' },
-  
-  itemOptionsRow: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 6, marginTop: 8 },
-  variationBadge: { backgroundColor: '#F8FAFC', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, borderWidth: 1, borderColor: '#F1F5F9' },
-  variationText: { fontSize: 10, color: '#64748B', fontWeight: '700' },
-
-  priceQtyRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginTop: 'auto' },
-  itemUnitPrice: { fontSize: 16, fontWeight: '800', color: '#1E293B' },
-  currencySmall: { fontSize: 10, color: '#94A3B8' },
-  qtyBubble: { paddingHorizontal: 10, paddingVertical: 4, backgroundColor: '#F1F5F9', borderRadius: 100 },
-  qtyText: { fontSize: 12, fontWeight: '800', color: '#64748B' },
-
-  itemSubtotalPart: { 
-    flexDirection: 'row-reverse', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginTop: 16, 
-    paddingTop: 16, 
-    borderTopWidth: 1 
-  },
-  subtotalLabel: { fontSize: 12, fontWeight: '600', color: '#94A3B8' },
-  subtotalValue: { fontSize: 17, fontWeight: '800' },
-  currencySmaller: { fontSize: 11, color: '#94A3B8' },
-
-  /* Receipt style */
-  receiptContainer: {
-    backgroundColor: '#FFF',
-    borderRadius: 28,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 5,
-  },
-  receiptHeader: {
-    backgroundColor: '#F8FAFC',
-    padding: 16,
-    alignItems: 'center',
-    position: 'relative',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-    borderStyle: 'dashed',
-  },
-  receiptTitle: { fontSize: 14, fontWeight: '800', color: '#64748B', letterSpacing: 0.5 },
-  receiptCircleLeft: { position: 'absolute', left: -10, bottom: -10, width: 20, height: 20, borderRadius: 10, backgroundColor: '#F1F5F9' },
-  receiptCircleRight: { position: 'absolute', right: -10, bottom: -10, width: 20, height: 20, borderRadius: 10, backgroundColor: '#F1F5F9' },
-  
-  receiptBody: { padding: 24, alignItems: 'flex-end' },
-  receiptRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', width: '100%', marginBottom: 12 },
-  receiptLabel: { fontSize: 14, color: '#94A3B8', fontWeight: '600' },
-  receiptValue: { fontSize: 14, color: '#1E293B', fontWeight: '700' },
-  receiptDivider: { height: 1, backgroundColor: '#F1F5F9', width: '100%', marginVertical: 16 },
-  
-  receiptTotalRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', width: '100%', alignItems: 'center' },
-  receiptTotalLabel: { fontSize: 18, fontWeight: '800', color: '#1E293B' },
-  totalAmountContainer: { flexDirection: 'row-reverse', alignItems: 'baseline' },
-  receiptTotalValue: { fontSize: 32, fontWeight: '900' },
-  receiptCurrency: { fontSize: 14, fontWeight: '700', marginRight: 4 },
-  
-  receiptFooter: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-    gap: 8,
-  },
-  footerText: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
-  mapModalContainer: { flex: 1, backgroundColor: '#FFF' },
-  mapHeader: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-  },
-  mapTitle: { fontSize: 17, fontWeight: '800', color: '#1E293B' },
-  closeMapBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  map: { flex: 1 },
-  markerBubble: {
-    padding: 8,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#FFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  mapFooter: {
-    padding: 20,
-    backgroundColor: '#F8FAFC',
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    alignItems: 'center',
-    gap: 12,
-  },
-  mapFooterText: { fontSize: 13, color: '#64748B', fontWeight: '600' },
-  navigateBtn: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 16,
-    width: '100%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  navigateBtnText: { color: '#FFF', fontSize: 15, fontWeight: '800' },
-  
-  workflowSection: { marginHorizontal: 20, marginBottom: 15 },
-  sectionTitleSmall: { fontSize: 13, fontWeight: '700', color: '#64748B', marginBottom: 10, textAlign: 'right' },
-  stepperContainer: { paddingRight: 5, paddingVertical: 5 },
+  workflowSection: { marginBottom: 24 },
+  workflowHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  sectionTitleSmall: { fontSize: 14, fontWeight: 'bold', color: '#1E293B' },
+  workflowBadge: { backgroundColor: '#F1F5F9', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8 },
+  workflowBadgeText: { fontSize: 10, fontWeight: 'bold', color: '#64748B' },
+  stepperContainer: { paddingVertical: 8 },
+  stepWrapper: { flexDirection: 'row', alignItems: 'center' },
   stepItem: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    gap: 8,
+    backgroundColor: '#FFF', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 16,
+    borderWidth: 1, borderColor: '#F1F5F9', flexDirection: 'row', alignItems: 'center', gap: 10
   },
-  stepIconCircle: { width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  stepNumberText: { fontSize: 10, fontWeight: '800', color: '#FFF' },
-  stepLabelText: { fontSize: 12, fontWeight: '700', color: '#475569' },
+  stepIconCircle: { width: 22, height: 22, borderRadius: 11, justifyContent: 'center', alignItems: 'center' },
+  stepNumberText: { color: '#FFF', fontSize: 10, fontWeight: 'bold' },
+  stepLabelText: { fontSize: 13, color: '#64748B' },
+  stepConnector: { width: 25, height: 2, backgroundColor: '#E2E8F0', marginHorizontal: 2 },
+
+  driverSection: { marginBottom: 24 },
+  sectionHeaderLine: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  sectionIconTitle: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  miniIconBox: { width: 32, height: 32, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  driverActionsHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  quickAddBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FFF', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0' },
+  quickAddText: { fontSize: 11, fontWeight: 'bold' },
+  unassignBtn: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#FEF2F2', justifyContent: 'center', alignItems: 'center' },
+  assignedDriverCard: { backgroundColor: '#FFF', borderRadius: 20, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: '#F1F5F9' },
+  driverMainInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  driverAvatar: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
+  driverLetter: { fontSize: 18, fontWeight: 'bold' },
+  driverInfo: { gap: 2 },
+  driverNameText: { fontSize: 15, fontWeight: 'bold', color: '#1E293B' },
+  driverStatusActive: { fontSize: 11, color: '#16A34A', fontWeight: '600' },
+  driverActions: { flexDirection: 'row', gap: 10 },
+  driverCircleBtn: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center' },
+
+  driverPickerWrapper: { gap: 10 },
+  driverOption: { backgroundColor: '#FFF', padding: 12, borderRadius: 16, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: '#F1F5F9', marginRight: 8 },
+  drvOptIcon: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
+  driverOptionName: { fontSize: 13, fontWeight: 'bold', color: '#1E293B' },
+  driverOptionPhone: { fontSize: 11, color: '#94A3B8' },
+  noDriversBox: { backgroundColor: '#F8FAFC', padding: 20, borderRadius: 18, alignItems: 'center', borderStyle: 'dashed', borderWidth: 1, borderColor: '#E2E8F0', flexDirection: 'row', justifyContent: 'center', gap: 10 },
+  noDriversText: { fontSize: 13, color: '#94A3B8' },
+  warningBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#FFF7ED', padding: 10, borderRadius: 10 },
+  warningText: { fontSize: 11, color: '#C2410C', flex: 1 },
+
+  premiumCard: { backgroundColor: '#FFF', borderRadius: 24, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: '#F1F5F9', elevation: 2 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#1E293B' },
+  cardTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  cardTagText: { fontSize: 10, fontWeight: 'bold' },
   
-  driverSection: { marginHorizontal: 20, marginBottom: 15, backgroundColor: '#FFF', borderRadius: 24, padding: 15, borderWidth: 1, borderColor: '#F1F5F9' },
-  sectionHeaderLine: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionIconTitle: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6 },
-  unassignBtn: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: '#FEF2F2' },
-  unassignBtnText: { fontSize: 11, fontWeight: '700', color: '#EF4444' },
+  detailRowPremium: { flexDirection: 'row', gap: 20, marginBottom: 16 },
+  detailItemPremium: { flex: 1 },
+  premiumLabel: { fontSize: 11, color: '#94A3B8', marginBottom: 4 },
+  premiumValue: { fontSize: 15, fontWeight: 'bold', color: '#1E293B' },
   
-  assignedDriverCard: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16 },
-  driverAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#3B82F6', justifyContent: 'center', alignItems: 'center' },
-  driverLetter: { color: '#FFF', fontWeight: '800', fontSize: 16 },
-  driverInfo: { flex: 1, alignItems: 'flex-end' },
-  driverNameText: { fontSize: 14, fontWeight: '800', color: '#1E293B' },
-  driverPhoneText: { fontSize: 12, color: '#64748B', fontWeight: '600' },
-  driverCallBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center' },
-  
-  driverOption: { paddingHorizontal: 15, paddingVertical: 10, backgroundColor: '#F8FAFC', borderRadius: 12, marginRight: 8, alignItems: 'flex-end', minWidth: 120 },
-  driverOptionName: { fontSize: 12, fontWeight: '700', color: '#1E293B' },
-  driverOptionPhone: { fontSize: 10, color: '#64748B' },
-  noDriversBox: { padding: 15, alignItems: 'center' },
-  noDriversText: { fontSize: 12, color: '#94A3B8', fontWeight: '600' },
-  warningBox: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, marginTop: 10, padding: 8, backgroundColor: '#FFFBEB', borderRadius: 8 },
-  warningText: { fontSize: 11, color: '#D97706', fontWeight: '700' },
+  shippingInfoBox: { gap: 16 },
+  shippingMainRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  shippingAddress: { flex: 1 },
+  addressTextLarge: { fontSize: 14, color: '#475569', lineHeight: 22 },
+  miniMapBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F0F9FF', justifyContent: 'center', alignItems: 'center' },
+  actionButtonsRow: { flexDirection: 'row', gap: 12 },
+  bigActionBtn: { flex: 1, height: 48, borderRadius: 14, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10 },
+  bigActionText: { color: '#FFF', fontSize: 14, fontWeight: 'bold' },
 
-  quickAddBtn: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, backgroundColor: '#F0F9FF' },
-  quickAddText: { fontSize: 11, fontWeight: '700' },
+  itemsSection: { marginBottom: 24 },
+  itemsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  itemsTitle: { fontSize: 16, fontWeight: 'bold', color: '#1E293B' },
+  itemsCountBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
+  itemsCountText: { color: '#FFF', fontSize: 11, fontWeight: 'bold' },
+  premiumItemCard: { backgroundColor: '#FFF', borderRadius: 20, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#F1F5F9' },
+  itemImageWrap: { width: 70, height: 70, borderRadius: 16, overflow: 'hidden' },
+  itemImage: { width: '100%', height: '100%' },
+  itemQtyOverlay: { position: 'absolute', bottom: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 6, paddingVertical: 2, borderTopLeftRadius: 8 },
+  itemQtyOverlayText: { color: '#FFF', fontSize: 10, fontWeight: 'bold' },
+  itemCoreInfo: { flex: 1, marginLeft: 14 },
+  itemName: { fontSize: 14, fontWeight: 'bold', color: '#1E293B', marginBottom: 4 },
+  itemOptionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginBottom: 8 },
+  variationBadge: { backgroundColor: '#F8FAFC', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5, borderWidth: 1, borderColor: '#F1F5F9' },
+  variationText: { fontSize: 9, color: '#64748B' },
+  itemPricingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  itemUnitPrice: { fontSize: 12, color: '#94A3B8' },
+  itemTotalPrice: { fontSize: 15, fontWeight: 'bold' },
 
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 },
-  modalContainer: { backgroundColor: '#FFF', borderRadius: 24, maxHeight: '80%', overflow: 'hidden' },
-  modalHeader: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-  modalTitle: { fontSize: 18, fontWeight: '800', color: '#1E293B' },
-  modalBody: { padding: 20 },
-  inputGroup: { marginBottom: 16 },
-  inputLabel: { fontSize: 13, fontWeight: '700', color: '#64748B', marginBottom: 8, textAlign: 'right' },
-  input: { backgroundColor: '#F8FAFC', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'right', fontSize: 14, color: '#1E293B' },
-  submitBtn: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 16, borderRadius: 16, marginTop: 10 },
-  submitBtnText: { color: '#FFF', fontSize: 15, fontWeight: '800' },
-  hintText: { fontSize: 11, color: '#94A3B8', marginTop: 15, textAlign: 'center' },
+  paymentDetailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F8FAFC' },
+  payMethodBox: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  payMethodIcon: { width: 32, height: 32, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  payMethodName: { fontSize: 14, fontWeight: 'bold', color: '#1E293B' },
+  payAmountText: { fontSize: 15, fontWeight: 'bold', color: '#1E293B' },
+  statusBadgeSmall: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  statusBadgeTextSmall: { fontSize: 10, fontWeight: 'bold' },
+  receiptActionBox: { marginTop: 12 },
+  viewReceiptBar: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#F0F9FF', padding: 12, borderRadius: 12 },
+  viewReceiptText: { flex: 1, fontSize: 13, fontWeight: 'bold' },
+  paymentActionButtons: { flexDirection: 'row', gap: 10, marginTop: 16 },
+  verifyPayBtn: { flex: 1, height: 48, borderRadius: 14, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 },
+  verifyPayBtnText: { color: '#FFF', fontSize: 14, fontWeight: 'bold' },
+  rejectPayBtn: { width: 80, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0' },
+  rejectPayBtnText: { color: '#EF4444', fontSize: 13, fontWeight: 'bold' },
 
-  /* Payment Section Styles */
-  paymentInfoRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
-  paymentMethodLabel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10 },
-  tinyMethodIcon: { width: 32, height: 32, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  paymentMethodName: { fontSize: 16, fontWeight: '800', color: THEME.colors.slate[800] },
-  txStatusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
-  txPending: { backgroundColor: THEME.colors.amber + '10' },
-  txVerified: { backgroundColor: '#F0FDF4' },
-  txRejected: { backgroundColor: THEME.colors.rose + '10' },
-  txStatusText: { fontSize: 13, fontWeight: '800' },
-  receiptPreviewBox: { marginTop: 10, marginBottom: 20 },
-  receiptHint: { fontSize: 13, fontWeight: '700', color: '#64748B', marginBottom: 10, textAlign: 'right' },
-  receiptThumbnailBtn: { height: 180, borderRadius: 16, overflow: 'hidden', backgroundColor: '#F1F5F9' },
-  receiptThumbnail: { width: '100%', height: '100%' },
-  blurOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center' },
-  maximizeText: { color: '#FFF', fontSize: 14, fontWeight: '700', marginTop: 8 },
-  txActions: { flexDirection: 'row', gap: 12, marginTop: 10 },
-  txBtn: { flex: 1, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  txBtnText: { color: '#FFF', fontSize: 14, fontWeight: '800' },
-  verificationNotes: { marginTop: 15, padding: 12, backgroundColor: '#F8FAFC', borderRadius: 12, borderWidth: 1, borderColor: '#F1F5F9' },
-  notesLabel: { fontSize: 12, fontWeight: '700', color: '#64748B', marginBottom: 4, textAlign: 'right' },
-  notesValue: { fontSize: 13, color: '#1E293B', textAlign: 'right' },
+  premiumReceiptContainer: { backgroundColor: '#FFF', borderRadius: 24, overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9', elevation: 4 },
+  receiptTopper: { height: 50, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#E2E8F0' },
+  receiptNotch: { position: 'absolute', top: -10, width: 60, height: 20, backgroundColor: '#F8FAFC', borderRadius: 10 },
+  receiptMainTitle: { fontSize: 15, fontWeight: 'bold', color: '#1E293B' },
+  receiptContent: { padding: 20 },
+  receiptLine: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  receiptLabel: { fontSize: 13, color: '#94A3B8' },
+  receiptValue: { fontSize: 14, fontWeight: '600', color: '#1E293B' },
+  receiptDashDivider: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 15, borderStyle: 'dashed' },
+  receiptGrandTotal: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  grandTotalLabel: { fontSize: 16, fontWeight: 'bold', color: '#1E293B' },
+  grandTotalValue: { fontSize: 22, fontWeight: '900' },
+  receiptSecurityFooter: { padding: 12, backgroundColor: '#F8FAFC', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
+  securityText: { fontSize: 10, color: '#94A3B8' },
 
-  /* Viewer Modal */
-  viewerBackground: { flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center' },
-  viewerClose: { position: 'absolute', top: 50, right: 20, zIndex: 10 },
-  fullReceipt: { width: width, height: '80%' },
+  mapModalContainer: { flex: 1, backgroundColor: '#FFF' },
+  mapHeader: { height: 60, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+  mapTitle: { fontSize: 18, fontWeight: 'bold', color: '#1E293B' },
+  map: { flex: 1 },
+  mapFooter: { padding: 20, backgroundColor: '#FFF' },
+  navBtn: { height: 56, borderRadius: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12 },
+  navBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
+  markerPin: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#FFF', elevation: 5 },
+
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 20 },
+  modalContent: { backgroundColor: '#FFF', borderRadius: 28, padding: 20, maxHeight: '85%' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#1E293B' },
+  modalScroll: { gap: 16 },
+  inputGroup: { gap: 8 },
+  inputLabel: { fontSize: 14, fontWeight: '600', color: '#64748B' },
+  input: { backgroundColor: '#F8FAFC', height: 50, borderRadius: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'right' },
+  modalSubmit: { height: 56, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginTop: 10 },
+  modalSubmitText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
 });

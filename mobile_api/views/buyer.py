@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 
 from core.models import (
     Supplier, Product, SupplierCategory, SupplierAdPlatfrom, 
-    PlatformOfferAd, SupplierAds, ProductOffer, Category
+    PlatformOfferAd, SupplierAds, ProductOffer, Category, WishList
 )
 from ..serializers import (
     SupplierSerializer, ProductSerializer, SupplierCategorySerializer,
@@ -120,7 +120,11 @@ class HomeAPIView(APIView):
 
 class StoreProfileAPIView(APIView):
     def get(self, request, store_id):
-        supplier = get_object_or_404(Supplier, store_id=store_id, is_active=True)
+        # Support both numeric ID and alphanumeric slug (store_id)
+        if store_id.isdigit():
+            supplier = get_object_or_404(Supplier, id=store_id, is_active=True)
+        else:
+            supplier = get_object_or_404(Supplier, store_id=store_id, is_active=True)
         today = timezone.now().date()
         
         # Supplier Ads
@@ -189,3 +193,44 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+class ToggleWishlistAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, product_id):
+        product = get_object_or_404(Product, id=product_id)
+        wishlist_item, created = WishList.objects.get_or_create(
+            user=request.user, 
+            product=product
+        )
+        
+        if created:
+            return Response({
+                'success': True,
+                'action': 'added',
+                'is_wishlisted': True,
+                'message': 'تم إضافة المنتج للمفضلة'
+            })
+        else:
+            wishlist_item.delete()
+            return Response({
+                'success': True,
+                'action': 'removed',
+                'is_wishlisted': False,
+                'message': 'تم إزالة المنتج من المفضلة'
+            })
+
+class WishlistStatusAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, product_id):
+        product = get_object_or_404(Product, id=product_id)
+        is_wishlisted = WishList.objects.filter(
+            user=request.user, 
+            product=product
+        ).exists()
+        
+        return Response({
+            'success': True,
+            'is_wishlisted': is_wishlisted
+        })

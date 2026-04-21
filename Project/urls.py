@@ -29,6 +29,7 @@ urlpatterns = [
     path('service_provider/', include(service_provider_urls)),
     path('accounts/', include('allauth.urls')),
     path('api/', include('mobile_api.urls')),
+    path('api/subscriptions/', include('subscriptions.urls')),
 ]
 
 if settings.DEBUG:

@@ -3,21 +3,37 @@ import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, 
 import { Ionicons } from '@expo/vector-icons';
 import client from '../api/client';
 import CheckoutModal from '../components/CheckoutModal';
+import { getSupplierTheme } from '../theme/supplierTheme';
 
 export default function CartScreen({ route, navigation }) {
-    const { supplierId } = route.params || {};
+    const { supplierId, primaryColor: initialPrimaryColor } = route.params || {};
     const [cart, setCart] = useState(null);
+    const [supplierData, setSupplierData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isCheckoutModalVisible, setCheckoutModalVisible] = useState(false);
+
+    const theme = getSupplierTheme(supplierData);
 
     useEffect(() => {
         if (supplierId && String(supplierId) !== 'undefined') {
             fetchCart();
+            fetchSupplierProfile();
         } else {
-            // console.warn("No valid supplierId provided to CartScreen");
             setLoading(false);
         }
     }, [supplierId]);
+
+    const fetchSupplierProfile = async () => {
+        try {
+            // Use the router's detail endpoint which uses the numeric ID
+            const response = await client.get(`/stores/${supplierId}/profile/`);
+            if (response.data && response.data.success) {
+                setSupplierData(response.data.supplier);
+            }
+        } catch (error) {
+            console.error("Error fetching supplier profile in Cart", error);
+        }
+    };
 
     const fetchCart = async () => {
         try {
@@ -95,7 +111,7 @@ export default function CartScreen({ route, navigation }) {
         const totalUnitPrice = parseFloat(lockedPrice) + parseFloat(item.price_modifier_total || 0);
 
         return (
-            <View style={styles.card}>
+            <View style={[styles.card, { shadowColor: theme.shadow || '#94a3b8' }]}>
                 <View style={styles.imageContainer}>
                     {imageUrl ? (
                         <Image source={{ uri: imageUrl }} style={styles.productImage} />
@@ -143,19 +159,19 @@ export default function CartScreen({ route, navigation }) {
                                             onPress={() => handleUpdateQuantity(product.id, item.quantity, -1, item.selected_options_details)}
                                             disabled={isUpdating}
                                         >
-                                            <Ionicons name="remove" size={16} color="#2B5876" />
+                                            <Ionicons name="remove" size={16} color={theme.primary} />
                                         </TouchableOpacity>
                                         
                                         <View style={{ width: 30, alignItems: 'center' }}>
                                             {isUpdating ? (
-                                                <ActivityIndicator size="small" color="#2B5876" />
+                                                <ActivityIndicator size="small" color={theme.primary} />
                                             ) : (
                                                 <Text style={styles.qtyNumber}>{item.quantity}</Text>
                                             )}
                                         </View>
 
                                         <TouchableOpacity 
-                                            style={[styles.qtyBtn, { backgroundColor: '#2B5876' }, isUpdating && { opacity: 0.5 }]} 
+                                            style={[styles.qtyBtn, { backgroundColor: theme.primary }, isUpdating && { opacity: 0.5 }]} 
                                             onPress={() => handleUpdateQuantity(product.id, item.quantity, 1, item.selected_options_details)}
                                             disabled={isUpdating}
                                         >
@@ -176,21 +192,21 @@ export default function CartScreen({ route, navigation }) {
 
     if (loading) {
         return (
-            <View style={styles.centerMode}>
-                <ActivityIndicator size="large" color="#2B5876" />
+            <View style={[styles.centerMode, { backgroundColor: theme.bg }]}>
+                <ActivityIndicator size="large" color={theme.primary} />
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.bg }]}>
             {!cart || !cart.items || cart.items.length === 0 ? (
                 <View style={styles.emptyContainer}>
-                    <Ionicons name="cart-outline" size={80} color="#cbd5e1" style={styles.emptyIcon} />
-                    <Text style={styles.emptyTitle}>سلة التسوق فارغة</Text>
-                    <Text style={styles.emptySubtitle}>اكتشف المزيد من المنتجات المذهلة وتسوق الآن!</Text>
+                    <Ionicons name="cart-outline" size={80} color={theme.primaryMuted || "#cbd5e1"} style={styles.emptyIcon} />
+                    <Text style={[styles.emptyTitle, { color: theme.text }]}>سلة التسوق فارغة</Text>
+                    <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>اكتشف المزيد من المنتجات المذهلة وتسوق الآن!</Text>
                     <TouchableOpacity
-                        style={styles.continueShoppingBtn}
+                        style={[styles.continueShoppingBtn, { backgroundColor: theme.primary, shadowColor: theme.primary }]}
                         onPress={() => navigation.goBack()}
                     >
                         <Text style={styles.continueShoppingText}>متابعة التسوق</Text>
@@ -205,14 +221,14 @@ export default function CartScreen({ route, navigation }) {
                         contentContainerStyle={styles.listContainer}
                         showsVerticalScrollIndicator={false}
                     />
-                    <View style={styles.checkoutFooter}>
+                        <View style={[styles.checkoutFooter, { backgroundColor: theme.footer }]}>
                         <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>الإجمالي الكلي:</Text>
-                            <Text style={styles.totalAmount}>
+                            <Text style={[styles.totalLabel, { color: theme.footerText }]}>الإجمالي الكلي:</Text>
+                            <Text style={[styles.totalAmount, { color: theme.primary }]}>
                                 {cart.items.reduce((sum, item) => sum + parseFloat(item.subtotal_with_discount), 0).toFixed(2)} ر.ي
                             </Text>
                         </View>
-                        <TouchableOpacity style={styles.checkoutButton} onPress={() => setCheckoutModalVisible(true)}>
+                        <TouchableOpacity style={[styles.checkoutButton, { backgroundColor: theme.primary, shadowColor: theme.primary }]} onPress={() => setCheckoutModalVisible(true)}>
                             <Text style={styles.checkoutButtonText}>إتمام الطلب</Text>
                             <Ionicons name="chevron-back" size={20} color="#fff" />
                         </TouchableOpacity>
@@ -225,6 +241,8 @@ export default function CartScreen({ route, navigation }) {
                 onClose={() => setCheckoutModalVisible(false)}
                 cart={cart}
                 supplierId={supplierId}
+                supplierData={supplierData}
+                primaryColor={theme.primary}
                 onSuccess={() => {
                     DeviceEventEmitter.emit(`cart_updated_${supplierId}`, 0);
                     navigation.goBack();

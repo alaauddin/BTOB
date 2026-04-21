@@ -18,7 +18,8 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import Logo from "./Logo";
 
-export default function AuthModal({ visible, onClose, onSuccess }) {
+export default function AuthModal({ visible, onClose, onSuccess, primaryColor: initialPrimaryColor }) {
+  const primaryColor = initialPrimaryColor || "#2B5876";
   const { unifiedLoginPhone, login } = useAuth();
   const [activeTab, setActiveTab] = useState("customer"); // 'customer' or 'merchant'
 
@@ -141,7 +142,7 @@ export default function AuthModal({ visible, onClose, onSuccess }) {
                 <TouchableOpacity
                   style={[
                     styles.tabButton,
-                    activeTab === "customer" && styles.activeTabButton,
+                    activeTab === "customer" && { borderColor: primaryColor },
                   ]}
                   onPress={() => {
                     setActiveTab("customer");
@@ -151,7 +152,7 @@ export default function AuthModal({ visible, onClose, onSuccess }) {
                   <View
                     style={[
                       styles.tabIconBg,
-                      activeTab === "customer" && styles.activeTabIconBg,
+                      activeTab === "customer" && { backgroundColor: primaryColor },
                     ]}
                   >
                     <Ionicons
@@ -163,7 +164,7 @@ export default function AuthModal({ visible, onClose, onSuccess }) {
                   <Text
                     style={[
                       styles.tabText,
-                      activeTab === "customer" && styles.activeTabText,
+                      activeTab === "customer" && { color: primaryColor },
                     ]}
                   >
                     العملاء
@@ -174,7 +175,7 @@ export default function AuthModal({ visible, onClose, onSuccess }) {
                 <TouchableOpacity
                   style={[
                     styles.tabButton,
-                    activeTab === "merchant" && styles.activeTabButton,
+                    activeTab === "merchant" && { borderColor: primaryColor },
                   ]}
                   onPress={() => {
                     setActiveTab("merchant");
@@ -184,7 +185,7 @@ export default function AuthModal({ visible, onClose, onSuccess }) {
                   <View
                     style={[
                       styles.tabIconBg,
-                      activeTab === "merchant" && styles.activeTabIconBg,
+                      activeTab === "merchant" && { backgroundColor: primaryColor },
                     ]}
                   >
                     <Ionicons
@@ -196,7 +197,7 @@ export default function AuthModal({ visible, onClose, onSuccess }) {
                   <Text
                     style={[
                       styles.tabText,
-                      activeTab === "merchant" && styles.activeTabText,
+                      activeTab === "merchant" && { color: primaryColor },
                     ]}
                   >
                     التجار
@@ -270,7 +271,7 @@ export default function AuthModal({ visible, onClose, onSuccess }) {
                       <Ionicons
                         name={acceptedTerms ? "checkbox" : "square-outline"}
                         size={22}
-                        color={acceptedTerms ? "#D97706" : "#94a3b8"}
+                        color={acceptedTerms ? primaryColor : "#94a3b8"}
                       />
                       <Text style={styles.checkboxText}>
                         أوافق على سياسة الخصوصية
@@ -285,7 +286,7 @@ export default function AuthModal({ visible, onClose, onSuccess }) {
                         <Text style={styles.cancelBtnText}>إلغاء</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        style={styles.submitBtn}
+                        style={[styles.submitBtn, { backgroundColor: primaryColor, shadowColor: primaryColor }]}
                         onPress={handleCustomerSubmit}
                         disabled={loading}
                       >
@@ -361,7 +362,7 @@ export default function AuthModal({ visible, onClose, onSuccess }) {
                         <Text style={styles.cancelBtnText}>إلغاء</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        style={styles.submitBtn}
+                        style={[styles.submitBtn, { backgroundColor: primaryColor, shadowColor: primaryColor }]}
                         onPress={handleMerchantSubmit}
                         disabled={loading}
                       >

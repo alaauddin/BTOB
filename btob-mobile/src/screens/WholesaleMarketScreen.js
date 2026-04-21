@@ -50,8 +50,10 @@ export default function WholesaleMarketScreen() {
       const data = Array.isArray(res.data) ? res.data : (res.data.results || []);
       setProducts(data);
     } catch (err) {
-      console.error('Fetch products error', err);
-      showNotification({ title: 'خطأ', message: 'فشل تحميل المنتجات من سوق الجملة', type: 'error' });
+      if (err.response?.status !== 402) {
+        console.error('Fetch products error', err);
+        showNotification({ title: 'خطأ', message: 'فشل تحميل المنتجات من سوق الجملة', type: 'error' });
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);

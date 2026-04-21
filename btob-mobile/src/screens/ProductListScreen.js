@@ -11,13 +11,18 @@ import {
   ScrollView,
   Alert,
   DeviceEventEmitter,
+  Animated,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import { BRAND } from "../theme/brand";
 import client from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useNotifications } from "../context/NotificationContext";
 import AuthModal from "../components/AuthModal";
 import CartIconBadge from "../components/CartIconBadge";
+import { getSupplierTheme } from "../theme/supplierTheme";
 
 const { width } = Dimensions.get("window");
 
@@ -31,6 +36,8 @@ export default function ProductListScreen({ route, navigation }) {
   const [addingToCartId, setAddingToCartId] = useState(null);
   const [cartItems, setCartItems] = useState({}); // { product_id: quantity }
   const [cartCount, setCartCount] = useState(0);
+  const [wishlistItems, setWishlistItems] = useState({}); // { product_id: boolean }
+  const [togglingWishlistId, setTogglingWishlistId] = useState(null);
 
   useEffect(() => {
     if (!storeId || String(storeId) === 'undefined') {
@@ -47,11 +54,26 @@ export default function ProductListScreen({ route, navigation }) {
   }, [storeId, user]);
 
   useEffect(() => {
-    if (storeData?.supplier?.id) {
+    if (storeData?.supplier) {
+      const theme = getSupplierTheme(storeData.supplier);
       navigation.setOptions({
+        headerStyle: {
+          backgroundColor: theme.navbar,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+        headerTintColor: theme.navbarText,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
         headerRight: () => (
           <View style={{ marginRight: 15 }}>
-            <CartIconBadge supplierId={storeData.supplier.id} size={24} />
+            <CartIconBadge 
+              supplierId={storeData.supplier.id} 
+              size={24} 
+              badgeColor={theme.primary}
+              iconColor={theme.navbarText}
+            />
           </View>
         ),
       });
@@ -91,11 +113,57 @@ export default function ProductListScreen({ route, navigation }) {
       const response = await client.get(`/stores/${storeId}/profile/`);
       if (response.data.success) {
         setStoreData(response.data);
+        
+        // Initialize Wishlist State
+        const initialWishlist = {};
+        [
+          ...(response.data.offer_products || []),
+          ...(response.data.new_products || []),
+          ...(response.data.other_products || [])
+        ].forEach(p => {
+          initialWishlist[p.id] = p.is_wishlisted;
+        });
+        setWishlistItems(initialWishlist);
       }
     } catch (error) {
       console.error("Error fetching store profile", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleWishlist = async (productId) => {
+    if (!user) {
+      setAuthModalVisible(true);
+      return;
+    }
+
+    const currentState = wishlistItems[productId];
+    // Optimistic Update
+    setWishlistItems(prev => ({ ...prev, [productId]: !currentState }));
+    setTogglingWishlistId(productId);
+
+    try {
+      const response = await client.post(`/wishlist/toggle/${productId}/`);
+      if (response.data.success) {
+        // Confirm server state
+        setWishlistItems(prev => ({ ...prev, [productId]: response.data.is_wishlisted }));
+        showNotification({ 
+          title: response.data.action === 'added' ? "تم الإضافة" : "تم الإزالة", 
+          message: response.data.message, 
+          type: "success" 
+        });
+      } else {
+        // Revert on failure
+        setWishlistItems(prev => ({ ...prev, [productId]: currentState }));
+        showNotification({ title: "خطأ", message: "حدث خطأ ما", type: "error" });
+      }
+    } catch (error) {
+      // Revert on failure
+      setWishlistItems(prev => ({ ...prev, [productId]: currentState }));
+      showNotification({ title: "خطأ", message: "فشل الاتصال بالخادم", type: "error" });
+    } finally {
+      setTogglingWishlistId(null);
     }
   };
 
@@ -153,150 +221,161 @@ export default function ProductListScreen({ route, navigation }) {
         item.image ||
         (item.images && item.images.length > 0 ? item.images[0].image : null);
       const currencySymbol = storeData?.supplier?.currency?.symbol || "$";
-      const finalPrice = item.has_discount
-        ? item.price_after_discount
-        : item.price;
-
+      
       // Dynamic styling
-      const primaryColor = storeData?.supplier?.primary_color || "#2B5876";
+      const theme = getSupplierTheme(storeData?.supplier);
 
       return (
         <TouchableOpacity
           style={styles.productCard}
+          activeOpacity={0.9}
           onPress={() =>
             navigation.navigate("ProductDetails", { productId: item.id })
           }
         >
-          <View style={styles.productImageContainer}>
+          <View style={[styles.productImageContainer, { backgroundColor: theme.primaryMuted }]}>
             {imageUrl ? (
               <Image source={{ uri: imageUrl }} style={styles.productImage} />
             ) : (
-              <View style={[styles.productImage, styles.placeholderImage]} />
-            )}
-            {item.has_discount && (
-              <View style={styles.discountBadge}>
-                <Text style={styles.discountBadgeText}>
-                  {item.discount_percentage}% OFF
-                </Text>
+              <View style={[styles.productImage, styles.placeholderImage]}>
+                <Ionicons name="image-outline" size={32} color={theme.shadow} />
               </View>
             )}
-            {item.is_new && !item.has_discount && (
-              <View
-                style={[styles.newBadge, { backgroundColor: primaryColor }]}
-              >
-                <Text style={styles.newBadgeText}>جديد</Text>
-              </View>
-            )}
-          </View>
-          <View style={styles.productInfo}>
-            <Text style={styles.productName} numberOfLines={2}>
-              {item.name}
-            </Text>
-            <View style={styles.priceContainer}>
-              {item.has_attributes && <Text style={styles.startingFromText}>يبدأ من </Text>}
-              {item.has_discount ? (
-                <>
-                  <Text style={[styles.newPrice, { color: primaryColor }]}>
-                    {parseFloat(item.price_after_discount).toFixed(2)} {currencySymbol}
+            
+            {/* Badges Layout */}
+            <View style={styles.badgeOverlay}>
+              {item.has_discount && (
+                <LinearGradient
+                  colors={['#ef4444', '#b91c1c']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.discountBadge}
+                >
+                  <Text style={styles.discountBadgeText}>
+                    -{item.discount_percentage}%
                   </Text>
-                  <Text style={styles.oldPrice}>
-                    {parseFloat(item.price).toFixed(2)}
-                  </Text>
-                </>
-              ) : (
-                <Text style={[styles.newPrice, { color: primaryColor }]}>
-                  {parseFloat(item.price).toFixed(2)} {currencySymbol}
-                </Text>
+                </LinearGradient>
+              )}
+              {item.is_new && !item.has_discount && (
+                <LinearGradient
+                  colors={[theme.primary, theme.primary + 'cc']}
+                  style={styles.newBadge}
+                >
+                  <Text style={styles.newBadgeText}>جديد</Text>
+                </LinearGradient>
               )}
             </View>
 
-            {/* Interactive Cart Button or Options Shortcut */}
-            {item.has_attributes ? (
-              <TouchableOpacity
-                style={[
-                  styles.addToCartButton,
-                  { backgroundColor: "#f8fafc", borderWidth: 1, borderColor: primaryColor },
-                ]}
-                onPress={() => navigation.navigate("ProductDetails", { productId: item.id })}
-              >
-                <Ionicons
-                  name="options-outline"
-                  size={16}
-                  color={primaryColor}
-                  style={{ marginRight: 4 }}
+            <TouchableOpacity 
+              style={[styles.wishlistHeart, { backgroundColor: theme.secondary + 'aa' }]}
+              onPress={() => handleToggleWishlist(item.id)}
+              disabled={togglingWishlistId === item.id}
+            >
+              {togglingWishlistId === item.id ? (
+                <ActivityIndicator size="small" color={theme.primary} />
+              ) : (
+                <Ionicons 
+                  name={wishlistItems[item.id] ? "heart" : "heart-outline"} 
+                  size={18} 
+                  color={wishlistItems[item.id] ? "#ef4444" : theme.primary} 
                 />
-                <Text style={[styles.addToCartText, { color: primaryColor, fontWeight: "600" }]}>اختيار الخيارات</Text>
-              </TouchableOpacity>
-            ) : cartItems[item.id] > 0 ? (
-              <View
-                style={[
-                  styles.quantityController,
-                  { borderColor: primaryColor },
-                ]}
-              >
-                <TouchableOpacity
-                  style={[
-                    styles.qtyButton,
-                    { backgroundColor: primaryColor + "15" },
-                  ]}
-                  onPress={() =>
-                    handleUpdateQuantity(item.id, cartItems[item.id], -1)
-                  }
-                  disabled={addingToCartId === item.id}
-                >
-                  <Ionicons name="remove" size={18} color={primaryColor} />
-                </TouchableOpacity>
+              )}
+            </TouchableOpacity>
+          </View>
 
-                <Text style={[styles.qtyText, { color: primaryColor }]}>
-                  {cartItems[item.id]}
-                </Text>
-
-                <TouchableOpacity
-                  style={[styles.qtyButton, { backgroundColor: primaryColor }]}
-                  onPress={() =>
-                    handleUpdateQuantity(item.id, cartItems[item.id], 1)
-                  }
-                  disabled={addingToCartId === item.id}
-                >
-                  <Ionicons name="add" size={18} color="#fff" />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <TouchableOpacity
-                style={[
-                  styles.addToCartButton,
-                  { backgroundColor: primaryColor },
-                  addingToCartId === item.id && { opacity: 0.7 },
-                ]}
-                onPress={() => handleUpdateQuantity(item.id, 0, 1)}
-                disabled={addingToCartId === item.id}
-              >
-                {addingToCartId === item.id ? (
-                  <ActivityIndicator color="#fff" size="small" />
+          <View style={styles.productInfo}>
+            <View>
+              <Text style={[styles.productName, { color: theme.text }]} numberOfLines={2}>
+                {item.name}
+              </Text>
+              
+              <View style={styles.priceContainer}>
+                {item.has_discount ? (
+                  <View style={styles.priceRow}>
+                    <Text style={[styles.newPrice, { color: theme.primary }]}>
+                      {parseFloat(item.price_after_discount).toFixed(2)} <Text style={styles.currencySmall}>{currencySymbol}</Text>
+                    </Text>
+                    <Text style={[styles.oldPrice, { color: theme.textMuted }]}>
+                      {parseFloat(item.price).toFixed(2)}
+                    </Text>
+                  </View>
                 ) : (
-                  <>
-                    <Ionicons
-                      name="cart-outline"
-                      size={16}
-                      color="#fff"
-                      style={{ marginRight: 4 }}
-                    />
-                    <Text style={styles.addToCartText}>أضف للسلة</Text>
-                  </>
+                  <Text style={[styles.newPrice, { color: theme.primary }]}>
+                    {parseFloat(item.price).toFixed(2)} <Text style={styles.currencySmall}>{currencySymbol}</Text>
+                  </Text>
                 )}
-              </TouchableOpacity>
-            )}
+                {item.has_attributes && (
+                  <View style={[styles.attributeBadge, { backgroundColor: theme.primaryMuted }]}>
+                    <Text style={[styles.attributeText, { color: theme.primary }]}>خيارات</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* Action Button */}
+            <View style={styles.cardActionArea}>
+              {item.has_attributes ? (
+                <TouchableOpacity
+                  style={[styles.optionsButton, { borderColor: theme.shadow }]}
+                  onPress={() => navigation.navigate("ProductDetails", { productId: item.id })}
+                >
+                  <Text style={[styles.optionsButtonText, { color: theme.primary }]}>التفاصيل</Text>
+                  <Ionicons name="chevron-back" size={14} color={theme.primary} />
+                </TouchableOpacity>
+              ) : cartItems[item.id] > 0 ? (
+                <View style={[styles.quantityPill, { backgroundColor: theme.primary }]}>
+                  <TouchableOpacity
+                    style={styles.pillButton}
+                    onPress={() => handleUpdateQuantity(item.id, cartItems[item.id], -1)}
+                    disabled={addingToCartId === item.id}
+                  >
+                    <Ionicons name="remove" size={18} color="#fff" />
+                  </TouchableOpacity>
+                  
+                  <View style={styles.pillValueContainer}>
+                    {addingToCartId === item.id ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Text style={styles.pillText}>{cartItems[item.id]}</Text>
+                    )}
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.pillButton}
+                    onPress={() => handleUpdateQuantity(item.id, cartItems[item.id], 1)}
+                    disabled={addingToCartId === item.id}
+                  >
+                    <Ionicons name="add" size={18} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={[styles.addButton, { backgroundColor: theme.primary }]}
+                  onPress={() => handleUpdateQuantity(item.id, 0, 1)}
+                  disabled={addingToCartId === item.id}
+                >
+                  {addingToCartId === item.id ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                  ) : (
+                    <>
+                      <Text style={styles.addButtonText}>أضف</Text>
+                      <Ionicons name="cart-outline" size={16} color="#fff" />
+                    </>
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         </TouchableOpacity>
       );
     },
-    [storeData, cartItems, addingToCartId, navigation],
+    [storeData, cartItems, addingToCartId, navigation, wishlistItems, togglingWishlistId],
   );
 
   if (loading) {
     return (
       <View style={styles.centerMode}>
-        <ActivityIndicator size="large" color="#2B5876" />
+        <ActivityIndicator size="large" color={BRAND.colors.primary} />
       </View>
     );
   }
@@ -304,7 +383,8 @@ export default function ProductListScreen({ route, navigation }) {
   if (!storeData || !storeData.supplier) {
     return (
       <View style={styles.centerMode}>
-        <Text style={styles.emptyText}>الرجاء تحديث الجلسة (تسجيل الخروج والدخول مجدداً) للوصول للمتجر.</Text>
+        <Ionicons name="alert-circle-outline" size={64} color="#94a3b8" />
+        <Text style={styles.emptyText}>المتجر غير متوفر حالياً</Text>
       </View>
     );
   }
@@ -317,97 +397,81 @@ export default function ProductListScreen({ route, navigation }) {
     other_products,
   } = storeData;
 
-  const primaryColor = supplier.primary_color || "#2B5876";
+  const theme = getSupplierTheme(supplier);
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Store Header / Profile */}
-        <View style={styles.headerContainer}>
-          <View style={styles.coverImageContainer}>
+    <View style={[styles.container, { backgroundColor: theme.bg }]}>
+      <ScrollView 
+        style={styles.container} 
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Modern Store Hero */}
+        <View style={styles.heroContainer}>
+          <View style={styles.heroCoverWrapper}>
             {supplier.panal_picture ? (
-              <Image
-                source={{ uri: supplier.panal_picture }}
-                style={styles.coverImage}
-              />
+              <Image source={{ uri: supplier.panal_picture }} style={styles.heroCover} />
             ) : (
-              <View
-                style={[
-                  styles.coverImagePlaceholder,
-                  { backgroundColor: primaryColor },
-                ]}
-              />
+              <LinearGradient colors={[theme.primary, theme.accent]} style={styles.heroCover} />
             )}
+            <LinearGradient 
+              colors={['transparent', 'rgba(0,0,0,0.4)']} 
+              style={StyleSheet.absoluteFill} 
+            />
           </View>
-          <View style={styles.profileSection}>
-            <View
-              style={[
-                styles.logoWrapper,
-                { borderColor: primaryColor, borderWidth: 2 },
-              ]}
-            >
+
+          <View style={styles.heroContent}>
+            <View style={[styles.premiumLogoWrapper, { shadowColor: theme.shadow }]}>
               <Image
-                source={
-                  supplier.profile_picture
-                    ? { uri: supplier.profile_picture }
-                    : require("../../assets/images/logo.png")
-                }
-                style={styles.storeLogo}
+                source={supplier.profile_picture ? { uri: supplier.profile_picture } : require("../../assets/images/logo.png")}
+                style={styles.heroLogo}
               />
             </View>
-            <View style={styles.storeInfoWrapper}>
-              <Text style={styles.storeName}>{supplier.name}</Text>
-              <View style={styles.storeMetaRow}>
-                <Ionicons name="location" size={12} color="#94a3b8" />
-                <Text style={styles.storeMetaText}>صنعاء, اليمن</Text>
-              </View>
-              <View
-                style={[
-                  styles.badgeContainer,
-                  { backgroundColor: primaryColor + "20" },
-                ]}
-              >
-                <Text style={[styles.storeTypeBadge, { color: primaryColor }]}>
-                  {supplier.category && supplier.category.length > 0
-                    ? supplier.category.map((c) => c.name).join("، ")
-                    : supplier.is_factory
-                      ? "مصنع"
-                      : "تاجر جملة"}
-                </Text>
+            
+            <View style={styles.heroTextContent}>
+              <Text style={[styles.heroStoreName, { color: theme.text }]}>{supplier.name}</Text>
+              <View style={styles.heroMetaRow}>
+                <View style={styles.heroLocationRow}>
+                  <Ionicons name="location-outline" size={14} color={theme.textMuted} />
+                  <Text style={[styles.heroLocationText, { color: theme.textMuted }]}>صنعاء، اليمن</Text>
+                </View>
               </View>
             </View>
           </View>
         </View>
 
-        {/* Supplier Ads Carousel */}
+
+        {/* Supplier Ads */}
         {supplier_ads && supplier_ads.length > 0 && (
-          <View style={styles.sectionContainer}>
+          <View style={styles.sectionMargin}>
             <FlatList
               horizontal
               showsHorizontalScrollIndicator={false}
               data={supplier_ads}
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
-                <View style={styles.adCard}>
-                  <Image source={{ uri: item.image }} style={styles.adImage} />
-                </View>
+                <TouchableOpacity style={styles.premiumAdCard} activeOpacity={0.9}>
+                  <Image source={{ uri: item.image }} style={styles.premiumAdImage} />
+                  <LinearGradient colors={['transparent', 'rgba(0,0,0,0.1)']} style={StyleSheet.absoluteFill} />
+                </TouchableOpacity>
               )}
-              contentContainerStyle={styles.adsList}
+              contentContainerStyle={styles.premiumAdsList}
+              snapToInterval={width - 48}
+              decelerationRate="fast"
             />
           </View>
         )}
 
         {/* Exclusive Offers */}
         {offer_products && offer_products.length > 0 && (
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>مهرجان الخصومات</Text>
-              <View
-                style={[
-                  styles.sectionTitleAccent,
-                  { backgroundColor: primaryColor },
-                ]}
-              />
+          <View style={styles.sectionMargin}>
+            <View style={styles.modernSectionHeader}>
+              <View style={styles.sectionTitleGroup}>
+                <Text style={[styles.modernSectionTitle, { color: theme.text }]}>عروض حصرية</Text>
+                <View style={[styles.titleDot, { backgroundColor: theme.primary }]} />
+              </View>
+              <TouchableOpacity>
+                <Text style={[styles.seeAllLink, { color: theme.primary }]}>عرض الكل</Text>
+              </TouchableOpacity>
             </View>
             <FlatList
               horizontal
@@ -416,22 +480,19 @@ export default function ProductListScreen({ route, navigation }) {
               keyExtractor={(item) => item.id.toString()}
               renderItem={renderProductItem}
               extraData={cartItems}
-              contentContainerStyle={styles.horizontalList}
+              contentContainerStyle={styles.premiumHorizontalList}
             />
           </View>
         )}
 
         {/* New Arrivals */}
         {new_products && new_products.length > 0 && (
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>وصل حديثاً</Text>
-              <View
-                style={[
-                  styles.sectionTitleAccent,
-                  { backgroundColor: primaryColor },
-                ]}
-              />
+          <View style={styles.sectionMargin}>
+            <View style={styles.modernSectionHeader}>
+              <View style={styles.sectionTitleGroup}>
+                <Text style={[styles.modernSectionTitle, { color: theme.text }]}>وصل حديثاً</Text>
+                <View style={[styles.titleDot, { backgroundColor: theme.primary }]} />
+              </View>
             </View>
             <FlatList
               horizontal
@@ -440,75 +501,70 @@ export default function ProductListScreen({ route, navigation }) {
               keyExtractor={(item) => item.id.toString()}
               renderItem={renderProductItem}
               extraData={cartItems}
-              contentContainerStyle={styles.horizontalList}
+              contentContainerStyle={styles.premiumHorizontalList}
             />
           </View>
         )}
 
-        {/* All Store Products */}
+        {/* All Products Grid */}
         {other_products && (
-          <View style={styles.sectionContainer}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>كافة المنتجات</Text>
-              <View
-                style={[
-                  styles.sectionTitleAccent,
-                  { backgroundColor: primaryColor },
-                ]}
-              />
+          <View style={styles.sectionMargin}>
+            <View style={styles.modernSectionHeader}>
+              <View style={styles.sectionTitleGroup}>
+                <Text style={[styles.modernSectionTitle, { color: theme.text }]}>جميع المنتجات</Text>
+                <View style={[styles.titleDot, { backgroundColor: theme.primary }]} />
+              </View>
             </View>
 
             {other_products.length > 0 ? (
-              <View style={styles.gridContainer}>
+              <View style={styles.premiumGrid}>
                 {other_products.map((item) => (
-                  <View key={item.id} style={styles.gridItemWrapper}>
+                  <View key={item.id} style={styles.premiumGridItem}>
                     {renderProductItem({ item })}
                   </View>
                 ))}
               </View>
             ) : (
-              <Text style={styles.emptyText}>لا توجد منتجات أخرى لعرضها.</Text>
+              <View style={styles.emptyGridState}>
+                <Text style={styles.emptyText}>لا توجد منتجات إضافية حالياً</Text>
+              </View>
             )}
           </View>
         )}
 
-        <View style={{ height: cartCount > 0 ? 100 : 40 }} />
+        <View style={{ height: cartCount > 0 ? 120 : 40 }} />
 
-        {/* Auth Modal for Guests */}
+        {/* Auth Modal */}
         <AuthModal
           visible={authModalVisible}
           onClose={() => setAuthModalVisible(false)}
-          onSuccess={(loggedInUser) => {
-            fetchCartItems();
-          }}
+          primaryColor={theme.primary}
+          onSuccess={() => fetchCartItems()}
         />
       </ScrollView>
 
-      {/* Floating View Cart Button */}
+      {/* Modern Floating Action Bar */}
       {cartCount > 0 && (
-        <View style={styles.floatingCartContainer}>
+        <Animated.View style={styles.modernFloatingBar}>
           <TouchableOpacity
-            style={[
-              styles.floatingCartButton,
-              { backgroundColor: primaryColor },
-            ]}
-            onPress={() =>
-              navigation.navigate("Cart", {
-                supplierId: storeData?.supplier?.id || storeId,
-              })
-            }
+            style={[styles.premiumCartFAB, { backgroundColor: theme.primary, shadowColor: theme.primary }]}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate("Cart", { supplierId: storeData?.supplier?.id || storeId })}
           >
-            <View style={styles.floatingCartBadge}>
-              <Text
-                style={[styles.floatingCartBadgeText, { color: primaryColor }]}
-              >
-                {cartCount}
-              </Text>
+            <View style={styles.fabLeft}>
+               <View style={styles.fabBadge}>
+                  <Text style={[styles.fabBadgeText, { color: theme.primary }]}>{cartCount}</Text>
+               </View>
+               <Text style={styles.fabTitle}>عرض سلة المشتريات</Text>
             </View>
-            <Text style={styles.floatingCartText}>مشاهدة السلة</Text>
-            <Ionicons name="cart" size={24} color="#fff" />
+            <View style={styles.fabRight}>
+               <Ionicons name="cart" size={24} color="#fff" />
+               <View style={styles.fabArrow}>
+                  <Ionicons name="chevron-back" size={18} color="#fff" />
+               </View>
+            </View>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       )}
     </View>
   );
@@ -517,305 +573,407 @@ export default function ProductListScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f1f5f9",
   },
   centerMode: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: '#fff',
   },
-  headerContainer: {
+  /* Hero Section */
+  heroContainer: {
     backgroundColor: "#fff",
-    marginBottom: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
+    paddingBottom: 24,
   },
-  coverImageContainer: {
+  heroCoverWrapper: {
     width: "100%",
-    height: 140,
-    backgroundColor: "#cbd5e1",
+    height: 180,
+    backgroundColor: "#f1f5f9",
   },
-  coverImage: {
+  heroCover: {
     width: "100%",
     height: "100%",
     resizeMode: "cover",
   },
-  coverImagePlaceholder: {
-    flex: 1,
-  },
-  profileSection: {
+  heroContent: {
     flexDirection: "row",
-    paddingHorizontal: 16,
-    marginTop: -35, // Overlap cover
+    paddingHorizontal: 20,
+    marginTop: -40,
   },
-  logoWrapper: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  premiumLogoWrapper: {
+    width: 90,
+    height: 90,
+    borderRadius: 24,
     backgroundColor: "#fff",
-    padding: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
+    padding: 3,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 15,
+    elevation: 8,
   },
-  storeLogo: {
+  heroLogo: {
     width: "100%",
     height: "100%",
-    borderRadius: 36,
+    borderRadius: 21,
     resizeMode: "cover",
   },
-  storeInfoWrapper: {
+  heroTextContent: {
     flex: 1,
     marginLeft: 16,
-    marginTop: 40, // Push down to clear overlap
+    marginTop: 45,
   },
-  storeName: {
-    fontSize: 20,
+  heroStoreName: {
+    fontSize: 22,
     fontWeight: "900",
-    color: "#0f172a",
     textAlign: "left",
+    letterSpacing: -0.5,
   },
-  storeMetaRow: {
+  heroMetaRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 4,
-    marginBottom: 8,
+    marginTop: 6,
+    gap: 8,
   },
-  storeMetaText: {
-    fontSize: 12,
-    color: "#94a3b8",
-    marginLeft: 4,
+  typeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
-  badgeContainer: {
-    alignSelf: "flex-start",
-    backgroundColor: "#e0f2fe",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+  typeBadgeText: {
+    fontSize: 11,
+    fontWeight: "800",
   },
-  storeTypeBadge: {
-    fontSize: 10,
-    color: "#0284c7",
-    fontWeight: "bold",
-  },
-  sectionContainer: {
-    marginBottom: 20,
-  },
-  sectionHeaderRow: {
+  heroLocationRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    gap: 4,
+  },
+  heroLocationText: {
+    fontSize: 13,
+    color: "#64748b",
+    fontWeight: "500",
+  },
+  /* Sticky Search Bar */
+  stickySearchContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    zIndex: 10,
+  },
+  searchPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 48,
+    borderRadius: 24,
     paddingHorizontal: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1e293b",
-    textAlign: "left",
-  },
-  sectionTitleAccent: {
-    width: 4,
-    height: 18,
-    backgroundColor: "#2B5876",
-    marginRight: 8,
-    borderRadius: 2,
-  },
-  adsList: {
-    paddingHorizontal: 16,
-  },
-  adCard: {
-    width: width - 80,
-    height: 140,
-    borderRadius: 12,
-    overflow: "hidden",
-    marginRight: 12,
-    backgroundColor: "#e2e8f0",
-  },
-  adImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  horizontalList: {
-    paddingHorizontal: 12,
-  },
-  productCard: {
-    width: 160,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    overflow: "hidden",
-    marginHorizontal: 4,
     borderWidth: 1,
-    borderColor: "#f0f0f0",
-    shadowColor: "#000",
+    gap: 12,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.03,
     shadowRadius: 4,
     elevation: 2,
   },
+  searchPillText: {
+    fontSize: 14,
+    color: '#94a3b8',
+    fontWeight: '500',
+    flex: 1,
+    textAlign: 'right'
+  },
+  /* Section & Ads */
+  sectionMargin: {
+    marginBottom: 28,
+  },
+  modernSectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+    paddingHorizontal: 20,
+  },
+  sectionTitleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  modernSectionTitle: {
+    fontSize: 19,
+    fontWeight: "900",
+    letterSpacing: -0.3,
+  },
+  titleDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  seeAllLink: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  premiumAdsList: {
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  premiumAdCard: {
+    width: width - 80,
+    height: 160,
+    borderRadius: 24,
+    overflow: "hidden",
+    backgroundColor: "#f1f5f9",
+  },
+  premiumAdImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  /* Product Cards */
+  premiumHorizontalList: {
+    paddingHorizontal: 16,
+    gap: 4,
+  },
+  productCard: {
+    width: 175,
+    backgroundColor: "#fff",
+    borderRadius: 28,
+    marginHorizontal: 6,
+    padding: 8,
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
   productImageContainer: {
-    height: 140,
-    backgroundColor: "#f8fafc",
+    height: 155,
+    borderRadius: 22,
+    overflow: "hidden",
     position: "relative",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   productImage: {
     width: "100%",
     height: "100%",
-    resizeMode: "cover",
+    resizeMode: "contain",
   },
   placeholderImage: {
-    backgroundColor: "#e2e8f0",
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeOverlay: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    gap: 6,
   },
   discountBadge: {
-    position: "absolute",
-    top: 8,
-    left: 8,
-    backgroundColor: "#ef4444",
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 8,
   },
   discountBadgeText: {
     color: "#fff",
-    fontSize: 10,
-    fontWeight: "bold",
+    fontSize: 11,
+    fontWeight: "900",
   },
   newBadge: {
-    position: "absolute",
-    top: 8,
-    left: 8,
-    backgroundColor: "#10b981",
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 8,
   },
   newBadgeText: {
     color: "#fff",
-    fontSize: 10,
-    fontWeight: "bold",
+    fontSize: 11,
+    fontWeight: "900",
+  },
+  wishlistHeart: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   productInfo: {
-    padding: 10,
+    paddingTop: 12,
+    paddingHorizontal: 4,
+    paddingBottom: 4,
     flex: 1,
-    justifyContent: "space-between",
+    justifyContent: 'space-between'
   },
   productName: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#1e293b",
-    textAlign: "left",
-    height: 34,
-    marginBottom: 8,
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 18,
+    height: 36,
+    marginBottom: 6,
   },
   priceContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
   },
   newPrice: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#2B5876",
-    marginRight: 6,
+    fontSize: 16,
+    fontWeight: "900",
+  },
+  currencySmall: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   oldPrice: {
-    fontSize: 10,
-    color: "#94a3b8",
+    fontSize: 11,
     textDecorationLine: "line-through",
+    fontWeight: '500'
   },
-  startingFromText: {
+  attributeBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  attributeText: {
     fontSize: 10,
-    color: "#64748b",
-    marginRight: 2,
-    fontFamily: "System",
+    fontWeight: '800',
   },
-  addToCartButton: {
+  cardActionArea: {
+    marginTop: 'auto',
+  },
+  addButton: {
     flexDirection: "row",
-    backgroundColor: "#2B5876",
-    paddingVertical: 8,
-    borderRadius: 8,
+    height: 40,
+    borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
+    gap: 8,
   },
-  addToCartText: {
+  addButtonText: {
     color: "#fff",
-    fontSize: 12,
-    fontWeight: "bold",
+    fontSize: 14,
+    fontWeight: "800",
   },
-  quantityController: {
+  optionsButton: {
+    flexDirection: "row",
+    height: 40,
+    borderRadius: 14,
+    borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 4,
+  },
+  optionsButtonText: {
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  quantityPill: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderWidth: 1.5,
-    borderRadius: 8,
-    height: 34,
-    overflow: "hidden",
-  },
-  qtyButton: {
-    width: 34,
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  qtyText: {
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-  gridContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    paddingHorizontal: 12,
-  },
-  gridItemWrapper: {
-    width: "50%",
+    height: 40,
+    borderRadius: 14,
     paddingHorizontal: 4,
-    marginBottom: 16,
   },
-  emptyText: {
-    textAlign: "center",
-    marginTop: 20,
-    color: "#94a3b8",
-  },
-  floatingCartContainer: {
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20,
-  },
-  floatingCartButton: {
-    backgroundColor: "#10b981", // Emerald green for high visibility
-    flexDirection: "row",
-    alignItems: "center",
+  pillButton: {
+    width: 32,
+    height: 32,
     justifyContent: "center",
-    paddingVertical: 14,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 6,
+    alignItems: "center",
   },
-  floatingCartText: {
+  pillValueContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  pillText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
-    marginHorizontal: 12,
+    fontWeight: "900",
   },
-  floatingCartBadge: {
+  /* Grid Layout */
+  premiumGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 14,
+  },
+  premiumGridItem: {
+    width: "50%",
+    paddingHorizontal: 2,
+    marginBottom: 20,
+  },
+  emptyGridState: {
+    paddingVertical: 60,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#94a3b8",
+    fontWeight: '600',
+  },
+  /* Floating Action Bar */
+  modernFloatingBar: {
+    position: "absolute",
+    bottom: 30,
+    left: 20,
+    right: 20,
+    zIndex: 100,
+  },
+  premiumCartFAB: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  fabLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  fabBadge: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    minWidth: 24,
-    height: 24,
+    minWidth: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 6,
   },
-  floatingCartBadgeText: {
-    color: "#10b981",
-    fontSize: 12,
-    fontWeight: "bold",
+  fabBadgeText: {
+    fontSize: 14,
+    fontWeight: "900",
+  },
+  fabTitle: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "900",
+    letterSpacing: -0.2,
+  },
+  fabRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  fabArrow: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

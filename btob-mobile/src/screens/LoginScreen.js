@@ -8,7 +8,7 @@ import { AuthContext } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import Logo from '../components/Logo';
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen({ route, navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,6 +21,9 @@ export default function LoginScreen({ navigation }) {
     loginWithBiometrics,
   } = useContext(AuthContext);
   const { showNotification } = useNotifications();
+
+  const { primaryColor: initialPrimaryColor } = route.params || {};
+  const primaryColor = initialPrimaryColor || '#2B5876';
 
   // Auto-trigger biometric login if enabled
   useEffect(() => {
@@ -138,7 +141,7 @@ export default function LoginScreen({ navigation }) {
         {/* Submit & Biometric */}
         <View style={styles.actionRow}>
           <TouchableOpacity
-            style={[styles.btn, loading && { opacity: 0.7 }, { flex: 1, marginBottom: 0 }]}
+            style={[styles.btn, { backgroundColor: primaryColor, shadowColor: primaryColor }, loading && { opacity: 0.7 }, { flex: 1, marginBottom: 0 }]}
             onPress={handleLogin}
             disabled={loading}
           >
@@ -150,11 +153,11 @@ export default function LoginScreen({ navigation }) {
 
           {biometricsAvailable && biometricsEnabled && (
             <TouchableOpacity
-              style={styles.biometricBtn}
+              style={[styles.biometricBtn, { borderColor: primaryColor, shadowColor: primaryColor }]}
               onPress={handleBiometricLogin}
               activeOpacity={0.7}
             >
-              <Ionicons name="finger-print" size={28} color="#2B5876" />
+              <Ionicons name="finger-print" size={28} color={primaryColor} />
             </TouchableOpacity>
           )}
         </View>
@@ -164,8 +167,8 @@ export default function LoginScreen({ navigation }) {
           style={styles.linkBtn}
           onPress={() => navigation.navigate('Home')}
         >
-          <Feather name="arrow-right" size={14} color="#2B5876" />
-          <Text style={styles.linkText}>العودة للمتجر</Text>
+          <Feather name="arrow-right" size={14} color={primaryColor} />
+          <Text style={[styles.linkText, { color: primaryColor }]}>العودة للمتجر</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -191,21 +194,21 @@ const styles = StyleSheet.create({
   inputIcon: { marginRight: 8 },
   input: { flex: 1, fontSize: 15, color: '#0F172A' },
   btn: {
-    backgroundColor: '#2B5876', paddingVertical: 15,
+    paddingVertical: 15,
     borderRadius: 14, alignItems: 'center',
     marginTop: 8, marginBottom: 20,
-    shadowColor: '#2B5876', shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
   },
   btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20, marginTop: 8 },
   biometricBtn: {
     width: 52, height: 52, borderRadius: 14,
-    backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#2B5876',
+    backgroundColor: '#fff', borderWidth: 1.5,
     justifyContent: 'center', alignItems: 'center',
-    shadowColor: '#2B5876', shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1, shadowRadius: 4, elevation: 2,
   },
   linkBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  linkText: { color: '#2B5876', fontSize: 14, fontWeight: '600' },
+  linkText: { fontSize: 14, fontWeight: '600' },
 });

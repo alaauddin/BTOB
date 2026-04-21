@@ -1,62 +1,69 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     View, Text, StyleSheet, FlatList, TouchableOpacity, 
-    ActivityIndicator, RefreshControl, Dimensions, Alert, Image
+    ActivityIndicator, RefreshControl, Dimensions, Alert, Image, StatusBar, Platform
 } from 'react-native';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import client from '../api/client';
 import OfferEditModal from '../components/OfferEditModal';
+import { BRAND } from '../theme/brand';
+import Logo from '../components/Logo';
 
 const { width } = Dimensions.get('window');
 
-const OfferCard = ({ item, primaryColor, onDelete }) => {
+const OfferCard = ({ item, curr, onDelete }) => {
     const today = new Date();
     const toDate = new Date(item.to_date);
     const isExpired = toDate < today;
+    const primaryColor = BRAND.colors.primary;
 
     return (
         <View style={styles.card}>
-            <LinearGradient
-                colors={['#fff', '#F8FAFC']}
-                style={styles.cardGradient}
-            >
-                <View style={styles.cardHeader}>
-                    <View style={styles.productInfo}>
-                        <Text style={styles.productName}>{item.product_name}</Text>
-                        <Text style={styles.originalPrice}>السعر الأصلي: {parseFloat(item.product_price).toLocaleString()} ر.ي</Text>
+            <View style={styles.cardContent}>
+                <View style={styles.cardTop}>
+                    <View style={styles.productBlock}>
+                        <View style={[styles.productIconBox, { backgroundColor: primaryColor + '10' }]}>
+                           <MaterialCommunityIcons name="tag-outline" size={20} color={primaryColor} />
+                        </View>
+                        <View style={styles.textContainer}>
+                           <Text style={styles.productName} numberOfLines={1}>{item.product_name}</Text>
+                           <Text style={styles.priceInfo}>السعر الأصلي: {parseFloat(item.product_price).toLocaleString()} {curr}</Text>
+                        </View>
                     </View>
-                    <View style={[styles.discountBadge, { backgroundColor: primaryColor + '15' }]}>
-                        <Text style={[styles.discountText, { color: primaryColor }]}>{item.discount_percentage}%-</Text>
+                    <View style={[styles.percentageBadge, { backgroundColor: BRAND.colors.secondary }]}>
+                        <Text style={styles.percentageText}>{item.discount_percentage}%-</Text>
                     </View>
                 </View>
 
-                <View style={styles.divider} />
-
-                <View style={styles.cardBody}>
-                    <View style={styles.statusRow}>
-                        <View style={[styles.statusIndicator, { backgroundColor: isExpired ? '#EF4444' : (item.is_active ? '#22C55E' : '#94A3B8') }]} />
-                        <Text style={styles.statusText}>
-                            {isExpired ? 'منتهي' : (item.is_active ? 'نشط حالياً' : 'متوقف')}
+                <View style={styles.middleRow}>
+                    <View style={styles.infoPill}>
+                        <View style={[styles.statusDot, { backgroundColor: isExpired ? '#EF4444' : (item.is_active ? '#22C55E' : '#94A3B8') }]} />
+                        <Text style={styles.statusLabel}>
+                            {isExpired ? 'منتهي' : (item.is_active ? 'نشط' : 'متوقف')}
                         </Text>
                     </View>
-
-                    <View style={styles.dateRow}>
-                        <Feather name="calendar" size={14} color="#64748B" />
-                        <Text style={styles.dateText}>من {item.from_date} إلى {item.to_date}</Text>
+                    <View style={styles.dateBlock}>
+                        <Feather name="calendar" size={12} color="#94A3B8" />
+                        <Text style={styles.dateRangeText}>{item.from_date} ↔ {item.to_date}</Text>
                     </View>
                 </View>
 
-                <View style={styles.actions}>
+                <View style={styles.cardFooter}>
                     <TouchableOpacity style={styles.deleteBtn} onPress={() => onDelete(item)}>
-                        <Feather name="trash-2" size={16} color="#EF4444" />
-                        <Text style={styles.deleteBtnText}>إلغاء العرض</Text>
+                        <Feather name="trash-2" size={14} color="#EF4444" />
+                        <Text style={styles.deleteText}>إزالة العرض</Text>
                     </TouchableOpacity>
+                    
+                    <View style={styles.verifiedBox}>
+                       <Ionicons name="shield-checkmark" size={14} color="#10B981" />
+                       <Text style={styles.verifiedText}>عرض معتمد</Text>
+                    </View>
                 </View>
-            </LinearGradient>
+            </View>
         </View>
     );
 };
@@ -64,7 +71,8 @@ const OfferCard = ({ item, primaryColor, onDelete }) => {
 export default function MerchantOffersScreen() {
     const { activeMerchant } = useAuth();
     const { showNotification } = useNotifications();
-    const primaryColor = activeMerchant?.primary_color || '#2B5876';
+    const primaryColor = BRAND.colors.primary;
+    const curr = activeMerchant?.currency?.symbol || 'د.ك';
 
     const [offers, setOffers] = useState([]);
     const [products, setProducts] = useState([]);
@@ -83,8 +91,10 @@ export default function MerchantOffersScreen() {
             if (offRes.data.success) setOffers(offRes.data.offers);
             if (prodRes.data.success) setProducts(prodRes.data.products);
         } catch (err) {
-            console.error('Fetch offers error', err);
-            showNotification({ title: 'خطأ', message: 'فشل في تحميل البيانات', type: 'error' });
+            if (err.response?.status !== 402) {
+                console.error('Fetch offers error', err);
+                showNotification({ title: 'خطأ', message: 'فشل في تحميل البيانات', type: 'error' });
+            }
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -102,8 +112,8 @@ export default function MerchantOffersScreen() {
 
     const handleDelete = (offer) => {
         Alert.alert(
-            'إلغاء العرض',
-            'هل أنت متأكد من رغبتك في حذف هذا العرض الترويجي؟',
+            'حذف العرض',
+            'هل أنت متأكد من رغبتك في حذف هذا العرض الترويجي بشكل نهائي؟',
             [
                 { text: 'تراجع', style: 'cancel' },
                 { 
@@ -114,6 +124,7 @@ export default function MerchantOffersScreen() {
                             const res = await client.delete(`/merchant/offers/?offer_id=${offer.id}&merchant_id=${activeMerchant?.id}`);
                             if (res.data.success) {
                                 setOffers(prev => prev.filter(o => o.id !== offer.id));
+                                showNotification({ title: 'نجاح', message: 'تم حذف العرض بنجاح', type: 'success' });
                             }
                         } catch (err) {
                             showNotification({ title: 'خطأ', message: 'فشل في حذف العرض', type: 'error' });
@@ -128,25 +139,40 @@ export default function MerchantOffersScreen() {
         return (
             <View style={styles.centered}>
                 <ActivityIndicator size="large" color={primaryColor} />
+                <Text style={styles.loadingText}>جاري تحميل العروض...</Text>
             </View>
         );
     }
 
     return (
-        <SafeAreaView style={styles.root} edges={['top']}>
-            <View style={styles.header}>
-                <View>
-                    <Text style={styles.headerTitle}>العروض الترويجية</Text>
-                    <Text style={styles.headerSubtitle}>إدارة الخصومات والحملات</Text>
-                </View>
-                <TouchableOpacity 
-                    style={[styles.addButton, { backgroundColor: primaryColor }]}
-                    onPress={() => setModalVisible(true)}
-                >
-                    <Feather name="plus" size={20} color="#fff" />
-                    <Text style={styles.addButtonText}>عرض جديد</Text>
-                </TouchableOpacity>
-            </View>
+        <View style={styles.root}>
+            <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+            
+            <LinearGradient colors={BRAND.gradients.primary} style={styles.headerGradient}>
+                <SafeAreaView edges={['top']} style={styles.safeHeader}>
+                    <View style={styles.headerContent}>
+                        <View style={styles.headerRight}>
+                            <Logo variant="circle" size={36} />
+                        </View>
+                        <View style={styles.titleArea}>
+                            <Text style={styles.headerTitle}>العروض</Text>
+                            <View style={styles.activeBadge}>
+                               <Text style={styles.activeBadgeText}>{offers.length} عروض نشطة</Text>
+                            </View>
+                        </View>
+                        
+                        <TouchableOpacity 
+                            style={styles.addButton}
+                            onPress={() => setModalVisible(true)}
+                        >
+                            <LinearGradient colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0.1)']} style={styles.addBtnInner}>
+                                <Feather name="plus" size={20} color="#FFF" />
+                                <Text style={styles.addBtnText}>إنشاء</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    </View>
+                </SafeAreaView>
+            </LinearGradient>
 
             <FlatList
                 data={offers}
@@ -154,7 +180,7 @@ export default function MerchantOffersScreen() {
                 renderItem={({ item }) => (
                     <OfferCard 
                         item={item} 
-                        primaryColor={primaryColor} 
+                        curr={curr} 
                         onDelete={handleDelete}
                     />
                 )}
@@ -165,9 +191,14 @@ export default function MerchantOffersScreen() {
                 }
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
-                        <MaterialCommunityIcons name="tag-off-outline" size={64} color="#CBD5E1" />
-                        <Text style={styles.emptyTitle}>لا توجد عروض فعالة</Text>
-                        <Text style={styles.emptySubtitle}>ابدأ بإضافة خصومات لزيادة مبيعاتك!</Text>
+                        <View style={styles.emptyIconBox}>
+                           <MaterialCommunityIcons name="tag-multiple-outline" size={64} color="#CBD5E1" />
+                        </View>
+                        <Text style={styles.emptyTitle}>قائمة العروض فارغة</Text>
+                        <Text style={styles.emptySubtitle}>قم بإضافة عروض ترويجية لزيادة مبيعاتك وجذب المزيد من العملاء</Text>
+                        <TouchableOpacity style={[styles.emptyBtn, { backgroundColor: primaryColor }]} onPress={() => setModalVisible(true)}>
+                           <Text style={styles.emptyBtnText}>ابدأ الآن</Text>
+                        </TouchableOpacity>
                     </View>
                 }
             />
@@ -179,83 +210,72 @@ export default function MerchantOffersScreen() {
                 onSaved={fetchData}
                 primaryColor={primaryColor}
             />
-        </SafeAreaView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     root: { flex: 1, backgroundColor: '#F8FAFC' },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC' },
+    loadingText: { marginTop: 12, color: '#64748B', fontSize: 13 },
     
-    header: {
-        flexDirection: 'row-reverse',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 18,
-        backgroundColor: '#fff',
-        borderBottomWidth: 1,
-        borderBottomColor: '#F1F5F9',
-    },
-    headerTitle: { fontSize: 24, fontWeight: '800', color: '#0F172A', textAlign: 'right' },
-    headerSubtitle: { fontSize: 13, color: '#64748B', textAlign: 'right', marginTop: 2 },
-    addButton: {
-        flexDirection: 'row-reverse',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 12,
-        gap: 8,
-    },
-    addButtonText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+    headerGradient: { borderBottomLeftRadius: 30, borderBottomRightRadius: 30, paddingBottom: 15 },
+    safeHeader: { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+    headerContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, height: 70 },
+    headerRight: { marginRight: 15 },
+    titleArea: { flex: 1 },
+    headerTitle: { fontSize: 26, fontWeight: 'bold', color: '#FFF' },
+    activeBadge: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, alignSelf: 'flex-start', marginTop: 4 },
+    activeBadgeText: { color: '#FFF', fontSize: 10, fontWeight: 'bold' },
+    
+    addButton: { borderRadius: 12, overflow: 'hidden' },
+    addBtnInner: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
+    addBtnText: { color: '#FFF', fontSize: 14, fontWeight: 'bold' },
 
-    listContent: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 15 },
+    listContent: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 20 },
     card: {
-        borderRadius: 20,
+        backgroundColor: '#FFF',
+        borderRadius: 24,
         marginBottom: 16,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        overflow: 'hidden',
         borderWidth: 1,
         borderColor: '#F1F5F9',
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        overflow: 'hidden'
     },
-    cardGradient: { padding: 18 },
-    cardHeader: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'flex-start' },
-    productInfo: { flex: 1, marginRight: 12 },
-    productName: { fontSize: 17, fontWeight: '800', color: '#0F172A', textAlign: 'right' },
-    originalPrice: { fontSize: 13, color: '#94A3B8', textAlign: 'right', marginTop: 4 },
+    cardContent: { padding: 20 },
+    cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+    productBlock: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
+    productIconBox: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+    textContainer: { flex: 1 },
+    productName: { fontSize: 16, fontWeight: 'bold', color: '#1E293B' },
+    priceInfo: { fontSize: 12, color: '#94A3B8', marginTop: 2 },
     
-    discountBadge: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 10,
-    },
-    discountText: { fontSize: 18, fontWeight: '900' },
+    percentageBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
+    percentageText: { color: '#FFF', fontSize: 18, fontWeight: '900' },
 
-    divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 15 },
+    middleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 12, borderRadius: 14 },
+    infoPill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FFF', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#F1F5F9' },
+    statusDot: { width: 8, height: 8, borderRadius: 4 },
+    statusLabel: { fontSize: 12, fontWeight: 'bold', color: '#475569' },
     
-    cardBody: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center' },
-    statusRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
-    statusIndicator: { width: 8, height: 8, borderRadius: 4 },
-    statusText: { fontSize: 13, color: '#475569', fontWeight: '600' },
+    dateBlock: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    dateRangeText: { fontSize: 11, color: '#64748B', fontWeight: 'bold' },
+
+    cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
+    deleteBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#FEF2F2', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 },
+    deleteText: { fontSize: 12, fontWeight: 'bold', color: '#EF4444' },
     
-    dateRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6 },
-    dateText: { fontSize: 12, color: '#64748B', fontWeight: '500' },
+    verifiedBox: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    verifiedText: { fontSize: 11, fontWeight: 'bold', color: '#10B981' },
 
-    actions: { 
-        borderTopWidth: 1, 
-        borderTopColor: '#F1F5F9', 
-        marginTop: 15, 
-        paddingTop: 15,
-        alignItems: 'flex-start'
-    },
-    deleteBtn: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6 },
-    deleteBtnText: { fontSize: 13, fontWeight: '700', color: '#EF4444' },
-
-    emptyContainer: { alignItems: 'center', marginTop: 80 },
-    emptyTitle: { fontSize: 18, fontWeight: '800', color: '#1E293B', marginTop: 20 },
-    emptySubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginTop: 8 },
+    emptyContainer: { alignItems: 'center', marginTop: 60, paddingHorizontal: 40 },
+    emptyIconBox: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
+    emptyTitle: { fontSize: 20, fontWeight: 'bold', color: '#1E293B', marginBottom: 8 },
+    emptySubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 22, marginBottom: 24 },
+    emptyBtn: { paddingHorizontal: 40, paddingVertical: 14, borderRadius: 16, elevation: 4 },
+    emptyBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
 });

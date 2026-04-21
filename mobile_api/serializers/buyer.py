@@ -7,10 +7,19 @@ class SupplierSerializer(serializers.ModelSerializer):
     offers_count = serializers.IntegerField(read_only=True)
     category = SupplierCategorySerializer(many=True, read_only=True)
     currency = CurrencySerializer(read_only=True)
+    currency_id = serializers.PrimaryKeyRelatedField(
+        queryset=Supplier.objects.none(), source='currency', write_only=True, required=False, allow_null=True
+    )
     
     class Meta:
         model = Supplier
         fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from core.models import Currency
+        if 'currency_id' in self.fields:
+            self.fields['currency_id'].queryset = Currency.objects.all()
 
 class SupplierAdSerializer(serializers.ModelSerializer):
     supplier = serializers.PrimaryKeyRelatedField(read_only=True)

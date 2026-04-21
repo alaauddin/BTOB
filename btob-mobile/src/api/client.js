@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Replace with your machine's local IP address if testing on a physical device,
 // otherwise localhost or 10.0.2.2 (for Android Emulators) works.
 // Using 10.0.2.2 assumes Android Emulator connecting to Django on local machine.
-export const BASE_URL = 'https://rawaage.com/api';
+export const BASE_URL = 'http://192.168.8.125:8000/api';
 
 const client = axios.create({
     baseURL: BASE_URL,
@@ -30,11 +30,16 @@ export const notify = (config) => {
     }
 };
 
-// Callback for logout (to avoid circular dependency with AuthContext)
+// Callback for payment required (402)
 let unauthorizedHandler = null;
+let paymentRequiredHandler = null;
 
 export const setUnauthorizedHandler = (handler) => {
     unauthorizedHandler = handler;
+};
+
+export const setPaymentRequiredHandler = (handler) => {
+    paymentRequiredHandler = handler;
 };
 
 // Request Interceptor to add JWT token
@@ -90,7 +95,14 @@ client.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        // 2. Prepare Error Details for UI
+        // 2. Handle 402 Payment Required (Subscription Expired)
+        if (response && response.status === 402) {
+            console.log('Payment Required (Subscription Expired) detected (402)');
+            if (paymentRequiredHandler) paymentRequiredHandler(response.data);
+            return Promise.reject(error);
+        }
+
+        // 3. Prepare Error Details for UI
         let errorInfo = {
             title: 'خطأ',
             message: 'حدث خطأ غير متوقع',
@@ -156,6 +168,7 @@ client.getAuthMerchantId = async () => {
 client.notify = notify;
 client.setNotificationListener = setNotificationListener;
 client.setUnauthorizedHandler = setUnauthorizedHandler;
+client.setPaymentRequiredHandler = setPaymentRequiredHandler;
 
 
 export default client;

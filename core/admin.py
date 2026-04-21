@@ -170,7 +170,7 @@ class SupplierAdmin(admin.ModelAdmin):
             'description': 'إدارة تسلسل استلام وتوصيل الطلبات لهذا المورد.'
         }),
         ('تخصيص الألوان', {
-            'fields': ('subdomain','primary_color', 'secondary_color', 'navbar_color', 'footer_color', 'text_color', 'accent_color'),
+            'fields': ('subdomain','primary_color', 'secondary_color', 'navbar_color', 'footer_color', 'footer_text_color', 'accent_color'),
             'description': 'استخدم منتقي الألوان لتحديد ألوان متناسقة لمتجرك.'
         }),
         ('اعدادات الفئات', {
@@ -233,7 +233,7 @@ class SupplierAdmin(admin.ModelAdmin):
     map_picker.short_description = 'تحديد الموقع على الخريطة'
 
     def formfield_for_dbfield(self, db_field, **kwargs):
-        if db_field.name in ['primary_color', 'secondary_color', 'navbar_color', 'footer_color', 'text_color', 'accent_color']:
+        if db_field.name in ['primary_color', 'secondary_color', 'navbar_color', 'footer_color', 'footer_text_color', 'accent_color']:
             kwargs['widget'] = widgets.Input(attrs={'type': 'color', 'style': 'width: 100px; height: 40px; border: none; cursor: pointer;'})
         return super().formfield_for_dbfield(db_field, **kwargs)
 

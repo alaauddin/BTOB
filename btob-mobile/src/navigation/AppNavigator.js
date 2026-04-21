@@ -12,6 +12,7 @@ import MerchantTabNavigator from './MerchantTabNavigator';
 
 // Components
 import Logo from '../components/Logo';
+import SubscriptionModal from '../components/SubscriptionModal';
 
 // Buyer Screens
 import LoginScreen from '../screens/LoginScreen';
@@ -26,6 +27,8 @@ import MerchantOrderDetailScreen from '../screens/MerchantOrderDetailScreen';
 import MerchantOffersScreen from '../screens/MerchantOffersScreen';
 import MerchantProductEditScreen from '../screens/MerchantProductEditScreen';
 import MerchantPaymentSettingsScreen from '../screens/MerchantPaymentSettingsScreen';
+import SubscriptionScreen from '../screens/SubscriptionScreen';
+import SubscriptionPaymentScreen from '../screens/SubscriptionPaymentScreen';
 
 // Driver Screens
 import DriverDashboardScreen from '../screens/DriverDashboardScreen';
@@ -34,7 +37,7 @@ import DriverTrackingScreen from '../screens/DriverTrackingScreen';
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-    const { isLoading, isMerchant, isDriver } = useContext(AuthContext);
+    const { isLoading, isMerchant, isDriver, subModalVisible, setSubModalVisible } = useContext(AuthContext);
 
     if (isLoading) {
         return (
@@ -94,6 +97,16 @@ export default function AppNavigator() {
                     component={MerchantPaymentSettingsScreen}
                     options={{ headerShown: false }}
                 />
+                <Stack.Screen
+                    name="Subscription"
+                    component={SubscriptionScreen}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="SubscriptionPayment"
+                    component={SubscriptionPaymentScreen}
+                    options={{ headerShown: false }}
+                />
 
                 {/* ── Driver Screens ── */}
                 <Stack.Screen
@@ -107,6 +120,10 @@ export default function AppNavigator() {
                     options={{ headerShown: false }}
                 />
             </Stack.Navigator>
+            <SubscriptionModal 
+                visible={subModalVisible} 
+                onClose={() => setSubModalVisible(false)} 
+            />
         </NavigationContainer>
     );
 }

@@ -37,13 +37,26 @@ class GenerateAIColorsView(LoginRequiredMixin, View):
             
         client = openai.OpenAI(api_key=api_key)
 
-        # Construct the Prompt
+        # Construct the Expert Prompt
         prompt = (
             """
-                ### ROLE: Senior UI/UX Engineer (E-commerce Specialist)
+                ### ROLE: World-Class Visual Identity & Brand Strategist (خبير تصميم هويات بصرية)
+                
+                ### YOUR PHILOSOPHY:
+                You do not just pick colors; you create an emotional experience. You understand "تجانس الألوان" (Color Harmony) and the psychology of premium e-commerce. You act with artistic intuition (احساس) to ensure the brand feels alive, professional, and trustworthy.
 
                 ### TASK: 
-                Analyze the uploaded logo and extract a 7-color high-contrast palette. This is for a production-level web store.
+                Analyze the uploaded logo and design a master-level 7-color visual identity. 
+                Every color must serve a specific functional and aesthetic purpose in the design system.
+
+                ### VISUAL MAPPING (Where your colors will live):
+                1. `primary_color`: The soul of the brand. Used for main buttons, focus states, and key identity elements.
+                2. `secondary_color`: The atmosphere. Used as the main background of the store and surfaces. It must provide a clean canvas for products.
+                3. `navbar_color`: The anchor. The background of the top navigation bar. 
+                4. `navbar_text_color`: The clarity. Labels and icons inside the navbar.
+                5. `footer_color`: The foundation. The background of the bottom store footer and action bars.
+                6. `footer_text_color`: The signature. Copyright text, links, and icons in the footer.
+                7. `accent_color`: The trigger. High-vibrancy "Call to Action" color for 'Add to Cart'. It must 'pop' against everything else.
 
                 ### STRICT JSON STRUCTURE (Output ONLY this):
                 {
@@ -52,21 +65,18 @@ class GenerateAIColorsView(LoginRequiredMixin, View):
                 "navbar_color": "Hex",
                 "navbar_text_color": "Hex",
                 "footer_color": "Hex",
-                "text_color": "Hex (High Contrast vs Footer BG)",
-                "accent_color": "Hex (High-Visibility CTA)"
+                "footer_text_color": "Hex",
+                "accent_color": "Hex"
                 }
 
-                ### MATHEMATICAL CONSTRAINTS:
-                1. **Footer Logic:** `text_color` is the foreground for `footer_color`. They MUST achieve a 7:1 contrast ratio.
-                2. **Navbar Logic:** `navbar_text_color` is the foreground for `navbar_color`. They MUST achieve a 7:1 contrast ratio.
-                3. **Polarity Rule:** If background is DARK (Luminance < 40%), text MUST be #FFFFFF. If background is LIGHT (Luminance > 60%), text MUST be #000000 or #1E293B.
-                4. **The CTA Rule:** `accent_color` MUST be the most vibrant, "attention-grabbing" color for 'Add to Cart' buttons. It must stand out significantly from all other colors.
-
-                ### RULES FOR GENERATION:
-                - NO conversational text. 
-                - NO markdown triple backticks unless required by the parser.
-                - NO explanations. 
-                - Do NOT return null. If a color is missing, derive it from logo theory.
+                ### THE GOLDEN RULES:
+                - **Harmony (تجانس):** The palette must be perfectly balanced. No clashing tones. Use analogous, complementary, or triadic theory based on the logo.
+                - **Accessibility:** Text colors (`navbar_text_color`, `footer_text_color`) MUST maintain a 7:1 contrast ratio against their backgrounds.
+                - **Elegance:** Avoid generic web-safe colors. Think about texture, depth, and luxury.
+                - **Conversion:** The `accent_color` MUST be the most vibrant and attention-grabbing color.
+                
+                ### FINAL INSTRUCTION:
+                Be decisive. Be an artist. Output ONLY the JSON object.
             """
         )
 
@@ -97,7 +107,7 @@ class GenerateAIColorsView(LoginRequiredMixin, View):
             # Basic validation of keys
             required_keys = [
                 'primary_color', 'secondary_color', 'navbar_color', 
-                'navbar_text_color', 'footer_color', 'text_color', 'accent_color'
+                'navbar_text_color', 'footer_color', 'footer_text_color', 'accent_color'
             ]
             
             for key in required_keys:
