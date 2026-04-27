@@ -2,7 +2,7 @@
 # BTOB Multi-Tenant SaaS — Docker Compose (Production)
 # ============================================================
 # Services: Nginx (reverse proxy + wildcard subdomains),
-#           Django (gunicorn), PostgreSQL
+#           Django HTTP (gunicorn), Django WS (daphne), PostgreSQL, Redis, Celery
 # ============================================================
 
 services:
@@ -22,7 +22,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # --------------- Django (Gunicorn) ---------------
+  # --------------- Django HTTP (Gunicorn/WSGI) ---------------
   web:
     build: .
     restart: always
@@ -31,15 +31,38 @@ services:
     environment:
       - DB_HOST=db
       - DB_PORT=5432
-      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
     volumes:
       - static_files:/app/staticfiles
       - media_files:/app/media
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
     expose:
       - "8000"
+
+  # --------------- Django WebSocket (Daphne/ASGI) ---------------
+  ws:
+    build: .
+    command: daphne -b 0.0.0.0 -p 8001 Project.asgi:application
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - CELERY_BROKER_URL=redis://redis:6379/1
+    volumes:
+      - media_files:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    expose:
+      - "8001"
 
   # --------------- Nginx (Reverse Proxy) ---------------
   nginx:
@@ -57,6 +80,7 @@ services:
       - media_files:/app/media:ro
     depends_on:
       - web
+      - ws
 
   # --------------- Redis (Broker) ---------------
   redis:

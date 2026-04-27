@@ -36,7 +36,22 @@ location = /favicon.ico {
     log_not_found off;
 }
 
-# --- All other requests → Django ---
+# --- WebSocket connections → Daphne (ASGI) ---
+location /ws/ {
+    proxy_pass http://daphne;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    proxy_read_timeout 86400s;   # Keep WS connections alive (24h)
+    proxy_send_timeout 86400s;
+}
+
+# --- All other requests → Django (Gunicorn/WSGI) ---
 location / {
     proxy_pass http://django;
     proxy_set_header Host $host;
