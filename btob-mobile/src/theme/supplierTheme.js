@@ -1,4 +1,5 @@
 import { BRAND } from './brand';
+import Text from '../components/AppText';
 
 /**
  * Generates a structured theme object from supplier data.

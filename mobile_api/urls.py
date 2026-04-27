@@ -10,6 +10,7 @@ app_name = 'mobile_api'
 router = DefaultRouter()
 router.register(r'stores', views.SupplierViewSet, basename='supplier')
 router.register(r'categories', views.CategoryViewSet, basename='category')
+router.register(r'supplier-categories', views.SupplierCategoryViewSet, basename='supplier_category')
 router.register(r'products', views.ProductViewSet, basename='product')
 router.register(r'carts', views.CartViewSet, basename='cart')
 router.register(r'orders', views.OrderViewSet, basename='order')
@@ -22,6 +23,8 @@ urlpatterns = [
     # Auth endpoints
     path('auth/login/', views.LoginAPIView.as_view(), name='login'),
     path('auth/signup/', views.SignupAPIView.as_view(), name='signup'),
+    path('auth/merchant-signup/', views.MerchantSignupAPIView.as_view(), name='merchant_signup'),
+    path('auth/merchant-signup/send-otp/', views.MerchantSignupSendOTPAPIView.as_view(), name='merchant_signup_send_otp'),
     path('auth/unified-login/', views.UnifiedAuthAPIView.as_view(), name='unified_login'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
@@ -59,4 +62,8 @@ urlpatterns = [
     
     # Core/Global data
     path('core/currencies/', CurrenciesAPIView.as_view(), name='currencies'),
+
+    # Chat
+    path('chat/', include('chat.urls')),
 ]
+

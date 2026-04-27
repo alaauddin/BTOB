@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, DeviceEventEmitter } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, DeviceEventEmitter } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { BRAND } from '../theme/brand';
+import Text from './AppText';
 
 // Global cache dictionary to prevent fetch spamming across unmounts in React Navigation
 const hasFetchedForSupplier = {};
@@ -86,7 +88,7 @@ const styles = StyleSheet.create({
     badgeText: {
         color: '#fff',
         fontSize: 10,
-        fontWeight: 'bold',
+        fontFamily: BRAND.typography.bold,
         textAlign: 'center',
     },
 });

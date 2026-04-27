@@ -1,18 +1,16 @@
-import React, { useState, useEffect, useContext } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  TextInput,
-  Image,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useState, useEffect, useContext, useMemo } from "react";
+import { View, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Image, Dimensions, RefreshControl } from 'react-native';
+import { Ionicons, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from 'expo-linear-gradient';
 import client from "../api/client";
 import { AuthContext } from "../context/AuthContext";
 import CustomHeader from "../components/CustomHeader";
+import MerchantCardStack from "../components/MerchantCardStack";
+import { BRAND } from "../theme/brand";
+import Text from '../components/AppText';
+import TextInput from '../components/AppTextInput';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }) {
   const [homeData, setHomeData] = useState({
@@ -23,12 +21,19 @@ export default function HomeScreen({ navigation }) {
     all_suppliers: [],
   });
   const [loading, setLoading] = useState(true);
-  const { logout, user } = useContext(AuthContext);
+  const [refreshing, setRefreshing] = useState(false);
+  const { user } = useContext(AuthContext);
   const [activeFilter, setActiveFilter] = useState("الكل");
 
   useEffect(() => {
     fetchHomeData();
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchHomeData();
+    setRefreshing(false);
+  };
 
   const fetchHomeData = async () => {
     try {
@@ -43,124 +48,29 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
-  // Filter the All Stores list based on selected category pill
-  const filteredSuppliers =
-    activeFilter === "الكل"
+  const filteredSuppliers = useMemo(() => {
+    return activeFilter === "الكل"
       ? homeData.all_suppliers
       : homeData.all_suppliers.filter(
           (supplier) =>
             supplier.category &&
             supplier.category.some((cat) => cat.name === activeFilter),
         );
-
-  const renderStoreItem = ({ item }) => (
-    <View style={styles.cardContainer}>
-      <View style={styles.card}>
-        {/* Cover Image */}
-        <View style={styles.coverImageContainer}>
-          {item.panal_picture ? (
-            <Image
-              source={{ uri: item.panal_picture }}
-              style={styles.coverImage}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={styles.coverImagePlaceholder} />
-          )}
-        </View>
-
-        {/* Circular Logo overlapping the cover */}
-        <View style={styles.logoWrapper}>
-          <View style={styles.storeLogoCircle}>
-            <Image
-              source={
-                item.profile_picture
-                  ? { uri: item.profile_picture }
-                  : require("../../assets/images/logo.png")
-              }
-              style={
-                item.profile_picture
-                  ? styles.storeLogoImage
-                  : styles.placeholderLogo
-              }
-              resizeMode={item.profile_picture ? "cover" : "contain"}
-            />
-          </View>
-        </View>
-
-        {/* Store Info */}
-        <View style={styles.storeInfoContainer}>
-          <Text style={styles.storeName} numberOfLines={1}>
-            {item.name}
-          </Text>
-
-          <View style={styles.locationRow}>
-            <Text style={styles.locationText}>صنعاء, اليمن</Text>
-            <Ionicons name="location" size={12} color="#D48231" />
-          </View>
-
-          <View style={styles.badgeContainer}>
-            <Text style={styles.storeTypeBadge}>
-              {item.category && item.category.length > 0
-                ? item.category.map((c) => c.name).join("، ")
-                : item.is_factory
-                  ? "مصنع"
-                  : "تاجر جملة"}
-            </Text>
-          </View>
-
-          {/* Bottom Row: Rating + Visit Button */}
-          <View style={styles.cardBottomRow}>
-            <TouchableOpacity
-              style={styles.visitButton}
-              onPress={() =>
-                navigation.navigate("Products", { storeId: item.store_id })
-              }
-            >
-              <Text style={styles.visitButtonText}>زيارة المتجر</Text>
-              <Ionicons
-                name="arrow-back"
-                size={14}
-                color="#fff"
-                style={{ marginLeft: 4 }}
-              />
-            </TouchableOpacity>
-
-            <View style={styles.ratingContainer}>
-              <Text style={styles.ratingText}>5.0</Text>
-              <Ionicons name="star" size={14} color="#FFC107" />
-            </View>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
+  }, [activeFilter, homeData.all_suppliers]);
 
   const renderProducingFamilyItem = ({ item }) => (
     <TouchableOpacity
       style={styles.familyCard}
-      onPress={() =>
-        navigation.navigate("Products", { storeId: item.store_id })
-      }
+      onPress={() => navigation.navigate("Products", { storeId: item.store_id })}
     >
       <View style={styles.familyLogoContainer}>
         <Image
-          source={
-            item.profile_picture
-              ? { uri: item.profile_picture }
-              : require("../../assets/images/logo.png")
-          }
-          style={
-            item.profile_picture
-              ? styles.familyLogoImage
-              : styles.placeholderLogo
-          }
+          source={item.profile_picture ? { uri: item.profile_picture } : require("../../assets/images/logo.png")}
+          style={item.profile_picture ? styles.familyLogoImage : styles.placeholderLogo}
           resizeMode={item.profile_picture ? "cover" : "contain"}
         />
       </View>
-      <Text style={styles.familyName} numberOfLines={1}>
-        {item.name}
-      </Text>
+      <Text style={styles.familyName} numberOfLines={1}>{item.name}</Text>
       <View style={styles.familyBadge}>
         <Text style={styles.familyBadgeText}>أسرة منتجة</Text>
       </View>
@@ -173,56 +83,47 @@ export default function HomeScreen({ navigation }) {
 
     return (
       <TouchableOpacity
-        style={styles.offerCard}
-        onPress={() =>
-          navigation.navigate("ProductDetails", { productId: product.id })
-        }
+        activeOpacity={0.9}
+        style={styles.enhancedOfferCard}
+        onPress={() => navigation.navigate("ProductDetails", { productId: product.id })}
       >
-        <View style={styles.offerImageContainer}>
-          <Image source={{ uri: product.image }} style={styles.offerImage} />
+        {/* Product Image Section */}
+        <View style={styles.offerImageFrame}>
+          <Image source={{ uri: product.image }} style={styles.offerImageFull} />
+          
+          {/* Floating Merchant Logo for Context */}
+          <View style={styles.offerMerchantFloating}>
+            <Image 
+              source={product.supplier?.profile_picture ? { uri: product.supplier.profile_picture } : require("../../assets/images/logo.png")} 
+              style={styles.offerMerchantImg}
+            />
+          </View>
+
+          {/* Creative Slanted Discount Badge */}
           {product.has_discount && (
-            <View style={styles.discountBadge}>
-              <Text style={styles.discountBadgeText}>
-                {product.discount_percentage}% OFF
-              </Text>
+            <View style={styles.slantedBadge}>
+              <LinearGradient 
+                colors={['#FF3366', '#FF5E3A']} 
+                start={{x:0, y:0}} end={{x:1, y:1}}
+                style={styles.slantedGradient}
+              >
+                <Text style={styles.slantedText}>-{product.discount_percentage}%</Text>
+              </LinearGradient>
             </View>
           )}
         </View>
-        <View style={styles.offerInfoContainer}>
-          <View style={styles.offerHeaderRow}>
-            <View style={styles.offerSupplierLogoContainer}>
-              <Image
-                source={
-                  product.supplier?.profile_picture
-                    ? { uri: product.supplier.profile_picture }
-                    : require("../../assets/images/logo.png")
-                }
-                style={styles.offerSupplierLogo}
-              />
-            </View>
-            <Text
-              style={[styles.offerProductName, { flex: 1 }]}
-              numberOfLines={2}
-            >
-              {product.name}
+
+        {/* Product Info Section */}
+        <View style={styles.offerDetailBox}>
+          <Text style={styles.offerNameLabel} numberOfLines={1}>{product.name}</Text>
+          <View style={styles.offerPriceRow}>
+            <Text style={styles.offerPriceValue}>
+              {parseFloat(product.price_after_discount || product.price).toFixed(0)}
+              <Text style={styles.offerCurrency}> ر.ي</Text>
             </Text>
-          </View>
-          <View style={styles.priceContainer}>
-            {product.has_discount ? (
-              <>
-                <Text style={styles.newPrice}>
-                  {parseFloat(product.price_after_discount).toFixed(2)}{" "}
-                  {product.supplier?.currency?.symbol || "$"}
-                </Text>
-                <Text style={styles.oldPrice}>
-                  {parseFloat(product.price).toFixed(2)}{" "}
-                  {product.supplier?.currency?.symbol || "$"}
-                </Text>
-              </>
-            ) : (
-              <Text style={styles.newPrice}>
-                {parseFloat(product.price).toFixed(2)}{" "}
-                {product.supplier?.currency?.symbol || "$"}
+            {product.has_discount && (
+              <Text style={styles.offerOldPrice}>
+                {parseFloat(product.price).toFixed(0)}
               </Text>
             )}
           </View>
@@ -233,88 +134,113 @@ export default function HomeScreen({ navigation }) {
 
   const renderHeader = () => (
     <View style={styles.listHeaderContainer}>
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <Ionicons
-          name="search"
-          size={20}
-          color="#888"
-          style={styles.searchIcon}
-        />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="...ابحث عن متجر أو تصنيف"
-          placeholderTextColor="#aaa"
-          textAlign="left"
-        />
-      </View>
-
-      {/* Supplier Ads Carousel */}
+      {/* 1. Creative Hero Ads Section */}
       {homeData.supplier_ads && homeData.supplier_ads.length > 0 && (
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>إعلانات المتاجر</Text>
+        <View style={styles.heroSection}>
           <FlatList
             horizontal
+            pagingEnabled
             showsHorizontalScrollIndicator={false}
             data={homeData.supplier_ads}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => `ad-${item.id}`}
             renderItem={({ item }) => (
-              <TouchableOpacity style={styles.adCard}>
-                <Image source={{ uri: item.image }} style={styles.adImage} />
+              <TouchableOpacity activeOpacity={0.95} style={styles.heroAdWrapper}>
+                <Image source={{ uri: item.image }} style={styles.heroAdImage} />
+                <LinearGradient
+                  colors={['transparent', 'rgba(0,0,0,0.6)']}
+                  style={StyleSheet.absoluteFill}
+                />
               </TouchableOpacity>
             )}
-            contentContainerStyle={styles.horizontalList}
           />
         </View>
       )}
 
-      {/* Platform Ads (Exclusive Offers) Carousel */}
+      {/* 2. Glassmorphic CTA Banner */}
+      <View style={styles.ctaWrapper}>
+        <TouchableOpacity 
+          activeOpacity={0.9} 
+          style={styles.glassCta}
+          onPress={() => navigation.navigate('MerchantRegistration')}
+        >
+          <LinearGradient
+            colors={[BRAND.colors.primary, BRAND.colors.slate[900]]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.ctaGradient}
+          >
+            <View style={styles.ctaTextGroup}>
+              <Text style={styles.ctaMainText}>انضم لنخبة التجار</Text>
+              <Text style={styles.ctaSubText}>عروض حصرية ووصول أوسع</Text>
+            </View>
+            <View style={styles.ctaCircle}>
+              <Feather name="trending-up" size={20} color="#fff" />
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+
+      {/* 3. Modern horizontal Offers */}
       {homeData.platform_ads.length > 0 && (
-        <View style={[styles.sectionContainer, { marginTop: 10 }]}>
-          <Text style={styles.sectionTitle}>عروض حصرية</Text>
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>أقوى العروض</Text>
+            <TouchableOpacity><Text style={styles.seeAllText}>عرض الكل</Text></TouchableOpacity>
+          </View>
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
             data={homeData.platform_ads}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => `offer-${item.id}`}
             renderItem={renderPlatformAdItem}
-            contentContainerStyle={styles.horizontalList}
+            contentContainerStyle={styles.horizontalScrollPadding}
           />
         </View>
       )}
 
-      {/* Categories Pills */}
-      <View style={styles.sectionContainer}>
+      {/* 4. Visual Category Filters */}
+      <View style={styles.categoriesSection}>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={[{ id: "all", name: "الكل" }, ...homeData.categories]}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.filtersContainer}
+          data={[{ id: "all", name: "الكل", image: null }, ...homeData.categories]}
+          keyExtractor={(item) => `cat-v2-${item.id}`}
+          contentContainerStyle={styles.categoriesScroll}
           renderItem={({ item }) => {
             const isSelected = activeFilter === item.name;
             return (
               <TouchableOpacity
-                style={[
-                  styles.filterPill,
-                  isSelected && styles.activeFilterPill,
-                ]}
                 onPress={() => setActiveFilter(item.name)}
+                style={styles.categoryItem}
               >
-                {item.id === "all" && (
-                  <Ionicons
-                    name="grid"
-                    size={14}
-                    color={isSelected ? "#fff" : "#2B5876"}
-                    style={{ marginRight: 4 }}
-                  />
-                )}
-                <Text
-                  style={[
-                    styles.filterText,
-                    isSelected && styles.activeFilterText,
-                  ]}
-                >
+                <View style={[
+                  styles.categoryIconCircle,
+                  isSelected && styles.activeCategoryCircle,
+                  { borderColor: isSelected ? BRAND.colors.secondary : '#F1F5F9' }
+                ]}>
+                  {item.id === "all" ? (
+                    <LinearGradient 
+                      colors={isSelected ? [BRAND.colors.primary, BRAND.colors.slate[900]] : ['#F8FAFC', '#E2E8F0']}
+                      style={styles.categoryImgContainer}
+                    >
+                      <Ionicons name="grid" size={20} color={isSelected ? "#fff" : BRAND.colors.primary} />
+                    </LinearGradient>
+                  ) : (
+                    <View style={styles.categoryImgContainer}>
+                      {item.image ? (
+                        <Image source={{ uri: item.image }} style={styles.categoryImage} />
+                      ) : (
+                        <View style={[styles.categoryImage, { backgroundColor: BRAND.colors.slate[100], justifyContent: 'center', alignItems: 'center' }]}>
+                           <MaterialCommunityIcons name="tag-outline" size={20} color={BRAND.colors.primary} />
+                        </View>
+                      )}
+                    </View>
+                  )}
+                </View>
+                <Text style={[
+                  styles.categoryLabel,
+                  isSelected && styles.activeCategoryLabel
+                ]}>
                   {item.name}
                 </Text>
               </TouchableOpacity>
@@ -323,71 +249,63 @@ export default function HomeScreen({ navigation }) {
         />
       </View>
 
-      {/* General Stores Header */}
-      <View
-        style={[
-          styles.sectionHeaderRow,
-          { marginTop: 16, paddingHorizontal: 4 },
-        ]}
-      >
-        <Text style={styles.sectionTitle}>كافة المتاجر</Text>
-        <View style={styles.sectionTitleAccent} />
+      {/* 5. The Discovery Orbit Title */}
+      <View style={styles.discoveryHeader}>
+         <View style={styles.discoveryLine} />
+         <Text style={styles.discoveryTitle}>اكتشف عالم المتاجر</Text>
+         <View style={styles.discoveryLine} />
       </View>
+
+      <MerchantCardStack 
+        merchants={filteredSuppliers} 
+        onNavigate={(storeId) => navigation.navigate("Products", { storeId })}
+      />
     </View>
   );
 
-  const renderFooter = () => {
-    if (
-      !homeData.producing_families ||
-      homeData.producing_families.length === 0
-    ) {
-      return null;
-    }
-    return (
-      <View
-        style={[
-          styles.sectionContainer,
-          { marginTop: 20, marginBottom: 30, paddingHorizontal: 16 },
-        ]}
-      >
-        <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>متاجر الأسر المنتجة</Text>
-          <View style={styles.sectionTitleAccent} />
+  const renderFooter = () => (
+    homeData.producing_families?.length > 0 && (
+      <View style={styles.footerSection}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>الأسر المنتجة</Text>
         </View>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
           data={homeData.producing_families}
-          keyExtractor={(item) => `family-${item.id}`}
+          keyExtractor={(item) => `fam-${item.id}`}
           renderItem={renderProducingFamilyItem}
-          contentContainerStyle={styles.horizontalList}
+          contentContainerStyle={styles.horizontalScrollPadding}
         />
       </View>
-    );
-  };
+    )
+  );
 
   if (loading) {
     return (
       <View style={styles.centerMode}>
-        <ActivityIndicator size="large" color="#2B5876" />
+        <ActivityIndicator size="large" color={BRAND.colors.primary} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <CustomHeader onMenuPress={() => console.log("Menu pressed")} />
-
+      <CustomHeader />
       <FlatList
-        data={filteredSuppliers}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderStoreItem}
-        numColumns={2}
+        data={[]}
+        renderItem={null}
         ListHeaderComponent={renderHeader}
         ListFooterComponent={renderFooter}
-        contentContainerStyle={styles.mainScroll}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>لا توجد متاجر متاحة حالياً.</Text>
+        contentContainerStyle={styles.mainContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[BRAND.colors.primary]}
+            tintColor={BRAND.colors.primary}
+          />
         }
       />
     </View>
@@ -395,364 +313,202 @@ export default function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9fafd",
+  container: { flex: 1, backgroundColor: '#F8FAFC' },
+  centerMode: { flex: 1, justifyContent: "center", alignItems: "center" },
+  mainContent: { paddingBottom: 40 },
+  listHeaderContainer: { paddingTop: 10 },
+  
+  // Hero Section
+  heroSection: { height: 200, marginBottom: 20 },
+  heroAdWrapper: { width: SCREEN_WIDTH, height: '100%', paddingHorizontal: 15 },
+  heroAdImage: { width: '100%', height: '100%', borderRadius: 24, resizeMode: 'cover' },
+  
+  // CTA Banner
+  ctaWrapper: { paddingHorizontal: 15, marginBottom: 25 },
+  glassCta: { borderRadius: 24, overflow: 'hidden', elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 15 },
+  ctaGradient: { flexDirection: 'row', alignItems: 'center', padding: 20, justifyContent: 'space-between' },
+  ctaTextGroup: { flex: 1 },
+  ctaMainText: { color: '#fff', fontSize: 18, marginBottom: 4, fontFamily: BRAND.typography.extraBold },
+  ctaSubText: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontFamily: BRAND.typography.bold },
+  ctaCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  
+  // Section Headers
+  sectionContainer: { marginBottom: 25 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 15 },
+  sectionTitle: { fontSize: 20, color: BRAND.colors.primary, fontFamily: BRAND.typography.extraBold },
+  seeAllText: { fontSize: 12, color: BRAND.colors.secondary, fontFamily: BRAND.typography.bold },
+  
+  // Glossy Glass Offers (Creative v2)
+  enhancedOfferCard: {
+    width: 170,
+    backgroundColor: '#fff',
+    borderRadius: 28,
+    marginEnd: 18,
+    elevation: 12,
+    shadowColor: BRAND.colors.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
+    zIndex: 50,
   },
-  centerMode: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  offerImageFrame: {
+    height: 160,
+    width: '100%',
+    backgroundColor: '#F1F5F9',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    overflow: 'hidden',
   },
-  mainScroll: {
-    paddingBottom: 20,
+  offerImageFull: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
-  listHeaderContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
+  offerMerchantFloating: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    width: 36,
+    height: 36,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    height: 50,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    padding: 3,
+    zIndex: 100,
     borderWidth: 1,
-    borderColor: "#eee",
-    marginBottom: 16,
+    borderColor: '#fff',
   },
-  searchIcon: {
-    marginLeft: 8,
-  },
-  searchInput: {
-    flex: 1,
-    height: "100%",
-    fontFamily: "System", // Typically you'd use Cairo or Tajawal here if loaded
-    fontSize: 14,
-  },
-  filtersContainer: {
-    paddingBottom: 16,
-  },
-  filterPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginLeft: 8,
-    borderWidth: 1,
-    borderColor: "#eee",
-  },
-  activeFilterPill: {
-    backgroundColor: "#2B5876",
-    borderColor: "#2B5876",
-  },
-  filterText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#2B5876",
-  },
-  activeFilterText: {
-    color: "#fff",
-  },
-  cardContainer: {
-    flex: 1,
-    padding: 8,
-    maxWidth: "50%",
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  coverImageContainer: {
-    height: 80,
-    backgroundColor: "#f2e8e3", // soft peach from the screenshot
-  },
-  coverImagePlaceholder: {
-    flex: 1,
-  },
-  logoWrapper: {
-    alignItems: "center",
-    marginTop: -25, // pull up to overlap
-  },
-  storeLogoCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 3,
-    borderWidth: 2,
-    borderColor: "#fff",
-    overflow: "hidden",
-  },
-  storeLogoImage: {
-    width: "100%",
-    height: "100%",
-  },
-  placeholderLogo: {
-    width: 35,
-    height: 35,
-  },
-  coverImage: {
-    width: "100%",
-    height: "100%",
-  },
-  storeInfoContainer: {
-    padding: 12,
-    alignItems: "center",
-  },
-  storeName: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#1e293b",
-    marginBottom: 4,
-  },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  locationText: {
-    fontSize: 11,
-    color: "#94a3b8",
-    marginRight: 4,
-  },
-  badgeContainer: {
-    backgroundColor: "#f8fafc",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  storeTypeBadge: {
-    fontSize: 10,
-    color: "#475569",
-    fontWeight: "600",
-  },
-  cardBottomRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    marginTop: 4,
-  },
-  visitButton: {
-    flexDirection: "row",
-    backgroundColor: "#2B5876",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  visitButtonText: {
-    color: "#fff",
-    fontSize: 11,
-    fontWeight: "bold",
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  ratingText: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#1e293b",
-    marginRight: 4,
-  },
-  emptyText: {
-    textAlign: "center",
-    marginTop: 40,
-    color: "#94a3b8",
-  },
-  sectionContainer: {
-    marginBottom: 16,
-  },
-  sectionHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1e293b",
-    textAlign: "left",
-  },
-  sectionTitleAccent: {
-    width: 4,
-    height: 18,
-    backgroundColor: "#D48231",
-    marginRight: 8,
-    borderRadius: 2,
-  },
-  horizontalList: {
-    paddingVertical: 4,
-  },
-  adCard: {
-    width: 300,
-    height: 140,
-    borderRadius: 16,
-    overflow: "hidden",
-    marginLeft: 12,
-    backgroundColor: "#eee",
-  },
-  adImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  offerCard: {
-    width: 160,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    overflow: "hidden",
-    marginLeft: 12,
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  offerImageContainer: {
-    height: 120,
-    width: "100%",
-    position: "relative",
-    backgroundColor: "#f8fafc",
-  },
-  offerImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  discountBadge: {
-    position: "absolute",
-    top: 8,
-    left: 8,
-    backgroundColor: "#ef4444",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  discountBadgeText: {
-    color: "#fff",
-    fontSize: 10,
-    fontWeight: "bold",
-  },
-  offerInfoContainer: {
-    padding: 10,
-  },
-  offerProductName: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#1e293b",
-    textAlign: "left",
-    height: 34, // roughly 2 lines
-  },
-  offerHeaderRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 6,
-  },
-  offerSupplierLogoContainer: {
-    width: 20,
-    height: 20,
+  offerMerchantImg: {
+    width: '100%',
+    height: '100%',
     borderRadius: 10,
-    backgroundColor: "#f8fafc",
-    marginRight: 6,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    overflow: "hidden",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 2,
   },
-  offerSupplierLogo: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
+  slantedBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#FF3366',
+    borderTopLeftRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    zIndex: 60,
   },
-  priceContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
+  slantedText: {
+    color: '#fff',
+    fontSize: 12,
+    fontFamily: BRAND.typography.extraBold,
   },
-  newPrice: {
+  offerDetailBox: {
+    padding: 14,
+    backgroundColor: '#fff',
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+  },
+  offerNameLabel: {
     fontSize: 14,
-    fontWeight: "bold",
-    color: "#2B5876",
-    marginRight: 6,
+    color: BRAND.colors.slate[900],
+    marginBottom: 8,
+    fontFamily: BRAND.typography.bold,
   },
-  oldPrice: {
+  offerPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  offerPriceValue: {
+    fontSize: 18,
+    color: BRAND.colors.primary,
+    fontFamily: BRAND.typography.extraBold,
+  },
+  offerCurrency: {
     fontSize: 10,
-    color: "#94a3b8",
-    textDecorationLine: "line-through",
+    fontFamily: BRAND.typography.bold,
   },
-  familyCard: {
-    width: 140,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 12,
-    alignItems: "center",
-    marginHorizontal: 8,
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
-    shadowColor: "#D48231",
+  offerOldPrice: {
+    fontSize: 11,
+    color: BRAND.colors.slate[400],
+    textDecorationLine: 'line-through',
+    fontFamily: BRAND.typography.medium,
+  },
+  horizontalScrollPadding: {
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
+  
+  // Visual Categories
+  categoriesSection: {
+    marginBottom: 25,
+  },
+  categoriesScroll: {
+    paddingHorizontal: 15,
+    paddingTop: 5,
+  },
+  categoryItem: {
+    alignItems: 'center',
+    marginEnd: 18,
+    width: 65,
+  },
+  categoryIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    padding: 3,
+    marginBottom: 8,
+    elevation: 4,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
-    elevation: 3,
   },
-  familyLogoContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: "#f8fafc",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: "#D48231",
-    overflow: "hidden",
+  activeCategoryCircle: {
+    elevation: 8,
+    shadowColor: BRAND.colors.secondary,
+    shadowOpacity: 0.3,
   },
-  familyLogoImage: {
-    width: "100%",
-    height: "100%",
+  categoryImgContainer: {
+    flex: 1,
+    borderRadius: 30,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  familyName: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: "#2B5876",
-    textAlign: "center",
-    marginBottom: 8,
+  categoryImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
-  familyBadge: {
-    backgroundColor: "#e0f2fe",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+  categoryLabel: {
+    fontSize: 11,
+    color: BRAND.colors.slate[500],
+    textAlign: 'center',
+    fontFamily: BRAND.typography.bold,
   },
-  familyBadgeText: {
-    fontSize: 10,
-    color: "#0284c7",
-    fontWeight: "bold",
+  activeCategoryLabel: {
+    color: BRAND.colors.primary,
+    fontFamily: BRAND.typography.extraBold,
   },
+  
+  // Discovery Header
+  discoveryHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 15, marginBottom: -10, paddingHorizontal: 30 },
+  discoveryLine: { flex: 1, height: 1, backgroundColor: '#E2E8F0' },
+  discoveryTitle: { fontSize: 14, color: BRAND.colors.slate[400], textTransform: 'uppercase', letterSpacing: 1, fontFamily: BRAND.typography.bold },
+ 
+  // Footer Section
+  footerSection: { marginTop: 10 },
+  familyCard: { width: 120, alignItems: 'center', marginEnd: 20 },
+  familyLogoContainer: { width: 70, height: 70, borderRadius: 35, backgroundColor: '#fff', elevation: 4, padding: 2, borderWidth: 2, borderColor: BRAND.colors.secondary, marginBottom: 8 },
+  familyLogoImage: { width: '100%', height: '100%', borderRadius: 33 },
+  placeholderLogo: { width: '60%', height: '60%' },
+  familyName: { fontSize: 12, color: BRAND.colors.primary, textAlign: 'center', marginBottom: 4, fontFamily: BRAND.typography.bold },
+  familyBadge: { backgroundColor: BRAND.colors.secondary + '20', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
+  familyBadgeText: { fontSize: 9, color: BRAND.colors.secondary, fontFamily: BRAND.typography.extraBold }
 });
+

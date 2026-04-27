@@ -1,18 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  Image,
-  Dimensions,
-  ScrollView,
-  Alert,
-  DeviceEventEmitter,
-  Animated,
-} from "react-native";
+import { View, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Image, Dimensions, ScrollView, Alert, DeviceEventEmitter, Animated } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -23,6 +10,9 @@ import { useNotifications } from "../context/NotificationContext";
 import AuthModal from "../components/AuthModal";
 import CartIconBadge from "../components/CartIconBadge";
 import { getSupplierTheme } from "../theme/supplierTheme";
+import { chatApi } from "../api/chat";
+import Text from '../components/AppText';
+
 
 const { width } = Dimensions.get("window");
 
@@ -64,13 +54,13 @@ export default function ProductListScreen({ route, navigation }) {
         },
         headerTintColor: theme.navbarText,
         headerTitleStyle: {
-          fontWeight: 'bold',
+          fontFamily: BRAND.typography.bold,
         },
         headerRight: () => (
           <View style={{ marginRight: 15 }}>
-            <CartIconBadge 
-              supplierId={storeData.supplier.id} 
-              size={24} 
+            <CartIconBadge
+              supplierId={storeData.supplier.id}
+              size={24}
               badgeColor={theme.primary}
               iconColor={theme.navbarText}
             />
@@ -113,7 +103,7 @@ export default function ProductListScreen({ route, navigation }) {
       const response = await client.get(`/stores/${storeId}/profile/`);
       if (response.data.success) {
         setStoreData(response.data);
-        
+
         // Initialize Wishlist State
         const initialWishlist = {};
         [
@@ -148,10 +138,10 @@ export default function ProductListScreen({ route, navigation }) {
       if (response.data.success) {
         // Confirm server state
         setWishlistItems(prev => ({ ...prev, [productId]: response.data.is_wishlisted }));
-        showNotification({ 
-          title: response.data.action === 'added' ? "تم الإضافة" : "تم الإزالة", 
-          message: response.data.message, 
-          type: "success" 
+        showNotification({
+          title: response.data.action === 'added' ? "تم الإضافة" : "تم الإزالة",
+          message: response.data.message,
+          type: "success"
         });
       } else {
         // Revert on failure
@@ -215,13 +205,31 @@ export default function ProductListScreen({ route, navigation }) {
     }
   };
 
+  const handleStartChat = async () => {
+    if (!user) {
+      setAuthModalVisible(true);
+      return;
+    }
+    try {
+      setLoading(true);
+      const res = await chatApi.startThread(storeData.supplier.id);
+      navigation.navigate('Chat', { thread: res.data });
+    } catch (err) {
+      console.error('Failed to start chat', err);
+      showNotification({ title: 'خطأ', message: 'فشل في بدء المحادثة', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const renderProductItem = React.useCallback(
     ({ item }) => {
       const imageUrl =
         item.image ||
         (item.images && item.images.length > 0 ? item.images[0].image : null);
       const currencySymbol = storeData?.supplier?.currency?.symbol || "$";
-      
+
       // Dynamic styling
       const theme = getSupplierTheme(storeData?.supplier);
 
@@ -241,7 +249,7 @@ export default function ProductListScreen({ route, navigation }) {
                 <Ionicons name="image-outline" size={32} color={theme.shadow} />
               </View>
             )}
-            
+
             {/* Badges Layout */}
             <View style={styles.badgeOverlay}>
               {item.has_discount && (
@@ -266,7 +274,7 @@ export default function ProductListScreen({ route, navigation }) {
               )}
             </View>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.wishlistHeart, { backgroundColor: theme.secondary + 'aa' }]}
               onPress={() => handleToggleWishlist(item.id)}
               disabled={togglingWishlistId === item.id}
@@ -274,10 +282,10 @@ export default function ProductListScreen({ route, navigation }) {
               {togglingWishlistId === item.id ? (
                 <ActivityIndicator size="small" color={theme.primary} />
               ) : (
-                <Ionicons 
-                  name={wishlistItems[item.id] ? "heart" : "heart-outline"} 
-                  size={18} 
-                  color={wishlistItems[item.id] ? "#ef4444" : theme.primary} 
+                <Ionicons
+                  name={wishlistItems[item.id] ? "heart" : "heart-outline"}
+                  size={18}
+                  color={wishlistItems[item.id] ? "#ef4444" : theme.primary}
                 />
               )}
             </TouchableOpacity>
@@ -288,7 +296,7 @@ export default function ProductListScreen({ route, navigation }) {
               <Text style={[styles.productName, { color: theme.text }]} numberOfLines={2}>
                 {item.name}
               </Text>
-              
+
               <View style={styles.priceContainer}>
                 {item.has_discount ? (
                   <View style={styles.priceRow}>
@@ -331,7 +339,7 @@ export default function ProductListScreen({ route, navigation }) {
                   >
                     <Ionicons name="remove" size={18} color="#fff" />
                   </TouchableOpacity>
-                  
+
                   <View style={styles.pillValueContainer}>
                     {addingToCartId === item.id ? (
                       <ActivityIndicator size="small" color="#fff" />
@@ -401,8 +409,8 @@ export default function ProductListScreen({ route, navigation }) {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
-      <ScrollView 
-        style={styles.container} 
+      <ScrollView
+        style={styles.container}
         showsVerticalScrollIndicator={false}
       >
         {/* Modern Store Hero */}
@@ -413,9 +421,9 @@ export default function ProductListScreen({ route, navigation }) {
             ) : (
               <LinearGradient colors={[theme.primary, theme.accent]} style={styles.heroCover} />
             )}
-            <LinearGradient 
-              colors={['transparent', 'rgba(0,0,0,0.4)']} 
-              style={StyleSheet.absoluteFill} 
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.4)']}
+              style={StyleSheet.absoluteFill}
             />
           </View>
 
@@ -426,7 +434,7 @@ export default function ProductListScreen({ route, navigation }) {
                 style={styles.heroLogo}
               />
             </View>
-            
+
             <View style={styles.heroTextContent}>
               <Text style={[styles.heroStoreName, { color: theme.text }]}>{supplier.name}</Text>
               <View style={styles.heroMetaRow}>
@@ -436,8 +444,17 @@ export default function ProductListScreen({ route, navigation }) {
                 </View>
               </View>
             </View>
+
+            <TouchableOpacity
+              style={[styles.heroChatButton, { backgroundColor: theme.primary }]}
+              onPress={handleStartChat}
+            >
+              <Ionicons name="chatbubble-ellipses" size={24} color="#FFF" />
+            </TouchableOpacity>
           </View>
         </View>
+
+
 
 
         {/* Supplier Ads */}
@@ -552,16 +569,16 @@ export default function ProductListScreen({ route, navigation }) {
             onPress={() => navigation.navigate("Cart", { supplierId: storeData?.supplier?.id || storeId })}
           >
             <View style={styles.fabLeft}>
-               <View style={styles.fabBadge}>
-                  <Text style={[styles.fabBadgeText, { color: theme.primary }]}>{cartCount}</Text>
-               </View>
-               <Text style={styles.fabTitle}>عرض سلة المشتريات</Text>
+              <View style={styles.fabBadge}>
+                <Text style={[styles.fabBadgeText, { color: theme.primary }]}>{cartCount}</Text>
+              </View>
+              <Text style={styles.fabTitle}>عرض سلة المشتريات</Text>
             </View>
             <View style={styles.fabRight}>
-               <Ionicons name="cart" size={24} color="#fff" />
-               <View style={styles.fabArrow}>
-                  <Ionicons name="chevron-back" size={18} color="#fff" />
-               </View>
+              <Ionicons name="cart" size={24} color="#fff" />
+              <View style={styles.fabArrow}>
+                <Ionicons name="chevron-back" size={18} color="#fff" />
+              </View>
             </View>
           </TouchableOpacity>
         </Animated.View>
@@ -624,7 +641,7 @@ const styles = StyleSheet.create({
   },
   heroStoreName: {
     fontSize: 22,
-    fontWeight: "900",
+    fontFamily: BRAND.typography.extraBold,
     textAlign: "left",
     letterSpacing: -0.5,
   },
@@ -641,7 +658,7 @@ const styles = StyleSheet.create({
   },
   typeBadgeText: {
     fontSize: 11,
-    fontWeight: "800",
+    fontFamily: BRAND.typography.extraBold,
   },
   heroLocationRow: {
     flexDirection: "row",
@@ -651,9 +668,24 @@ const styles = StyleSheet.create({
   heroLocationText: {
     fontSize: 13,
     color: "#64748b",
-    fontWeight: "500",
+    fontFamily: BRAND.typography.medium,
+  },
+  heroChatButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 40,
+    marginLeft: 'auto',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5
   },
   /* Sticky Search Bar */
+
   stickySearchContainer: {
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -676,9 +708,9 @@ const styles = StyleSheet.create({
   searchPillText: {
     fontSize: 14,
     color: '#94a3b8',
-    fontWeight: '500',
+    fontFamily: BRAND.typography.medium,
     flex: 1,
-    textAlign: 'right'
+    textAlign: 'auto'
   },
   /* Section & Ads */
   sectionMargin: {
@@ -698,7 +730,7 @@ const styles = StyleSheet.create({
   },
   modernSectionTitle: {
     fontSize: 19,
-    fontWeight: "900",
+    fontFamily: BRAND.typography.extraBold,
     letterSpacing: -0.3,
   },
   titleDot: {
@@ -708,7 +740,7 @@ const styles = StyleSheet.create({
   },
   seeAllLink: {
     fontSize: 14,
-    fontWeight: "700",
+    fontFamily: BRAND.typography.bold,
   },
   premiumAdsList: {
     paddingHorizontal: 20,
@@ -778,7 +810,7 @@ const styles = StyleSheet.create({
   discountBadgeText: {
     color: "#fff",
     fontSize: 11,
-    fontWeight: "900",
+    fontFamily: BRAND.typography.extraBold,
   },
   newBadge: {
     paddingHorizontal: 8,
@@ -788,7 +820,7 @@ const styles = StyleSheet.create({
   newBadgeText: {
     color: "#fff",
     fontSize: 11,
-    fontWeight: "900",
+    fontFamily: BRAND.typography.extraBold,
   },
   wishlistHeart: {
     position: 'absolute',
@@ -809,7 +841,7 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 14,
-    fontWeight: "700",
+    fontFamily: BRAND.typography.bold,
     lineHeight: 18,
     height: 36,
     marginBottom: 6,
@@ -827,16 +859,16 @@ const styles = StyleSheet.create({
   },
   newPrice: {
     fontSize: 16,
-    fontWeight: "900",
+    fontFamily: BRAND.typography.extraBold,
   },
   currencySmall: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: BRAND.typography.bold,
   },
   oldPrice: {
     fontSize: 11,
     textDecorationLine: "line-through",
-    fontWeight: '500'
+    fontFamily: BRAND.typography.medium
   },
   attributeBadge: {
     paddingHorizontal: 6,
@@ -845,7 +877,7 @@ const styles = StyleSheet.create({
   },
   attributeText: {
     fontSize: 10,
-    fontWeight: '800',
+    fontFamily: BRAND.typography.extraBold,
   },
   cardActionArea: {
     marginTop: 'auto',
@@ -861,7 +893,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: "#fff",
     fontSize: 14,
-    fontWeight: "800",
+    fontFamily: BRAND.typography.extraBold,
   },
   optionsButton: {
     flexDirection: "row",
@@ -874,7 +906,7 @@ const styles = StyleSheet.create({
   },
   optionsButtonText: {
     fontSize: 13,
-    fontWeight: "700",
+    fontFamily: BRAND.typography.bold,
   },
   quantityPill: {
     flexDirection: "row",
@@ -897,7 +929,7 @@ const styles = StyleSheet.create({
   pillText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "900",
+    fontFamily: BRAND.typography.extraBold,
   },
   /* Grid Layout */
   premiumGrid: {
@@ -917,7 +949,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: "#94a3b8",
-    fontWeight: '600',
+    fontFamily: BRAND.typography.semiBold,
   },
   /* Floating Action Bar */
   modernFloatingBar: {
@@ -955,12 +987,12 @@ const styles = StyleSheet.create({
   },
   fabBadgeText: {
     fontSize: 14,
-    fontWeight: "900",
+    fontFamily: BRAND.typography.extraBold,
   },
   fabTitle: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "900",
+    fontFamily: BRAND.typography.extraBold,
     letterSpacing: -0.2,
   },
   fabRight: {

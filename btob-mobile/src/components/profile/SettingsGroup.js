@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, Animated } from 'react-native';
+import { View, Animated } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { styles } from '../../theme/profileStyles';
+import Text from '../AppText';
 
 /**
  * SettingsGroup.js

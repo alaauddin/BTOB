@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-    View, Text, StyleSheet, Modal, TouchableOpacity, TextInput, 
-    ActivityIndicator, Image, Platform, ScrollView, KeyboardAvoidingView,
-    Dimensions, Animated
-} from 'react-native';
+import { View, StyleSheet, Modal, TouchableOpacity, ActivityIndicator, Image, Platform, ScrollView, KeyboardAvoidingView, Dimensions, Animated } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from './MapModule';
 import { LinearGradient } from 'expo-linear-gradient';
-import client from '../api/client';
+import client, { BASE_URL } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import Text from './AppText';
+import TextInput from './AppTextInput';
+import { BRAND } from '../theme/brand';
 
 const { width, height } = Dimensions.get('window');
 
@@ -160,7 +159,9 @@ export default function OnboardingModal({ visible, stepKey, onClose, onSuccess, 
                     </View>
                     <LinearGradient colors={[primaryColor + '15', 'transparent']} style={styles.previewBox}>
                         <Text style={styles.previewLabel}>سيصبح رابط متجرك:</Text>
-                        <Text style={[styles.previewUrl, { color: primaryColor }]}>{subdomain || 'yourstore'}.rawaage.com</Text>
+                        <Text style={[styles.previewUrl, { color: primaryColor }]}>
+                            {subdomain || 'yourstore'}{BASE_URL.includes('rawaage.com') ? '.rawaage.com' : '.local'}
+                        </Text>
                     </LinearGradient>
                 </View>
             );
@@ -350,9 +351,9 @@ const styles = StyleSheet.create({
     dragNotch: { width: 40, height: 4, backgroundColor: '#E2E8F0', borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
     header: { flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 20 },
     headerIconWrap: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginLeft: 12 },
-    title: { fontSize: 20, fontWeight: '800', color: '#0F172A', flex: 1, textAlign: 'right' },
+    title: { fontSize: 20, fontFamily: BRAND.typography.extraBold, color: '#0F172A', flex: 1, textAlign: 'auto' },
     closeBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
-    desc: { fontSize: 13, color: '#64748B', textAlign: 'right', marginBottom: 20, lineHeight: 20 },
+    desc: { fontSize: 13, color: '#64748B', textAlign: 'auto', marginBottom: 20, lineHeight: 20 },
     body: { marginBottom: 20 },
     
     // Form Components
@@ -362,10 +363,10 @@ const styles = StyleSheet.create({
         borderWidth: 1.5, borderColor: '#E2E8F0', paddingHorizontal: 16, height: 56
     },
     inputIcon: { marginLeft: 12 },
-    input: { flex: 1, fontSize: 16, fontWeight: '600', color: '#1E293B', textAlign: 'right' },
+    input: { flex: 1, fontSize: 16, fontFamily: BRAND.typography.semiBold, color: '#1E293B', textAlign: 'auto' },
     previewBox: { marginTop: 16, borderRadius: 16, padding: 16, alignItems: 'center' },
     previewLabel: { fontSize: 12, color: '#64748B', marginBottom: 4 },
-    previewUrl: { fontSize: 16, fontWeight: '800' },
+    previewUrl: { fontSize: 16, fontFamily: BRAND.typography.extraBold },
 
     // Map Components
     mapContainer: { width: '100%', height: 280, borderRadius: 20, overflow: 'hidden', backgroundColor: '#F1F5F9', marginBottom: 16, borderWidth: 1, borderColor: '#E2E8F0' },
@@ -373,8 +374,8 @@ const styles = StyleSheet.create({
     myLocationBtn: { position: 'absolute', bottom: 16, right: 16, backgroundColor: '#FFF', width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center', elevation: 4, shadowOpacity: 0.1, shadowRadius: 4 },
     coordBox: { flexDirection: 'row', gap: 12 },
     coordItem: { flex: 1, backgroundColor: '#F8FAFC', borderRadius: 12, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
-    coordLabel: { fontSize: 10, color: '#94A3B8', fontWeight: '700', marginBottom: 2 },
-    coordValue: { fontSize: 14, fontWeight: '700', color: '#475569' },
+    coordLabel: { fontSize: 10, color: '#94A3B8', fontFamily: BRAND.typography.bold, marginBottom: 2 },
+    coordValue: { fontSize: 14, fontFamily: BRAND.typography.bold, color: '#475569' },
 
     // Currency Components
     currencyCard: { 
@@ -383,9 +384,9 @@ const styles = StyleSheet.create({
     },
     currencyInfo: { flexDirection: 'row-reverse', alignItems: 'center' },
     currencyIcon: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginLeft: 12 },
-    currencySymbol: { fontSize: 16, fontWeight: '800' },
-    currencyName: { fontSize: 15, fontWeight: '700', color: '#1E293B' },
-    currencyCode: { fontSize: 12, color: '#94A3B8', fontWeight: '600' },
+    currencySymbol: { fontSize: 16, fontFamily: BRAND.typography.extraBold },
+    currencyName: { fontSize: 15, fontFamily: BRAND.typography.bold, color: '#1E293B' },
+    currencyCode: { fontSize: 12, color: '#94A3B8', fontFamily: BRAND.typography.semiBold },
 
     // Image Picker Components
     premiumImagePicker: { 
@@ -394,7 +395,7 @@ const styles = StyleSheet.create({
     },
     pickerPlaceHolder: { alignItems: 'center' },
     pickerIconWrap: { width: 64, height: 64, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-    pickerTitle: { fontSize: 16, fontWeight: '700', color: '#334155' },
+    pickerTitle: { fontSize: 16, fontFamily: BRAND.typography.bold, color: '#334155' },
     pickerSub: { fontSize: 12, color: '#94A3B8', marginTop: 4 },
     pickedImage: { width: '100%', height: '100%' },
     changeBadge: { position: 'absolute', bottom: 12, right: 12, width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', elevation: 4 },
@@ -402,5 +403,5 @@ const styles = StyleSheet.create({
     // Footer
     saveBtn: { height: 56, borderRadius: 18, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
     btnInner: { flexDirection: 'row-reverse', alignItems: 'center' },
-    saveBtnText: { color: '#fff', fontSize: 18, fontWeight: '800' }
+    saveBtnText: { color: '#fff', fontSize: 18, fontFamily: BRAND.typography.extraBold }
 });

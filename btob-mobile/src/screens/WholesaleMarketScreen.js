@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 // Refactored Wholesale Market Screen
-import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity,
-  ActivityIndicator, TextInput, RefreshControl, Alert, StatusBar
-} from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Alert, StatusBar } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +11,9 @@ import { adjustColor } from '../utils/color';
 // Modular Components
 import WholesaleProductCard from '../components/wholesale/WholesaleProductCard';
 import SourcingModal from '../components/wholesale/SourcingModal';
+import Text from '../components/AppText';
+import TextInput from '../components/AppTextInput';
+import { BRAND } from '../theme/brand';
 
 /**
  * WholesaleMarketScreen.js
@@ -167,6 +167,7 @@ export default function WholesaleMarketScreen() {
         data={products}
         keyExtractor={item => item?.id?.toString() || Math.random().toString()}
         numColumns={2}
+        key={2}
         contentContainerStyle={styles.listContent}
         columnWrapperStyle={styles.columnWrapper}
         renderItem={({ item }) => (
@@ -242,14 +243,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: BRAND.typography.extraBold,
     color: '#0F172A',
-    textAlign: 'right',
+    textAlign: 'auto',
   },
   subtitle: {
     fontSize: 14,
     color: '#64748B',
-    textAlign: 'right',
+    textAlign: 'auto',
     marginTop: 4,
     marginBottom: 20,
   },
@@ -306,7 +307,7 @@ const styles = StyleSheet.create({
   },
   supplierChipText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: BRAND.typography.semiBold,
     color: '#64748B',
   },
 });

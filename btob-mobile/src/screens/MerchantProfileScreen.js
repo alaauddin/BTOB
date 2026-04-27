@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import {
-  View, Text, ScrollView, Modal, TouchableOpacity, Image, Alert, 
-  ActivityIndicator, KeyboardAvoidingView, Platform, Animated, StyleSheet, StatusBar
-} from 'react-native';
+import { View, ScrollView, Modal, TouchableOpacity, Image, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Animated, StyleSheet, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -10,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import MapView, { Marker } from '../components/MapModule';
 import { LinearGradient } from 'expo-linear-gradient';
 import client from '../api/client';
@@ -25,6 +23,7 @@ import PremiumInput from '../components/profile/PremiumInput';
 import PremiumToggle from '../components/profile/PremiumToggle';
 import DeviceMockup from '../components/profile/DeviceMockup';
 import { BRAND } from '../theme/brand';
+import Text from '../components/AppText';
 
 export default function MerchantProfileScreen() {
   const navigation = useNavigation();
@@ -43,6 +42,13 @@ export default function MerchantProfileScreen() {
   const [formData, setFormData] = useState(activeMerchant || {});
   const [imagesData, setImagesData] = useState({ profile_picture: null, panal_picture: null });
   const [isAiModalVisible, setIsAiModalVisible] = useState(false);
+  const [isMapPickerVisible, setIsMapPickerVisible] = useState(false);
+  const [pickerCoords, setPickerCoords] = useState({ 
+    latitude: 15.3694, 
+    longitude: 44.1910 
+  });
+  const [fetchingLocation, setFetchingLocation] = useState(false);
+  const mapRef = useRef(null);
 
   // Detect changes to show/hide save button
   const hasChanges = useMemo(() => {
@@ -172,6 +178,39 @@ export default function MerchantProfileScreen() {
     setFormData(prev => ({ ...prev, [key]: val }));
   };
 
+  const handleGetLocation = async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        showNotification({ title: 'عذراً', message: 'نحتاج إلى إذن الوصول للموقع', type: 'warning' });
+        return;
+      }
+
+      setFetchingLocation(true);
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const { latitude, longitude } = location.coords;
+      updateField('latitude', String(latitude));
+      updateField('longitude', String(longitude));
+
+      if (mapRef.current) {
+        mapRef.current.animateToRegion({
+          latitude,
+          longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        });
+      }
+    } catch (err) {
+      console.error('Error getting location:', err);
+      showNotification({ title: 'خطأ', message: 'فشل في تحديد الموقع الحالي', type: 'error' });
+    } finally {
+      setFetchingLocation(false);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -206,6 +245,12 @@ export default function MerchantProfileScreen() {
         if (updated) {
           setFormData(updated);
           setActiveMerchant({ ...activeMerchant, ...updated });
+          
+          // Sync picker coords
+          setPickerCoords({
+            latitude: parseFloat(updated.latitude) || 15.3694,
+            longitude: parseFloat(updated.longitude) || 44.1910
+          });
         }
       }
 
@@ -309,7 +354,11 @@ export default function MerchantProfileScreen() {
         </SafeAreaView>
       </View>
 
-      <KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView 
+        style={{flex:1}} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+      >
         <Animated.ScrollView 
             contentContainerStyle={styles.scroll} 
             showsVerticalScrollIndicator={false}
@@ -343,6 +392,7 @@ export default function MerchantProfileScreen() {
             <SettingsGroup title="الموقع والانتشار" icon="map-pin" iconColor={THEME.colors.amber} fadeAnim={fadeAnims[1]}>
               <View style={styles.mapContainer}>
                 <MapView
+                  ref={mapRef}
                   style={styles.profileMap}
                   region={{
                     latitude: Number.isFinite(parseFloat(formData?.latitude)) ? parseFloat(formData?.latitude) : 15.3694,
@@ -350,24 +400,49 @@ export default function MerchantProfileScreen() {
                     latitudeDelta: 0.01,
                     longitudeDelta: 0.01,
                   }}
-                  onPress={(e) => {
-                    const coords = e?.nativeEvent?.coordinate;
-                    if (coords) {
-                      updateField('latitude', String(coords.latitude));
-                      updateField('longitude', String(coords.longitude));
-                    }
-                  }}
+                  onPress={() => setIsMapPickerVisible(true)}
                 >
                   <Marker 
                     coordinate={{ 
                       latitude: Number.isFinite(parseFloat(formData?.latitude)) ? parseFloat(formData?.latitude) : 15.3694, 
                       longitude: Number.isFinite(parseFloat(formData?.longitude)) ? parseFloat(formData?.longitude) : 44.1910
                     }} 
-                    pinColor={primaryColor}
-                  />
+                  >
+                    <View style={styles.customMarker}>
+                      <MaterialCommunityIcons name="map-marker" size={40} color={primaryColor} />
+                      <View style={styles.markerShadow} />
+                    </View>
+                  </Marker>
                 </MapView>
+
+                <TouchableOpacity 
+                  style={[styles.mapActionBtn, { bottom: 70 }]} 
+                  onPress={handleGetLocation}
+                  activeOpacity={0.8}
+                >
+                  {fetchingLocation ? (
+                    <ActivityIndicator size="small" color={primaryColor} />
+                  ) : (
+                    <MaterialCommunityIcons name="crosshairs-gps" size={20} color={primaryColor} />
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={[styles.mapActionBtn, { bottom: 15, right: 15 }]} 
+                  onPress={() => {
+                    setPickerCoords({
+                      latitude: parseFloat(formData?.latitude) || 15.3694,
+                      longitude: parseFloat(formData?.longitude) || 44.1910
+                    });
+                    setIsMapPickerVisible(true);
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <MaterialCommunityIcons name="arrow-expand-all" size={20} color={primaryColor} />
+                </TouchableOpacity>
+
                 <LinearGradient colors={['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.7)']} style={styles.mapHintBadge}>
-                  <Text style={[styles.mapHintText, { color: BRAND.colors.primary }]}>انقر على الخريطة لتحديد الموقع</Text>
+                  <Text style={[styles.mapHintText, { color: BRAND.colors.primary }]}>انقر لتوسيع الخريطة وتحديد الموقع بدقة</Text>
                 </LinearGradient>
               </View>
 
@@ -496,7 +571,7 @@ export default function MerchantProfileScreen() {
                     }} 
                     color={primaryColor} 
                   />
-                  <Text style={{ fontSize: 11, color: THEME.colors.slate[400], paddingHorizontal: 16, marginTop: 8, textAlign: 'right' }}>
+                  <Text style={{ fontSize: 11, color: THEME.colors.slate[400], paddingHorizontal: 16, marginTop: 8, textAlign: 'auto' }}>
                     استخدم التقنيات البيومترية لتأمين حسابك وسرعة الوصول
                   </Text>
               </SettingsGroup>
@@ -573,6 +648,68 @@ export default function MerchantProfileScreen() {
         onSuccess={handleAiColorsGenerated}
         merchantId={activeMerchant?.id}
       />
+
+      <Modal 
+        visible={isMapPickerVisible} 
+        animationType="slide" 
+        onRequestClose={() => setIsMapPickerVisible(false)}
+      >
+        <View style={styles.pickerModalRoot}>
+          <MapView
+            style={styles.pickerFullMap}
+            initialRegion={{
+              latitude: pickerCoords.latitude,
+              longitude: pickerCoords.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+            onRegionDidChange={(e) => {
+              const center = e?.nativeEvent?.center;
+              if (center) {
+                setPickerCoords({
+                  latitude: center[1],
+                  longitude: center[0]
+                });
+              }
+            }}
+          />
+          
+          {/* Fixed Center Marker */}
+          <View style={styles.pickerCenterMarker} pointerEvents="none">
+             <MaterialCommunityIcons name="map-marker" size={50} color={primaryColor} />
+             <View style={styles.pickerMarkerShadow} />
+          </View>
+
+          {/* Modal UI */}
+          <SafeAreaView style={styles.pickerHeader} edges={['top']}>
+            <TouchableOpacity style={styles.pickerCloseBtn} onPress={() => setIsMapPickerVisible(false)}>
+              <Feather name="x" size={24} color={THEME.colors.slate[800]} />
+            </TouchableOpacity>
+            <View style={styles.pickerHeaderTitle}>
+              <Text style={styles.pickerTitleText}>تحديد الموقع بدقة</Text>
+              <Text style={styles.pickerSubText}>حرك الخريطة لجعل الدبوس فوق موقعك تماماً</Text>
+            </View>
+          </SafeAreaView>
+
+          <View style={styles.pickerFooter}>
+            <View style={styles.pickerCoordsBox}>
+               <Text style={styles.pickerCoordVal}>{pickerCoords.latitude.toFixed(6)}, {pickerCoords.longitude.toFixed(6)}</Text>
+            </View>
+            <TouchableOpacity 
+              style={[styles.pickerConfirmBtn, { backgroundColor: primaryColor }]} 
+              onPress={() => {
+                updateField('latitude', String(pickerCoords.latitude));
+                updateField('longitude', String(pickerCoords.longitude));
+                setIsMapPickerVisible(false);
+                showNotification({ title: 'تم التحديد', message: 'تم تحديث إحداثيات الموقع بنجاح', type: 'info' });
+              }}
+            >
+              <Text style={styles.pickerConfirmText}>تأكيد الموقع المختار</Text>
+              <Feather name="check" size={20} color="#FFF" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, RefreshControl, Dimensions, Animated,
-  Image, Platform, Alert
-} from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Dimensions, Animated, Image, Platform, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import Text from '../components/AppText';
+import { BRAND } from '../theme/brand';
 
 const { width } = Dimensions.get('window');
 
@@ -205,34 +203,34 @@ const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: { paddingBottom: 20, borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
   headerContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, height: 60 },
-  headerTitle: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
+  headerTitle: { color: '#fff', fontSize: 20, fontFamily: BRAND.typography.bold },
   backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
   
   scroll: { paddingBottom: 100 },
   introSection: { padding: 24, alignItems: 'center' },
-  introTitle: { fontSize: 22, fontWeight: 'bold', color: '#1E293B', textAlign: 'center', marginBottom: 8 },
+  introTitle: { fontSize: 22, fontFamily: BRAND.typography.bold, color: '#1E293B', textAlign: 'center', marginBottom: 8 },
   introSub: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 22 },
   
   currentSubCard: { padding: 16, marginTop: 10 },
   currentSubInner: { borderRadius: 20, padding: 20, borderWidth: 1, borderColor: '#E2E8F0' },
   statusBadge: { backgroundColor: '#10B981', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 10, alignSelf: 'flex-start', marginBottom: 8 },
-  statusText: { color: '#fff', fontSize: 11, fontWeight: 'bold' },
-  currentPlanName: { fontSize: 24, fontWeight: 'bold', color: '#1E293B' },
+  statusText: { color: '#fff', fontSize: 11, fontFamily: BRAND.typography.bold },
+  currentPlanName: { fontSize: 24, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   expiryRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 6 },
   expiryText: { color: '#64748B', fontSize: 13 },
-  daysLeft: { fontSize: 13, fontWeight: 'bold' },
+  daysLeft: { fontSize: 13, fontFamily: BRAND.typography.bold },
 
   plansList: { paddingHorizontal: 16, gap: 16 },
   planCard: { backgroundColor: '#fff', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#F1F5F9', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8 },
   bestValueBadge: { position: 'absolute', top: -12, left: 20, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 10 },
-  bestValueText: { color: '#fff', fontSize: 11, fontWeight: 'bold' },
+  bestValueText: { color: '#fff', fontSize: 11, fontFamily: BRAND.typography.bold },
   planHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
   planIconWrap: { width: 50, height: 50, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
   planTitleWrap: { flex: 1, marginLeft: 12 },
-  planName: { fontSize: 18, fontWeight: 'bold', color: '#1E293B' },
+  planName: { fontSize: 18, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   planDuration: { fontSize: 12, color: '#94A3B8' },
   planPriceWrap: { alignItems: 'flex-end' },
-  planPrice: { fontSize: 20, fontWeight: 'bold' },
+  planPrice: { fontSize: 20, fontFamily: BRAND.typography.bold },
   
   planFeatures: { gap: 12, marginBottom: 20 },
   featureItem: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -243,5 +241,5 @@ const styles = StyleSheet.create({
   
   footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', padding: 20, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
   submitBtn: { height: 56, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
-  submitBtnText: { color: '#fff', fontSize: 18, fontWeight: 'bold' }
+  submitBtnText: { color: '#fff', fontSize: 18, fontFamily: BRAND.typography.bold }
 });

@@ -4,7 +4,7 @@
     "slug": "btob-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/logo.jpeg",
     "scheme": "btobmobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -15,14 +15,17 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
-        "foregroundImage": "./assets/images/logo.png"
+        "foregroundImage": "./assets/images/logo.jpeg"
       },
       "package": "com.alauddin.btobmobile",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.USE_BIOMETRIC",
-        "android.permission.USE_FINGERPRINT"
+        "android.permission.USE_FINGERPRINT",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "FOREGROUND_SERVICE"
       ]
     },
     "web": {
@@ -43,7 +46,8 @@
         }
       ],
       "expo-secure-store",
-      "expo-local-authentication"
+      "expo-local-authentication",
+      "@maplibre/maplibre-react-native"
     ],
     "experiments": {
       "reactCompiler": true

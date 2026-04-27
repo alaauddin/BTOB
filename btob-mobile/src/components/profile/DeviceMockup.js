@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { THEME } from '../../theme/profileTheme';
 import { styles } from '../../theme/profileStyles';
+import Text from '../AppText';
+import { BRAND } from '../../theme/brand';
 
 /**
  * DeviceMockup.js
@@ -36,10 +38,10 @@ const DeviceMockup = ({ formData, primaryColor }) => {
         <View style={[styles.mockupContent, { backgroundColor: sColor }]}>
            <View style={[styles.mockupHeroMock, { backgroundColor: aColor + '15' }]}>
               <MaterialCommunityIcons name="lightning-bolt" size={32} color={aColor} />
-              <Text style={{ fontSize: 9, fontWeight: '900', color: aColor, marginTop: 4 }}>عرض خاص</Text>
+              <Text style={{ fontSize: 9, fontFamily: BRAND.typography.extraBold, color: aColor, marginTop: 4 }}>عرض خاص</Text>
            </View>
            <View style={{ gap: 4, alignItems: 'center' }}>
-              <Text style={{ fontSize: 10, fontWeight: '800', color: tColor }}>احدث المنتجات</Text>
+              <Text style={{ fontSize: 10, fontFamily: BRAND.typography.extraBold, color: tColor }}>احدث المنتجات</Text>
               <View style={[styles.mockupBtn, { backgroundColor: pColor }]}>
                 <Text style={styles.mockupBtnText}>شراء الآن</Text>
               </View>

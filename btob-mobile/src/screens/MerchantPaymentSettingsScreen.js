@@ -1,9 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, Alert, TextInput, Platform, Image,
-  Animated, Dimensions, StatusBar, Clipboard
-} from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Platform, Image, Animated, Dimensions, StatusBar, Clipboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -15,6 +11,8 @@ import client from '../api/client';
 import Logo from '../components/Logo';
 import { BRAND } from '../theme/brand';
 import PremiumInput from '../components/profile/PremiumInput';
+import Text from '../components/AppText';
+import TextInput from '../components/AppTextInput';
 
 const { width, height } = Dimensions.get('window');
 
@@ -455,7 +453,7 @@ const styles = StyleSheet.create({
     flex: 1, flexDirection: 'row', alignItems: 'center', 
     justifyContent: 'space-between', paddingHorizontal: 20 
   },
-  headerTitle: { fontSize: 18, fontWeight: '900', color: '#FFF' },
+  headerTitle: { fontSize: 18, fontFamily: BRAND.typography.extraBold, color: '#FFF' },
   backBtn: { 
     width: 44, height: 44, borderRadius: 15, 
     backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center',
@@ -481,8 +479,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 4, borderRadius: 10,
     elevation: 5, shadowOpacity: 0.3, shadowRadius: 5
   },
-  heroBadgeText: { fontSize: 10, fontWeight: '900', color: '#FFF' },
-  heroTitle: { fontSize: 24, fontWeight: '900', color: '#FFF', marginBottom: 10, textAlign: 'center' },
+  heroBadgeText: { fontSize: 10, fontFamily: BRAND.typography.extraBold, color: '#FFF' },
+  heroTitle: { fontSize: 24, fontFamily: BRAND.typography.extraBold, color: '#FFF', marginBottom: 10, textAlign: 'center' },
   heroSubtitle: { 
     fontSize: 13, color: 'rgba(255,255,255,0.85)', textAlign: 'center', 
     lineHeight: 20, paddingHorizontal: 20 
@@ -500,7 +498,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center', elevation: 4, 
     shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8 
   },
-  sectionLabel: { fontSize: 16, fontWeight: '900', color: BRAND.colors.slate[800] },
+  sectionLabel: { fontSize: 16, fontFamily: BRAND.typography.extraBold, color: BRAND.colors.slate[800] },
 
   methodCard: { 
     backgroundColor: '#FFF', borderRadius: 32, padding: 22, marginBottom: 16,
@@ -515,10 +513,10 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: BRAND.colors.slate[100]
   },
   methodLogo: { width: '85%', height: '85%', resizeMode: 'contain' },
-  methodNameText: { fontSize: 18, fontWeight: '900', color: BRAND.colors.slate[900], textAlign: 'left' },
+  methodNameText: { fontSize: 18, fontFamily: BRAND.typography.extraBold, color: BRAND.colors.slate[900], textAlign: 'left' },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   statusDot: { width: 8, height: 8, borderRadius: 4 },
-  statusText: { fontSize: 12, fontWeight: '800', color: BRAND.colors.slate[400] },
+  statusText: { fontSize: 12, fontFamily: BRAND.typography.extraBold, color: BRAND.colors.slate[400] },
   
   methodActions: { flexDirection: 'row', gap: 12 },
   actionBtn: { 
@@ -537,8 +535,8 @@ const styles = StyleSheet.create({
   },
   dataAccentLine: { position: 'absolute', top: 0, bottom: 0, left: 0, width: 5 },
   dataLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
-  dataLabel: { fontSize: 12, fontWeight: '900', color: BRAND.colors.slate[400], textTransform: 'uppercase', letterSpacing: 0.5 },
-  dataValue: { fontSize: 18, fontWeight: '900', color: BRAND.colors.slate[800], textAlign: 'left' },
+  dataLabel: { fontSize: 12, fontFamily: BRAND.typography.extraBold, color: BRAND.colors.slate[400], textTransform: 'uppercase', letterSpacing: 0.5 },
+  dataValue: { fontSize: 18, fontFamily: BRAND.typography.extraBold, color: BRAND.colors.slate[800], textAlign: 'left' },
 
   emptyCard: { 
     padding: 45, alignItems: 'center', backgroundColor: '#FFF', 
@@ -546,7 +544,7 @@ const styles = StyleSheet.create({
     borderColor: BRAND.colors.slate[200] 
   },
   emptyIconWrap: { width: 80, height: 80, borderRadius: 40, backgroundColor: BRAND.colors.slate[50], justifyContent: 'center', alignItems: 'center', marginBottom: 15 },
-  emptyText: { fontSize: 17, fontWeight: '900', color: BRAND.colors.slate[800], marginTop: 5 },
+  emptyText: { fontSize: 17, fontFamily: BRAND.typography.extraBold, color: BRAND.colors.slate[800], marginTop: 5 },
   emptySubtext: { fontSize: 14, color: BRAND.colors.slate[400], textAlign: 'center', marginTop: 8, lineHeight: 22, paddingHorizontal: 10 },
 
   addGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 18 },
@@ -561,7 +559,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: BRAND.colors.slate[100]
   },
   gridLogo: { width: '75%', height: '75%' },
-  gridName: { fontSize: 15, fontWeight: '900', color: BRAND.colors.slate[800], textAlign: 'left' },
+  gridName: { fontSize: 15, fontFamily: BRAND.typography.extraBold, color: BRAND.colors.slate[800], textAlign: 'left' },
   gridPlus: { 
     position: 'absolute', top: 14, right: 14, width: 26, height: 26, 
     borderRadius: 13, justifyContent: 'center', alignItems: 'center',
@@ -584,8 +582,8 @@ const styles = StyleSheet.create({
   },
   modalTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 18 },
   modalIconWrap: { width: 60, height: 60, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  modalTitle: { fontSize: 20, fontWeight: '900', color: BRAND.colors.slate[900] },
-  modalSubtitle: { fontSize: 15, fontWeight: '800', color: BRAND.colors.slate[400], marginTop: 2 },
+  modalTitle: { fontSize: 20, fontFamily: BRAND.typography.extraBold, color: BRAND.colors.slate[900] },
+  modalSubtitle: { fontSize: 15, fontFamily: BRAND.typography.extraBold, color: BRAND.colors.slate[400], marginTop: 2 },
   modalClose: { 
     width: 44, height: 44, borderRadius: 22, backgroundColor: BRAND.colors.slate[50], 
     justifyContent: 'center', alignItems: 'center' 
@@ -599,5 +597,5 @@ const styles = StyleSheet.create({
   submitContainer: { marginTop: 35 },
   submitBtn: { height: 68, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
   submitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  submitText: { color: '#FFF', fontSize: 18, fontWeight: '900' }
+  submitText: { color: '#FFF', fontSize: 18, fontFamily: BRAND.typography.extraBold }
 });

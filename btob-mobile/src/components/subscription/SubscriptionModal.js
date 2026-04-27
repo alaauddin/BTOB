@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View, Text, Modal, ScrollView, TouchableOpacity,
-  ActivityIndicator, Alert
-} from 'react-native';
+import { View, Modal, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import client from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
@@ -11,6 +8,7 @@ import { BRAND } from '../../theme/brand';
 import styles from './styles';
 import PlanCard from './PlanCard';
 import Benefit from './Benefit';
+import Text from '../AppText';
 
 export default function SubscriptionModal({ visible, onClose }) {
   const { activeMerchant, subErrorData, setSubErrorData } = useAuth();

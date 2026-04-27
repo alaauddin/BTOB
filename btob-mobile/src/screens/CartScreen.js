@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, Image, DeviceEventEmitter } from 'react-native';
+import { View, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, Image, DeviceEventEmitter } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import client from '../api/client';
 import CheckoutModal from '../components/CheckoutModal';
 import { getSupplierTheme } from '../theme/supplierTheme';
+import Text from '../components/AppText';
+import { BRAND } from '../theme/brand';
 
 export default function CartScreen({ route, navigation }) {
     const { supplierId, primaryColor: initialPrimaryColor } = route.params || {};
@@ -22,6 +24,23 @@ export default function CartScreen({ route, navigation }) {
             setLoading(false);
         }
     }, [supplierId]);
+
+    useEffect(() => {
+        if (supplierData) {
+            navigation.setOptions({
+                title: supplierData.name || 'سلة التسوق',
+                headerStyle: { 
+                    backgroundColor: theme.navbar,
+                    elevation: 0,
+                    shadowOpacity: 0,
+                },
+                headerTintColor: theme.navbarText,
+                headerTitleStyle: {
+                    fontFamily: BRAND.typography.bold,
+                }
+            });
+        }
+    }, [supplierData, theme]);
 
     const fetchSupplierProfile = async () => {
         try {
@@ -58,7 +77,7 @@ export default function CartScreen({ route, navigation }) {
         // Extract option IDs for the API
         const selectedOptionIds = (selectedOptions || []).map(opt => opt.id).sort();
         const itemKey = `${productId}_${JSON.stringify(selectedOptionIds)}`;
-        
+
         if (updatingItems.has(itemKey)) return; // Tap blocker
 
         setUpdatingItems(prev => new Set(prev).add(itemKey));
@@ -68,9 +87,9 @@ export default function CartScreen({ route, navigation }) {
             if (!prev) return prev;
             const updatedItems = prev.items.map(item => {
                 const itemOptionIds = (item.selected_options_details || []).map(o => o.id).sort();
-                const isMatch = item.product.id === productId && 
-                               JSON.stringify(itemOptionIds) === JSON.stringify(selectedOptionIds);
-                
+                const isMatch = item.product.id === productId &&
+                    JSON.stringify(itemOptionIds) === JSON.stringify(selectedOptionIds);
+
                 if (isMatch) {
                     return { ...item, quantity: newQty };
                 }
@@ -154,14 +173,14 @@ export default function CartScreen({ route, navigation }) {
 
                                 return (
                                     <>
-                                        <TouchableOpacity 
-                                            style={[styles.qtyBtn, isUpdating && { opacity: 0.5 }]} 
+                                        <TouchableOpacity
+                                            style={[styles.qtyBtn, isUpdating && { opacity: 0.5 }]}
                                             onPress={() => handleUpdateQuantity(product.id, item.quantity, -1, item.selected_options_details)}
                                             disabled={isUpdating}
                                         >
                                             <Ionicons name="remove" size={16} color={theme.primary} />
                                         </TouchableOpacity>
-                                        
+
                                         <View style={{ width: 30, alignItems: 'center' }}>
                                             {isUpdating ? (
                                                 <ActivityIndicator size="small" color={theme.primary} />
@@ -170,8 +189,8 @@ export default function CartScreen({ route, navigation }) {
                                             )}
                                         </View>
 
-                                        <TouchableOpacity 
-                                            style={[styles.qtyBtn, { backgroundColor: theme.primary }, isUpdating && { opacity: 0.5 }]} 
+                                        <TouchableOpacity
+                                            style={[styles.qtyBtn, { backgroundColor: theme.primary }, isUpdating && { opacity: 0.5 }]}
                                             onPress={() => handleUpdateQuantity(product.id, item.quantity, 1, item.selected_options_details)}
                                             disabled={isUpdating}
                                         >
@@ -221,7 +240,7 @@ export default function CartScreen({ route, navigation }) {
                         contentContainerStyle={styles.listContainer}
                         showsVerticalScrollIndicator={false}
                     />
-                        <View style={[styles.checkoutFooter, { backgroundColor: theme.footer }]}>
+                    <View style={[styles.checkoutFooter, { backgroundColor: theme.footer }]}>
                         <View style={styles.totalRow}>
                             <Text style={[styles.totalLabel, { color: theme.footerText }]}>الإجمالي الكلي:</Text>
                             <Text style={[styles.totalAmount, { color: theme.primary }]}>
@@ -275,7 +294,7 @@ const styles = StyleSheet.create({
     },
     emptyTitle: {
         fontSize: 22,
-        fontWeight: 'bold',
+        fontFamily: BRAND.typography.bold,
         color: '#1e293b',
         marginBottom: 8,
     },
@@ -299,7 +318,7 @@ const styles = StyleSheet.create({
     continueShoppingText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: BRAND.typography.bold,
     },
     listContainer: {
         padding: 16,
@@ -343,10 +362,10 @@ const styles = StyleSheet.create({
     },
     boldText: {
         flex: 1,
-        fontWeight: 'bold',
+        fontFamily: BRAND.typography.bold,
         fontSize: 15,
         color: '#0f172a',
-        textAlign: 'right',
+        textAlign: 'auto',
         marginRight: 8,
         lineHeight: 20,
     },
@@ -357,10 +376,10 @@ const styles = StyleSheet.create({
     },
     priceText: {
         color: '#10b981', // Emerald green
-        fontWeight: 'bold',
+        fontFamily: BRAND.typography.bold,
         fontSize: 16,
         marginVertical: 6,
-        textAlign: 'right',
+        textAlign: 'auto',
     },
     actionRow: {
         flexDirection: 'row',
@@ -371,7 +390,7 @@ const styles = StyleSheet.create({
     subtotalText: {
         fontSize: 13,
         color: '#64748b',
-        fontWeight: '600',
+        fontFamily: BRAND.typography.semiBold,
     },
     optionsContainer: {
         flexDirection: 'row',
@@ -412,7 +431,7 @@ const styles = StyleSheet.create({
     qtyNumber: {
         marginHorizontal: 12,
         fontSize: 15,
-        fontWeight: 'bold',
+        fontFamily: BRAND.typography.bold,
         color: '#1e293b'
     },
     checkoutFooter: {
@@ -435,12 +454,12 @@ const styles = StyleSheet.create({
     },
     totalLabel: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: BRAND.typography.bold,
         color: '#64748b'
     },
     totalAmount: {
         fontSize: 22,
-        fontWeight: 'bold',
+        fontFamily: BRAND.typography.bold,
         color: '#2B5876'
     },
     checkoutButton: {
@@ -459,7 +478,7 @@ const styles = StyleSheet.create({
     checkoutButtonText: {
         color: '#fff',
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: BRAND.typography.bold,
         marginRight: 8,
     },
 });

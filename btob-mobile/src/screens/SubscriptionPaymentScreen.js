@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, TextInput, Dimensions, Alert, Image
-} from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Alert, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,6 +7,8 @@ import * as ImagePicker from 'expo-image-picker';
 import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { BRAND } from '../theme/brand';
+import Text from '../components/AppText';
+import TextInput from '../components/AppTextInput';
 
 const { width } = Dimensions.get('window');
 
@@ -164,7 +163,12 @@ export default function SubscriptionPaymentScreen({ route, navigation }) {
         </SafeAreaView>
       </LinearGradient>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+      >
+        <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.summaryCard}>
           <Text style={styles.summaryLabel}>باقة {subscription.plan_name}</Text>
           <Text style={[styles.summaryAmount, { color: BRAND.colors.primary }]}>
@@ -214,7 +218,8 @@ export default function SubscriptionPaymentScreen({ route, navigation }) {
             ))}
           </View>
         )}
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       <View style={styles.footer}>
         <TouchableOpacity 
@@ -238,27 +243,27 @@ const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: { paddingBottom: 15, borderBottomLeftRadius: 25, borderBottomRightRadius: 25 },
   headerContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, height: 60 },
-  headerTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  headerTitle: { color: '#fff', fontSize: 18, fontFamily: BRAND.typography.bold },
   backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
 
-  scroll: { paddingBottom: 100 },
+  scroll: { flexGrow: 1, paddingBottom: 100 },
   summaryCard: { backgroundColor: '#fff', margin: 16, padding: 20, borderRadius: 20, alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
   summaryLabel: { fontSize: 14, color: '#64748B', marginBottom: 4 },
-  summaryAmount: { fontSize: 28, fontWeight: 'bold' },
+  summaryAmount: { fontSize: 28, fontFamily: BRAND.typography.bold },
 
-  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#1E293B', marginHorizontal: 20, marginTop: 10, marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontFamily: BRAND.typography.bold, color: '#1E293B', marginHorizontal: 20, marginTop: 10, marginBottom: 12 },
   methodsRow: { paddingHorizontal: 16, gap: 12, marginBottom: 20 },
   methodItem: { width: 100, height: 100, backgroundColor: '#fff', borderRadius: 20, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
   methodLogo: { width: 40, height: 40, borderRadius: 10, marginBottom: 8 },
   methodIcon: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
-  methodName: { fontSize: 12, fontWeight: '600', color: '#475569', textAlign: 'center' },
+  methodName: { fontSize: 12, fontFamily: BRAND.typography.semiBold, color: '#475569', textAlign: 'center' },
 
   formContainer: { paddingHorizontal: 16 },
   instructionsBox: { backgroundColor: '#F0F9FF', padding: 16, borderRadius: 15, flexDirection: 'row', gap: 10, marginBottom: 20 },
   instructionsText: { flex: 1, fontSize: 13, color: BRAND.colors.primary, lineHeight: 20 },
   
   fieldGroup: { marginBottom: 16 },
-  fieldLabel: { fontSize: 14, fontWeight: '600', color: '#475569', marginBottom: 8 },
+  fieldLabel: { fontSize: 14, fontFamily: BRAND.typography.semiBold, color: '#475569', marginBottom: 8 },
   input: { backgroundColor: '#fff', height: 50, borderRadius: 12, paddingHorizontal: 15, borderWidth: 1, borderColor: '#E2E8F0' },
   
   imagePicker: { backgroundColor: '#fff', height: 150, borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
@@ -268,5 +273,5 @@ const styles = StyleSheet.create({
 
   footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', padding: 20, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
   submitBtn: { height: 56, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
-  submitBtnText: { color: '#fff', fontSize: 18, fontWeight: 'bold' }
+  submitBtnText: { color: '#fff', fontSize: 18, fontFamily: BRAND.typography.bold }
 });

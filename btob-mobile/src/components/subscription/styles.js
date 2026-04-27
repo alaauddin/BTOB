@@ -1,5 +1,6 @@
 import { StyleSheet, Dimensions } from 'react-native';
 import { BRAND } from '../../theme/brand';
+import Text from '../AppText';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,7 +34,7 @@ export default StyleSheet.create({
   },
   title: { 
     fontSize: 22, 
-    fontWeight: 'bold', 
+    fontFamily: BRAND.typography.bold, 
     color: BRAND.colors.slate[800], 
     marginBottom: 8,
     alignSelf: 'stretch'
@@ -57,7 +58,7 @@ export default StyleSheet.create({
   },
   contactText: { 
     fontSize: 13, 
-    fontWeight: '600', 
+    fontFamily: BRAND.typography.semiBold, 
     color: BRAND.colors.slate[600], 
     textAlign: 'left'
   },
@@ -95,7 +96,7 @@ export default StyleSheet.create({
   },
   planName: { 
     fontSize: 16, 
-    fontWeight: 'bold', 
+    fontFamily: BRAND.typography.bold, 
     color: BRAND.colors.slate[800], 
     textAlign: 'left',
     alignSelf: 'stretch'
@@ -122,7 +123,7 @@ export default StyleSheet.create({
   },
   benefitsTitle: { 
     fontSize: 14, 
-    fontWeight: 'bold', 
+    fontFamily: BRAND.typography.bold, 
     color: BRAND.colors.slate[600], 
     marginBottom: 12, 
     alignSelf: 'stretch'
@@ -152,7 +153,7 @@ export default StyleSheet.create({
   subscribeBtnText: { 
     color: BRAND.colors.white, 
     fontSize: 18, 
-    fontWeight: 'bold' 
+    fontFamily: BRAND.typography.bold 
   },
   cancelBtn: { 
     height: 44, 

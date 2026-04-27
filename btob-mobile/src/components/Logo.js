@@ -18,7 +18,7 @@ const Logo = ({ size = 120, style, white = false, variant = 'standard' }) => {
             ]}>
                 <Image
                     source={logoSource}
-                    style={{ width: circleSize * 0.6, height: circleSize * 0.6 }}
+                    style={{ width: circleSize * 0.85, height: circleSize * 0.85 }}
                     resizeMode="contain"
                 />
             </View>

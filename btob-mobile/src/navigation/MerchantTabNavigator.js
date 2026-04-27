@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform, I18nManager } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Dimensions, Platform, I18nManager } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +19,9 @@ import MerchantProductsScreen from '../screens/MerchantProductsScreen';
 import ProductListScreen from '../screens/ProductListScreen';
 import MerchantProfileScreen from '../screens/MerchantProfileScreen';
 import WholesaleMarketScreen from '../screens/WholesaleMarketScreen';
+import ChatListScreen from '../screens/ChatListScreen';
+import Text from '../components/AppText';
+
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
@@ -35,12 +38,14 @@ function MerchantTabBar({ state, descriptors, navigation }) {
   const isRTL = I18nManager.isRTL;
   
   const tabs = [
-    { name: 'Dashboard',    label: 'الرئيسية',  icon: 'home' },
-    { name: 'Orders',       label: 'الطلبات',   icon: 'shopping-bag' },
-    { name: 'Products',     label: 'المنتجات',   icon: 'package' },
-    { name: 'StoreView',    label: 'المتجر',    icon: 'grid' },
-    { name: 'Profile',      label: 'الحساب',    icon: 'user' },
+    { name: 'MerchantDashboard',    label: 'الرئيسية',  icon: 'home' },
+    { name: 'MerchantOrders',       label: 'الطلبات',   icon: 'shopping-bag' },
+    { name: 'MerchantChatList',     label: 'الرسائل',   icon: 'message-square' },
+    { name: 'MerchantProducts',     label: 'المنتجات',   icon: 'package' },
+    { name: 'MerchantStoreView',    label: 'المتجر',    icon: 'grid' },
+    { name: 'MerchantProfile',      label: 'الحساب',    icon: 'user' },
   ];
+
 
   const visibleRoutes = state.routes.filter(r => tabs.some(t => t.name === r.name));
   
@@ -156,23 +161,28 @@ export default function MerchantTabNavigator() {
       tabBar={props => <MerchantTabBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
-      <Tab.Screen name="Dashboard" component={MerchantDashboardScreen} />
+      <Tab.Screen name="MerchantDashboard" component={MerchantDashboardScreen} />
       <Tab.Screen
-        name="Orders"
+        name="MerchantOrders"
         component={MerchantOrdersScreen}
         initialParams={{ merchantId: activeMerchant?.id }}
       />
       <Tab.Screen
-        name="Products"
+        name="MerchantChatList"
+        component={ChatListScreen}
+      />
+
+      <Tab.Screen
+        name="MerchantProducts"
         component={MerchantProductsScreen}
       />
       <Tab.Screen
-        name="StoreView"
+        name="MerchantStoreView"
         component={ProductListScreen}
         initialParams={{ storeId: activeMerchant?.store_id }}
       />
-      <Tab.Screen name="Profile" component={MerchantProfileScreen} />
-      <Tab.Screen name="WholesaleMarket" component={WholesaleMarketScreen} />
+      <Tab.Screen name="MerchantProfile" component={MerchantProfileScreen} />
+      <Tab.Screen name="MerchantWholesaleMarket" component={WholesaleMarketScreen} />
     </Tab.Navigator>
   );
 }
@@ -220,7 +230,7 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: 9,
-    fontWeight: '800',
+    fontFamily: BRAND.typography.extraBold,
     marginTop: 4,
     color: 'rgba(255,255,255,0.7)',
   },

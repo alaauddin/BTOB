@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, Modal, TouchableOpacity, Image,
-  ActivityIndicator, ScrollView, Alert, Platform, Pressable
-} from 'react-native';
+import { View, StyleSheet, Modal, TouchableOpacity, Image, ActivityIndicator, ScrollView, Alert, Platform, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import client from '../api/client';
 import { useNotifications } from '../context/NotificationContext';
+import Text from './AppText';
+import { BRAND } from '../theme/brand';
 
 export default function BrandGenModal({ visible, onClose, onSuccess, merchantId }) {
   const { showNotification } = useNotifications();
@@ -209,7 +208,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F1F5F9'
   },
-  modalTitle: { fontSize: 16, fontWeight: '800', color: '#0F172A', textAlign: 'right' },
+  modalTitle: { fontSize: 16, fontFamily: BRAND.typography.extraBold, color: '#0F172A', textAlign: 'auto' },
   closeModalBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
   
   aiIntroSec: { alignItems: 'center', padding: 24, paddingBottom: 16 },
@@ -219,46 +218,46 @@ const styles = StyleSheet.create({
     shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3, shadowRadius: 15, elevation: 10
   },
-  aiIntroTitle: { fontSize: 20, fontWeight: '800', color: '#1E293B', marginBottom: 8, textAlign: 'center' },
+  aiIntroTitle: { fontSize: 20, fontFamily: BRAND.typography.extraBold, color: '#1E293B', marginBottom: 8, textAlign: 'center' },
   aiIntroDesc: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 22, paddingHorizontal: 20 },
   
   logoSelectionCard: {
     margin: 20, padding: 20, borderRadius: 24, backgroundColor: '#F8FAFC',
     borderWidth: 2, borderColor: '#F1F5F9', borderStyle: 'dashed'
   },
-  logoSelectionLabel: { fontSize: 14, fontWeight: '700', color: '#475569', marginBottom: 16, textAlign: 'right' },
+  logoSelectionLabel: { fontSize: 14, fontFamily: BRAND.typography.bold, color: '#475569', marginBottom: 16, textAlign: 'auto' },
   logoPreviewLarge: {
     aspectRatio: 1, backgroundColor: '#FFF', borderRadius: 20, overflow: 'hidden',
     borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center'
   },
   logoPreviewImg: { width: '100%', height: '100%', resizeMode: 'contain' },
   logoPlaceholderAI: { alignItems: 'center', gap: 12 },
-  placeholderTextAI: { fontSize: 14, color: '#94A3B8', fontWeight: '600' },
+  placeholderTextAI: { fontSize: 14, color: '#94A3B8', fontFamily: BRAND.typography.semiBold },
   changeLogoOverlay: {
     position: 'absolute', bottom: 12, alignSelf: 'center',
     flexDirection: 'row-reverse', alignItems: 'center', gap: 6,
     backgroundColor: 'rgba(15, 23, 42, 0.7)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12
   },
-  changeLogoText: { color: '#FFF', fontSize: 11, fontWeight: '700' },
+  changeLogoText: { color: '#FFF', fontSize: 11, fontFamily: BRAND.typography.bold },
   
   aiWarningNote: {
     flexDirection: 'row-reverse', alignItems: 'center', gap: 10,
     marginHorizontal: 24, marginBottom: 24, padding: 12,
     backgroundColor: '#F5F3FF', borderRadius: 12
   },
-  warningNoteText: { flex: 1, fontSize: 12, color: '#6366F1', fontWeight: '600', textAlign: 'right' },
+  warningNoteText: { flex: 1, fontSize: 12, color: '#6366F1', fontFamily: BRAND.typography.semiBold, textAlign: 'auto' },
   
   generateActionBtn: { marginHorizontal: 20, marginBottom: 16, borderRadius: 20, overflow: 'hidden', elevation: 8, shadowColor: '#6366F1', shadowOpacity: 0.3, shadowRadius: 10 },
   generateGradient: {
     height: 60, flexDirection: 'row-reverse', alignItems: 'center',
     justifyContent: 'center', gap: 10
   },
-  generateActionText: { color: '#FFF', fontSize: 17, fontWeight: '900' },
+  generateActionText: { color: '#FFF', fontSize: 17, fontFamily: BRAND.typography.extraBold },
   generatingState: { 
     flexDirection: 'row-reverse', 
     alignItems: 'center', justifyContent: 'center'
   },
   
   cancelLink: { paddingVertical: 12, alignItems: 'center' },
-  cancelLinkText: { color: '#94A3B8', fontSize: 14, fontWeight: '800' },
+  cancelLinkText: { color: '#94A3B8', fontSize: 14, fontFamily: BRAND.typography.extraBold },
 });

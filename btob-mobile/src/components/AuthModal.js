@@ -1,22 +1,11 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
-  TextInput,
-  ActivityIndicator,
-  Image,
-  ScrollView,
-} from "react-native";
+import { View, StyleSheet, Modal, TouchableOpacity, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ActivityIndicator, Image, ScrollView } from 'react-native';
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import Logo from "./Logo";
+import Text from './AppText';
+import TextInput from './AppTextInput';
+import { BRAND } from '../theme/brand';
 
 export default function AuthModal({ visible, onClose, onSuccess, primaryColor: initialPrimaryColor }) {
   const primaryColor = initialPrimaryColor || "#2B5876";
@@ -472,7 +461,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: BRAND.typography.bold,
     color: "#64748b",
   },
   activeTabText: {
@@ -480,7 +469,7 @@ const styles = StyleSheet.create({
   },
   welcomeTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: BRAND.typography.bold,
     color: "#0f172a",
     textAlign: "center",
     marginBottom: 20,
@@ -501,7 +490,7 @@ const styles = StyleSheet.create({
   },
   googleButtonText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: BRAND.typography.semiBold,
     color: "#334155",
     marginLeft: 10,
   },
@@ -519,7 +508,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     color: "#64748b",
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: BRAND.typography.medium,
   },
   inputWrapper: {
     position: "relative",
@@ -534,7 +523,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
     fontSize: 12,
     color: "#94a3b8",
-    fontWeight: "600",
+    fontFamily: BRAND.typography.semiBold,
   },
   phoneInputContainer: {
     flexDirection: "row",
@@ -561,7 +550,7 @@ const styles = StyleSheet.create({
   },
   phonePrefixText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: BRAND.typography.bold,
     color: "#334155",
   },
   standardInput: {
@@ -602,7 +591,7 @@ const styles = StyleSheet.create({
     color: "#ef4444",
     fontSize: 12,
     marginTop: 6,
-    textAlign: "right",
+    textAlign: "auto",
     paddingHorizontal: 8,
   },
   errorTextCenter: {
@@ -610,7 +599,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 16,
     textAlign: "center",
-    fontWeight: "500",
+    fontFamily: BRAND.typography.medium,
   },
   checkboxRow: {
     flexDirection: "row",
@@ -631,7 +620,7 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     fontSize: 14,
-    fontWeight: "bold",
+    fontFamily: BRAND.typography.bold,
     color: "#0f172a",
   },
   joinNowLayout: {
@@ -643,12 +632,12 @@ const styles = StyleSheet.create({
   joinNowText: {
     fontSize: 14,
     color: "#0f172a",
-    fontWeight: "600",
+    fontFamily: BRAND.typography.semiBold,
   },
   joinNowLink: {
     fontSize: 14,
     color: "#1e293b",
-    fontWeight: "900",
+    fontFamily: BRAND.typography.extraBold,
   },
   actionButtonsRow: {
     flexDirection: "row",
@@ -669,7 +658,7 @@ const styles = StyleSheet.create({
   },
   cancelBtnText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: BRAND.typography.bold,
     color: "#64748b",
   },
   submitBtn: {
@@ -688,7 +677,7 @@ const styles = StyleSheet.create({
   },
   submitBtnText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: BRAND.typography.bold,
     color: "#fff",
   },
 });

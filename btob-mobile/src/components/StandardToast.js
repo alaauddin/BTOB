@@ -1,10 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { 
-    View, Text, StyleSheet, Animated, 
-    Dimensions, TouchableOpacity, Platform 
-} from 'react-native';
+import { View, StyleSheet, Animated, Dimensions, TouchableOpacity, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Feather, Ionicons } from '@expo/vector-icons';
+import Text from './AppText';
+import { BRAND } from '../theme/brand';
 
 const { width } = Dimensions.get('window');
 
@@ -133,7 +132,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 16,
-        fontWeight: '800',
+        fontFamily: BRAND.typography.extraBold,
         color: '#1e293b',
         marginBottom: 2,
         fontFamily: Platform.OS === 'ios' ? 'System' : 'serif', // Placeholder for Arabic font
@@ -142,7 +141,7 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#64748b',
         lineHeight: 18,
-        textAlign: 'right',
+        textAlign: 'auto',
     },
     closeBtn: {
         padding: 4,
@@ -160,7 +159,7 @@ const styles = StyleSheet.create({
     },
     networkBadgeText: {
         fontSize: 10,
-        fontWeight: '700',
+        fontFamily: BRAND.typography.bold,
         color: '#d97706',
     }
 });

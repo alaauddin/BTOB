@@ -12,17 +12,24 @@ from .helpers import (
 from ..serializers import (
     LoginSerializer, SignupSerializer, 
     UnifiedAuthSerializer, UserSerializer,
-    PasswordResetRequestSerializer
+    PasswordResetRequestSerializer, MerchantSignupSerializer
 )
 
 class LoginAPIView(APIView):
+# ... (lines 19-65)
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
+            username_input = serializer.validated_data['username']
+            password_input = serializer.validated_data['password']
+            
+            print(f"DEBUG LOGIN: username='{username_input}', password='{password_input}'")
             user = authenticate(
-                username=serializer.validated_data['username'],
-                password=serializer.validated_data['password']
+                username=username_input,
+                password=password_input
             )
+            print(f"DEBUG LOGIN: authenticate returned {user}")
+            
             if user:
                 # Check for Driver profile first
                 from core.models import DeliveryDriver
@@ -61,10 +68,11 @@ class LoginAPIView(APIView):
                     'manageable_merchants': merchant_data,
                     'active_merchant_id': active_merchant_id,
                 })
-            return Response({'success': False, 'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'success': False, 'message': 'اسم المستخدم أو كلمة المرور غير صحيحة'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SignupAPIView(APIView):
+# ... (lines 68-88)
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
         if serializer.is_valid():
@@ -87,7 +95,123 @@ class SignupAPIView(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class MerchantSignupSendOTPAPIView(APIView):
+    def post(self, request):
+        phone = request.data.get('phone')
+        if not phone:
+            return Response({'success': False, 'message': 'رقم الهاتف مطلوب.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        phone = str(phone).strip()
+        
+        from core.models import Profile, OTPVerification
+        import random
+        from core.utils.whatsapp_utils import send_whatsapp_message
+        
+        if Profile.objects.filter(phone_number=phone).exists():
+            return Response({'success': False, 'message': 'هذا الرقم مسجل مسبقاً، يرجى استخدام رقم آخر.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        otp = str(random.randint(100000, 999999))
+        OTPVerification.objects.filter(phone=phone).delete()
+        OTPVerification.objects.create(phone=phone, otp=otp)
+        
+        try:
+            msg = f"رمز التحقق الخاص بك لتسجيل حساب تاجر في رواج هو: {otp}"
+            send_whatsapp_message(phone, msg)
+            return Response({'success': True, 'message': 'تم إرسال رمز التحقق بنجاح.'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'success': False, 'message': f"خطأ في إرسال الرمز: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class MerchantSignupAPIView(APIView):
+    def post(self, request):
+        serializer = MerchantSignupSerializer(data=request.data)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            if User.objects.filter(username=username).exists():
+                return Response({'success': False, 'message': 'Account with this username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            from core.models import Supplier, Profile, SupplierCategory, OTPVerification
+            from django.db import transaction
+            from django.utils import timezone
+            from datetime import timedelta
+
+            phone = serializer.validated_data['phone']
+            store_id = serializer.validated_data['store_id']
+            otp_input = serializer.validated_data['otp']
+
+            if Profile.objects.filter(phone_number=phone).exists():
+                return Response({'success': False, 'message': 'هذا الرقم مسجل مسبقاً، يرجى استخدام رقم آخر.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            if Supplier.objects.filter(store_id=store_id).exists():
+                return Response({'success': False, 'message': 'رابط المتجر هذا مستخدم، يرجى اختيار رابط مختلف.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            expiry_time = timezone.now() - timedelta(minutes=10)
+
+            try:
+                with transaction.atomic():
+                    otp_obj = OTPVerification.objects.select_for_update().filter(
+                        phone=phone, 
+                        otp=otp_input,
+                        created_at__gte=expiry_time
+                    ).first()
+                    
+                    if not otp_obj:
+                        return Response({'success': False, 'message': 'رمز التحقق غير صحيح أو انتهت صلاحيته.'}, status=status.HTTP_400_BAD_REQUEST)
+
+                    # 1. Create User
+                    user = User.objects.create_user(
+                        username=username,
+                        email=f"{username}@merchant.rawaage.com",
+                        password=serializer.validated_data['password'],
+                        first_name=serializer.validated_data['name']
+                    )
+
+                    # 2. Update Profile
+                    profile, created = Profile.objects.get_or_create(user=user)
+                    profile.user_type = 'supplier'
+                    profile.phone_number = serializer.validated_data['phone']
+                    profile.save()
+
+                    # 3. Create Supplier
+                    supplier = Supplier.objects.create(
+                        user=user,
+                        name=serializer.validated_data['name'],
+                        store_id=serializer.validated_data['store_id'],
+                        phone=serializer.validated_data['phone'],
+                        address=serializer.validated_data['address'],
+                        city=serializer.validated_data['city'],
+                        country=serializer.validated_data['country'],
+                        primary_color=serializer.validated_data.get('primary_color', '#F58231'),
+                        profile_picture=serializer.validated_data.get('profile_picture'),
+                        panal_picture=serializer.validated_data.get('panal_picture'),
+                        is_active=True
+                    )
+
+                    # 4. Assign Categories
+                    category_ids = serializer.validated_data.get('category_ids', [])
+                    if category_ids:
+                        categories = SupplierCategory.objects.filter(id__in=category_ids)
+                        supplier.category.set(categories)
+
+                    tokens = get_tokens_for_user(user)
+                    return Response({
+                        'success': True,
+                        'message': 'Merchant registration successful',
+                        'tokens': tokens,
+                        'user': UserSerializer(user).data,
+                        'merchant_id': supplier.id
+                    }, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        print("Serializer errors:", serializer.errors)
+        # Format the errors nicely to send to frontend if needed
+        error_msg = next(iter(serializer.errors.values()))[0] if serializer.errors else 'Validation failed'
+        return Response({'success': False, 'message': error_msg, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 class UnifiedAuthAPIView(APIView):
+# ... (lines 91-146)
     def post(self, request):
         serializer = UnifiedAuthSerializer(data=request.data)
         if serializer.is_valid():
@@ -146,6 +270,7 @@ class UnifiedAuthAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PasswordResetRequestAPIView(APIView):
+# ... (lines 149-158)
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
         if serializer.is_valid():

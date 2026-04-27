@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { BRAND } from '../../theme/brand';
 import styles from './styles';
+import Text from '../AppText';
 
 const Benefit = ({ item, isIncluded = true }) => (
   <View style={styles.benefitRow}>

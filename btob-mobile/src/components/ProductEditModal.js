@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {
-    View, Text, StyleSheet, Modal, TouchableOpacity, TextInput,
-    ScrollView, Image, ActivityIndicator, Alert, KeyboardAvoidingView,
-    Platform, Dimensions
-} from 'react-native';
+import { View, StyleSheet, Modal, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import client from '../api/client';
 import { useNotifications } from '../context/NotificationContext';
+import Text from './AppText';
+import TextInput from './AppTextInput';
+import { BRAND } from '../theme/brand';
 
 const { height } = Dimensions.get('window');
 
@@ -306,7 +305,7 @@ const styles = StyleSheet.create({
         borderBottomColor: '#F1F5F9',
     },
     closeBtn: { padding: 8, backgroundColor: '#F1F5F9', borderRadius: 12 },
-    title: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
+    title: { fontSize: 18, fontFamily: BRAND.typography.extraBold, color: '#0F172A' },
     
     form: { padding: 20 },
     
@@ -326,7 +325,7 @@ const styles = StyleSheet.create({
     },
     imagePreview: { width: '100%', height: '100%', borderRadius: 19 },
     imagePlaceholder: { alignItems: 'center' },
-    imagePlaceholderText: { fontSize: 12, color: '#94A3B8', marginTop: 8, fontWeight: '600' },
+    imagePlaceholderText: { fontSize: 12, color: '#94A3B8', marginTop: 8, fontFamily: BRAND.typography.semiBold },
     editImageBadge: {
         position: 'absolute',
         bottom: -10,
@@ -342,7 +341,7 @@ const styles = StyleSheet.create({
     },
 
     inputGroup: { marginBottom: 20 },
-    label: { fontSize: 14, fontWeight: '700', color: '#475569', marginBottom: 8, textAlign: 'right' },
+    label: { fontSize: 14, fontFamily: BRAND.typography.bold, color: '#475569', marginBottom: 8, textAlign: 'auto' },
     input: {
         backgroundColor: '#F8FAFC',
         borderWidth: 1,
@@ -365,7 +364,7 @@ const styles = StyleSheet.create({
         borderColor: '#E2E8F0'
     },
     catChipActive: { backgroundColor: '#2B5876', borderColor: '#2B5876' },
-    catChipText: { fontSize: 13, fontWeight: '600', color: '#64748B' },
+    catChipText: { fontSize: 13, fontFamily: BRAND.typography.semiBold, color: '#64748B' },
     catChipTextActive: { color: '#fff' },
 
     toggleRow: { flexDirection: 'row-reverse', gap: 12, marginBottom: 20 },
@@ -382,7 +381,7 @@ const styles = StyleSheet.create({
         borderColor: '#E2E8F0'
     },
     toggleBtnActive: { backgroundColor: '#2B5876', borderColor: '#2B5876' },
-    toggleBtnText: { fontSize: 14, fontWeight: '700', color: '#64748B' },
+    toggleBtnText: { fontSize: 14, fontFamily: BRAND.typography.bold, color: '#64748B' },
     toggleBtnTextActive: { color: '#fff' },
 
     footer: {
@@ -410,5 +409,5 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 8,
     },
-    saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' }
+    saveBtnText: { color: '#fff', fontSize: 16, fontFamily: BRAND.typography.extraBold }
 });

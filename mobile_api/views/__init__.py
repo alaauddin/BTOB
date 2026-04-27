@@ -1,9 +1,10 @@
 from .auth import (
-    LoginAPIView, SignupAPIView, UnifiedAuthAPIView, PasswordResetRequestAPIView
+    LoginAPIView, SignupAPIView, UnifiedAuthAPIView, PasswordResetRequestAPIView,
+    MerchantSignupAPIView, MerchantSignupSendOTPAPIView
 )
 from .buyer import (
     HomeAPIView, StoreProfileAPIView, SupplierViewSet, 
-    ProductViewSet, CategoryViewSet, ToggleWishlistAPIView, WishlistStatusAPIView
+    ProductViewSet, CategoryViewSet, SupplierCategoryViewSet, ToggleWishlistAPIView, WishlistStatusAPIView
 )
 from .cart import CartViewSet
 from .orders import OrderViewSet

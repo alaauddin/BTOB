@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, Text, StyleSheet, TouchableOpacity, Image, 
-  Modal, ScrollView, TextInput, ActivityIndicator, Platform 
-} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, Modal, ScrollView, ActivityIndicator, Platform } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { adjustColor } from '../../utils/color';
+import Text from '../AppText';
+import TextInput from '../AppTextInput';
+import { BRAND } from '../../theme/brand';
 
 /**
  * SourcingModal.js
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: BRAND.typography.extraBold,
     color: '#1E293B',
   },
   closeBtn: {
@@ -154,14 +154,14 @@ const styles = StyleSheet.create({
   },
   modalProductName: {
     fontSize: 22,
-    fontWeight: '800',
+    fontFamily: BRAND.typography.extraBold,
     color: '#0F172A',
-    textAlign: 'right',
+    textAlign: 'auto',
   },
   modalWholesaler: {
     fontSize: 14,
     color: '#64748B',
-    textAlign: 'right',
+    textAlign: 'auto',
     marginTop: 4,
   },
   statsRow: {
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 16,
-    fontWeight: '800',
+    fontFamily: BRAND.typography.extraBold,
     color: '#1E293B',
   },
   inputSec: {
@@ -190,9 +190,9 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: BRAND.typography.bold,
     color: '#334155',
-    textAlign: 'right',
+    textAlign: 'auto',
     marginBottom: 12,
   },
   priceInputRow: {
@@ -208,20 +208,20 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 56,
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: BRAND.typography.bold,
     color: '#1E293B',
-    textAlign: 'right',
+    textAlign: 'auto',
   },
   currencyLabel: {
     fontSize: 16,
-    fontWeight: '800',
+    fontFamily: BRAND.typography.extraBold,
     color: '#94A3B8',
     marginRight: 10,
   },
   inputHint: {
     fontSize: 12,
     color: '#94A3B8',
-    textAlign: 'right',
+    textAlign: 'auto',
     marginTop: 8,
   },
   infoCard: {
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#1E40AF',
     lineHeight: 20,
-    textAlign: 'right',
+    textAlign: 'auto',
   },
   modalFooter: {
     padding: 20,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   sourceBtnText: {
     color: '#FFF',
     fontSize: 16,
-    fontWeight: '800',
+    fontFamily: BRAND.typography.extraBold,
   },
 });
 

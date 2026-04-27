@@ -194,6 +194,11 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
+class SupplierCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = SupplierCategory.objects.all()
+    serializer_class = SupplierCategorySerializer
+    permission_classes = [permissions.AllowAny]
+
 class ToggleWishlistAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     

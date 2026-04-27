@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Replace with your machine's local IP address if testing on a physical device,
 // otherwise localhost or 10.0.2.2 (for Android Emulators) works.
 // Using 10.0.2.2 assumes Android Emulator connecting to Django on local machine.
-export const BASE_URL = 'https://rawaage.com/api';
+export const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.8.125:8000/api';
 
 const client = axios.create({
     baseURL: BASE_URL,
@@ -42,16 +42,33 @@ export const setPaymentRequiredHandler = (handler) => {
     paymentRequiredHandler = handler;
 };
 
-// Request Interceptor to add JWT token
+// Request Interceptor to add JWT token and Active Supplier ID
 client.interceptors.request.use(
     async (config) => {
         try {
+            // 1. Add JWT Token
             const token = await AsyncStorage.getItem('access_token');
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
+
+            // 2. Add Active Supplier ID (for multi-tenant context)
+            const scope = await AsyncStorage.getItem('user_scope');
+            if (scope === 'merchant' || scope === 'driver') {
+                const merchant = await AsyncStorage.getItem('active_merchant');
+                if (merchant && merchant !== 'null') {
+                    try {
+                        const parsed = JSON.parse(merchant);
+                        if (parsed && parsed.id) {
+                            config.headers['X-Supplier-ID'] = parsed.id;
+                        }
+                    } catch (e) {
+                        // Ignore parse errors for active_merchant
+                    }
+                }
+            }
         } catch (error) {
-            console.error('Error fetching token from storage', error);
+            console.error('Error fetching context from storage', error);
         }
         return config;
     },
@@ -59,6 +76,7 @@ client.interceptors.request.use(
         return Promise.reject(error);
     }
 );
+
 
 // Response Interceptor for advanced error handling
 client.interceptors.response.use(
@@ -91,7 +109,14 @@ client.interceptors.response.use(
         // 1. Handle 401 Unauthorized
         if (response && response.status === 401) {
             console.log('Unauthorized request detected (401)');
-            if (unauthorizedHandler) unauthorizedHandler();
+            
+            // Skip global logout notification if this was a login attempt
+            const isAuthEndpoint = config.url && (config.url.includes('/auth/login/') || config.url.includes('/auth/unified-login/'));
+            
+            if (!isAuthEndpoint && unauthorizedHandler) {
+                unauthorizedHandler();
+            }
+            
             return Promise.reject(error);
         }
 

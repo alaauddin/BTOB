@@ -12,7 +12,7 @@ def send_whatsapp_message(phone: str, message: str) -> bool:
     
     settings = SystemSettings.objects.first()
     if not settings or not settings.whatsapp_api_url or not settings.whatsapp_api_key:
-        logger.error("WhatsApp API settings are incomplete.")
+        logger.info("WhatsApp API settings are incomplete.")
         return False
 
     # Normalise phone number (add Yemen country code 967 if missing)
@@ -25,10 +25,11 @@ def send_whatsapp_message(phone: str, message: str) -> bool:
     # skip not yemeni number
     normalized = phone.lstrip("+")
     if not normalized.startswith("967") or len(normalized) != 12:
-        logger.warning(f"WhatsApp: skipping non-Yemeni or invalid number '{phone}'.")
+        logger.info(f"WhatsApp: skipping non-Yemeni or invalid number '{phone}'.")
         return False
 
     # Queue the task
+    logger.info(f"WhatsApp: sending message to '{phone}'.")
     send_whatsapp_message_task.delay(
         phone, 
         str(message), 

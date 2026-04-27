@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, StatusBar, Image, Dimensions, Linking, Platform,
-  Modal, Alert, TextInput,
-} from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, StatusBar, Image, Dimensions, Linking, Platform, Modal, Alert } from 'react-native';
 import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,6 +9,8 @@ import MapView, { Marker, Polyline } from '../components/MapModule';
 import client from '../api/client';
 import { BRAND } from '../theme/brand';
 import Logo from '../components/Logo';
+import Text from '../components/AppText';
+import TextInput from '../components/AppTextInput';
 
 const { width } = Dimensions.get('window');
 
@@ -340,7 +338,7 @@ export default function MerchantOrderDetailScreen({ route, navigation }) {
                           <Text style={styles.stepNumberText}>{idx + 1}</Text>
                         )}
                       </View>
-                      <Text style={[styles.stepLabelText, statusVariant === 'active' && { color: primaryColor, fontWeight: '800' }]}>
+                      <Text style={[styles.stepLabelText, statusVariant === 'active' && { color: primaryColor, fontFamily: BRAND.typography.extraBold }]}>
                         {step.name}
                       </Text>
                     </TouchableOpacity>
@@ -755,7 +753,7 @@ const styles = StyleSheet.create({
   headerBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
   headerTitleGroup: { flex: 1, alignItems: 'flex-start' },
   headerSubtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },
-  headerTitleText: { color: '#FFF', fontSize: 24, fontWeight: 'bold' },
+  headerTitleText: { color: '#FFF', fontSize: 24, fontFamily: BRAND.typography.bold },
   headerActionGroup: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   headerIconButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center' },
   merchantMiniBox: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
@@ -772,14 +770,14 @@ const styles = StyleSheet.create({
   viewerContent: { flex: 1 },
   viewerHeader: { height: 60, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20 },
   viewerCloseBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
-  viewerTitle: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
+  viewerTitle: { color: '#FFF', fontSize: 18, fontFamily: BRAND.typography.bold },
   viewerImageContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   fullReceiptImage: { width: '100%', height: '100%', borderRadius: 12 },
   viewerFooter: { padding: 20, alignItems: 'center' },
   viewerFooterText: { color: 'rgba(255,255,255,0.5)', fontSize: 12 },
   
   statLabel: { fontSize: 12, color: '#94A3B8', marginBottom: 4 },
-  statValue: { fontSize: 18, fontWeight: 'bold' },
+  statValue: { fontSize: 18, fontFamily: BRAND.typography.bold },
 
   statusCard: {
     backgroundColor: '#FFF', borderRadius: 24, padding: 18, flexDirection: 'row', alignItems: 'center',
@@ -787,18 +785,18 @@ const styles = StyleSheet.create({
   },
   statusIconBox: { width: 56, height: 56, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
   statusInfo: { flex: 1, marginLeft: 16 },
-  statusLabel: { fontSize: 17, fontWeight: 'bold' },
+  statusLabel: { fontSize: 17, fontFamily: BRAND.typography.bold },
   statusTimeRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   statusTime: { fontSize: 12, color: '#94A3B8' },
   statusIndicator: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 },
   dot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
-  badgeText: { fontSize: 10, fontWeight: 'bold' },
+  badgeText: { fontSize: 10, fontFamily: BRAND.typography.bold },
 
   workflowSection: { marginBottom: 24 },
   workflowHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionTitleSmall: { fontSize: 14, fontWeight: 'bold', color: '#1E293B' },
+  sectionTitleSmall: { fontSize: 14, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   workflowBadge: { backgroundColor: '#F1F5F9', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8 },
-  workflowBadgeText: { fontSize: 10, fontWeight: 'bold', color: '#64748B' },
+  workflowBadgeText: { fontSize: 10, fontFamily: BRAND.typography.bold, color: '#64748B' },
   stepperContainer: { paddingVertical: 8 },
   stepWrapper: { flexDirection: 'row', alignItems: 'center' },
   stepItem: {
@@ -806,7 +804,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#F1F5F9', flexDirection: 'row', alignItems: 'center', gap: 10
   },
   stepIconCircle: { width: 22, height: 22, borderRadius: 11, justifyContent: 'center', alignItems: 'center' },
-  stepNumberText: { color: '#FFF', fontSize: 10, fontWeight: 'bold' },
+  stepNumberText: { color: '#FFF', fontSize: 10, fontFamily: BRAND.typography.bold },
   stepLabelText: { fontSize: 13, color: '#64748B' },
   stepConnector: { width: 25, height: 2, backgroundColor: '#E2E8F0', marginHorizontal: 2 },
 
@@ -816,22 +814,22 @@ const styles = StyleSheet.create({
   miniIconBox: { width: 32, height: 32, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
   driverActionsHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   quickAddBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FFF', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0' },
-  quickAddText: { fontSize: 11, fontWeight: 'bold' },
+  quickAddText: { fontSize: 11, fontFamily: BRAND.typography.bold },
   unassignBtn: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#FEF2F2', justifyContent: 'center', alignItems: 'center' },
   assignedDriverCard: { backgroundColor: '#FFF', borderRadius: 20, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: '#F1F5F9' },
   driverMainInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   driverAvatar: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  driverLetter: { fontSize: 18, fontWeight: 'bold' },
+  driverLetter: { fontSize: 18, fontFamily: BRAND.typography.bold },
   driverInfo: { gap: 2 },
-  driverNameText: { fontSize: 15, fontWeight: 'bold', color: '#1E293B' },
-  driverStatusActive: { fontSize: 11, color: '#16A34A', fontWeight: '600' },
+  driverNameText: { fontSize: 15, fontFamily: BRAND.typography.bold, color: '#1E293B' },
+  driverStatusActive: { fontSize: 11, color: '#16A34A', fontFamily: BRAND.typography.semiBold },
   driverActions: { flexDirection: 'row', gap: 10 },
   driverCircleBtn: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center' },
 
   driverPickerWrapper: { gap: 10 },
   driverOption: { backgroundColor: '#FFF', padding: 12, borderRadius: 16, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: '#F1F5F9', marginRight: 8 },
   drvOptIcon: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
-  driverOptionName: { fontSize: 13, fontWeight: 'bold', color: '#1E293B' },
+  driverOptionName: { fontSize: 13, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   driverOptionPhone: { fontSize: 11, color: '#94A3B8' },
   noDriversBox: { backgroundColor: '#F8FAFC', padding: 20, borderRadius: 18, alignItems: 'center', borderStyle: 'dashed', borderWidth: 1, borderColor: '#E2E8F0', flexDirection: 'row', justifyContent: 'center', gap: 10 },
   noDriversText: { fontSize: 13, color: '#94A3B8' },
@@ -840,14 +838,14 @@ const styles = StyleSheet.create({
 
   premiumCard: { backgroundColor: '#FFF', borderRadius: 24, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: '#F1F5F9', elevation: 2 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#1E293B' },
+  cardTitle: { fontSize: 16, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   cardTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  cardTagText: { fontSize: 10, fontWeight: 'bold' },
+  cardTagText: { fontSize: 10, fontFamily: BRAND.typography.bold },
   
   detailRowPremium: { flexDirection: 'row', gap: 20, marginBottom: 16 },
   detailItemPremium: { flex: 1 },
   premiumLabel: { fontSize: 11, color: '#94A3B8', marginBottom: 4 },
-  premiumValue: { fontSize: 15, fontWeight: 'bold', color: '#1E293B' },
+  premiumValue: { fontSize: 15, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   
   shippingInfoBox: { gap: 16 },
   shippingMainRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
@@ -856,75 +854,75 @@ const styles = StyleSheet.create({
   miniMapBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F0F9FF', justifyContent: 'center', alignItems: 'center' },
   actionButtonsRow: { flexDirection: 'row', gap: 12 },
   bigActionBtn: { flex: 1, height: 48, borderRadius: 14, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10 },
-  bigActionText: { color: '#FFF', fontSize: 14, fontWeight: 'bold' },
+  bigActionText: { color: '#FFF', fontSize: 14, fontFamily: BRAND.typography.bold },
 
   itemsSection: { marginBottom: 24 },
   itemsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  itemsTitle: { fontSize: 16, fontWeight: 'bold', color: '#1E293B' },
+  itemsTitle: { fontSize: 16, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   itemsCountBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
-  itemsCountText: { color: '#FFF', fontSize: 11, fontWeight: 'bold' },
+  itemsCountText: { color: '#FFF', fontSize: 11, fontFamily: BRAND.typography.bold },
   premiumItemCard: { backgroundColor: '#FFF', borderRadius: 20, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#F1F5F9' },
   itemImageWrap: { width: 70, height: 70, borderRadius: 16, overflow: 'hidden' },
   itemImage: { width: '100%', height: '100%' },
   itemQtyOverlay: { position: 'absolute', bottom: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 6, paddingVertical: 2, borderTopLeftRadius: 8 },
-  itemQtyOverlayText: { color: '#FFF', fontSize: 10, fontWeight: 'bold' },
+  itemQtyOverlayText: { color: '#FFF', fontSize: 10, fontFamily: BRAND.typography.bold },
   itemCoreInfo: { flex: 1, marginLeft: 14 },
-  itemName: { fontSize: 14, fontWeight: 'bold', color: '#1E293B', marginBottom: 4 },
+  itemName: { fontSize: 14, fontFamily: BRAND.typography.bold, color: '#1E293B', marginBottom: 4 },
   itemOptionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginBottom: 8 },
   variationBadge: { backgroundColor: '#F8FAFC', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5, borderWidth: 1, borderColor: '#F1F5F9' },
   variationText: { fontSize: 9, color: '#64748B' },
   itemPricingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   itemUnitPrice: { fontSize: 12, color: '#94A3B8' },
-  itemTotalPrice: { fontSize: 15, fontWeight: 'bold' },
+  itemTotalPrice: { fontSize: 15, fontFamily: BRAND.typography.bold },
 
   paymentDetailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F8FAFC' },
   payMethodBox: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   payMethodIcon: { width: 32, height: 32, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
-  payMethodName: { fontSize: 14, fontWeight: 'bold', color: '#1E293B' },
-  payAmountText: { fontSize: 15, fontWeight: 'bold', color: '#1E293B' },
+  payMethodName: { fontSize: 14, fontFamily: BRAND.typography.bold, color: '#1E293B' },
+  payAmountText: { fontSize: 15, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   statusBadgeSmall: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  statusBadgeTextSmall: { fontSize: 10, fontWeight: 'bold' },
+  statusBadgeTextSmall: { fontSize: 10, fontFamily: BRAND.typography.bold },
   receiptActionBox: { marginTop: 12 },
   viewReceiptBar: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#F0F9FF', padding: 12, borderRadius: 12 },
-  viewReceiptText: { flex: 1, fontSize: 13, fontWeight: 'bold' },
+  viewReceiptText: { flex: 1, fontSize: 13, fontFamily: BRAND.typography.bold },
   paymentActionButtons: { flexDirection: 'row', gap: 10, marginTop: 16 },
   verifyPayBtn: { flex: 1, height: 48, borderRadius: 14, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 },
-  verifyPayBtnText: { color: '#FFF', fontSize: 14, fontWeight: 'bold' },
+  verifyPayBtnText: { color: '#FFF', fontSize: 14, fontFamily: BRAND.typography.bold },
   rejectPayBtn: { width: 80, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0' },
-  rejectPayBtnText: { color: '#EF4444', fontSize: 13, fontWeight: 'bold' },
+  rejectPayBtnText: { color: '#EF4444', fontSize: 13, fontFamily: BRAND.typography.bold },
 
   premiumReceiptContainer: { backgroundColor: '#FFF', borderRadius: 24, overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9', elevation: 4 },
   receiptTopper: { height: 50, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#E2E8F0' },
   receiptNotch: { position: 'absolute', top: -10, width: 60, height: 20, backgroundColor: '#F8FAFC', borderRadius: 10 },
-  receiptMainTitle: { fontSize: 15, fontWeight: 'bold', color: '#1E293B' },
+  receiptMainTitle: { fontSize: 15, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   receiptContent: { padding: 20 },
   receiptLine: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
   receiptLabel: { fontSize: 13, color: '#94A3B8' },
-  receiptValue: { fontSize: 14, fontWeight: '600', color: '#1E293B' },
+  receiptValue: { fontSize: 14, fontFamily: BRAND.typography.semiBold, color: '#1E293B' },
   receiptDashDivider: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 15, borderStyle: 'dashed' },
   receiptGrandTotal: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  grandTotalLabel: { fontSize: 16, fontWeight: 'bold', color: '#1E293B' },
-  grandTotalValue: { fontSize: 22, fontWeight: '900' },
+  grandTotalLabel: { fontSize: 16, fontFamily: BRAND.typography.bold, color: '#1E293B' },
+  grandTotalValue: { fontSize: 22, fontFamily: BRAND.typography.extraBold },
   receiptSecurityFooter: { padding: 12, backgroundColor: '#F8FAFC', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   securityText: { fontSize: 10, color: '#94A3B8' },
 
   mapModalContainer: { flex: 1, backgroundColor: '#FFF' },
   mapHeader: { height: 60, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-  mapTitle: { fontSize: 18, fontWeight: 'bold', color: '#1E293B' },
+  mapTitle: { fontSize: 18, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   map: { flex: 1 },
   mapFooter: { padding: 20, backgroundColor: '#FFF' },
   navBtn: { height: 56, borderRadius: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12 },
-  navBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
+  navBtnText: { color: '#FFF', fontSize: 16, fontFamily: BRAND.typography.bold },
   markerPin: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#FFF', elevation: 5 },
 
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 20 },
   modalContent: { backgroundColor: '#FFF', borderRadius: 28, padding: 20, maxHeight: '85%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#1E293B' },
+  modalTitle: { fontSize: 20, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   modalScroll: { gap: 16 },
   inputGroup: { gap: 8 },
-  inputLabel: { fontSize: 14, fontWeight: '600', color: '#64748B' },
-  input: { backgroundColor: '#F8FAFC', height: 50, borderRadius: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'right' },
+  inputLabel: { fontSize: 14, fontFamily: BRAND.typography.semiBold, color: '#64748B' },
+  input: { backgroundColor: '#F8FAFC', height: 50, borderRadius: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: '#E2E8F0', textAlign: 'auto' },
   modalSubmit: { height: 56, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginTop: 10 },
-  modalSubmitText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
+  modalSubmitText: { color: '#FFF', fontSize: 16, fontFamily: BRAND.typography.bold },
 });

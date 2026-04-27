@@ -65,7 +65,9 @@ SECURE_SSL_REDIRECT = False
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
+
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -87,7 +89,11 @@ INSTALLED_APPS = [
     'service_provider',
     'mobile_api',
     'subscriptions',
+    'channels',
+    'chat',
 ]
+
+
 
 SITE_ID = 1
 
@@ -167,6 +173,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Project.wsgi.application'
+ASGI_APPLICATION = 'Project.asgi.application'
 
 
 # Database — env-driven (PostgreSQL in production, SQLite for local dev)
@@ -321,3 +328,13 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+
+# Channel Layers (Redis)
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [os.getenv('REDIS_URL', 'redis://localhost:6379/0')],
+        },
+    },
+}

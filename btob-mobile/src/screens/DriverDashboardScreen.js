@@ -1,9 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, RefreshControl, StatusBar, Dimensions,
-  Alert, Linking, Platform
-} from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, StatusBar, Dimensions, Alert, Linking, Platform } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,6 +8,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import client from '../api/client';
 import CustomHeader from '../components/CustomHeader';
+import Text from '../components/AppText';
+import { BRAND } from '../theme/brand';
 
 const { width } = Dimensions.get('window');
 
@@ -311,7 +309,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  statValue: { color: '#FFF', fontSize: 20, fontWeight: 'bold' },
+  statValue: { color: '#FFF', fontSize: 20, fontFamily: BRAND.typography.bold },
   statLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 11, marginTop: 4 },
 
   tabsContainer: { 
@@ -323,7 +321,7 @@ const styles = StyleSheet.create({
   },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
   activeTab: { backgroundColor: '#FFF', elevation: 2 },
-  tabText: { color: '#64748B', fontWeight: '600' },
+  tabText: { color: '#64748B', fontFamily: BRAND.typography.semiBold },
   activeTabText: { color: '#1E293B' },
 
   orderCard: {
@@ -344,10 +342,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between', 
     alignItems: 'center' 
   },
-  orderId: { fontSize: 18, fontWeight: 'bold', color: '#1E293B', textAlign: 'right' },
-  orderDate: { fontSize: 12, color: '#94A3B8', marginTop: 2, textAlign: 'right' },
+  orderId: { fontSize: 18, fontFamily: BRAND.typography.bold, color: '#1E293B', textAlign: 'auto' },
+  orderDate: { fontSize: 12, color: '#94A3B8', marginTop: 2, textAlign: 'auto' },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 },
-  statusText: { fontSize: 12, fontWeight: 'bold' },
+  statusText: { fontSize: 12, fontFamily: BRAND.typography.bold },
 
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 12 },
 
@@ -361,7 +359,7 @@ const styles = StyleSheet.create({
     marginRight: 10, 
     color: '#475569', 
     fontSize: 14, 
-    textAlign: 'right', 
+    textAlign: 'auto', 
     flex: 1 
   },
 
@@ -375,7 +373,7 @@ const styles = StyleSheet.create({
     borderRadius: 12, 
     gap: 8 
   },
-  actionButtonText: { color: '#FFF', fontWeight: 'bold', fontSize: 14 },
+  actionButtonText: { color: '#FFF', fontFamily: BRAND.typography.bold, fontSize: 14 },
   mapButton: { backgroundColor: '#3B82F6', flex: 1.5 },
   stepButton: { backgroundColor: '#10B981', flex: 2 },
   whatsappButton: { backgroundColor: '#25D366', width: 44 },
@@ -396,5 +394,5 @@ const styles = StyleSheet.create({
     gap: 10,
     elevation: 10
   },
-  warningText: { color: '#FFF', fontSize: 12, fontWeight: '600', flex: 1, textAlign: 'right' }
+  warningText: { color: '#FFF', fontSize: 12, fontFamily: BRAND.typography.semiBold, flex: 1, textAlign: 'auto' }
 });

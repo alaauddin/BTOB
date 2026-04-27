@@ -1,18 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-  Dimensions,
-  Animated,
-  DeviceEventEmitter,
-  StatusBar,
-} from "react-native";
+import { View, StyleSheet, Image, ScrollView, FlatList, ActivityIndicator, TouchableOpacity, Dimensions, Animated, DeviceEventEmitter, StatusBar } from 'react-native';
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { BRAND } from "../theme/brand";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -24,6 +11,9 @@ import { useNotifications } from "../context/NotificationContext";
 import AuthModal from "../components/AuthModal";
 import CartIconBadge from "../components/CartIconBadge";
 import { getSupplierTheme } from "../theme/supplierTheme";
+import { chatApi } from "../api/chat";
+import Text from '../components/AppText';
+
 
 const { width, height } = Dimensions.get("window");
 const HERO_HEIGHT = height * 0.45;
@@ -106,7 +96,6 @@ export default function ProductDetailsScreen({ route, navigation }) {
       const payload = {
         product_id: product.id,
         selected_options: options,
-        supplier_id: product.supplier.id
       };
 
       const response = await client.post("/carts/get_item_quantity/", payload);
@@ -226,6 +215,24 @@ export default function ProductDetailsScreen({ route, navigation }) {
       setAddingToCart(false);
     }
   };
+
+  const handleStartChat = async () => {
+    if (!user) {
+      setAuthModalVisible(true);
+      return;
+    }
+    try {
+      setLoading(true);
+      const res = await chatApi.startThread(product.supplier.id);
+      navigation.navigate('Chat', { thread: res.data });
+    } catch (err) {
+      console.error('Failed to start chat', err);
+      showNotification({ title: 'خطأ', message: 'فشل في بدء المحادثة', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -477,32 +484,43 @@ export default function ProductDetailsScreen({ route, navigation }) {
 
           {/* Supplier Premium Card */}
           {product.supplier && (
-            <TouchableOpacity
-              style={styles.supplierCard}
-              onPress={() =>
-                navigation.navigate("Products", {
-                  storeId: product.supplier.store_id,
-                })
-              }
-              activeOpacity={0.7}
-            >
-              <Image
-                source={
-                  product.supplier.profile_picture
-                    ? { uri: product.supplier.profile_picture }
-                    : require("../../assets/images/logo.png")
+            <View style={styles.supplierCardWrapper}>
+              <TouchableOpacity
+                style={styles.supplierCard}
+                onPress={() =>
+                  navigation.navigate("Products", {
+                    storeId: product.supplier.store_id,
+                  })
                 }
-                style={styles.supplierAvatar}
-              />
-              <View style={styles.supplierInfo}>
-                <Text style={styles.supplierNameLabel}>يباع بواسطة متجر</Text>
-                <Text style={styles.supplierName}>{product.supplier.name}</Text>
-              </View>
-              <View style={styles.supplierArrow}>
-                <Ionicons name="chevron-back" size={20} color="#94a3b8" />
-              </View>
-            </TouchableOpacity>
+                activeOpacity={0.7}
+              >
+                <Image
+                  source={
+                    product.supplier.profile_picture
+                      ? { uri: product.supplier.profile_picture }
+                      : require("../../assets/images/logo.png")
+                  }
+                  style={styles.supplierAvatar}
+                />
+                <View style={styles.supplierInfo}>
+                  <Text style={styles.supplierNameLabel}>يباع بواسطة متجر</Text>
+                  <Text style={styles.supplierName}>{product.supplier.name}</Text>
+                </View>
+                <View style={styles.supplierArrow}>
+                  <Ionicons name="chevron-back" size={20} color="#94a3b8" />
+                </View>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.chatButton, { backgroundColor: theme.primary + '10' }]}
+                onPress={handleStartChat}
+              >
+                <Feather name="message-circle" size={22} color={theme.primary} />
+                <Text style={[styles.chatButtonText, { color: theme.primary }]}>دردشة</Text>
+              </TouchableOpacity>
+            </View>
           )}
+
 
           {/* Variations / Attributes Selection */}
           {product.attributes && product.attributes.length > 0 && (
@@ -540,7 +558,7 @@ export default function ProductDetailsScreen({ route, navigation }) {
                               }
                             }}
                           >
-                            <Text style={[styles.optionText, isSelected && { color: theme.primary, fontWeight: "bold" }]}>
+                            <Text style={[styles.optionText, isSelected && { color: theme.primary, fontFamily: BRAND.typography.bold }]}>
                               {opt.value}
                             </Text>
                             {hasModifier && (
@@ -713,19 +731,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#64748b",
     marginTop: 16,
-    fontFamily: "System",
+    fontFamily: BRAND.typography.bold,
   },
   backButtonEmpty: {
     marginTop: 20,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    backgroundColor: "#2B5876",
+    backgroundColor: BRAND.colors.primary,
     borderRadius: 8,
   },
   backButtonTextEmpty: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: BRAND.typography.bold,
   },
   floatingHeader: {
     position: "absolute",
@@ -797,7 +815,7 @@ const styles = StyleSheet.create({
   videoBadgeText: {
     color: "#fff",
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: BRAND.typography.bold,
   },
   dotRow: {
     position: "absolute",
@@ -837,7 +855,7 @@ const styles = StyleSheet.create({
   counterText: {
     color: "#fff",
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: BRAND.typography.bold,
   },
   premiumDiscountBadge: {
     position: "absolute",
@@ -856,7 +874,7 @@ const styles = StyleSheet.create({
   premiumDiscountText: {
     color: "#fff",
     fontSize: 14,
-    fontWeight: "900",
+    fontFamily: BRAND.typography.extraBold,
     letterSpacing: 0.5,
   },
 
@@ -882,7 +900,7 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 14,
     color: "#3b82f6",
-    fontWeight: "600",
+    fontFamily: BRAND.typography.bold,
     backgroundColor: "#eff6ff",
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -895,15 +913,15 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 13,
     color: "#64748b",
-    fontWeight: "500",
+    fontFamily: BRAND.typography.medium,
     marginLeft: 4,
   },
   productTitle: {
     fontSize: 24,
-    fontWeight: "900",
     color: "#0f172a",
     lineHeight: 32,
-    textAlign: "left",
+    textAlign: "right",
+    fontFamily: BRAND.typography.extraBold,
   },
   pricingSection: {
     flexDirection: "row",
@@ -919,24 +937,26 @@ const styles = StyleSheet.create({
     color: "#94a3b8",
     textDecorationLine: "line-through",
     marginBottom: 2,
-    textAlign: "left",
+    textAlign: "right",
+    fontFamily: BRAND.typography.regular,
   },
   currentPriceRow: {
     flexDirection: "row",
     alignItems: "flex-start",
+    justifyContent: "flex-end",
   },
   currencySymbol: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#2B5876",
+    color: BRAND.colors.primary,
     marginTop: 4,
     marginRight: 4,
+    fontFamily: BRAND.typography.bold,
   },
   currentPriceNumber: {
     fontSize: 32,
-    fontWeight: "900",
-    color: "#2B5876",
+    color: BRAND.colors.primary,
     letterSpacing: -0.5,
+    fontFamily: BRAND.typography.extraBold,
   },
   quantitySection: {},
   quantityContainer: {
@@ -963,11 +983,11 @@ const styles = StyleSheet.create({
   },
   qtyText: {
     fontSize: 18,
-    fontWeight: "bold",
     color: "#0f172a",
     marginHorizontal: 16,
     minWidth: 20,
     textAlign: "center",
+    fontFamily: BRAND.typography.bold,
   },
   divider: {
     height: 1,
@@ -1003,15 +1023,15 @@ const styles = StyleSheet.create({
   supplierNameLabel: {
     fontSize: 12,
     color: "#64748b",
-    fontWeight: "500",
     marginBottom: 4,
-    textAlign: "left",
+    textAlign: "right",
+    fontFamily: BRAND.typography.medium,
   },
   supplierName: {
     fontSize: 16,
-    fontWeight: "bold",
     color: "#0f172a",
-    textAlign: "left",
+    textAlign: "right",
+    fontFamily: BRAND.typography.bold,
   },
   supplierArrow: {
     width: 32,
@@ -1042,25 +1062,26 @@ const styles = StyleSheet.create({
   },
   highlightText: {
     fontSize: 11,
-    fontWeight: "600",
     color: "#475569",
     textAlign: "center",
+    fontFamily: BRAND.typography.bold,
   },
   descriptionSection: {
     marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
     color: "#0f172a",
     marginBottom: 12,
-    textAlign: "left",
+    textAlign: "right",
+    fontFamily: BRAND.typography.bold,
   },
   descriptionText: {
     fontSize: 15,
     color: "#475569",
     lineHeight: 26,
-    textAlign: "left",
+    textAlign: "right",
+    fontFamily: BRAND.typography.regular,
   },
 
   // ── Bottom Bar ─────────────────────────────────────────────────
@@ -1089,9 +1110,32 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 12,
     color: "#64748b",
-    fontWeight: "500",
     marginBottom: 4,
-    textAlign: "left",
+    textAlign: "right",
+    fontFamily: BRAND.typography.medium,
+  },
+  supplierArrow: {
+    marginLeft: 10,
+  },
+  supplierCardWrapper: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 10
+  },
+  chatButton: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 15,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)'
+  },
+  chatButtonText: {
+    fontSize: 14,
+    fontFamily: BRAND.typography.bold,
   },
   variationsSection: {
     marginBottom: 8,
@@ -1101,9 +1145,9 @@ const styles = StyleSheet.create({
   },
   attributeTitle: {
     fontSize: 16,
-    fontWeight: "bold",
     color: "#1e293b",
-    textAlign: "left",
+    textAlign: "right",
+    fontFamily: BRAND.typography.bold,
   },
   attributeTitleRow: {
     flexDirection: "row",
@@ -1114,11 +1158,12 @@ const styles = StyleSheet.create({
   requiredText: {
     fontSize: 12,
     color: "#94a3b8",
+    fontFamily: BRAND.typography.regular,
   },
   requiredTextError: {
     fontSize: 12,
     color: "#ef4444",
-    fontWeight: "bold",
+    fontFamily: BRAND.typography.bold,
   },
   errorAttributeContainer: {
     backgroundColor: "#fff5f5",
@@ -1129,6 +1174,7 @@ const styles = StyleSheet.create({
   optionsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "flex-end",
     gap: 10,
   },
   optionChip: {
@@ -1145,21 +1191,22 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 14,
     color: "#475569",
+    fontFamily: BRAND.typography.bold,
   },
   modifierText: {
     fontSize: 10,
     color: "#94a3b8",
     marginTop: 2,
+    fontFamily: BRAND.typography.regular,
   },
   addToCartBtn: {
-    backgroundColor: "#2B5876",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 14,
-    shadowColor: "#2B5876",
+    shadowColor: BRAND.colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -1168,7 +1215,7 @@ const styles = StyleSheet.create({
   addToCartText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: BRAND.typography.extraBold,
   },
   interactiveCartContainer: {
     flexDirection: "row",
@@ -1188,7 +1235,7 @@ const styles = StyleSheet.create({
   },
   interactiveQtyText: {
     fontSize: 18,
-    fontWeight: "bold",
     paddingHorizontal: 8,
+    fontFamily: BRAND.typography.bold,
   },
 });

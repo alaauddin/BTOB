@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, Switch, Platform } from 'react-native';
+import { View, Switch, Platform } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { THEME } from '../../theme/profileTheme';
 import { styles } from '../../theme/profileStyles';
+import Text from '../AppText';
 
 /**
  * PremiumToggle.js

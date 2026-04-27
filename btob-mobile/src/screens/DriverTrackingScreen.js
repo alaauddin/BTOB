@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity,
-  ActivityIndicator, Dimensions, Alert, Platform, Linking
-} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Dimensions, Alert, Platform, Linking } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from '../components/MapModule';
 import * as Location from 'expo-location';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import client from '../api/client';
+import Text from '../components/AppText';
+import { BRAND } from '../theme/brand';
 
 const { width, height } = Dimensions.get('window');
 
@@ -235,8 +234,8 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   headerContent: { flex: 1, marginRight: 12 },
-  headerTitle: { fontSize: 16, fontWeight: 'bold', color: '#1E293B', textAlign: 'right' },
-  headerSubtitle: { fontSize: 13, color: '#64748B', textAlign: 'right' },
+  headerTitle: { fontSize: 16, fontFamily: BRAND.typography.bold, color: '#1E293B', textAlign: 'auto' },
+  headerSubtitle: { fontSize: 13, color: '#64748B', textAlign: 'auto' },
 
   bottomActions: { position: 'absolute', bottom: 30, left: 16, right: 16 },
   fabContainer: { alignItems: 'flex-start', marginBottom: 16, gap: 12 },
@@ -270,7 +269,7 @@ const styles = StyleSheet.create({
   statusInfo: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12 },
   statusTextContainer: { alignItems: 'flex-end' },
   statusLabel: { fontSize: 11, color: '#64748B' },
-  statusValue: { fontSize: 15, fontWeight: 'bold', color: '#1E293B' },
+  statusValue: { fontSize: 15, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   callButton: { 
     width: 48, 
     height: 48, 

@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-    View, Text, StyleSheet, FlatList, TouchableOpacity, 
-    ActivityIndicator, RefreshControl, Dimensions, Alert, Image, StatusBar, Platform
-} from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Dimensions, Alert, Image, StatusBar, Platform } from 'react-native';
 import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,6 +9,7 @@ import client from '../api/client';
 import OfferEditModal from '../components/OfferEditModal';
 import { BRAND } from '../theme/brand';
 import Logo from '../components/Logo';
+import Text from '../components/AppText';
 
 const { width } = Dimensions.get('window');
 
@@ -224,13 +222,13 @@ const styles = StyleSheet.create({
     headerContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, height: 70 },
     headerRight: { marginRight: 15 },
     titleArea: { flex: 1 },
-    headerTitle: { fontSize: 26, fontWeight: 'bold', color: '#FFF' },
+    headerTitle: { fontSize: 26, fontFamily: BRAND.typography.bold, color: '#FFF' },
     activeBadge: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, alignSelf: 'flex-start', marginTop: 4 },
-    activeBadgeText: { color: '#FFF', fontSize: 10, fontWeight: 'bold' },
+    activeBadgeText: { color: '#FFF', fontSize: 10, fontFamily: BRAND.typography.bold },
     
     addButton: { borderRadius: 12, overflow: 'hidden' },
     addBtnInner: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
-    addBtnText: { color: '#FFF', fontSize: 14, fontWeight: 'bold' },
+    addBtnText: { color: '#FFF', fontSize: 14, fontFamily: BRAND.typography.bold },
 
     listContent: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 20 },
     card: {
@@ -251,31 +249,31 @@ const styles = StyleSheet.create({
     productBlock: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
     productIconBox: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
     textContainer: { flex: 1 },
-    productName: { fontSize: 16, fontWeight: 'bold', color: '#1E293B' },
+    productName: { fontSize: 16, fontFamily: BRAND.typography.bold, color: '#1E293B' },
     priceInfo: { fontSize: 12, color: '#94A3B8', marginTop: 2 },
     
     percentageBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
-    percentageText: { color: '#FFF', fontSize: 18, fontWeight: '900' },
+    percentageText: { color: '#FFF', fontSize: 18, fontFamily: BRAND.typography.extraBold },
 
     middleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 12, borderRadius: 14 },
     infoPill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FFF', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#F1F5F9' },
     statusDot: { width: 8, height: 8, borderRadius: 4 },
-    statusLabel: { fontSize: 12, fontWeight: 'bold', color: '#475569' },
+    statusLabel: { fontSize: 12, fontFamily: BRAND.typography.bold, color: '#475569' },
     
     dateBlock: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    dateRangeText: { fontSize: 11, color: '#64748B', fontWeight: 'bold' },
+    dateRangeText: { fontSize: 11, color: '#64748B', fontFamily: BRAND.typography.bold },
 
     cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
     deleteBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#FEF2F2', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 },
-    deleteText: { fontSize: 12, fontWeight: 'bold', color: '#EF4444' },
+    deleteText: { fontSize: 12, fontFamily: BRAND.typography.bold, color: '#EF4444' },
     
     verifiedBox: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    verifiedText: { fontSize: 11, fontWeight: 'bold', color: '#10B981' },
+    verifiedText: { fontSize: 11, fontFamily: BRAND.typography.bold, color: '#10B981' },
 
     emptyContainer: { alignItems: 'center', marginTop: 60, paddingHorizontal: 40 },
     emptyIconBox: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
-    emptyTitle: { fontSize: 20, fontWeight: 'bold', color: '#1E293B', marginBottom: 8 },
+    emptyTitle: { fontSize: 20, fontFamily: BRAND.typography.bold, color: '#1E293B', marginBottom: 8 },
     emptySubtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 22, marginBottom: 24 },
     emptyBtn: { paddingHorizontal: 40, paddingVertical: 14, borderRadius: 16, elevation: 4 },
-    emptyBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
+    emptyBtnText: { color: '#FFF', fontSize: 16, fontFamily: BRAND.typography.bold },
 });

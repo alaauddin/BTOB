@@ -14,7 +14,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class SupplierCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = SupplierCategory
-        fields = ['id', 'name', 'producing_family']
+        fields = ['id', 'name', 'producing_family', 'image']
 
 class ShippingAddressSerializer(serializers.ModelSerializer):
     """Shipping address details for merchant order view."""

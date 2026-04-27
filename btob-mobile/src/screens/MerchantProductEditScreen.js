@@ -1,9 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, TextInput,
-  ScrollView, Image, ActivityIndicator, Alert, KeyboardAvoidingView,
-  Platform, Dimensions, Switch, StatusBar
-} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Dimensions, Switch, StatusBar } from 'react-native';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,6 +10,8 @@ import Logo from '../components/Logo';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { BRAND } from '../theme/brand';
+import Text from '../components/AppText';
+import TextInput from '../components/AppTextInput';
 
 const { width } = Dimensions.get('window');
 
@@ -244,8 +242,12 @@ export default function MerchantProductEditScreen({ route, navigation }) {
         </SafeAreaView>
       </LinearGradient>
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <ScrollView style={styles.form} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+      >
+        <ScrollView style={styles.form} showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}>
           
           {/* ── Media ── */}
           <FormSection title="الصور والوسائط" icon="image">
@@ -435,13 +437,13 @@ const styles = StyleSheet.create({
   safeHeader: { paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   headerContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, height: 60 },
   headerBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#FFF' },
+  headerTitle: { fontSize: 20, fontFamily: BRAND.typography.bold, color: '#FFF' },
 
   form: { flex: 1, padding: 16 },
   section: { marginBottom: 24 },
   sectionHeader: { marginBottom: 12 },
   sectionIconTitle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontSize: 15, fontWeight: 'bold', color: '#1E293B' },
+  sectionTitle: { fontSize: 15, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   sectionBody: { gap: 12 },
 
   mediaContainer: { gap: 16 },
@@ -449,12 +451,12 @@ const styles = StyleSheet.create({
   mainImage: { width: '100%', height: '100%' },
   imagePlaceholder: { flex: 1 },
   placeholderGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  placeholderText: { fontSize: 11, color: '#94A3B8', marginTop: 8, fontWeight: 'bold' },
+  placeholderText: { fontSize: 11, color: '#94A3B8', marginTop: 8, fontFamily: BRAND.typography.bold },
   editBadge: { position: 'absolute', bottom: 10, right: 10, width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#FFF' },
 
   galleryRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   addGalleryBtn: { width: 80, height: 80, borderRadius: 20, backgroundColor: '#FFF', borderStyle: 'dashed', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center', gap: 6 },
-  addGalText: { fontSize: 9, color: '#64748B', fontWeight: 'bold' },
+  addGalText: { fontSize: 9, color: '#64748B', fontFamily: BRAND.typography.bold },
   galleryScroll: { gap: 10 },
   galleryItem: { width: 80, height: 80, borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9' },
   galleryImg: { width: '100%', height: '100%' },
@@ -463,46 +465,46 @@ const styles = StyleSheet.create({
   videoCard: { borderRadius: 20, overflow: 'hidden', backgroundColor: '#000', elevation: 4 },
   videoPreview: { width: '100%', height: 180 },
   removeVideoBtn: { position: 'absolute', top: 12, right: 12, flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(239, 68, 68, 0.9)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, gap: 6 },
-  removeVideoText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
+  removeVideoText: { color: '#FFF', fontSize: 12, fontFamily: BRAND.typography.bold },
   addVideoBtn: { height: 56, borderRadius: 16, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E2E8F0', borderStyle: 'dashed', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10 },
-  addVideoText: { fontSize: 14, fontWeight: 'bold' },
+  addVideoText: { fontSize: 14, fontFamily: BRAND.typography.bold },
 
   inputCard: { backgroundColor: '#FFF', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#F1F5F9', elevation: 2 },
   inputGroup: { marginBottom: 16 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
-  inputLabel: { fontSize: 13, fontWeight: 'bold', color: '#64748B' },
-  input: { backgroundColor: '#F8FAFC', borderRadius: 14, paddingHorizontal: 16, height: 52, borderWidth: 1, borderColor: '#E2E8F0', fontSize: 15, color: '#1E293B', textAlign: 'right' },
+  inputLabel: { fontSize: 13, fontFamily: BRAND.typography.bold, color: '#64748B' },
+  input: { backgroundColor: '#F8FAFC', borderRadius: 14, paddingHorizontal: 16, height: 52, borderWidth: 1, borderColor: '#E2E8F0', fontSize: 15, color: '#1E293B', textAlign: 'auto' },
   textArea: { height: 100, paddingTop: 12, textAlignVertical: 'top' },
   priceRow: { flexDirection: 'row', gap: 16 },
-  subLabel: { fontSize: 13, fontWeight: 'bold', color: '#64748B', marginBottom: 10 },
+  subLabel: { fontSize: 13, fontFamily: BRAND.typography.bold, color: '#64748B', marginBottom: 10 },
   catRow: { gap: 10, paddingBottom: 15 },
   catChip: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 14, backgroundColor: '#F1F5F9', borderWidth: 1, borderColor: '#E2E8F0' },
-  catText: { fontSize: 13, fontWeight: 'bold', color: '#64748B' },
+  catText: { fontSize: 13, fontFamily: BRAND.typography.bold, color: '#64748B' },
 
   addGroupBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E2E8F0', borderStyle: 'dashed', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 15 },
-  addGroupText: { fontSize: 13, fontWeight: 'bold' },
+  addGroupText: { fontSize: 13, fontFamily: BRAND.typography.bold },
   variationCard: { backgroundColor: '#FFF', borderRadius: 20, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#F1F5F9' },
   groupHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#F8FAFC' },
   groupTitleWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  groupTitleInput: { flex: 1, fontSize: 15, fontWeight: 'bold', color: '#1E293B', textAlign: 'right' },
+  groupTitleInput: { flex: 1, fontSize: 15, fontFamily: BRAND.typography.bold, color: '#1E293B', textAlign: 'auto' },
   optionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
   optValInput: { flex: 1.5, backgroundColor: '#F8FAFC', borderRadius: 10, height: 44, paddingHorizontal: 12, borderWidth: 1, borderColor: '#E2E8F0' },
-  flexInput: { flex: 1, fontSize: 14, color: '#1E293B', textAlign: 'right' },
+  flexInput: { flex: 1, fontSize: 14, color: '#1E293B', textAlign: 'auto' },
   optPriceInput: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0F9FF', borderRadius: 10, height: 44, paddingHorizontal: 10, borderWidth: 1, borderColor: '#BAE6FD' },
-  plusSign: { fontSize: 14, fontWeight: 'bold', color: '#0369A1', marginRight: 4 },
-  priceModInput: { flex: 1, fontSize: 14, fontWeight: 'bold', color: '#0369A1', textAlign: 'center' },
+  plusSign: { fontSize: 14, fontFamily: BRAND.typography.bold, color: '#0369A1', marginRight: 4 },
+  priceModInput: { flex: 1, fontSize: 14, fontFamily: BRAND.typography.bold, color: '#0369A1', textAlign: 'center' },
   optRemove: { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
   addOptLine: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: 4 },
-  addOptText: { fontSize: 12, fontWeight: 'bold' },
+  addOptText: { fontSize: 12, fontFamily: BRAND.typography.bold },
 
   settingCard: { backgroundColor: '#FFF', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#F1F5F9' },
   switchItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  switchTitle: { fontSize: 15, fontWeight: 'bold', color: '#1E293B' },
+  switchTitle: { fontSize: 15, fontFamily: BRAND.typography.bold, color: '#1E293B' },
   switchDesc: { fontSize: 11, color: '#94A3B8', marginTop: 2 },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 16 },
 
   footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, backgroundColor: '#FFF', borderTopWidth: 1, borderTopColor: '#F1F5F9' },
   saveBtn: { height: 58, borderRadius: 18, overflow: 'hidden' },
   saveGradient: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12 },
-  saveBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
+  saveBtnText: { color: '#FFF', fontSize: 16, fontFamily: BRAND.typography.bold },
 });

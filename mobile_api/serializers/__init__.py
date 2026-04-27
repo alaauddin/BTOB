@@ -1,6 +1,7 @@
 from .auth import (
     UserSerializer, LoginSerializer, SignupSerializer, 
-    UnifiedAuthSerializer, PasswordResetRequestSerializer
+    UnifiedAuthSerializer, PasswordResetRequestSerializer,
+    MerchantSignupSerializer
 )
 from .base import (
     CurrencySerializer, CategorySerializer, 

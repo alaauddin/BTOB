@@ -31,6 +31,13 @@ export const BRAND = {
     glass: 'rgba(255, 255, 255, 0.15)',
     glassDark: 'rgba(0, 0, 0, 0.2)',
   },
+  typography: {
+    regular: 'Cairo_400Regular',
+    medium: 'Cairo_500Medium',
+    semiBold: 'Cairo_600SemiBold',
+    bold: 'Cairo_700Bold',
+    extraBold: 'Cairo_900Black',
+  },
   gradients: {
     primary: ['#2B587E', '#5C8EAE'],
     secondary: ['#D27321', '#F39C12'],

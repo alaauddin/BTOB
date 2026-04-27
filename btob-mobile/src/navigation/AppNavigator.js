@@ -13,10 +13,12 @@ import MerchantTabNavigator from './MerchantTabNavigator';
 // Components
 import Logo from '../components/Logo';
 import SubscriptionModal from '../components/SubscriptionModal';
+import { BRAND } from '../theme/brand';
 
 // Buyer Screens
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
+import MerchantRegistrationScreen from '../screens/MerchantRegistrationScreen';
 import HomeScreen from '../screens/HomeScreen';
 import ProductListScreen from '../screens/ProductListScreen';
 import ProductDetailsScreen from '../screens/ProductDetailsScreen';
@@ -29,6 +31,9 @@ import MerchantProductEditScreen from '../screens/MerchantProductEditScreen';
 import MerchantPaymentSettingsScreen from '../screens/MerchantPaymentSettingsScreen';
 import SubscriptionScreen from '../screens/SubscriptionScreen';
 import SubscriptionPaymentScreen from '../screens/SubscriptionPaymentScreen';
+import ChatListScreen from '../screens/ChatListScreen';
+import ChatScreen from '../screens/ChatScreen';
+
 
 // Driver Screens
 import DriverDashboardScreen from '../screens/DriverDashboardScreen';
@@ -41,9 +46,9 @@ export default function AppNavigator() {
 
     if (isLoading) {
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC' }}>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: BRAND.colors.slate[50] }}>
                 <Logo size={180} />
-                <ActivityIndicator size="small" color="#2B5876" style={{ marginTop: 20 }} />
+                <ActivityIndicator size="small" color={BRAND.colors.primary} style={{ marginTop: 20 }} />
             </View>
         );
     }
@@ -60,69 +65,91 @@ export default function AppNavigator() {
                 initialRouteName={getInitialRoute()}
             >
                 {/* ── Public / Buyer ── */}
-                <Stack.Screen name="Home"             component={HomeScreen}             options={{ headerShown: false }} />
-                <Stack.Screen name="Products"         component={ProductListScreen}      options={{ headerShown: false }} />
-                <Stack.Screen name="ProductDetails"   component={ProductDetailsScreen}   options={{ headerShown: false }} />
-                <Stack.Screen name="Cart"             component={CartScreen}             options={{ title: 'My Cart' }} />
+                <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+                <Stack.Screen name="Products" component={ProductListScreen} options={{ headerShown: false }} />
+                <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} options={{ headerShown: false }} />
+                <Stack.Screen name="Cart" component={CartScreen} options={{ title: 'My Cart' }} />
 
                 {/* ── Auth ── */}
-                <Stack.Screen name="Login"            component={LoginScreen}            options={{ headerShown: false }} />
-                <Stack.Screen name="Signup"           component={SignupScreen}           options={{ title: 'Sign Up' }} />
+                <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+                <Stack.Screen name="Signup" component={SignupScreen} options={{ title: 'Sign Up' }} />
+                <Stack.Screen name="MerchantRegistration" component={MerchantRegistrationScreen} options={{ headerShown: false }} />
 
                 {/* ── Merchant (bottom-tab navigator) ── */}
-                <Stack.Screen
-                    name="MerchantTabs"
-                    component={MerchantTabNavigator}
-                    options={{ headerShown: false }}
-                />
+                {isMerchant && (
+                    <>
+                        <Stack.Screen
+                            name="MerchantTabs"
+                            component={MerchantTabNavigator}
+                            options={{ headerShown: false }}
+                        />
 
-                {/* Order detail is a full-screen push above the tabs */}
-                <Stack.Screen
-                    name="MerchantOrderDetail"
-                    component={MerchantOrderDetailScreen}
-                    options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                    name="MerchantOffers"
-                    component={MerchantOffersScreen}
-                    options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                    name="MerchantProductEdit"
-                    component={MerchantProductEditScreen}
-                    options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                    name="MerchantPaymentSettings"
-                    component={MerchantPaymentSettingsScreen}
-                    options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                    name="Subscription"
-                    component={SubscriptionScreen}
-                    options={{ headerShown: false }}
-                />
-                <Stack.Screen
-                    name="SubscriptionPayment"
-                    component={SubscriptionPaymentScreen}
-                    options={{ headerShown: false }}
-                />
+                        {/* Order detail is a full-screen push above the tabs */}
+                        <Stack.Screen
+                            name="MerchantOrderDetail"
+                            component={MerchantOrderDetailScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="MerchantOffers"
+                            component={MerchantOffersScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="MerchantProductEdit"
+                            component={MerchantProductEditScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="MerchantPaymentSettings"
+                            component={MerchantPaymentSettingsScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="Subscription"
+                            component={SubscriptionScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="SubscriptionPayment"
+                            component={SubscriptionPaymentScreen}
+                            options={{ headerShown: false }}
+                        />
+                    </>
+                )}
 
                 {/* ── Driver Screens ── */}
+                {isDriver && (
+                    <>
+                        <Stack.Screen
+                            name="DriverDashboard"
+                            component={DriverDashboardScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="DriverMap"
+                            component={DriverTrackingScreen}
+                            options={{ headerShown: false }}
+                        />
+                    </>
+                )}
+
+                {/* ── Chat Screens ── */}
                 <Stack.Screen
-                    name="DriverDashboard"
-                    component={DriverDashboardScreen}
+                    name="ChatList"
+                    component={ChatListScreen}
                     options={{ headerShown: false }}
                 />
                 <Stack.Screen
-                    name="DriverMap"
-                    component={DriverTrackingScreen}
+                    name="Chat"
+                    component={ChatScreen}
                     options={{ headerShown: false }}
                 />
+
             </Stack.Navigator>
-            <SubscriptionModal 
-                visible={subModalVisible} 
-                onClose={() => setSubModalVisible(false)} 
+            <SubscriptionModal
+                visible={subModalVisible}
+                onClose={() => setSubModalVisible(false)}
             />
         </NavigationContainer>
     );

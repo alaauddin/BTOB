@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, ImageBackground, Animated, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Image, ImageBackground, Animated, StyleSheet } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { THEME } from '../../theme/profileTheme';
 import { styles } from '../../theme/profileStyles';
+import Text from '../AppText';
+import { BRAND } from '../../theme/brand';
 
 /**
  * ProfileHero.js
@@ -37,7 +39,7 @@ const ProfileHero = ({ coverSrc, logoSrc, onEditCover, onEditLogo, storeName, pr
               <View style={[styles.meshBlob, { bottom: -40, left: -40, backgroundColor: 'rgba(255,255,255,0.05)' }]} />
               <View style={styles.coverPlaceholder}>
                  <Feather name="image" size={40} color="rgba(255,255,255,0.3)" />
-                 <Text style={{ color: 'rgba(255,255,255,0.5)', marginTop: 8, fontWeight: '700', fontSize: 12 }}>اضغط لإضافة غلاف</Text>
+                 <Text style={{ color: 'rgba(255,255,255,0.5)', marginTop: 8, fontFamily: BRAND.typography.bold, fontSize: 12 }}>اضغط لإضافة غلاف</Text>
               </View>
             </LinearGradient>
           )}

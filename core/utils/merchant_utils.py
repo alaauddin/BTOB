@@ -24,16 +24,17 @@ def get_active_supplier(request):
                 logger.info(f"Superuser {request.user} override: active_supplier set to {supplier.name} via request param")
                 return supplier
 
-    # Check session
-    active_supplier_id = request.session.get('active_supplier_id')
+    # Check session or Header (for mobile/stateless)
+    active_supplier_id = request.headers.get('X-Supplier-ID') or request.session.get('active_supplier_id')
     if active_supplier_id:
         supplier = Supplier.objects.filter(id=active_supplier_id).first()
         if supplier:
             is_owner = getattr(supplier, 'user', None) == request.user
             is_manager = supplier.managing_users.filter(id=request.user.id).exists()
             if request.user.is_superuser or is_owner or is_manager:
-                logger.debug(f"Active supplier {supplier.name} resolved from session for user {request.user}")
+                logger.debug(f"Active supplier {supplier.name} resolved from context for user {request.user}")
                 return supplier
+
 
     try:
         if hasattr(request.user, 'supplier') and request.user.supplier:

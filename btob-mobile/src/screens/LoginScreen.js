@@ -1,12 +1,15 @@
 import React, { useState, useContext, useEffect } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Alert,
-} from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Dimensions, ScrollView } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import Logo from '../components/Logo';
+import { BRAND } from '../theme/brand';
+import Text from '../components/AppText';
+import TextInput from '../components/AppTextInput';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function LoginScreen({ route, navigation }) {
   const [username, setUsername] = useState('');
@@ -23,7 +26,7 @@ export default function LoginScreen({ route, navigation }) {
   const { showNotification } = useNotifications();
 
   const { primaryColor: initialPrimaryColor } = route.params || {};
-  const primaryColor = initialPrimaryColor || '#2B5876';
+  const primaryColor = initialPrimaryColor || BRAND.colors.primary;
 
   // Auto-trigger biometric login if enabled
   useEffect(() => {
@@ -36,18 +39,17 @@ export default function LoginScreen({ route, navigation }) {
     const result = await loginWithBiometrics();
     if (result && result.success) {
       handlePostLogin(result);
-    } else if (result && result.message !== 'Cancel') {
-       // Only show error if didn't cancel manually
-       // showNotification({ title: 'خطأ', message: result.message, type: 'error' });
     }
   };
 
   const handlePostLogin = (result) => {
-    // Redirect based on scope
     if (result.scope === 'driver') {
       navigation.reset({ index: 0, routes: [{ name: 'DriverDashboard' }] });
-    } else {
+    } else if (result.scope === 'merchant') {
       navigation.reset({ index: 0, routes: [{ name: 'MerchantTabs' }] });
+    } else {
+      // Visitor or other
+      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
     }
   };
 
@@ -57,7 +59,7 @@ export default function LoginScreen({ route, navigation }) {
       return;
     }
     setLoading(true);
-    const result = await login(username.trim(), password);
+    const result = await login(username.trim(), password.trim());
     setLoading(false);
 
     if (!result.success) {
@@ -65,7 +67,6 @@ export default function LoginScreen({ route, navigation }) {
       return;
     }
 
-    // After successful manual login, prompt to enable biometrics if supported
     if (biometricsAvailable && !biometricsEnabled) {
       Alert.alert(
         'تفعيل البصمة',
@@ -90,125 +91,169 @@ export default function LoginScreen({ route, navigation }) {
   return (
     <KeyboardAvoidingView
       style={styles.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
     >
-      <View style={styles.container}>
-        {/* Logo */}
-        <Logo size={160} style={styles.logo} />
-        
-        <Text style={styles.title}>لوحة تحكم رواج</Text>
-        <Text style={styles.subtitle}>تسجيل الدخول بحساب التاجر</Text>
-
-        {/* Username */}
-        <View style={styles.field}>
-          <Text style={styles.label}>اسم المستخدم</Text>
-          <View style={styles.inputWrap}>
-            <Feather name="user" size={16} color="#94A3B8" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              value={username}
-              onChangeText={setUsername}
-              autoCapitalize="none"
-              placeholder="أدخل اسم المستخدم"
-              placeholderTextColor="#CBD5E1"
-              textAlign="right"
-            />
-          </View>
+      <LinearGradient colors={['#F8FAFC', '#F1F5F9']} style={StyleSheet.absoluteFill} />
+      
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Logo size={120} style={styles.logo} />
+          <Text style={styles.title}>لوحة تحكم رواج</Text>
+          <Text style={styles.subtitle}>تسجيل الدخول لإدارة متجرك الذكي</Text>
         </View>
 
-        {/* Password */}
-        <View style={styles.field}>
-          <Text style={styles.label}>كلمة المرور</Text>
-          <View style={styles.inputWrap}>
+        <View style={styles.formCard}>
+          {/* Username */}
+          <View style={styles.field}>
+            <Text style={styles.label}>اسم المستخدم</Text>
+            <View style={styles.inputBox}>
+              <Feather name="user" size={18} color="#94A3B8" />
+              <TextInput
+                style={styles.input}
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+                placeholder="رقم الهاتف أو البريد"
+                placeholderTextColor="#CBD5E1"
+                textAlign="right"
+              />
+            </View>
+          </View>
+
+          {/* Password */}
+          <View style={styles.field}>
+            <Text style={styles.label}>كلمة المرور</Text>
+            <View style={styles.inputBox}>
+              <TouchableOpacity onPress={() => setShowPassword(p => !p)}>
+                <Feather name={showPassword ? 'eye-off' : 'eye'} size={18} color="#94A3B8" />
+              </TouchableOpacity>
+              <TextInput
+                style={styles.input}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                placeholder="أدخل كلمة المرور"
+                placeholderTextColor="#CBD5E1"
+                textAlign="right"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
+          </View>
+
+          <View style={styles.actionRow}>
             <TouchableOpacity
-              onPress={() => setShowPassword(p => !p)}
-              style={styles.inputIcon}
+              style={[styles.mainBtn, { shadowColor: primaryColor }, loading && { opacity: 0.7 }]}
+              onPress={handleLogin}
+              disabled={loading}
             >
-              <Feather name={showPassword ? 'eye-off' : 'eye'} size={16} color="#94A3B8" />
+              <LinearGradient 
+                colors={[primaryColor, BRAND.colors.slate[900]]}
+                start={{x:0, y:0}} end={{x:1, y:1}}
+                style={styles.btnGradient}
+              >
+                {loading
+                  ? <ActivityIndicator color="#fff" />
+                  : <Text style={styles.btnText}>تسجيل الدخول</Text>
+                }
+              </LinearGradient>
             </TouchableOpacity>
-            <TextInput
-              style={styles.input}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              placeholder="أدخل كلمة المرور"
-              placeholderTextColor="#CBD5E1"
-              textAlign="right"
-            />
+
+            {biometricsAvailable && biometricsEnabled && (
+              <TouchableOpacity
+                style={[styles.biometricBtn, { borderColor: primaryColor + '40' }]}
+                onPress={handleBiometricLogin}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="finger-print" size={28} color={primaryColor} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
-        {/* Submit & Biometric */}
-        <View style={styles.actionRow}>
+        <View style={styles.footerLinks}>
           <TouchableOpacity
-            style={[styles.btn, { backgroundColor: primaryColor, shadowColor: primaryColor }, loading && { opacity: 0.7 }, { flex: 1, marginBottom: 0 }]}
-            onPress={handleLogin}
-            disabled={loading}
+            style={styles.secondaryLink}
+            onPress={() => navigation.navigate('MerchantRegistration')}
           >
-            {loading
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.btnText}>تسجيل الدخول</Text>
-            }
+            <Text style={styles.secondaryLinkLabel}>ليس لديك متجر؟ </Text>
+            <Text style={[styles.secondaryLinkText, { color: primaryColor }]}>انضم إلينا الآن</Text>
           </TouchableOpacity>
 
-          {biometricsAvailable && biometricsEnabled && (
-            <TouchableOpacity
-              style={[styles.biometricBtn, { borderColor: primaryColor, shadowColor: primaryColor }]}
-              onPress={handleBiometricLogin}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="finger-print" size={28} color={primaryColor} />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            style={styles.backToStore}
+            onPress={() => navigation.navigate('Home')}
+          >
+            <Text style={[styles.backText, { color: BRAND.colors.slate[400] }]}>العودة للمتجر</Text>
+            <Feather name="arrow-left" size={14} color={BRAND.colors.slate[400]} />
+          </TouchableOpacity>
         </View>
-
-        {/* Back to Store */}
-        <TouchableOpacity
-          style={styles.linkBtn}
-          onPress={() => navigation.navigate('Home')}
-        >
-          <Feather name="arrow-right" size={14} color={primaryColor} />
-          <Text style={[styles.linkText, { color: primaryColor }]}>العودة للمتجر</Text>
-        </TouchableOpacity>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F8FAFC' },
-  container: { flex: 1, padding: 28, justifyContent: 'center' },
-  logo: {
-    alignSelf: 'center',
+  scrollContent: {
+    flexGrow: 1,
+    padding: 24,
+    paddingTop: 60,
+    paddingBottom: 40
+  },
+  header: { alignItems: 'center', marginBottom: 35 },
+  logo: { marginBottom: 20 },
+  title: { fontSize: 28, color: BRAND.colors.slate[900], textAlign: 'center', marginBottom: 6, fontFamily: BRAND.typography.extraBold },
+  subtitle: { fontSize: 14, color: BRAND.colors.slate[500], textAlign: 'center', fontFamily: BRAND.typography.bold },
+  
+  formCard: {
+    backgroundColor: '#fff',
+    borderRadius: 32,
+    padding: 24,
+    elevation: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
     marginBottom: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
   },
-  title: { fontSize: 26, fontWeight: '800', color: '#0F172A', textAlign: 'center', marginBottom: 6 },
-  subtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginBottom: 36 },
-  field: { marginBottom: 18 },
-  label: { fontSize: 13, fontWeight: '600', color: '#475569', marginBottom: 8, textAlign: 'right' },
-  inputWrap: {
+  field: { marginBottom: 22 },
+  label: { fontSize: 13, color: BRAND.colors.slate[700], marginBottom: 10, textAlign: 'right', fontFamily: BRAND.typography.bold },
+  inputBox: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#E2E8F0',
-    borderRadius: 12, paddingHorizontal: 12, height: 50,
+    backgroundColor: '#F8FAFC', borderWidth: 1.5, borderColor: '#E2E8F0',
+    borderRadius: 18, paddingHorizontal: 16, height: 56,
   },
-  inputIcon: { marginRight: 8 },
-  input: { flex: 1, fontSize: 15, color: '#0F172A' },
-  btn: {
-    paddingVertical: 15,
-    borderRadius: 14, alignItems: 'center',
-    marginTop: 8, marginBottom: 20,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
+  input: { flex: 1, fontSize: 15, color: BRAND.colors.slate[900], marginHorizontal: 12, fontFamily: BRAND.typography.regular },
+  
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 15, marginTop: 10 },
+  mainBtn: {
+    flex: 1,
+    height: 58,
+    borderRadius: 18,
+    overflow: 'hidden',
+    elevation: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
   },
-  btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20, marginTop: 8 },
+  btnGradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  btnText: { color: '#fff', fontSize: 17, fontFamily: BRAND.typography.extraBold },
+  
   biometricBtn: {
-    width: 52, height: 52, borderRadius: 14,
+    width: 58, height: 58, borderRadius: 18,
     backgroundColor: '#fff', borderWidth: 1.5,
     justifyContent: 'center', alignItems: 'center',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1, shadowRadius: 4, elevation: 2,
+    elevation: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5,
   },
-  linkBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  linkText: { fontSize: 14, fontWeight: '600' },
+  
+  footerLinks: { alignItems: 'center', gap: 20 },
+  secondaryLink: { flexDirection: 'row', alignItems: 'center' },
+  secondaryLinkLabel: { fontSize: 15, color: BRAND.colors.slate[600], fontFamily: BRAND.typography.bold },
+  secondaryLinkText: { fontSize: 15, fontFamily: BRAND.typography.extraBold },
+  backToStore: { flexDirection: 'row', alignItems: 'center', gap: 8, opacity: 0.8 },
+  backText: { fontSize: 14, fontFamily: BRAND.typography.bold },
 });

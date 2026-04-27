@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Animated } from 'react-native';
+import { View, Animated } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { THEME } from '../../theme/profileTheme';
 import { styles } from '../../theme/profileStyles';
+import Text from '../AppText';
+import TextInput from '../AppTextInput';
 
 /**
  * PremiumInput.js

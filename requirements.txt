@@ -56,3 +56,8 @@ djangorestframework-simplejwt
 celery>=5.3.0
 redis>=5.0.0
 markdown
+
+# WebSockets
+daphne==4.0.0
+channels==4.0.0
+channels-redis==4.2.0

@@ -11,6 +11,9 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@expo-google-fonts/almarai": "^0.4.1",
+    "@expo-google-fonts/cairo": "^0.4.2",
+    "@expo-google-fonts/tajawal": "^0.4.1",
     "@expo/vector-icons": "^15.0.3",
     "@maplibre/maplibre-react-native": "^11.0.0",
     "@react-native-async-storage/async-storage": "^2.2.0",

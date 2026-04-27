@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import {
-    View, Text, StyleSheet, Modal, TouchableOpacity, TextInput,
-    ScrollView, ActivityIndicator, Alert, KeyboardAvoidingView,
-    Platform, Dimensions
-} from 'react-native';
+import { View, StyleSheet, Modal, TouchableOpacity, ScrollView, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import client from '../api/client';
 
 import { useNotifications } from '../context/NotificationContext';
+import Text from './AppText';
+import TextInput from './AppTextInput';
+import { BRAND } from '../theme/brand';
 
 const { height } = Dimensions.get('window');
 
@@ -178,11 +177,11 @@ const styles = StyleSheet.create({
         borderBottomColor: '#F1F5F9',
     },
     closeBtn: { padding: 8, backgroundColor: '#F1F5F9', borderRadius: 12 },
-    title: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
+    title: { fontSize: 18, fontFamily: BRAND.typography.extraBold, color: '#0F172A' },
     
     form: { padding: 20 },
     
-    label: { fontSize: 14, fontWeight: '700', color: '#475569', marginBottom: 12, textAlign: 'right' },
+    label: { fontSize: 14, fontFamily: BRAND.typography.bold, color: '#475569', marginBottom: 12, textAlign: 'auto' },
     
     prodScroller: { flexDirection: 'row-reverse', gap: 10, paddingBottom: 20 },
     prodChip: {
@@ -194,7 +193,7 @@ const styles = StyleSheet.create({
         minWidth: 120,
         alignItems: 'center'
     },
-    prodChipText: { fontSize: 13, fontWeight: '700', color: '#64748B', textAlign: 'center' },
+    prodChipText: { fontSize: 13, fontFamily: BRAND.typography.bold, color: '#64748B', textAlign: 'center' },
     prodPrice: { fontSize: 11, color: '#94A3B8', marginTop: 4 },
 
     inputGroup: { marginBottom: 20 },
@@ -220,7 +219,7 @@ const styles = StyleSheet.create({
         gap: 10,
         alignItems: 'center'
     },
-    tipText: { flex: 1, fontSize: 12, color: '#0369A1', lineHeight: 18, textAlign: 'right' },
+    tipText: { flex: 1, fontSize: 12, color: '#0369A1', lineHeight: 18, textAlign: 'auto' },
 
     footer: {
         padding: 20,
@@ -233,5 +232,5 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' }
+    saveBtnText: { color: '#fff', fontSize: 15, fontFamily: BRAND.typography.extraBold }
 });

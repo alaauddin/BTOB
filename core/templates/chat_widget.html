@@ -1,0 +1,380 @@
+<style>
+    /* Premium Chat Widget Design System */
+    :root {
+        --supplier-primary: {{ supplier.primary_color|default:'#F58231' }};
+        --supplier-secondary: {{ supplier.secondary_color|default:'#ffffff' }};
+        --chat-radius: 24px;
+        --chat-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+
+    .chat-widget-container {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 9999;
+        font-family: 'Outfit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        direction: rtl; /* Force RTL for Arabic support */
+    }
+
+    .chat-trigger {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        background: var(--supplier-primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 4px solid #fff;
+        outline: none;
+        position: relative;
+    }
+
+    .chat-trigger:hover {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+    }
+
+    .chat-window {
+        position: absolute;
+        bottom: 85px;
+        right: 0;
+        width: 380px;
+        height: 600px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border-radius: var(--chat-radius);
+        box-shadow: var(--chat-shadow);
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.4);
+        transform-origin: bottom right;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .chat-window.active {
+        display: flex;
+        animation: chatEntrance 0.5s ease-out;
+    }
+
+    @keyframes chatEntrance {
+        from { transform: scale(0.8) translateY(50px); opacity: 0; }
+        to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .chat-header {
+        padding: 20px;
+        background: var(--supplier-primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        position: relative;
+    }
+
+    .chat-header img {
+        width: 45px;
+        height: 45px;
+        border-radius: 15px;
+        border: 2px solid rgba(255,255,255,0.5);
+        object-fit: cover;
+    }
+
+    .chat-header-info { flex: 1; }
+    .chat-header-info h6 { 
+        margin: 0; 
+        font-weight: 900; 
+        font-size: 1.1rem; 
+        letter-spacing: -0.5px;
+    }
+
+    .chat-status { 
+        font-size: 0.8rem; 
+        opacity: 0.9; 
+        display: flex; 
+        align-items: center; 
+        gap: 6px;
+        margin-top: 2px;
+    }
+
+    .status-dot { 
+        width: 8px; 
+        height: 8px; 
+        border-radius: 50%; 
+        background: #10b981; 
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+    
+    .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        background: linear-gradient(to bottom, #f8fafc, #ffffff);
+        scrollbar-width: thin;
+        scrollbar-color: var(--supplier-primary) transparent;
+    }
+
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--supplier-primary); border-radius: 10px; }
+
+    .chat-bubble {
+        max-width: 80%;
+        padding: 12px 18px;
+        border-radius: 20px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        position: relative;
+        line-height: 1.5;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        animation: bubbleFade 0.3s ease-out;
+    }
+
+    @keyframes bubbleFade {
+        from { transform: translateY(10px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .bubble-mine {
+        align-self: flex-start;
+        background: var(--supplier-primary);
+        color: white;
+        border-top-right-radius: 4px;
+        margin-right: 10px;
+    }
+
+    .bubble-their {
+        align-self: flex-end;
+        background: white;
+        color: #334155;
+        border-top-left-radius: 4px;
+        margin-left: 10px;
+        border: 1px solid #f1f5f9;
+    }
+
+    .chat-time {
+        font-size: 0.7rem;
+        margin-top: 6px;
+        opacity: 0.6;
+        display: block;
+    }
+
+    .bubble-mine .chat-time { text-align: left; color: rgba(255,255,255,0.8); }
+    .bubble-their .chat-time { text-align: right; }
+    
+    .chat-input-area {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .chat-input {
+        flex: 1;
+        border: 2px solid #f1f5f9;
+        border-radius: 18px;
+        padding: 12px 20px;
+        font-size: 1rem;
+        font-weight: 600;
+        outline: none;
+        transition: border-color 0.3s;
+        background: #f8fafc;
+    }
+
+    .chat-input:focus { border-color: var(--supplier-primary); background: #fff; }
+
+    .chat-send-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 18px;
+        background: var(--supplier-primary);
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .chat-send-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+    .chat-send-btn:active { transform: scale(0.95); }
+    
+    @media (max-width: 576px) {
+        .chat-window {
+            width: 100vw;
+            height: 100vh;
+            bottom: 0;
+            right: 0;
+            position: fixed;
+            border-radius: 0;
+        }
+        .chat-widget-container { bottom: 15px; right: 15px; }
+    }
+</style>
+
+<div class="chat-widget-container" id="chatWidget">
+    <button class="chat-trigger" id="chatTrigger">
+        <i class="fas fa-comment-alt fa-2x"></i>
+    </button>
+
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <img src="{{ supplier.profile_picture.url|default:'/static/logo.png' }}" alt="{{ supplier.name }}">
+            <div class="chat-header-info">
+                <h6>{{ supplier.name }}</h6>
+                <div class="chat-status">
+                    <div class="status-dot"></div>
+                    نشط الآن
+                </div>
+            </div>
+            <button class="btn btn-link text-white p-0 opacity-75" onclick="toggleChat()">
+                <i class="fas fa-times fa-lg"></i>
+            </button>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="text-center py-5 text-muted small" id="chatLoading">
+                <div class="spinner-border spinner-border-sm mb-2" role="status"></div>
+                <br>جاري تحميل المحادثة...
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput" placeholder="اكتب رسالتك..." autocomplete="off">
+            <button class="chat-send-btn" id="chatSend">
+                <i class="fas fa-paper-plane fa-lg" style="transform: rotate(180deg)"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        let chatSocket = null;
+        let currentThreadId = null;
+        const currentUserId = {{ user.id|default:0 }};
+
+        window.toggleChat = function() {
+            const windowEl = document.getElementById('chatWindow');
+            const isActive = windowEl.classList.toggle('active');
+            
+            if (isActive && !currentThreadId) {
+                initChat();
+            }
+        };
+
+        document.getElementById('chatTrigger').addEventListener('click', window.toggleChat);
+
+        async function initChat() {
+            let guestId = localStorage.getItem('chat_guest_id');
+            if (!guestId) {
+                guestId = 'guest_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+                localStorage.setItem('chat_guest_id', guestId);
+            }
+
+            try {
+                const response = await fetch('/api/chat/start/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ 
+                        supplier_id: "{{ supplier.id }}",
+                        guest_id: guestId
+                    })
+                });
+                const data = await response.json();
+                currentThreadId = data.id;
+
+                const histRes = await fetch(`/api/chat/${currentThreadId}/messages/?guest_id=${guestId}`);
+                const history = await histRes.json();
+                
+                const msgContainer = document.getElementById('chatMessages');
+                msgContainer.innerHTML = '';
+                history.forEach(msg => appendMessage(msg));
+                scrollToBottom();
+
+                connectWebSocket(currentThreadId, guestId);
+            } catch (err) {
+                console.error('Chat error:', err);
+                document.getElementById('chatMessages').innerHTML = '<p class="text-center p-4 small text-danger">فشل تحميل المحادثة</p>';
+            }
+        }
+
+        function connectWebSocket(threadId, guestId) {
+            const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+            const url = `${protocol}://${window.location.host}/ws/chat/${threadId}/?guest_id=${guestId}`;
+            chatSocket = new WebSocket(url);
+
+            chatSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                if (data.type === 'message') {
+                    appendMessage(data.message);
+                    scrollToBottom();
+                }
+            };
+        }
+
+        function appendMessage(msg) {
+            const container = document.getElementById('chatMessages');
+            const guestId = localStorage.getItem('chat_guest_id');
+            const isMine = (msg.sender && msg.sender === currentUserId) || (msg.guest_id && msg.guest_id === guestId);
+            
+            const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${isMine ? 'bubble-mine' : 'bubble-their'}`;
+            bubble.innerHTML = `
+                <div class="chat-text">${msg.text}</div>
+                <div class="chat-time">${time}</div>
+            `;
+            container.appendChild(bubble);
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatMessages');
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (text && chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+                chatSocket.send(JSON.stringify({ 'message': text }));
+                input.value = '';
+            }
+        }
+
+        document.getElementById('chatSend').addEventListener('click', sendMessage);
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    })();
+</script>

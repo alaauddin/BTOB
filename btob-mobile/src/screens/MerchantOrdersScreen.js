@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity,
-  ActivityIndicator, RefreshControl, StatusBar, Dimensions
-} from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, StatusBar, Dimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import client from '../api/client';
 import { BRAND } from '../theme/brand';
 import Logo from '../components/Logo';
+import Text from '../components/AppText';
 
 const { width } = Dimensions.get('window');
 
@@ -204,7 +202,7 @@ const styles = StyleSheet.create({
     height: 60
   },
   backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
+  headerTitle: { fontSize: 20, fontFamily: BRAND.typography.bold, color: '#fff' },
   
   filterContainer: { marginTop: 10 },
   filterList: { paddingHorizontal: 16, gap: 10 },
@@ -216,7 +214,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.3)',
     backgroundColor: 'rgba(255,255,255,0.05)'
   },
-  filterTabText: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.8)' },
+  filterTabText: { fontSize: 13, fontFamily: BRAND.typography.semiBold, color: 'rgba(255,255,255,0.8)' },
 
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   listContent: { padding: 16, paddingBottom: 40 },
@@ -233,12 +231,12 @@ const styles = StyleSheet.create({
   orderAccent: { width: 5 },
   orderRowBody: { flex: 1, padding: 16 },
   orderRowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  orderRowId: { fontSize: 15, fontWeight: 'bold', color: '#0F172A' },
+  orderRowId: { fontSize: 15, fontFamily: BRAND.typography.bold, color: '#0F172A' },
   statusPill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  statusPillText: { fontSize: 11, fontWeight: 'bold' },
+  statusPillText: { fontSize: 11, fontFamily: BRAND.typography.bold },
   orderRowCustomer: { fontSize: 13, color: '#64748B', marginBottom: 12 },
   orderRowBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  orderRowAmount: { fontSize: 16, fontWeight: 'bold', color: '#0F172A' },
+  orderRowAmount: { fontSize: 16, fontFamily: BRAND.typography.bold, color: '#0F172A' },
   orderRowDate: { fontSize: 12, color: '#94A3B8' },
 
   emptyBox: { alignItems: 'center', marginTop: 100 },
@@ -251,5 +249,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16
   },
-  emptyText: { color: '#94A3B8', fontSize: 15, fontWeight: '500' }
+  emptyText: { color: '#94A3B8', fontSize: 15, fontFamily: BRAND.typography.medium }
 });

@@ -1,5 +1,7 @@
 import { StyleSheet, Dimensions, Platform, StatusBar } from 'react-native';
 import { THEME } from './profileTheme';
+import { BRAND } from './brand';
+import Text from '../components/AppText';
 
 const { width } = Dimensions.get('window');
 
@@ -13,7 +15,7 @@ const { width } = Dimensions.get('window');
 export const styles = StyleSheet.create({
   // Root and Base
   root: { flex: 1, backgroundColor: THEME.colors.slate[50] },
-  scroll: { paddingBottom: 120 },
+  scroll: { flexGrow: 1, paddingBottom: 120 },
   
   stickyHeader: { 
     position: 'absolute', 
@@ -33,7 +35,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20, 
     height: 75 
   },
-  headerTitle: { fontSize: 20, fontWeight: '900', color: '#FFF' },
+  headerTitle: { fontSize: 20, fontFamily: BRAND.typography.extraBold, color: '#FFF' },
   floatingBackBtn: { 
     width: 44, 
     height: 44, 
@@ -43,7 +45,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center' 
   },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFF' },
-  loadingText: { marginTop: 16, color: THEME.colors.slate[400], fontWeight: '800', fontSize: 13 },
+  loadingText: { marginTop: 16, color: THEME.colors.slate[400], fontFamily: BRAND.typography.extraBold, fontSize: 13 },
 
   // Hero Section
   heroSection: { marginBottom: 25 },
@@ -72,7 +74,7 @@ export const styles = StyleSheet.create({
   },
   heroLogoImg: { width: '100%', height: '100%', borderRadius: 26 },
   logoInitialWrap: { flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center', borderRadius: 26 },
-  heroLogoText: { fontSize: 42, fontWeight: '900' },
+  heroLogoText: { fontSize: 42, fontFamily: BRAND.typography.extraBold },
   logoEditBadge: { 
     position: 'absolute', 
     bottom: -6, 
@@ -88,8 +90,8 @@ export const styles = StyleSheet.create({
   },
   
   titleStack: { flex: 1, paddingBottom: 10 },
-  heroTitle: { fontSize: 22, fontWeight: '900', color: THEME.colors.slate[900] },
-  heroSub: { fontSize: 13, color: THEME.colors.primary, fontWeight: '800', marginTop: 4 },
+  heroTitle: { fontSize: 22, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[900] },
+  heroSub: { fontSize: 13, color: THEME.colors.primary, fontFamily: BRAND.typography.extraBold, marginTop: 4 },
 
   statsStrip: { 
     flexDirection: 'row', 
@@ -105,8 +107,8 @@ export const styles = StyleSheet.create({
     borderColor: '#F1F5F9'
   },
   statItem: { flex: 1, alignItems: 'center' },
-  statVal: { fontSize: 16, fontWeight: '900', color: THEME.colors.slate[800] },
-  statLab: { fontSize: 11, color: THEME.colors.slate[400], marginTop: 4, fontWeight: '800' },
+  statVal: { fontSize: 16, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[800] },
+  statLab: { fontSize: 11, color: THEME.colors.slate[400], marginTop: 4, fontFamily: BRAND.typography.extraBold },
   divider: { width: 1, height: '70%', backgroundColor: '#F1F5F9', alignSelf: 'center' },
 
   // Content Cards
@@ -126,12 +128,12 @@ export const styles = StyleSheet.create({
   groupHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
   groupHeaderTitle: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   groupIconWrap: { width: 42, height: 42, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  groupHeaderText: { fontSize: 18, fontWeight: '900', color: THEME.colors.slate[800] },
+  groupHeaderText: { fontSize: 18, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[800] },
   groupBody: { gap: 20 },
 
   // Premium Inputs
   premInputWrap: { marginBottom: 6 },
-  premInputLabel: { fontSize: 13, fontWeight: '800', color: THEME.colors.slate[500], marginBottom: 10, marginLeft: 4 },
+  premInputLabel: { fontSize: 13, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[500], marginBottom: 10, marginLeft: 4 },
   premInputInner: { 
     flexDirection: 'row', 
     alignItems: 'center', 
@@ -147,7 +149,7 @@ export const styles = StyleSheet.create({
   premInputField: { 
     flex: 1, 
     fontSize: 16, 
-    fontWeight: '700', 
+    fontFamily: BRAND.typography.bold, 
     color: THEME.colors.slate[800], 
     height: '100%',
     paddingVertical: 12
@@ -169,7 +171,7 @@ export const styles = StyleSheet.create({
   },
   premToggleLabelSide: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   tinyIconBox: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
-  premToggleLabel: { fontSize: 15, fontWeight: '800', color: THEME.colors.slate[700] },
+  premToggleLabel: { fontSize: 15, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[700] },
 
   // Mockup Preview
   mockupFrame: { backgroundColor: THEME.colors.slate[900], borderRadius: 45, padding: 10, marginVertical: 25, alignSelf: 'center', width: 240, elevation: 25 },
@@ -178,18 +180,48 @@ export const styles = StyleSheet.create({
   mockupIsland: { width: 65, height: 14, backgroundColor: THEME.colors.slate[900], borderRadius: 7 },
   mockupNav: { height: 45, paddingHorizontal: 15, justifyContent: 'center' },
   mockupNavItems: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  mockupBrandName: { fontSize: 11, fontWeight: '900' },
+  mockupBrandName: { fontSize: 11, fontFamily: BRAND.typography.extraBold },
   mockupContent: { height: 160, padding: 15, justifyContent: 'center', alignItems: 'center', gap: 15 },
   mockupHeroMock: { width: '100%', flex: 1, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
   mockupBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
-  mockupBtnText: { color: '#FFF', fontSize: 11, fontWeight: '900' },
+  mockupBtnText: { color: '#FFF', fontSize: 11, fontFamily: BRAND.typography.extraBold },
   mockupFooter: { height: 35 },
 
   // Map Component
   mapContainer: { height: 220, borderRadius: 28, overflow: 'hidden', marginBottom: 20, borderWidth: 1, borderColor: '#F1F5F9' },
   profileMap: { flex: 1 },
   mapHintBadge: { position: 'absolute', bottom: 15, alignSelf: 'center', borderRadius: 14, overflow: 'hidden' },
-  mapHintText: { fontSize: 12, fontWeight: '900', paddingHorizontal: 16, paddingVertical: 8 },
+  mapHintText: { fontSize: 12, fontFamily: BRAND.typography.extraBold, paddingHorizontal: 16, paddingVertical: 8 },
+  mapActionBtn: {
+    position: 'absolute',
+    right: 15,
+    width: 44,
+    height: 44,
+    borderRadius: 15,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    borderWidth: 1,
+    borderColor: '#F1F5F9'
+  },
+  customMarker: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 40,
+    height: 40,
+  },
+  markerShadow: {
+    width: 8,
+    height: 4,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderRadius: 2,
+    marginTop: -5,
+  },
+
 
   // Presets List
   presetList: { marginBottom: 20 },
@@ -209,7 +241,7 @@ export const styles = StyleSheet.create({
     shadowRadius: 5
   },
   presetIconWrap: { width: 40, height: 40, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  presetItemName: { fontSize: 12, fontWeight: '900', color: THEME.colors.slate[600] },
+  presetItemName: { fontSize: 12, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[600] },
 
   // Footer & Save Actions
   footerActions: { marginTop: 30, gap: 10, paddingBottom: 20 },
@@ -223,7 +255,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F1F5F9'
   },
-  simpleActionText: { fontSize: 14, fontWeight: '800', color: THEME.colors.slate[500] },
+  simpleActionText: { fontSize: 14, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[500] },
   logoutAction: { borderColor: THEME.colors.rose + '20' },
 
   // Floating Save Button
@@ -239,7 +271,7 @@ export const styles = StyleSheet.create({
     shadowRadius: 20 
   },
   btnInner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  saveBtnText: { color: '#FFF', fontSize: 18, fontWeight: '900' },
+  saveBtnText: { color: '#FFF', fontSize: 18, fontFamily: BRAND.typography.extraBold },
 
   // Misc
   merchantItem: { 
@@ -255,15 +287,15 @@ export const styles = StyleSheet.create({
   },
   merchantMain: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   merchantLogo: { width: 48, height: 48, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
-  merchantInitial: { color: '#FFF', fontSize: 20, fontWeight: '900' },
-  merchantName: { fontSize: 16, fontWeight: '800', color: THEME.colors.slate[700] },
+  merchantInitial: { color: '#FFF', fontSize: 20, fontFamily: BRAND.typography.extraBold },
+  merchantName: { fontSize: 16, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[700] },
   activePill: { backgroundColor: '#FFF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: THEME.colors.emerald + '30' },
-  activePillText: { fontSize: 11, fontWeight: '900', color: THEME.colors.emerald },
+  activePillText: { fontSize: 11, fontFamily: BRAND.typography.extraBold, color: THEME.colors.emerald },
   
   aiTag: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 15, paddingVertical: 10, borderRadius: 14 },
-  aiTagText: { color: '#FFF', fontSize: 13, fontWeight: '900' },
+  aiTagText: { color: '#FFF', fontSize: 13, fontFamily: BRAND.typography.extraBold },
   gridRow: { flexDirection: 'row', gap: 16 },
-  groupSubTitle: { fontSize: 14, fontWeight: '900', color: THEME.colors.slate[400], marginBottom: 15, marginTop: 15 },
+  groupSubTitle: { fontSize: 14, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[400], marginBottom: 15, marginTop: 15 },
 
   // Payment Link Card
   paymentLinkCard: { 
@@ -285,8 +317,90 @@ export const styles = StyleSheet.create({
     shadowRadius: 5,
     backgroundColor: '#FFF'
   },
-  paymentTitle: { fontSize: 16, fontWeight: '900', color: THEME.colors.slate[800] },
-  paymentSub: { fontSize: 12, color: THEME.colors.slate[400], marginTop: 4, fontWeight: '800' },
-  noPaymentsText: { fontSize: 11, color: THEME.colors.slate[400], fontWeight: '800' },
+  paymentTitle: { fontSize: 16, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[800] },
+  paymentSub: { fontSize: 12, color: THEME.colors.slate[400], marginTop: 4, fontFamily: BRAND.typography.extraBold },
+  noPaymentsText: { fontSize: 11, color: THEME.colors.slate[400], fontFamily: BRAND.typography.extraBold },
+
+  // Picker Modal
+  pickerModalRoot: { flex: 1, backgroundColor: '#FFF' },
+  pickerFullMap: { flex: 1 },
+  pickerCenterMarker: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -50, // Center of the 50px icon
+    marginLeft: -25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  pickerMarkerShadow: {
+    width: 12,
+    height: 6,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 3,
+    marginTop: -8,
+  },
+  pickerHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    padding: 20,
+    alignItems: 'center',
+    gap: 15,
+    zIndex: 20,
+  },
+  pickerCloseBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+  },
+  pickerHeaderTitle: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    padding: 12,
+    borderRadius: 15,
+    elevation: 4,
+  },
+  pickerTitleText: { fontSize: 16, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[800] },
+  pickerSubText: { fontSize: 11, color: THEME.colors.slate[400], marginTop: 2, fontFamily: BRAND.typography.extraBold },
+  pickerFooter: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    backgroundColor: 'transparent',
+    gap: 15,
+  },
+  pickerCoordsBox: {
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignSelf: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  pickerCoordVal: { color: '#FFF', fontSize: 12, fontFamily: BRAND.typography.extraBold, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
+  pickerConfirmBtn: {
+    height: 60,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+  },
+  pickerConfirmText: { color: '#FFF', fontSize: 16, fontFamily: BRAND.typography.extraBold },
 });
+
 

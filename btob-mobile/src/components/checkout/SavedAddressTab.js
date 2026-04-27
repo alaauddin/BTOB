@@ -1,23 +1,41 @@
 import React, { useMemo } from 'react';
-import { View, Text, TextInput, ScrollView } from 'react-native';
+import { View } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
-import { WebView } from "react-native-webview";
+import MapView, { Marker } from '../MapModule';
 import { getCheckoutStyles } from './CheckoutStyles';
+import Text from '../AppText';
+import TextInput from '../AppTextInput';
 
-export default function SavedAddressTab({ savedAddress, staticMapHtml, savedNotes, setSavedNotes, theme }) {
+export default function SavedAddressTab({ savedAddress, savedLatLng, savedNotes, setSavedNotes, setScrollEnabled, theme }) {
     const styles = useMemo(() => getCheckoutStyles(theme), [theme]);
     if (!savedAddress) return null;
 
     return (
         <View>
             {/* Read-Only Map */}
-            <View style={styles.mapContainer}>
-                <WebView
-                    source={{ html: staticMapHtml }}
+            <View 
+                style={styles.mapContainer}
+                onTouchStart={() => setScrollEnabled(false)}
+                onTouchEnd={() => setScrollEnabled(true)}
+                onTouchCancel={() => setScrollEnabled(true)}
+            >
+                <MapView
                     style={styles.mapWebView}
-                    scrollEnabled={false}
-                    nestedScrollEnabled={false}
-                />
+                    initialRegion={{
+                        latitude: savedLatLng?.latitude || 15.3694,
+                        longitude: savedLatLng?.longitude || 44.191,
+                        latitudeDelta: 0.01,
+                        longitudeDelta: 0.01,
+                    }}
+                >
+                    <Marker 
+                        coordinate={{ 
+                            latitude: savedLatLng?.latitude || 15.3694, 
+                            longitude: savedLatLng?.longitude || 44.191 
+                        }} 
+                        pinColor={theme.primary}
+                    />
+                </MapView>
                 <View style={styles.mapOverlayLabel}>
                     <Ionicons name="checkmark-circle" size={14} color="#22c55e" />
                     <Text style={styles.mapOverlayText}>الموقع المحفوظ</Text>
@@ -31,25 +49,25 @@ export default function SavedAddressTab({ savedAddress, staticMapHtml, savedNote
                         <Ionicons name="home" size={24} color={theme.primary || "#0ea5e9"} />
                     </View>
                     <View style={styles.savedTextColumn}>
-                        <Text style={styles.savedCardTitle}>عنوان التوصيل</Text>
+                        <Text style={styles.savedCardTitle}>عنوان التوصيل المختار</Text>
                         <Text style={styles.savedAddressText} numberOfLines={2}>
                             {savedAddress.city}، {savedAddress.address_line1}
                         </Text>
                     </View>
                 </View>
                 <View style={styles.savedDetailRow}>
+                    <Ionicons name="call-outline" size={18} color="#94A3B8" />
                     <Text style={styles.savedPhoneText}>{savedAddress.phone}</Text>
-                    <Ionicons name="call" size={16} color="#94a3b8" />
                 </View>
             </View>
 
             <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>ملاحظات التوصيل (اختياري)</Text>
-                <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>ملاحظات إضافية للمندوب</Text>
+                <View style={[styles.inputWrapper, { height: 100, alignItems: 'flex-start', paddingVertical: 8 }]}>
                     <TextInput
-                        style={[styles.standardInput, styles.textArea]}
-                        placeholder="اكتب ملاحظاتك لمندوب التوصيل..."
-                        placeholderTextColor={theme.textMuted || "#94a3b8"}
+                        style={[styles.standardInput, { height: '100%' }]}
+                        placeholder="أدخل أي ملاحظات تساعد المندوب في الوصول إليك..."
+                        placeholderTextColor="#94A3B8"
                         value={savedNotes}
                         onChangeText={setSavedNotes}
                         multiline

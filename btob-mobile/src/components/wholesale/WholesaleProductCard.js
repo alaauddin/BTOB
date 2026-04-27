@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import Text from '../AppText';
+import { BRAND } from '../../theme/brand';
 
 /**
  * WholesaleProductCard.js
@@ -83,7 +85,7 @@ const styles = StyleSheet.create({
   inheritedText: {
     color: '#FFF',
     fontSize: 10,
-    fontWeight: '800',
+    fontFamily: BRAND.typography.extraBold,
   },
   profitBadge: {
     position: 'absolute',
@@ -97,22 +99,22 @@ const styles = StyleSheet.create({
   profitText: {
     color: '#FFF',
     fontSize: 11,
-    fontWeight: '800',
+    fontFamily: BRAND.typography.extraBold,
   },
   productInfo: {
     padding: 12,
   },
   productName: {
     fontSize: 14,
-    fontWeight: '800',
+    fontFamily: BRAND.typography.extraBold,
     color: '#1E293B',
-    textAlign: 'right',
+    textAlign: 'auto',
     marginBottom: 2,
   },
   categoryName: {
     fontSize: 11,
     color: '#94A3B8',
-    textAlign: 'right',
+    textAlign: 'auto',
     marginBottom: 10,
   },
   priceRow: {
@@ -123,11 +125,11 @@ const styles = StyleSheet.create({
   priceLabel: {
     fontSize: 9,
     color: '#64748B',
-    textAlign: 'right',
+    textAlign: 'auto',
   },
   priceValue: {
     fontSize: 13,
-    fontWeight: '800',
+    fontFamily: BRAND.typography.extraBold,
     color: '#1E293B',
   },
   priceDivider: {
