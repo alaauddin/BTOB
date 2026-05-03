@@ -23,6 +23,7 @@ import HomeScreen from '../screens/HomeScreen';
 import ProductListScreen from '../screens/ProductListScreen';
 import ProductDetailsScreen from '../screens/ProductDetailsScreen';
 import CartScreen from '../screens/CartScreen';
+import WishlistScreen from '../screens/WishlistScreen';
 
 // Merchant sub-screens (full-screen push, outside the tab bar)
 import MerchantOrderDetailScreen from '../screens/MerchantOrderDetailScreen';
@@ -70,6 +71,7 @@ export default function AppNavigator() {
                 <Stack.Screen name="Products" component={ProductListScreen} options={{ headerShown: false }} />
                 <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} options={{ headerShown: false }} />
                 <Stack.Screen name="Cart" component={CartScreen} options={{ title: 'My Cart' }} />
+                <Stack.Screen name="Wishlist" component={WishlistScreen} options={{ headerShown: false }} />
 
                 {/* ── Auth ── */}
                 <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />

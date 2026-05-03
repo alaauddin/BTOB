@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { View, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Image, Dimensions, ScrollView, Alert, DeviceEventEmitter, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from "react";
+import { View, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Image, Dimensions, ScrollView, Alert, DeviceEventEmitter, Animated, TextInput } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -12,6 +12,8 @@ import CartIconBadge from "../components/CartIconBadge";
 import { getSupplierTheme } from "../theme/supplierTheme";
 import { chatApi } from "../api/chat";
 import Text from '../components/AppText';
+import ProductSkeleton from "../components/ProductSkeleton";
+import * as Haptics from 'expo-haptics';
 
 
 const { width } = Dimensions.get("window");
@@ -28,6 +30,9 @@ export default function ProductListScreen({ route, navigation }) {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistItems, setWishlistItems] = useState({}); // { product_id: boolean }
   const [togglingWishlistId, setTogglingWishlistId] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('الكل');
+  const [searchQuery, setSearchQuery] = useState('');
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!storeId || String(storeId) === 'undefined') {
@@ -57,7 +62,10 @@ export default function ProductListScreen({ route, navigation }) {
           fontFamily: BRAND.typography.bold,
         },
         headerRight: () => (
-          <View style={{ marginRight: 15 }}>
+          <View style={{ marginRight: 15, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <TouchableOpacity onPress={handleStartChat}>
+              <Ionicons name="chatbubble-ellipses-outline" size={24} color={theme.navbarText} />
+            </TouchableOpacity>
             <CartIconBadge
               supplierId={storeData.supplier.id}
               size={24}
@@ -121,6 +129,58 @@ export default function ProductListScreen({ route, navigation }) {
       setLoading(false);
     }
   };
+
+  const categories = React.useMemo(() => {
+    if (!storeData) return ['الكل'];
+    const allProducts = [
+      ...(storeData.offer_products || []),
+      ...(storeData.new_products || []),
+      ...(storeData.other_products || [])
+    ];
+    const cats = new Set(allProducts.map(p => p.category?.name).filter(Boolean));
+    return ['الكل', ...Array.from(cats)];
+  }, [storeData]);
+
+  const filteredOffers = React.useMemo(() => {
+    if (!storeData) return [];
+    let products = storeData.offer_products || [];
+    if (selectedCategory !== 'الكل') products = products.filter(p => p.category?.name === selectedCategory);
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      products = products.filter(p => p.name.toLowerCase().includes(q));
+    }
+    return products;
+  }, [storeData, selectedCategory, searchQuery]);
+
+  const filteredNew = React.useMemo(() => {
+    if (!storeData) return [];
+    let products = storeData.new_products || [];
+    if (selectedCategory !== 'الكل') products = products.filter(p => p.category?.name === selectedCategory);
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      products = products.filter(p => p.name.toLowerCase().includes(q));
+    }
+    return products;
+  }, [storeData, selectedCategory, searchQuery]);
+
+  const filteredProducts = React.useMemo(() => {
+    if (!storeData) return [];
+    let products = storeData.other_products || [];
+    
+    if (selectedCategory !== 'الكل') {
+      products = products.filter(p => p.category?.name === selectedCategory);
+    }
+    
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      products = products.filter(p => 
+        p.name.toLowerCase().includes(q) || 
+        (p.description && p.description.toLowerCase().includes(q))
+      );
+    }
+    return products;
+  }, [storeData, selectedCategory, searchQuery]);
+
 
   const handleToggleWishlist = async (productId) => {
     if (!user) {
@@ -409,12 +469,34 @@ export default function ProductListScreen({ route, navigation }) {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
-      <ScrollView
+      <Animated.ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+        stickyHeaderIndices={[1]}
       >
         {/* Modern Store Hero */}
-        <View style={styles.heroContainer}>
+        <Animated.View style={[
+          styles.heroContainer,
+          {
+            opacity: scrollY.interpolate({
+              inputRange: [0, 150],
+              outputRange: [1, 0],
+              extrapolate: 'clamp',
+            }),
+            transform: [{
+              translateY: scrollY.interpolate({
+                inputRange: [0, 150],
+                outputRange: [0, -50],
+                extrapolate: 'clamp',
+              })
+            }]
+          }
+        ]}>
           <View style={styles.heroCoverWrapper}>
             {supplier.panal_picture ? (
               <Image source={{ uri: supplier.panal_picture }} style={styles.heroCover} />
@@ -445,14 +527,66 @@ export default function ProductListScreen({ route, navigation }) {
               </View>
             </View>
 
-            <TouchableOpacity
-              style={[styles.heroChatButton, { backgroundColor: theme.primary }]}
-              onPress={handleStartChat}
-            >
-              <Ionicons name="chatbubble-ellipses" size={24} color="#FFF" />
-            </TouchableOpacity>
+            {/* Chat button removed from here, moved to header */}
           </View>
-        </View>
+        </Animated.View>
+
+        {/* Sticky Header (Search & Categories) */}
+        <Animated.View style={[
+          styles.stickyHeader,
+          {
+            zIndex: 10,
+            transform: [{
+              translateY: scrollY.interpolate({
+                inputRange: [0, 220],
+                outputRange: [0, 0], // Keep it at 0 initially
+                extrapolate: 'clamp'
+              })
+            }]
+          }
+        ]}>
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <BlurView intensity={80} style={[styles.searchPill, { borderColor: theme.shadow }]}>
+              <Ionicons name="search-outline" size={20} color={theme.textMuted} />
+              <TextInput
+                style={[styles.searchInput, { color: theme.text }]}
+                placeholder="ابحث عن المنتجات..."
+                placeholderTextColor={theme.textMuted}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+            </BlurView>
+          </View>
+
+          {/* Categories List */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryList}
+          >
+            {categories.map((cat) => (
+              <TouchableOpacity
+                key={cat}
+                onPress={() => {
+                  setSelectedCategory(cat);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                style={[
+                  styles.categoryPill,
+                  selectedCategory === cat && { backgroundColor: theme.primary }
+                ]}
+              >
+                <Text style={[
+                  styles.categoryText,
+                  { color: selectedCategory === cat ? '#FFF' : theme.text }
+                ]}>
+                  {cat}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </Animated.View>
 
 
 
@@ -479,7 +613,7 @@ export default function ProductListScreen({ route, navigation }) {
         )}
 
         {/* Exclusive Offers */}
-        {offer_products && offer_products.length > 0 && (
+        {filteredOffers.length > 0 && (
           <View style={styles.sectionMargin}>
             <View style={styles.modernSectionHeader}>
               <View style={styles.sectionTitleGroup}>
@@ -493,7 +627,7 @@ export default function ProductListScreen({ route, navigation }) {
             <FlatList
               horizontal
               showsHorizontalScrollIndicator={false}
-              data={offer_products}
+              data={filteredOffers}
               keyExtractor={(item) => item.id.toString()}
               renderItem={renderProductItem}
               extraData={cartItems}
@@ -503,7 +637,7 @@ export default function ProductListScreen({ route, navigation }) {
         )}
 
         {/* New Arrivals */}
-        {new_products && new_products.length > 0 && (
+        {filteredNew.length > 0 && (
           <View style={styles.sectionMargin}>
             <View style={styles.modernSectionHeader}>
               <View style={styles.sectionTitleGroup}>
@@ -514,7 +648,7 @@ export default function ProductListScreen({ route, navigation }) {
             <FlatList
               horizontal
               showsHorizontalScrollIndicator={false}
-              data={new_products}
+              data={filteredNew}
               keyExtractor={(item) => item.id.toString()}
               renderItem={renderProductItem}
               extraData={cartItems}
@@ -524,18 +658,28 @@ export default function ProductListScreen({ route, navigation }) {
         )}
 
         {/* All Products Grid */}
-        {other_products && (
+        {storeData.other_products && (
           <View style={styles.sectionMargin}>
             <View style={styles.modernSectionHeader}>
               <View style={styles.sectionTitleGroup}>
-                <Text style={[styles.modernSectionTitle, { color: theme.text }]}>جميع المنتجات</Text>
+                <Text style={[styles.modernSectionTitle, { color: theme.text }]}>
+                  {selectedCategory === 'الكل' ? 'جميع المنتجات' : selectedCategory}
+                </Text>
                 <View style={[styles.titleDot, { backgroundColor: theme.primary }]} />
               </View>
             </View>
 
-            {other_products.length > 0 ? (
+            {loading ? (
               <View style={styles.premiumGrid}>
-                {other_products.map((item) => (
+                {[1, 2, 3, 4].map(i => (
+                  <View key={i} style={styles.premiumGridItem}>
+                    <ProductSkeleton />
+                  </View>
+                ))}
+              </View>
+            ) : filteredProducts.length > 0 ? (
+              <View style={styles.premiumGrid}>
+                {filteredProducts.map((item) => (
                   <View key={item.id} style={styles.premiumGridItem}>
                     {renderProductItem({ item })}
                   </View>
@@ -543,7 +687,8 @@ export default function ProductListScreen({ route, navigation }) {
               </View>
             ) : (
               <View style={styles.emptyGridState}>
-                <Text style={styles.emptyText}>لا توجد منتجات إضافية حالياً</Text>
+                <Ionicons name="search-outline" size={48} color={theme.textMuted} />
+                <Text style={[styles.emptyText, { color: theme.textMuted }]}>لا توجد منتجات تطابق بحثك</Text>
               </View>
             )}
           </View>
@@ -558,7 +703,7 @@ export default function ProductListScreen({ route, navigation }) {
           primaryColor={theme.primary}
           onSuccess={() => fetchCartItems()}
         />
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* Modern Floating Action Bar */}
       {cartCount > 0 && (
@@ -684,6 +829,49 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5
   },
+  /* Sticky Header Styles */
+  stickyHeader: {
+    backgroundColor: '#fff',
+    paddingBottom: 10,
+    zIndex: 100,
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  searchPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 50,
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    borderWidth: 1,
+    backgroundColor: 'rgba(241, 245, 249, 0.5)',
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 16,
+    fontFamily: BRAND.typography.medium,
+    textAlign: 'right',
+  },
+  categoryList: {
+    paddingHorizontal: 20,
+    paddingVertical: 5,
+    gap: 10,
+  },
+  categoryPill: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  categoryText: {
+    fontSize: 14,
+    fontFamily: BRAND.typography.bold,
+  },
   /* Sticky Search Bar */
 
   stickySearchContainer: {
@@ -764,18 +952,28 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   productCard: {
-    width: 175,
+    width: (width - 48) / 2,
     backgroundColor: "#fff",
-    borderRadius: 28,
-    marginHorizontal: 6,
+    borderRadius: 24,
+    marginHorizontal: 4,
     padding: 8,
     shadowColor: "#0f172a",
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.05,
-    shadowRadius: 16,
+    shadowRadius: 15,
     elevation: 4,
     borderWidth: 1,
     borderColor: '#f1f5f9',
+    marginBottom: 16,
+  },
+  premiumGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+    justifyContent: 'space-between',
+  },
+  premiumGridItem: {
+    width: '48%',
   },
   productImageContainer: {
     height: 155,

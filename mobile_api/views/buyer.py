@@ -239,3 +239,22 @@ class WishlistStatusAPIView(APIView):
             'success': True,
             'is_wishlisted': is_wishlisted
         })
+
+class WishlistListAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        wishlist = WishList.objects.filter(user=request.user).select_related('product', 'product__supplier')
+        
+        # Use a simple inline serializer for the list
+        data = []
+        for item in wishlist:
+            data.append({
+                'id': item.id,
+                'product': ProductSerializer(item.product, context={'request': request}).data
+            })
+            
+        return Response({
+            'success': True,
+            'wishlist': data
+        })
