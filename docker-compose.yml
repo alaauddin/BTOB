@@ -31,7 +31,7 @@ services:
     environment:
       - DB_HOST=db
       - DB_PORT=5432
-      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_BROKER_URL=redis://redis:6379/0
     volumes:
       - static_files:/app/staticfiles
       - media_files:/app/media
@@ -53,7 +53,7 @@ services:
     environment:
       - DB_HOST=db
       - DB_PORT=5432
-      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_BROKER_URL=redis://redis:6379/0
     volumes:
       - media_files:/app/media
     depends_on:
