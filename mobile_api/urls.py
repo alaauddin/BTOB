@@ -65,5 +65,8 @@ urlpatterns = [
 
     # Chat
     path('chat/', include('chat.urls')),
+
+    # Notifications
+    path('notifications/', include('notifications.urls')),
 ]
 

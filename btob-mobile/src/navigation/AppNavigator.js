@@ -38,6 +38,7 @@ import ChatScreen from '../screens/ChatScreen';
 // Driver Screens
 import DriverDashboardScreen from '../screens/DriverDashboardScreen';
 import DriverTrackingScreen from '../screens/DriverTrackingScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -143,6 +144,13 @@ export default function AppNavigator() {
                 <Stack.Screen
                     name="Chat"
                     component={ChatScreen}
+                    options={{ headerShown: false }}
+                />
+
+                {/* ── Notifications ── */}
+                <Stack.Screen
+                    name="Notifications"
+                    component={NotificationsScreen}
                     options={{ headerShown: false }}
                 />
 

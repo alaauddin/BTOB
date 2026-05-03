@@ -30,6 +30,10 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# Firebase
+rawaage-88c4d-firebase-adminsdk-fbsvc-685a864ab0.json
+google-services.json
+
 # local env files
 .env
 .env*.local

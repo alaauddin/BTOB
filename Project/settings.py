@@ -91,6 +91,7 @@ INSTALLED_APPS = [
     'subscriptions',
     'channels',
     'chat',
+    'notifications',
 ]
 
 

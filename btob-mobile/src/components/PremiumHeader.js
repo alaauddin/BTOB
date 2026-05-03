@@ -9,6 +9,9 @@ import { BRAND } from '../theme/brand';
 import Text from './AppText';
 import TextInput from './AppTextInput';
 
+import { useNavigation } from '@react-navigation/native';
+import { useNotifications } from '../context/NotificationContext';
+
 /**
  * PremiumHeader - Unified header component for the entire app.
  * 
@@ -17,6 +20,9 @@ import TextInput from './AppTextInput';
  * @param {Object} searchProps - Props for the TextInput (placeholder, onChange, etc)
  */
 const PremiumHeader = ({ onMenuPress, showSearch = false, searchProps = {}, rounded = true }) => {
+  const navigation = useNavigation();
+  const { unreadCount } = useNotifications();
+
   return (
     <LinearGradient 
       colors={BRAND.gradients.primary} 
@@ -28,9 +34,23 @@ const PremiumHeader = ({ onMenuPress, showSearch = false, searchProps = {}, roun
         <View style={styles.headerWrapper}>
           {/* Top Row: Menu | Mode Switcher | Logo */}
           <View style={styles.topRow}>
-            <TouchableOpacity onPress={onMenuPress} style={styles.iconButton}>
-              <Feather name="menu" size={26} color="#FFF" />
-            </TouchableOpacity>
+            <View style={styles.leftActions}>
+              <TouchableOpacity onPress={onMenuPress} style={styles.iconButton}>
+                <Feather name="menu" size={26} color="#FFF" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                onPress={() => navigation.navigate('Notifications')} 
+                style={[styles.iconButton, { marginLeft: 10 }]}
+              >
+                <Feather name="bell" size={22} color="#FFF" />
+                {unreadCount > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
 
             <View style={styles.switcherContainer}>
               <ModeSwitcher />
@@ -89,6 +109,10 @@ const styles = StyleSheet.create({
     height: 60,
     gap: 12,
   },
+  leftActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   iconButton: {
     width: 44,
     height: 44,
@@ -96,6 +120,26 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.15)",
     justifyContent: "center",
     alignItems: "center",
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: BRAND.colors.primary,
+  },
+  badgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontFamily: BRAND.typography.extraBold,
   },
   switcherContainer: {
     flex: 1,

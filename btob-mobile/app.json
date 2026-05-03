@@ -18,6 +18,7 @@
         "foregroundImage": "./assets/images/logo.jpeg"
       },
       "package": "com.alauddin.btobmobile",
+      "googleServicesFile": "./google-services.json",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
