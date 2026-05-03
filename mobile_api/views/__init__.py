@@ -4,7 +4,8 @@ from .auth import (
 )
 from .buyer import (
     HomeAPIView, StoreProfileAPIView, SupplierViewSet, 
-    ProductViewSet, CategoryViewSet, SupplierCategoryViewSet, ToggleWishlistAPIView, WishlistStatusAPIView
+    ProductViewSet, CategoryViewSet, SupplierCategoryViewSet, 
+    ToggleWishlistAPIView, WishlistStatusAPIView, WishlistListAPIView
 )
 from .cart import CartViewSet
 from .orders import OrderViewSet
