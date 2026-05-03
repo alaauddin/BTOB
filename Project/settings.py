@@ -59,8 +59,9 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 # Subdomain / Multi-tenant cookie support
-SESSION_COOKIE_DOMAIN = f".{PLATFORM_DOMAIN}"
-CSRF_COOKIE_DOMAIN = f".{PLATFORM_DOMAIN}"
+if not DEBUG or os.getenv('PLATFORM_DOMAIN'):
+    SESSION_COOKIE_DOMAIN = f".{PLATFORM_DOMAIN}"
+    CSRF_COOKIE_DOMAIN = f".{PLATFORM_DOMAIN}"
 
 # Redirecting is handled by Nginx, but keep Django aware
 SECURE_SSL_REDIRECT = False 
