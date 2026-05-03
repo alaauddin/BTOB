@@ -76,12 +76,18 @@ class SubscriptionMiddleware:
                         supplier = request.user.managed_suppliers.first()
 
                 if supplier:
-                    # 4. Check for active subscription
-                    active_sub = Subscription.objects.filter(
-                        supplier=supplier, 
-                        status='active', 
-                        end_date__gt=timezone.now()
-                    ).exists()
+                    # 4. Check for ANY subscription records
+                    all_subs = Subscription.objects.filter(supplier=supplier)
+                    
+                    if not all_subs.exists():
+                        # If no plan was ever active/started, no subscription is needed yet
+                        active_sub = True
+                    else:
+                        # If they have a history, check if any is currently active
+                        active_sub = all_subs.filter(
+                            status='active', 
+                            end_date__gt=timezone.now()
+                        ).exists()
 
                     # Bypass for superusers or if active sub exists
                     if request.user.is_superuser:

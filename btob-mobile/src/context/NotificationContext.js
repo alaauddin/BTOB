@@ -189,16 +189,13 @@ export const NotificationProvider = ({ children }) => {
             const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
             const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
 
-            // Only register if token is new or changed
-            const savedToken = await AsyncStorage.getItem('pushToken');
-            if (savedToken !== token) {
-                await client.post('/notifications/register_push_token/', {
-                    token: token,
-                    device_name: `${Device.brand} ${Device.modelName}`
-                });
-                await AsyncStorage.setItem('pushToken', token);
-                console.log('Push token registered successfully');
-            }
+            // Force registration for debugging
+            await client.post('/notifications/register_push_token/', {
+                token: token,
+                device_name: `${Device.brand} ${Device.modelName}`
+            });
+            await AsyncStorage.setItem('pushToken', token);
+            console.log('DEBUG: Push token registration sent to server');
         } catch (error) {
             console.error('Error in push registration flow:', error);
         }
