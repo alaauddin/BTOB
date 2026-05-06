@@ -40,13 +40,6 @@ const PremiumHeader = ({ onMenuPress, showSearch = false, searchProps = {}, roun
               </TouchableOpacity>
               
               <TouchableOpacity 
-                onPress={() => navigation.navigate('Wishlist')} 
-                style={[styles.iconButton, { marginLeft: 10 }]}
-              >
-                <Feather name="heart" size={22} color="#FFF" />
-              </TouchableOpacity>
-
-              <TouchableOpacity 
                 onPress={() => navigation.navigate('Notifications')} 
                 style={[styles.iconButton, { marginLeft: 10 }]}
               >

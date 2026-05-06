@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Image, Dimensions, ScrollView, Alert, DeviceEventEmitter, Animated, TextInput } from 'react-native';
+import { View, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Image, Dimensions, ScrollView, Alert, DeviceEventEmitter, Animated, TextInput, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -52,28 +52,7 @@ export default function ProductListScreen({ route, navigation }) {
     if (storeData?.supplier) {
       const theme = getSupplierTheme(storeData.supplier);
       navigation.setOptions({
-        headerStyle: {
-          backgroundColor: theme.navbar,
-          elevation: 0,
-          shadowOpacity: 0,
-        },
-        headerTintColor: theme.navbarText,
-        headerTitleStyle: {
-          fontFamily: BRAND.typography.bold,
-        },
-        headerRight: () => (
-          <View style={{ marginRight: 15, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <TouchableOpacity onPress={handleStartChat}>
-              <Ionicons name="chatbubble-ellipses-outline" size={24} color={theme.navbarText} />
-            </TouchableOpacity>
-            <CartIconBadge
-              supplierId={storeData.supplier.id}
-              size={24}
-              badgeColor={theme.primary}
-              iconColor={theme.navbarText}
-            />
-          </View>
-        ),
+        headerShown: false,
       });
     }
   }, [navigation, storeData]);
@@ -81,7 +60,7 @@ export default function ProductListScreen({ route, navigation }) {
   const fetchCartItems = async () => {
     try {
       const response = await client.get(
-        `/carts/get_supplier_cart/?supplier_id=${storeId}`,
+        `carts/get_supplier_cart/?supplier_id=${storeId}`,
       );
       if (response.data.success && response.data.cart) {
         // Map items to a dictionary of {product_id: quantity}
@@ -108,7 +87,7 @@ export default function ProductListScreen({ route, navigation }) {
 
   const fetchStoreProfile = async () => {
     try {
-      const response = await client.get(`/stores/${storeId}/profile/`);
+      const response = await client.get(`stores/${storeId}/profile/`);
       if (response.data.success) {
         setStoreData(response.data);
 
@@ -194,7 +173,7 @@ export default function ProductListScreen({ route, navigation }) {
     setTogglingWishlistId(productId);
 
     try {
-      const response = await client.post(`/wishlist/toggle/${productId}/`);
+      const response = await client.post(`wishlist/toggle/${productId}/`);
       if (response.data.success) {
         // Confirm server state
         setWishlistItems(prev => ({ ...prev, [productId]: response.data.is_wishlisted }));
@@ -234,7 +213,7 @@ export default function ProductListScreen({ route, navigation }) {
 
     setAddingToCartId(productId);
     try {
-      const response = await client.post("/carts/update_quantity/", {
+      const response = await client.post("carts/update_quantity/", {
         product_id: productId,
         quantity: newQty,
       });
@@ -545,18 +524,55 @@ export default function ProductListScreen({ route, navigation }) {
             }]
           }
         ]}>
-          {/* Search Bar */}
+          {/* Search Bar & Actions */}
           <View style={styles.searchContainer}>
-            <BlurView intensity={80} style={[styles.searchPill, { borderColor: theme.shadow }]}>
-              <Ionicons name="search-outline" size={20} color={theme.textMuted} />
-              <TextInput
-                style={[styles.searchInput, { color: theme.text }]}
-                placeholder="ابحث عن المنتجات..."
-                placeholderTextColor={theme.textMuted}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-            </BlurView>
+            <View style={styles.headerActionRow}>
+              <TouchableOpacity 
+                onPress={() => navigation.goBack()}
+                style={[styles.smallIconButton, { backgroundColor: theme.primaryMuted }]}
+              >
+                <Ionicons name="chevron-forward" size={24} color={theme.primary} />
+              </TouchableOpacity>
+
+              <BlurView intensity={80} style={[styles.searchPill, { flex: 1, borderColor: theme.shadow }]}>
+                <Ionicons name="search-outline" size={20} color={theme.textMuted} />
+                <TextInput
+                  style={[styles.searchInput, { color: theme.text }]}
+                  placeholder="ابحث عن المنتجات..."
+                  placeholderTextColor={theme.textMuted}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                />
+              </BlurView>
+
+              <View style={styles.rightActionGroup}>
+                <TouchableOpacity 
+                  onPress={() => navigation.navigate("Wishlist")}
+                  style={[styles.smallIconButton, { backgroundColor: theme.primaryMuted }]}
+                >
+                  <Ionicons name="heart-outline" size={22} color={theme.primary} />
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  onPress={handleStartChat}
+                  style={[styles.smallIconButton, { backgroundColor: theme.primaryMuted }]}
+                >
+                  <Ionicons name="chatbubble-ellipses-outline" size={22} color={theme.primary} />
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  onPress={() => navigation.navigate("Cart", { supplierId: storeData?.supplier?.id || storeId })}
+                  style={[styles.smallIconButton, { backgroundColor: theme.primaryMuted }]}
+                >
+                  <CartIconBadge
+                    supplierId={storeData.supplier.id}
+                    size={22}
+                    badgeColor={theme.primary}
+                    iconColor={theme.primary}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
 
           {/* Categories List */}
@@ -743,6 +759,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   /* Hero Section */
+  headerActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  rightActionGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  smallIconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   heroContainer: {
     backgroundColor: "#fff",
     paddingBottom: 24,
@@ -1148,6 +1181,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#94a3b8",
     fontFamily: BRAND.typography.semiBold,
+  },
+  headerIconButton: {
+    overflow: 'hidden',
+    borderRadius: 22,
+  },
+  headerIconBlur: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   /* Floating Action Bar */
   modernFloatingBar: {

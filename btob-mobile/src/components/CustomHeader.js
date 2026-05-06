@@ -143,6 +143,12 @@ export default function CustomHeader() {
     if (user) {
       return [
         {
+          icon: "heart",
+          label: "المفضلة",
+          onPress: () => go("Wishlist"),
+          accent: "#EF4444",
+        },
+        {
           icon: "home",
           label: "الرئيسية",
           onPress: () => go("Home"),

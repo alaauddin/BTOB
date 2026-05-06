@@ -20,7 +20,7 @@ export default function WishlistScreen() {
 
     const fetchWishlist = async () => {
         try {
-            const response = await client.get('/api/wishlist/');
+            const response = await client.get('wishlist/');
             if (response.data.success) {
                 setWishlist(response.data.wishlist || []);
             }
@@ -47,7 +47,7 @@ export default function WishlistScreen() {
 
     const handleRemove = async (productId) => {
         try {
-            const response = await client.post(`/api/wishlist/toggle/${productId}/`);
+            const response = await client.post(`wishlist/toggle/${productId}/`);
             if (response.data.success) {
                 setWishlist(prev => prev.filter(item => item.product.id !== productId));
             }
