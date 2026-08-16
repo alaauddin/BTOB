@@ -10,6 +10,7 @@ import math
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from core.models import Cart, Product, CartItem, Supplier, Order, OrderItem, Address, ProductAttributeOption
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -162,8 +163,15 @@ class CartView(DetailView):
 
 from django.db import transaction
 
-# @login_required
+@csrf_exempt
 def add_to_cart(request, product_id, store_id=None, store_slug=None):
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'require_auth': True,
+            'message': 'يرجى تسجيل الدخول أولاً للمتابعة'
+        }, status=401)
+
     target_store_id = store_slug or store_id
     product = get_object_or_404(Product, pk=product_id)
     
@@ -264,8 +272,15 @@ def add_to_cart(request, product_id, store_id=None, store_slug=None):
         'cart_total': int(user_cart.get_total_after_discount())
     })
 
-@login_required
+@csrf_exempt
 def sub_to_cart(request, product_id, store_id=None, store_slug=None):
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'require_auth': True,
+            'message': 'يرجى تسجيل الدخول أولاً للمتابعة'
+        }, status=401)
+
     target_store_id = store_slug or store_id
     supplier = get_object_or_404(Supplier, store_id=target_store_id)
     product = get_object_or_404(Product, pk=product_id)
@@ -401,8 +416,15 @@ class RemoveItemView(View):
 
         return JsonResponse({'success': True, 'cart_total': cart_total, 'cart_items_count': cart_items_count, 'new_total_discout': new_total_discout})
 
-@login_required
+@csrf_exempt
 def get_cart_status(request, store_id=None, store_slug=None):
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': True,
+            'items': [],
+            'cart_items_count': 0
+        })
+
     target_store_id = store_slug or store_id
     supplier = get_object_or_404(Supplier, store_id=target_store_id)
     try:

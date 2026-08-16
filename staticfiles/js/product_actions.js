@@ -224,7 +224,7 @@ function confirmOptions(productId, storeId) {
  */
 async function performAddToCart(productId, storeId, optionIds = []) {
     const norm = normalizeCartArgs(productId, storeId, optionIds);
-    const csrfToken = getCookie('csrftoken');
+    const csrfToken = getCookie('csrftoken') || (window.siteConfig && window.siteConfig.csrfToken) || '';
     const payload = {
         product_id: norm.productId,
         quantity: 1,
@@ -249,8 +249,25 @@ async function performAddToCart(productId, storeId, optionIds = []) {
             body: JSON.stringify(payload)
         });
 
-        const data = await response.json();
-        if (data.success) {
+        let data = null;
+        try {
+            data = await response.json();
+        } catch (e) {
+            data = null;
+        }
+
+        if (response.status === 401 || (data && data.require_auth)) {
+            if (typeof window.openLoginModal === 'function') {
+                window.openLoginModal(function () {
+                    return performAddToCart(norm.productId, norm.storeId, norm.optionIds);
+                });
+            } else {
+                showNotification("يرجى تسجيل الدخول أولاً", "error");
+            }
+            return data;
+        }
+
+        if (data && data.success) {
             const itemCount = data.cart_item_count !== undefined ? data.cart_item_count : 1;
             const itemsCount = data.cart_items_count !== undefined ? data.cart_items_count : (data.cart ? data.cart.total_items : 1);
             
@@ -276,7 +293,7 @@ async function performAddToCart(productId, storeId, optionIds = []) {
             showNotification(data.message || "تمت إضافة المنتج إلى السلة بنجاح", "success");
             return data;
         } else {
-            showNotification(data.message || "حدث خطأ أثناء إضافة المنتج إلى السلة", "error");
+            showNotification((data && data.message) || "حدث خطأ أثناء إضافة المنتج إلى السلة", "error");
             return data;
         }
     } catch (err) {
@@ -306,7 +323,7 @@ function addToCart(productId, storeId, optionIds = []) {
  */
 async function performSubToCart(productId, storeId, optionIds = []) {
     const norm = normalizeCartArgs(productId, storeId, optionIds);
-    const csrfToken = getCookie('csrftoken');
+    const csrfToken = getCookie('csrftoken') || (window.siteConfig && window.siteConfig.csrfToken) || '';
     const payload = {
         product_id: norm.productId,
         selected_options: norm.optionIds
@@ -330,8 +347,25 @@ async function performSubToCart(productId, storeId, optionIds = []) {
             body: JSON.stringify(payload)
         });
 
-        const data = await response.json();
-        if (data.success) {
+        let data = null;
+        try {
+            data = await response.json();
+        } catch (e) {
+            data = null;
+        }
+
+        if (response.status === 401 || (data && data.require_auth)) {
+            if (typeof window.openLoginModal === 'function') {
+                window.openLoginModal(function () {
+                    return performSubToCart(norm.productId, norm.storeId, norm.optionIds);
+                });
+            } else {
+                showNotification("يرجى تسجيل الدخول أولاً", "error");
+            }
+            return data;
+        }
+
+        if (data && data.success) {
             const itemCount = data.cart_item_count !== undefined ? data.cart_item_count : 0;
             const itemsCount = data.cart_items_count !== undefined ? data.cart_items_count : (data.cart ? data.cart.total_items : 0);
 
@@ -347,7 +381,7 @@ async function performSubToCart(productId, storeId, optionIds = []) {
             showNotification(data.message || "تم تحديث الكمية في السلة", "success");
             return data;
         } else {
-            showNotification(data.message || "حدث خطأ أثناء تحديث السلة", "error");
+            showNotification((data && data.message) || "حدث خطأ أثناء تحديث السلة", "error");
             return data;
         }
     } catch (err) {
@@ -361,6 +395,14 @@ async function performSubToCart(productId, storeId, optionIds = []) {
  */
 function subToCart(productId, storeId, optionIds = []) {
     const norm = normalizeCartArgs(productId, storeId, optionIds);
+    if (window.siteConfig && !window.siteConfig.isAuthenticated) {
+        if (typeof window.openLoginModal === 'function') {
+            window.openLoginModal(function () {
+                return performSubToCart(norm.productId, norm.storeId, norm.optionIds);
+            });
+            return;
+        }
+    }
     return performSubToCart(norm.productId, norm.storeId, norm.optionIds);
 }
 
