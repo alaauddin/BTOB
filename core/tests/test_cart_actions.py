@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
-from core.models import Supplier, Product, ProductCategory, Cart, CartItem, ProductAttribute, ProductAttributeOption, Currency
+from core.models import Supplier, Product, ProductCategory, Category, Cart, CartItem, ProductAttribute, ProductAttributeOption, Currency
 import json
 
 User = get_user_model()
@@ -12,17 +12,23 @@ class CartActionsTestCase(TestCase):
             username='cartuser',
             password='testpassword123'
         )
+        self.owner = User.objects.create_user(
+            username='merchantowner',
+            password='testpassword123'
+        )
         self.currency, _ = Currency.objects.get_or_create(
             code='YER',
             defaults={'name': 'Yemeni Rial', 'symbol': 'YER'}
         )
         self.supplier = Supplier.objects.create(
+            user=self.owner,
             name='Wateen Al Oud',
             store_id='wateen-al-oud',
             subdomain='wateen-al-oud',
             currency=self.currency
         )
-        self.category = ProductCategory.objects.create(name='Perfumes')
+        self.main_category = Category.objects.create(name='Main Perfumes')
+        self.category = ProductCategory.objects.create(name='Perfumes', category=self.main_category)
         self.simple_product = Product.objects.create(
             name='Musk Oud',
             price=1500,
