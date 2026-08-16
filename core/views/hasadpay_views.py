@@ -211,11 +211,14 @@ def create_hasadpay_checkout_session(request, order, supplier):
         )
 
         checkout_url = tx_response.checkout_url
+        from django.conf import settings
+        default_base_url = getattr(settings, 'HASADPAY_BASE_URL', 'https://merchent-local.fintechsys.net').rstrip('/')
+        base = ( default_base_url).rstrip('/')
+
         if not checkout_url and tx_response.uuid:
-            from django.conf import settings
-            default_base_url = getattr(settings, 'HASADPAY_BASE_URL', 'https://merchent-local.fintechsys.net')
-            base = config.custom_base_url or default_base_url
             checkout_url = f"{base}/checkout/?id={tx_response.uuid}"
+        elif checkout_url and not (checkout_url.startswith('http://') or checkout_url.startswith('https://')):
+            checkout_url = f"{base}/{checkout_url.lstrip('/')}"
 
         # Record or update transaction in local database
         tx_obj, _ = HasadPayTransaction.objects.update_or_create(

@@ -20,8 +20,15 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-def checkout_select_address_or_custom_address(request, store_id):
-    supplier = get_object_or_404(Supplier, store_id=store_id)
+def checkout_select_address_or_custom_address(request, store_id=None):
+    if store_id:
+        supplier = get_object_or_404(Supplier, store_id=store_id)
+    elif hasattr(request, 'tenant') and request.tenant:
+        supplier = request.tenant
+    else:
+        messages.error(request, 'المتجر غير موجود.')
+        return redirect('suppliers_list')
+
     cart = Cart.objects.get(user=request.user, supplier=supplier)
     
     order = cart
@@ -156,8 +163,15 @@ def checkout_select_address_or_custom_address(request, store_id):
   
   
   
-def existing_address(request, store_id):
-    supplier = get_object_or_404(Supplier, store_id=store_id)
+def existing_address(request, store_id=None):
+    if store_id:
+        supplier = get_object_or_404(Supplier, store_id=store_id)
+    elif hasattr(request, 'tenant') and request.tenant:
+        supplier = request.tenant
+    else:
+        messages.error(request, 'المتجر غير موجود.')
+        return redirect('suppliers_list')
+
     cart = Cart.objects.get(user=request.user, supplier=supplier) 
     spm_id = request.POST.get('payment_method_id') or request.GET.get('payment_method_id')
     spm = None
