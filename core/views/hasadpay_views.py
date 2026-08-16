@@ -246,6 +246,24 @@ def create_hasadpay_checkout_session(request, order, supplier):
             }
         )
 
+        # Synchronize core PaymentTransaction model
+        try:
+            from core.models import PaymentTransaction
+            global_pm = get_or_create_hasadpay_payment_method()
+            spm = SupplierPaymentMethod.objects.filter(supplier=supplier, payment_method=global_pm).first()
+            PaymentTransaction.objects.update_or_create(
+                order=order,
+                defaults={
+                    'user': order.user,
+                    'payment_method': global_pm,
+                    'supplier_payment_method': spm,
+                    'status': 'pending',
+                    'verification_notes': f"HasadPay Transaction ID: {tx_response.id} | UUID: {tx_response.uuid}"
+                }
+            )
+        except Exception as pte:
+            logger.warning(f"Could not create PaymentTransaction record for order #{order.id}: {pte}")
+
         return checkout_url
 
     except Exception as e:
@@ -254,24 +272,23 @@ def create_hasadpay_checkout_session(request, order, supplier):
 
 
 def hasadpay_return_callback(request, order_id):
-    """Customer return landing page after interacting with HasadPay payment gateway."""
+    """Customer return callback after interacting with HasadPay payment gateway."""
     order = get_object_or_404(Order, id=order_id)
     tx = getattr(order, 'hasadpay_transaction', None)
     supplier = order.get_supplier() or (tx.supplier if tx else None)
     config = getattr(supplier, 'hasadpay_config', None) if supplier else None
 
-    # Query gateway for live status if possible
+    # Query gateway for live status
     is_success = False
-    status_display = "قيد المعالجة"
 
-    if config and tx and (tx.transaction_uuid or tx.transaction_id):
+    if config and tx and (tx.transaction_id or tx.transaction_uuid):
         client = config.get_client()
         if client:
             try:
-                gateway_status = client.transactions.get(transaction_id=tx.transaction_uuid or tx.transaction_id)
+                tx_lookup_id = tx.transaction_id or tx.transaction_uuid
+                gateway_status = client.transactions.get(transaction_id=tx_lookup_id)
                 tx.status_code = gateway_status.status_code or tx.status_code
                 tx.status_display = gateway_status.status_display or tx.status_display
-                status_display = gateway_status.status_display or status_display
 
                 if gateway_status.is_successful:
                     is_success = True
@@ -285,7 +302,7 @@ def hasadpay_return_callback(request, order_id):
                     CartItem.objects.filter(cart__user=order.user, cart__supplier=supplier).delete()
 
                     # Record payment reference idempotently
-                    ref_number = f"HP-{gateway_status.id or tx.transaction_uuid}"
+                    ref_number = f"HP-{gateway_status.id or tx.transaction_id or tx.transaction_uuid}"
                     if not OrderPaymentReference.objects.filter(order=order, reference_number=ref_number).exists():
                         OrderPaymentReference.objects.create(
                             order=order,
@@ -320,22 +337,21 @@ def hasadpay_return_callback(request, order_id):
     if tx and tx.status == 'paid':
         is_success = True
 
-    # Construct WhatsApp URL for customer convenience
-    wa_url = None
-    if supplier and supplier.phone:
-        items_lines = [f"- {item.product.name} ({item.quantity})" for item in order.order_items.all()]
-        items_list = "\n".join(items_lines)
-        wa_message = f"مرحباً متجر {supplier.name}، لقد قمت بسداد طلبي رقم #{order.id} بنجاح عبر حصاد باي بقيمة {order.total_amount} {supplier.currency}.\n\nأصناف الطلب:\n{items_list}"
-        wa_url = f"https://wa.me/{supplier.phone}?text={quote(wa_message)}"
-
-    return render(request, 'hasadpay_return.html', {
-        'order': order,
-        'supplier': supplier,
-        'tx': tx,
-        'is_success': is_success,
-        'status_display': status_display,
-        'wa_url': wa_url,
-    })
+    if is_success:
+        messages.success(request, f'🎉 تم سداد طلبك رقم #{order.id} بنجاح عبر حصاد باي!')
+        if supplier and supplier.phone:
+            items_lines = [f"- {item.product.name} ({item.quantity})" for item in order.order_items.all()]
+            items_list = "\n".join(items_lines)
+            wa_message = f"مرحباً متجر {supplier.name}، لقد قمت بسداد طلبي رقم #{order.id} بنجاح عبر حصاد باي بقيمة {order.total_amount} {supplier.currency}.\n\nأصناف الطلب:\n{items_list}"
+            wa_url = f"https://wa.me/{supplier.phone}?text={quote(wa_message)}"
+            return redirect(wa_url)
+        return redirect('order_detail', pk=order.id)
+    else:
+        messages.warning(request, 'لم تكتمل عملية السداد عبر حصاد باي أو تم إلغاؤها.')
+        store_slug = supplier.subdomain or supplier.store_id if supplier else None
+        if store_slug:
+            return redirect('store_cart', store_id=store_slug)
+        return redirect('order_detail', pk=order.id)
 
 
 @csrf_exempt
