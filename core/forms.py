@@ -761,3 +761,64 @@ class SupplierPaymentMethodForm(forms.ModelForm):
         # Only show active global payment methods
         self.fields['payment_method'].queryset = PaymentMethod.objects.filter(is_active=True)
         self.fields['is_active'].initial = True
+
+
+class SupplierHasadPayConfigForm(forms.ModelForm):
+    class Meta:
+        model = SupplierHasadPayConfig
+        fields = [
+            'is_enabled',
+            'api_key',
+            'entity_id',
+            'webhook_secret',
+            'environment',
+            'display_name',
+            'custom_base_url',
+            'auto_confirm_order',
+        ]
+        widgets = {
+            'is_enabled': forms.CheckboxInput(attrs={
+                'class': 'w-5 h-5 text-emerald-600 rounded focus:ring-2 focus:ring-emerald-200 cursor-pointer'
+            }),
+            'api_key': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 transition-all outline-none text-sm font-mono text-left',
+                'placeholder': 'sec_live_... أو sec_test_...',
+                'dir': 'ltr'
+            }),
+            'entity_id': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 transition-all outline-none text-sm font-mono text-left',
+                'placeholder': 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+                'dir': 'ltr'
+            }),
+            'webhook_secret': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 transition-all outline-none text-sm font-mono text-left',
+                'placeholder': 'whsec_...',
+                'dir': 'ltr'
+            }),
+            'environment': forms.Select(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 transition-all outline-none text-sm cursor-pointer'
+            }),
+            'display_name': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 transition-all outline-none text-sm',
+                'placeholder': 'حصاد باي - الدفع الإلكتروني المباشر'
+            }),
+            'custom_base_url': forms.URLInput(attrs={
+                'class': 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 transition-all outline-none text-sm text-left',
+                'placeholder': 'https://api.hasadpay.com (اختياري)',
+                'dir': 'ltr'
+            }),
+            'auto_confirm_order': forms.CheckboxInput(attrs={
+                'class': 'w-5 h-5 text-emerald-600 rounded focus:ring-2 focus:ring-emerald-200 cursor-pointer'
+            }),
+        }
+        labels = {
+            'is_enabled': 'تفعيل بوابة حصاد باي (HasadPay)',
+            'api_key': 'مفتاح API الخاص بالتاجر (API Key)',
+            'entity_id': 'معرف القناة / الكيان (Entity ID - اختياري)',
+            'webhook_secret': 'المفتاح السري للـ Webhook (Webhook Secret)',
+            'environment': 'بيئة العمل',
+            'display_name': 'الاسم الظاهر للعملاء عند الدفع',
+            'custom_base_url': 'رابط بوابة مخصص (للمطورين فقط)',
+            'auto_confirm_order': 'تأكيد الطلب آلياً عند وصول إشعار السداد الناجح',
+        }
+

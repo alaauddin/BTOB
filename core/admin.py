@@ -19,6 +19,23 @@ admin.site.register(SupplierPaymentMethod)
 admin.site.register(PaymentTransaction)
 
 
+@admin.register(SupplierHasadPayConfig)
+class SupplierHasadPayConfigAdmin(admin.ModelAdmin):
+    list_display = ('supplier', 'is_enabled', 'environment', 'display_name', 'auto_confirm_order', 'updated_at')
+    list_filter = ('is_enabled', 'environment', 'auto_confirm_order')
+    search_fields = ('supplier__name', 'api_key', 'entity_id')
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(HasadPayTransaction)
+class HasadPayTransactionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'transaction_id', 'order', 'supplier', 'amount', 'currency', 'service_name', 'status', 'paid_at', 'created_at')
+    list_filter = ('status', 'currency', 'service', 'created_at')
+    search_fields = ('transaction_id', 'transaction_uuid', 'order__id', 'supplier__name', 'customer_phone')
+    readonly_fields = ('created_at', 'updated_at')
+
+
+
 @admin.register(BusinessRequest)
 class BusinessRequestAdmin(admin.ModelAdmin):
     list_display = ('name', 'owner_name', 'phone', 'business_type', 'created_at', 'is_processed')

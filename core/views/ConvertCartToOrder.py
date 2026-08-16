@@ -62,9 +62,16 @@ def checkout_select_address_or_custom_address(request, store_id):
                 selected_payment_method=spm
             )
             
-            # Handle Receipt Upload during Checkout
+            # Check if HasadPay was selected
+            is_hasadpay = False
+            if spm and spm.payment_method and ("hasadpay" in spm.payment_method.name.lower() or "حصاد باي" in spm.payment_method.name):
+                is_hasadpay = True
+            elif request.POST.get('is_hasadpay') == 'true' or spm_id == 'hasadpay':
+                is_hasadpay = True
+
+            # Handle Receipt Upload during Checkout (for manual transfer methods)
             receipt_file = request.FILES.get('receipt')
-            if spm and receipt_file:
+            if spm and receipt_file and not is_hasadpay:
                 from core.models import PaymentTransaction
                 PaymentTransaction.objects.create(
                     order=created_order,
@@ -73,6 +80,7 @@ def checkout_select_address_or_custom_address(request, store_id):
                     receipt=receipt_file,
                     status='pending'
                 )
+
             for cart_item in cart.cart_items.all():
                 order_item = OrderItem.objects.create(
                     order=created_order, 
@@ -85,11 +93,28 @@ def checkout_select_address_or_custom_address(request, store_id):
                 if cart_item.selected_options.exists():
                     order_item.selected_options.set(cart_item.selected_options.all())
             
-            cart.cart_items.all().delete()
             address.order = created_order
             address.save()
+
+            if is_hasadpay:
+                try:
+                    from core.views.hasadpay_views import create_hasadpay_checkout_session
+                    checkout_url = create_hasadpay_checkout_session(request, created_order, supplier)
+                    cart.cart_items.all().delete()
+                    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                        return JsonResponse({
+                            'success': True,
+                            'is_hasadpay': True,
+                            'redirect_url': checkout_url,
+                            'checkout_url': checkout_url,
+                            'order_id': created_order.id
+                        })
+                    return redirect(checkout_url)
+                except Exception as e:
+                    logger.error(f"HasadPay checkout creation failed: {str(e)}")
+                    # Continue to standard flow if gateway fails
             
-            result = complete_order_and_notify(request, created_order, cart, address, supplier)
+            result = complete_order_and_notify(request, created_order, cart, address, supplier, payment_method_id=spm_id)
             
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse(result)
@@ -127,10 +152,17 @@ def checkout_select_address_or_custom_address(request, store_id):
 def existing_address(request, store_id):
     supplier = get_object_or_404(Supplier, store_id=store_id)
     cart = Cart.objects.get(user=request.user, supplier=supplier) 
-    spm_id = request.POST.get('payment_method_id')
+    spm_id = request.POST.get('payment_method_id') or request.GET.get('payment_method_id')
     spm = None
-    if spm_id and spm_id.isdigit():
-        spm = SupplierPaymentMethod.objects.filter(id=spm_id, supplier=supplier).first()
+    if spm_id and str(spm_id).isdigit():
+        spm = SupplierPaymentMethod.objects.filter(id=int(spm_id), supplier=supplier).first()
+
+    # Check if HasadPay was selected
+    is_hasadpay = False
+    if spm and spm.payment_method and ("hasadpay" in spm.payment_method.name.lower() or "حصاد باي" in spm.payment_method.name):
+        is_hasadpay = True
+    elif request.POST.get('is_hasadpay') == 'true' or spm_id == 'hasadpay':
+        is_hasadpay = True
 
     order = Order.objects.create(
         user=request.user, 
@@ -141,7 +173,7 @@ def existing_address(request, store_id):
     
     # Handle Receipt Upload during Checkout
     receipt_file = request.FILES.get('receipt')
-    if spm and receipt_file:
+    if spm and receipt_file and not is_hasadpay:
         from core.models import PaymentTransaction
         PaymentTransaction.objects.create(
             order=order,
@@ -186,7 +218,24 @@ def existing_address(request, store_id):
     order.total_amount = cart.get_total_after_discount() + order.delivery_fee
     order.save()
 
-    result = complete_order_and_notify(request, order, cart, shipping_address, supplier)
+    if is_hasadpay:
+        try:
+            from core.views.hasadpay_views import create_hasadpay_checkout_session
+            checkout_url = create_hasadpay_checkout_session(request, order, supplier)
+            cart.cart_items.all().delete()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'is_hasadpay': True,
+                    'redirect_url': checkout_url,
+                    'checkout_url': checkout_url,
+                    'order_id': order.id
+                })
+            return redirect(checkout_url)
+        except Exception as e:
+            logger.error(f"HasadPay checkout creation failed: {str(e)}")
+
+    result = complete_order_and_notify(request, order, cart, shipping_address, supplier, payment_method_id=spm_id)
     
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse(result)

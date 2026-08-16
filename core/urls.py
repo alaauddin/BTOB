@@ -45,6 +45,12 @@ from core.views.delivery_driver_views import (
 )
 from core.views.AcademyViews import academy_home, course_detail, lesson_view, complete_lesson
 from core.views.payment_views import manage_payment_methods, delete_payment_method, submit_payment, verify_payment, toggle_payment_method_status
+from core.views.hasadpay_views import (
+    manage_hasadpay_settings,
+    test_hasadpay_connection,
+    hasadpay_return_callback,
+    hasadpay_webhook_view,
+)
 from core.views.ai_color_gen import GenerateAIColorsView
 
 
@@ -194,6 +200,11 @@ urlpatterns = [
     path('dashboard/payment-methods/', manage_payment_methods, name='manage_payment_methods'),
     path('dashboard/payment-methods/delete/<int:method_id>/', delete_payment_method, name='delete_payment_method'),
     path('dashboard/payment-methods/toggle/<int:method_id>/', toggle_payment_method_status, name='toggle_payment_method_status'),
+    path('dashboard/hasadpay-settings/', manage_hasadpay_settings, name='manage_hasadpay_settings'),
+    path('dashboard/hasadpay-test-connection/', test_hasadpay_connection, name='hasadpay_test_connection'),
+    path('payments/hasadpay/callback/<int:order_id>/', hasadpay_return_callback, name='hasadpay_return_callback'),
+    path('api/v1/payments/hasadpay/webhook/', hasadpay_webhook_view, name='hasadpay_global_webhook'),
+    path('api/v1/payments/hasadpay/webhook/<str:store_id>/', hasadpay_webhook_view, name='hasadpay_store_webhook'),
     path('payments/submit/', submit_payment, name='submit_payment'),
     path('payments/verify/<int:transaction_id>/', verify_payment, name='verify_payment'),
     path('verify-payment/<int:transaction_id>/', verify_payment), # Legacy alias to prevent 404s

@@ -321,16 +321,34 @@ fbq('track', 'InitiateCheckout', {
                             <label class="selection-card w-100 py-3 px-2 d-flex flex-column align-items-center gap-2 text-center" for="pay_{{ method.id }}" style="cursor: pointer; border-radius: 12px; height: 100%;">
                                 <input class="form-check-input mb-1" type="radio" name="payment_method_id" id="pay_{{ method.id }}" value="{{ method.id }}"
                                        data-account-name="{{ method.account_field_name }}"
-                                       data-account-value="{{ method.account_field_value }}">
+                                       data-account-value="{{ method.account_field_value }}"
+                                       data-is-hasadpay="{% if 'hasadpay' in method.payment_method.name|lower or 'حصاد باي' in method.payment_method.name %}true{% else %}false{% endif %}">
                                 
                                 <div class="payment-logo-container bg-white p-2 border rounded" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
-                                    <img src="{{ method.payment_method.logo.url }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                                    {% if method.payment_method.logo %}
+                                        <img src="{{ method.payment_method.logo.url }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                                    {% else %}
+                                        <i class="fas fa-wallet text-success" style="font-size: 1.3rem;"></i>
+                                    {% endif %}
                                 </div>
                                 
                                 <div class="fw-bold small">{{ method.payment_method.name }}</div>
                             </label>
                         </div>
                         {% endfor %}
+                    </div>
+                </div>
+
+                <!-- HasadPay Direct Info Notice -->
+                <div id="hasadpayNoticeSection" class="mb-4" style="display: none;">
+                    <div class="alert alert-success border-0 shadow-sm p-3 rounded-xl" style="background-color: #ecfdf5; border-right: 4px solid #10b981 !important;">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="fas fa-shield-alt text-success fs-5"></i>
+                            <h6 class="fw-bold mb-0 text-success">الدفع الإلكتروني الآمن عبر حصاد باي</h6>
+                        </div>
+                        <p class="small mb-0 text-dark opacity-90">
+                            سيتم تحويلك مباشرة لصفحة الدفع لاختيار وسيلتك المفضلة (<strong>فلوسك، كاش، جوالي، سبأ كاش، فيزا، مدى</strong>) وتأكيد السداد فورياً.
+                        </p>
                     </div>
                 </div>
 
@@ -960,6 +978,11 @@ fbq('track', 'InitiateCheckout', {
         const successModal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
         
         function handleCheckoutSuccess(data) {
+            if (data.is_hasadpay && (data.redirect_url || data.checkout_url)) {
+                window.location.href = data.redirect_url || data.checkout_url;
+                return;
+            }
+
             const checkoutModalEl = document.getElementById('checkoutModal');
             let checkoutModalInstance = bootstrap.Modal.getInstance(checkoutModalEl);
             if (!checkoutModalInstance) {
@@ -987,9 +1010,15 @@ fbq('track', 'InitiateCheckout', {
             
             // Collect Form Data including File
             const formData = new FormData();
-            const selectedPayment = document.querySelector('input[name="payment_method_id"]:checked')?.value;
+            const selectedRadio = document.querySelector('input[name="payment_method_id"]:checked');
+            const selectedPayment = selectedRadio?.value;
+            const isHasadPay = selectedRadio?.dataset.isHasadpay === 'true';
+
             if (selectedPayment) {
                 formData.append('payment_method_id', selectedPayment);
+            }
+            if (isHasadPay) {
+                formData.append('is_hasadpay', 'true');
             }
             
             const receiptFile = document.getElementById('checkoutReceiptInput').files[0];
@@ -997,8 +1026,8 @@ fbq('track', 'InitiateCheckout', {
                 formData.append('receipt', receiptFile);
             }
 
-            // Validation: Enforce receipt if not COD
-            if (selectedPayment && selectedPayment !== 'cod' && !receiptFile) {
+            // Validation: Enforce receipt only if manual transfer (not COD and not HasadPay)
+            if (selectedPayment && selectedPayment !== 'cod' && !isHasadPay && !receiptFile) {
                 showNotification('يرجى إرفاق إيصال الدفع لإتمام الطلب', 'error');
                 btn.innerHTML = originalContent;
                 btn.disabled = false;
@@ -1045,9 +1074,15 @@ fbq('track', 'InitiateCheckout', {
                 const csrftoken = getCookie('csrftoken');
                 
                 // Add selected payment method to FormData
-                const selectedPayment = document.querySelector('input[name="payment_method_id"]:checked')?.value;
+                const selectedRadio = document.querySelector('input[name="payment_method_id"]:checked');
+                const selectedPayment = selectedRadio?.value;
+                const isHasadPay = selectedRadio?.dataset.isHasadpay === 'true';
+
                 if (selectedPayment) {
                     formData.append('payment_method_id', selectedPayment);
+                }
+                if (isHasadPay) {
+                    formData.append('is_hasadpay', 'true');
                 }
                 
                 const receiptFile = document.getElementById('checkoutReceiptInput').files[0];
@@ -1055,8 +1090,8 @@ fbq('track', 'InitiateCheckout', {
                     formData.append('receipt', receiptFile);
                 }
 
-                // Validation: Enforce receipt if not COD
-                if (selectedPayment && selectedPayment !== 'cod' && !receiptFile) {
+                // Validation: Enforce receipt only if manual transfer (not COD and not HasadPay)
+                if (selectedPayment && selectedPayment !== 'cod' && !isHasadPay && !receiptFile) {
                     showNotification('يرجى إرفاق إيصال الدفع لإتمام الطلب', 'error');
                     btn.innerHTML = originalContent;
                     btn.disabled = false;
@@ -1113,9 +1148,10 @@ fbq('track', 'InitiateCheckout', {
         // Handle Payment Selection visual feedback
         const paymentRadios = document.querySelectorAll('input[name="payment_method_id"]');
         const receiptSection = document.getElementById('receiptUploadSection');
+        const hasadpayNotice = document.getElementById('hasadpayNoticeSection');
         const receiptInput = document.getElementById('checkoutReceiptInput');
         const receiptPreviewWrap = document.getElementById('checkoutReceiptPreview');
-        const receiptPreviewImg = receiptPreviewWrap.querySelector('img');
+        const receiptPreviewImg = receiptPreviewWrap ? receiptPreviewWrap.querySelector('img') : null;
 
         paymentRadios.forEach(radio => {
             radio.addEventListener('change', function() {
@@ -1124,6 +1160,8 @@ fbq('track', 'InitiateCheckout', {
                     const card = this.closest('.selection-card');
                     card.classList.add('active');
                     
+                    const isHasadPay = this.dataset.isHasadpay === 'true';
+
                     // Update Summary in upload form
                     const summary = document.getElementById('selectedPaymentSummary');
                     if (summary) {
@@ -1132,7 +1170,7 @@ fbq('track', 'InitiateCheckout', {
                         const fieldName = this.dataset.accountName;
                         const fieldVal = this.dataset.accountValue;
 
-                        if (this.value !== 'cod') {
+                        if (this.value !== 'cod' && !isHasadPay) {
                             summary.innerHTML = `
                                 <div class="bg-white border rounded p-1 shadow-sm" style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                     <img src="${logo}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
@@ -1159,11 +1197,16 @@ fbq('track', 'InitiateCheckout', {
                         }
                     }
 
-                    // Show/Hide receipt section
-                    if (this.value !== 'cod' && receiptSection) {
-                        receiptSection.style.display = 'block';
-                    } else if (receiptSection) {
-                        receiptSection.style.display = 'none';
+                    // Show/Hide receipt section vs HasadPay notice
+                    if (isHasadPay) {
+                        if (receiptSection) receiptSection.style.display = 'none';
+                        if (hasadpayNotice) hasadpayNotice.style.display = 'block';
+                    } else if (this.value !== 'cod') {
+                        if (receiptSection) receiptSection.style.display = 'block';
+                        if (hasadpayNotice) hasadpayNotice.style.display = 'none';
+                    } else {
+                        if (receiptSection) receiptSection.style.display = 'none';
+                        if (hasadpayNotice) hasadpayNotice.style.display = 'none';
                     }
                 }
             });

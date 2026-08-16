@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}حالة الدفع - طلب رقم #{{ order.id }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-result-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        margin: 2.5rem auto;
+        max-width: 620px;
+    }
+    .result-header {
+        padding: 2.5rem 1.5rem;
+        text-align: center;
+        color: white;
+    }
+    .result-header.success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .result-header.pending {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    .result-header.failed {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    .icon-circle {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(8px);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .info-box {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1.2rem;
+        border: 1px solid #e2e8f0;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed #e2e8f0;
+        font-size: 0.95rem;
+    }
+    .info-row:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="payment-result-card">
+        {% if is_success %}
+        <div class="result-header success">
+            <div class="icon-circle">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 class="fw-bold mb-1">تم الدفع بنجاح!</h2>
+            <p class="mb-0 opacity-90">شكراً لك، تم استلام المبلغ وتأكيد طلبك بنجاح.</p>
+        </div>
+        {% elif tx.status == 'pending' or not is_success %}
+        <div class="result-header pending">
+            <div class="icon-circle">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h2 class="fw-bold mb-1">العملية قيد المعالجة</h2>
+            <p class="mb-0 opacity-90">نحن بانتظار تأكيد السداد من بوابة الدفع أو المحفظة.</p>
+        </div>
+        {% else %}
+        <div class="result-header failed">
+            <div class="icon-circle">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <h2 class="fw-bold mb-1">لم تكتمل عملية الدفع</h2>
+            <p class="mb-0 opacity-90">تعذر استكمال السداد، يمكنك المحاولة مرة أخرى أو اختيار وسيلة دفع أخرى.</p>
+        </div>
+        {% endif %}
+
+        <div class="p-4">
+            <div class="info-box mb-4">
+                <div class="info-row">
+                    <span class="text-muted">رقم الطلب:</span>
+                    <span class="fw-bold">#{{ order.id }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="text-muted">المتجر:</span>
+                    <span class="fw-bold">{{ supplier.name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="text-muted">المبلغ الإجمالي:</span>
+                    <span class="fw-bold text-primary">{{ order.total_amount }} {{ supplier.currency }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="text-muted">بوابة الدفع:</span>
+                    <span class="fw-bold">حصاد باي (HasadPay)</span>
+                </div>
+                {% if tx.transaction_id or tx.transaction_uuid %}
+                <div class="info-row">
+                    <span class="text-muted">مرجع العملية:</span>
+                    <span class="font-mono text-muted small">{{ tx.transaction_id|default:tx.transaction_uuid }}</span>
+                </div>
+                {% endif %}
+                <div class="info-row">
+                    <span class="text-muted">حالة السداد:</span>
+                    {% if is_success %}
+                        <span class="badge bg-success-subtle text-success border border-success px-2 py-1">مدفوع ومؤكد</span>
+                    {% elif tx.status == 'pending' %}
+                        <span class="badge bg-warning-subtle text-warning border border-warning px-2 py-1">قيد المعالجة</span>
+                    {% else %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1">غير مكتمل</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                {% if is_success and wa_url %}
+                <a href="{{ wa_url }}" target="_blank" class="btn btn-success py-3 rounded-xl fw-bold shadow-sm">
+                    <i class="fab fa-whatsapp me-2"></i> إرسال تفاصيل الطلب للمتجر عبر واتساب
+                </a>
+                {% endif %}
+
+                {% if not is_success and tx.checkout_url %}
+                <a href="{{ tx.checkout_url }}" class="btn btn-primary py-3 rounded-xl fw-bold shadow-sm">
+                    <i class="fas fa-redo me-2"></i> إعادة محاولة الدفع في حصاد باي
+                </a>
+                {% endif %}
+
+                <a href="{% url 'order_detail' order.id %}" class="btn btn-outline-dark py-2.5 rounded-xl fw-bold">
+                    <i class="fas fa-file-invoice me-2"></i> عرض تفاصيل الطلب
+                </a>
+
+                <a href="{% url 'product-list' supplier.store_id %}" class="btn btn-light py-2.5 rounded-xl text-muted">
+                    <i class="fas fa-store me-2"></i> العودة للمتجر
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

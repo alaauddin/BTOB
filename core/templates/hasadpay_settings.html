@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}إعدادات بوابة حصاد باي - {{ supplier.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hasadpay-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f1f5f9;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    .hasadpay-header {
+        background: linear-gradient(135deg, #059669 0%, #10b981 50%, #14b8a6 100%);
+        color: white;
+        padding: 2.2rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .hasadpay-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -20%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+        pointer-events: none;
+    }
+    .badge-env-prod {
+        background: rgba(16, 185, 129, 0.2);
+        color: #065f46;
+        border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .badge-env-sandbox {
+        background: rgba(245, 158, 11, 0.2);
+        color: #92400e;
+        border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+    .webhook-box {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        border-radius: 12px;
+        padding: 1rem 1.2rem;
+    }
+    .supported-wallets-banner {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 14px;
+        padding: 1rem 1.2rem;
+    }
+    .wallet-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: white;
+        border: 1px solid #dcfce7;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #166534;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <!-- Breadcrumbs / Back link -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a href="{% url 'manage_payment_methods' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                    <i class="fas fa-arrow-right me-1"></i> العودة لوسائل الدفع
+                </a>
+                <a href="https://hasadpay.com" target="_blank" class="text-decoration-none text-muted small">
+                    <i class="fas fa-external-link-alt me-1"></i> بوابة HasadPay الرسمية
+                </a>
+            </div>
+
+            <div class="hasadpay-card">
+                <!-- Header Banner -->
+                <div class="hasadpay-header">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                        <div>
+                            <div class="d-inline-flex align-items-center gap-2 bg-white/20 backdrop-blur px-3 py-1 rounded-pill mb-2 text-white small">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>الربط المباشر المعتمد</span>
+                            </div>
+                            <h2 class="h3 fw-bold mb-1">بوابة الدفع الإلكتروني حصاد باي (HasadPay)</h2>
+                            <p class="mb-0 opacity-90 small">استقبل مدفوعات متجرك مباشرة عبر المحافظ اليمنية والإقليمية والبطاقات البنكية الدولية.</p>
+                        </div>
+                        <div>
+                            {% if config.is_enabled %}
+                                <span class="badge bg-white text-success fs-6 px-3 py-2 rounded-pill shadow-sm">
+                                    <i class="fas fa-check-circle me-1"></i> البوابة مفعلة
+                                </span>
+                            {% else %}
+                                <span class="badge bg-white/30 text-white fs-6 px-3 py-2 rounded-pill">
+                                    <i class="fas fa-power-off me-1"></i> غير مفعلة
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 p-md-5">
+                    <!-- Supported rails info -->
+                    <div class="supported-wallets-banner mb-4">
+                        <div class="fw-bold text-success mb-2 small">
+                            <i class="fas fa-wallet me-1"></i> وسائل الدفع المدعومة تلقائياً لعملائك:
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="wallet-chip"><i class="fas fa-mobile-alt"></i> فلوسك (الكريمي)</span>
+                            <span class="wallet-chip"><i class="fas fa-coins"></i> محفظة كاش</span>
+                            <span class="wallet-chip"><i class="fas fa-money-bill-wave"></i> جوالي / محفظتي (WeNet)</span>
+                            <span class="wallet-chip"><i class="fas fa-bolt"></i> سبأ كاش</span>
+                            <span class="wallet-chip"><i class="fas fa-credit-card"></i> بطاقات فيزا / ماستركارد</span>
+                            <span class="wallet-chip"><i class="fas fa-credit-card"></i> بطاقات مدى</span>
+                        </div>
+                    </div>
+
+                    <!-- Webhook Notification Info Box -->
+                    <div class="webhook-box mb-4">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-2">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">
+                                    <i class="fas fa-link text-primary me-1"></i> رابط إشعار العمليات (Webhook URL) الخاص بمتجرك
+                                </h6>
+                                <p class="text-muted small mb-0">قم بنسخ هذا الرابط ولصقه في لوحة تحكم التاجر لدى حصاد باي لتأكيد الطلبات تلقائياً فور السداد.</p>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="copyWebhookUrl()">
+                                <i class="fas fa-copy me-1"></i> نسخ الرابط
+                            </button>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="webhookUrlInput" class="form-control form-control-sm font-mono bg-white text-muted" value="{{ webhook_url }}" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Configuration Form -->
+                    <form method="post" id="hasadpayConfigForm">
+                        {% csrf_token %}
+                        
+                        <div class="row g-4">
+                            <!-- Toggle switch -->
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded-xl border d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <label class="form-check-label fw-bold mb-1" for="{{ form.is_enabled.id_for_label }}">
+                                            تفعيل استقبال المدفوعات عبر حصاد باي
+                                        </label>
+                                        <div class="text-muted small">عند التفعيل، ستظهر وسيلة حصاد باي في صفحة إتمام الطلب لزبائنك.</div>
+                                    </div>
+                                    <div class="form-check form-switch m-0">
+                                        {{ form.is_enabled }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- API Key -->
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small text-dark">{{ form.api_key.label }} <span class="text-danger">*</span></label>
+                                {{ form.api_key }}
+                                <div class="form-text small text-muted">احصل على هذا المفتاح من لوحة تحكم التاجر الخاصة بك في HasadPay (يبدأ بـ sec_live_ أو sec_test_).</div>
+                            </div>
+
+                            <!-- Webhook Secret -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-dark">{{ form.webhook_secret.label }}</label>
+                                {{ form.webhook_secret }}
+                                <div class="form-text small text-muted">المفتاح السري لتشفير الـ HMAC والتأكد من موثوقية إشعارات الدفع.</div>
+                            </div>
+
+                            <!-- Entity ID -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-dark">{{ form.entity_id.label }}</label>
+                                {{ form.entity_id }}
+                                <div class="form-text small text-muted">معرف القناة الخاص بالتاجر (Entity UUID) إن وجد.</div>
+                            </div>
+
+                            <!-- Environment -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-dark">{{ form.environment.label }}</label>
+                                {{ form.environment }}
+                            </div>
+
+                            <!-- Display Name -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-dark">{{ form.display_name.label }}</label>
+                                {{ form.display_name }}
+                            </div>
+
+                            <!-- Auto confirm -->
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    {{ form.auto_confirm_order }}
+                                    <label class="form-check-label ms-2 small fw-bold" for="{{ form.auto_confirm_order.id_for_label }}">
+                                        {{ form.auto_confirm_order.label }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action buttons -->
+                        <div class="d-flex flex-column flex-md-row gap-3 mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-success py-3 px-4 rounded-xl fw-bold flex-grow-1 shadow-sm">
+                                <i class="fas fa-save me-1"></i> حفظ الإعدادات
+                            </button>
+                            
+                            <button type="button" id="testConnectionBtn" class="btn btn-outline-dark py-3 px-4 rounded-xl fw-bold" onclick="testConnection()">
+                                <i class="fas fa-plug me-1"></i> فحص الاتصال بالبوابة
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Test Connection Result Box -->
+                    <div id="testResultBox" class="mt-4" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyWebhookUrl() {
+    const input = document.getElementById('webhookUrlInput');
+    input.select();
+    input.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(input.value).then(() => {
+        alert("تم نسخ رابط الـ Webhook بنجاح!");
+    });
+}
+
+async function testConnection() {
+    const btn = document.getElementById('testConnectionBtn');
+    const resultBox = document.getElementById('testResultBox');
+    
+    const apiKey = document.querySelector('input[name="api_key"]').value.trim();
+    const entityId = document.querySelector('input[name="entity_id"]').value.trim();
+    const webhookSecret = document.querySelector('input[name="webhook_secret"]').value.trim();
+    const environment = document.querySelector('select[name="environment"]').value;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري فحص الاتصال...';
+    resultBox.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('api_key', apiKey);
+    formData.append('entity_id', entityId);
+    formData.append('webhook_secret', webhookSecret);
+    formData.append('environment', environment);
+
+    try {
+        const response = await fetch("{% url 'hasadpay_test_connection' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+        resultBox.style.display = 'block';
+
+        if (data.success) {
+            resultBox.innerHTML = `
+                <div class="alert alert-success border-0 shadow-sm rounded-xl p-3">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="fas fa-check-circle fs-4 text-success"></i>
+                        <h6 class="fw-bold mb-0 text-success">${data.message}</h6>
+                    </div>
+                    <div class="small text-dark">
+                        تم العثور على <strong>${data.methods_count}</strong> وسيلة دفع متاحة لحسابك التجاري.
+                        <ul class="mb-0 mt-1">
+                            ${(data.sample_methods || []).map(m => `<li>${m}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultBox.innerHTML = `
+                <div class="alert alert-danger border-0 shadow-sm rounded-xl p-3">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="fas fa-exclamation-triangle fs-4 text-danger"></i>
+                        <h6 class="fw-bold mb-0 text-danger">فشل فحص الاتصال</h6>
+                    </div>
+                    <div class="small text-danger opacity-90">${data.message}</div>
+                </div>
+            `;
+        }
+    } catch (err) {
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = `
+            <div class="alert alert-danger border-0 shadow-sm rounded-xl p-3">
+                <i class="fas fa-times-circle me-1"></i> حدث خطأ أثناء الاتصال بالخادم: ${err.message}
+            </div>
+        `;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-plug me-1"></i> فحص الاتصال بالبوابة';
+    }
+}
+</script>
+{% endblock %}

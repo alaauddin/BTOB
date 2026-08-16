@@ -637,7 +637,11 @@ fbq('track', 'Purchase', {
                             <div class="col-6">
                                 <input type="radio" class="btn-check" name="payment_method_id" id="pm_{{ method.id }}" value="{{ method.id }}" {% if forloop.first %}checked{% endif %}>
                                 <label class="btn btn-outline-primary w-100 p-2 d-flex flex-column align-items-center rounded-xl" for="pm_{{ method.id }}">
-                                    <img src="{{ method.payment_method.logo.url }}" style="height: 30px; object-fit: contain;" class="mb-1">
+                                    {% if method.payment_method.logo %}
+                                        <img src="{{ method.payment_method.logo.url }}" style="height: 30px; object-fit: contain;" class="mb-1">
+                                    {% else %}
+                                        <i class="fas fa-wallet text-primary mb-1" style="font-size: 1.5rem;"></i>
+                                    {% endif %}
                                     <span class="small" style="font-size: 0.7rem;">{{ method.payment_method.name }}</span>
                                 </label>
                             </div>
@@ -708,7 +712,11 @@ fbq('track', 'Purchase', {
                                         <div class="col-6">
                                             <input type="radio" class="btn-check" name="payment_method_id_custom" id="pm_custom_{{ method.id }}" value="{{ method.id }}" {% if forloop.first %}checked{% endif %}>
                                             <label class="btn btn-outline-primary w-100 p-2 d-flex flex-column align-items-center rounded-xl" for="pm_custom_{{ method.id }}">
-                                                <img src="{{ method.payment_method.logo.url }}" style="height: 30px; object-fit: contain;" class="mb-1">
+                                                {% if method.payment_method.logo %}
+                                                    <img src="{{ method.payment_method.logo.url }}" style="height: 30px; object-fit: contain;" class="mb-1">
+                                                {% else %}
+                                                    <i class="fas fa-wallet text-primary mb-1" style="font-size: 1.5rem;"></i>
+                                                {% endif %}
                                                 <span class="small" style="font-size: 0.7rem;">{{ method.payment_method.name }}</span>
                                             </label>
                                         </div>
