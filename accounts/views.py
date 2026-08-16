@@ -160,7 +160,8 @@ def ajax_signup_view(request):
             return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
             
     return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
-
+    
+@csrf_exempt
 def ajax_merchant_login_view(request):
     """
     Handle AJAX merchant login requests.
@@ -191,7 +192,7 @@ def ajax_merchant_login_view(request):
                 if driver:
                     auth_login(request, user)
                     return JsonResponse({
-                        'success': True,
+                        'success': True, 
                         'message': f'مرحباً {user.get_full_name() or user.username}',
                         'redirect_url': '/driver-dashboard/'
                     })
@@ -211,6 +212,7 @@ def ajax_merchant_login_view(request):
     return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
 
 
+@csrf_exempt
 def ajax_unified_auth_view(request):
     """
     Handle Unified Authentication (Phone Only).

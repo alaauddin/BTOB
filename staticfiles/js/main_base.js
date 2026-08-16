@@ -183,27 +183,39 @@ function handleClientAuthSubmit() {
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i> جاري المعالجة...';
     errorDiv.classList.add('hidden');
 
+    const effectiveCsrf = csrftoken || (window.siteConfig && window.siteConfig.csrfToken) || '';
+
     fetch('/api/unified-auth/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken
+            'X-CSRFToken': effectiveCsrf,
+            'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({ phone })
     })
-        .then(response => response.json())
+        .then(async response => {
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (e) {
+                // Non-JSON response received
+                throw new Error('استجابة غير متوقعة من الخادم (رمز ' + response.status + ')');
+            }
+            return data;
+        })
         .then(data => {
-            if (data.success) {
+            if (data && data.success) {
                 showNotification(data.message, 'success');
                 handlePostAuth(data);
             } else {
-                errorDiv.querySelector('.error-text').textContent = data.message || 'حدث خطأ غير متوقع';
+                errorDiv.querySelector('.error-text').textContent = (data && data.message) || 'حدث خطأ غير متوقع';
                 errorDiv.classList.remove('hidden');
             }
         })
         .catch(error => {
-            console.error(error);
-            errorDiv.querySelector('.error-text').textContent = 'حدث خطأ في الاتصال';
+            console.error('Unified Auth Error:', error);
+            errorDiv.querySelector('.error-text').textContent = error.message || 'حدث خطأ في الاتصال';
             errorDiv.classList.remove('hidden');
         })
         .finally(() => {
@@ -218,6 +230,7 @@ function handleMerchantAuthSubmit() {
     const errorDiv = document.getElementById('loginError');
     const submitBtn = document.getElementById('authSubmitBtn');
     const csrftoken = getCookie('csrftoken');
+    const effectiveCsrf = csrftoken || (window.siteConfig && window.siteConfig.csrfToken) || '';
 
     if (!username || !password) {
         errorDiv.querySelector('.error-text').textContent = 'اسم المستخدم وكلمة المرور مطلوبان';
@@ -234,13 +247,22 @@ function handleMerchantAuthSubmit() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken
+            'X-CSRFToken': effectiveCsrf,
+            'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({ username, password })
     })
-        .then(response => response.json())
+        .then(async response => {
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (e) {
+                throw new Error('استجابة غير متوقعة من الخادم (رمز ' + response.status + ')');
+            }
+            return data;
+        })
         .then(data => {
-            if (data.success) {
+            if (data && data.success) {
                 showNotification(data.message, 'success');
                 if (data.redirect_url) {
                     window.location.href = data.redirect_url;
@@ -248,13 +270,13 @@ function handleMerchantAuthSubmit() {
                     window.location.reload();
                 }
             } else {
-                errorDiv.querySelector('.error-text').textContent = data.message || 'حدث خطأ غير متوقع';
+                errorDiv.querySelector('.error-text').textContent = (data && data.message) || 'حدث خطأ غير متوقع';
                 errorDiv.classList.remove('hidden');
             }
         })
         .catch(error => {
-            console.error(error);
-            errorDiv.querySelector('.error-text').textContent = 'حدث خطأ في الاتصال';
+            console.error('Merchant Auth Error:', error);
+            errorDiv.querySelector('.error-text').textContent = error.message || 'حدث خطأ في الاتصال';
             errorDiv.classList.remove('hidden');
         })
         .finally(() => {
