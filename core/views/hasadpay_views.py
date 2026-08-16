@@ -311,6 +311,13 @@ def hasadpay_return_callback(request, order_id):
                             recorded_by=order.user
                         )
 
+                    # Update core PaymentTransaction
+                    from core.models import PaymentTransaction
+                    PaymentTransaction.objects.filter(order=order).update(
+                        status='verified',
+                        verification_notes=f"HasadPay TX ID: {tx.transaction_id} | UUID: {tx.transaction_uuid} | Service: {tx.service_name or 'HasadPay'}"
+                    )
+
                     # Auto-confirm order if configured
                     if config.auto_confirm_order:
                         confirmed_status = OrderStatus.objects.filter(slug='confirmed').first()
@@ -456,6 +463,13 @@ def hasadpay_webhook_view(request, store_id=None):
                     reference_number=ref_num,
                     recorded_by=order.user
                 )
+
+            # Update core PaymentTransaction
+            from core.models import PaymentTransaction
+            PaymentTransaction.objects.filter(order=order).update(
+                status='verified',
+                verification_notes=f"HasadPay Webhook TX ID: {getattr(event, 'id', tx.transaction_id if tx else None)} | Service: {getattr(event, 'payment_brand', 'HasadPay')}"
+            )
 
             # Auto-confirm order
             if config.auto_confirm_order:
