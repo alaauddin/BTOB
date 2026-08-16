@@ -165,7 +165,11 @@
                         {% if order.selected_payment_method %}
                         <div class="payment-info-box mb-4 p-3 rounded-xl border border-dashed">
                             <div class="d-flex align-items-center mb-3">
-                                <img src="{{ order.selected_payment_method.payment_method.logo.url }}" style="height: 30px; margin-left: 10px;">
+                                {% if order.selected_payment_method.payment_method.logo %}
+                                    <img src="{{ order.selected_payment_method.payment_method.logo.url }}" style="height: 30px; margin-left: 10px;">
+                                {% else %}
+                                    <i class="fas fa-wallet text-success me-2" style="font-size: 1.5rem; margin-left: 10px;"></i>
+                                {% endif %}
                                 <h6 class="mb-0 fw-bold">{{ order.selected_payment_method.payment_method.name }}</h6>
                             </div>
                             <div class="small mb-3">

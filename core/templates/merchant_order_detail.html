@@ -703,7 +703,11 @@
                     <label class="form-label fw-bold small text-uppercase">التحقق من الدفع</label>
                     <div class="p-3 rounded-3 border bg-light">
                         <div class="d-flex align-items-center mb-2">
-                            <img src="{{ order.selected_payment_method.payment_method.logo.url }}" style="height: 24px; margin-left: 8px;">
+                            {% if order.selected_payment_method.payment_method.logo %}
+                                <img src="{{ order.selected_payment_method.payment_method.logo.url }}" style="height: 24px; margin-left: 8px;">
+                            {% else %}
+                                <i class="fas fa-wallet text-success me-2" style="font-size: 1.2rem; margin-left: 8px;"></i>
+                            {% endif %}
                             <span class="small fw-bold">{{ order.selected_payment_method.payment_method.name }}</span>
                         </div>
                         

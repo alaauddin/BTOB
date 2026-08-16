@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 class PaymentMethod(models.Model):
     name = models.CharField(max_length=100)
-    logo = models.ImageField(upload_to='payment_methods/')
+    logo = models.ImageField(upload_to='payment_methods/', null=True, blank=True)
     requires_proof = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
 
@@ -12,6 +12,15 @@ class PaymentMethod(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def logo_url(self):
+        try:
+            if self.logo and hasattr(self.logo, 'url'):
+                return self.logo.url
+        except (ValueError, AttributeError):
+            pass
+        return None
 
 class SupplierPaymentMethod(models.Model):
     supplier = models.ForeignKey('Supplier', on_delete=models.CASCADE, related_name='payment_methods')
@@ -26,6 +35,12 @@ class SupplierPaymentMethod(models.Model):
 
     def __str__(self):
         return f"{self.supplier.name} - {self.payment_method.name}"
+
+    @property
+    def logo_url(self):
+        if self.payment_method:
+            return self.payment_method.logo_url
+        return None
 
 class PaymentTransaction(models.Model):
     STATUS_CHOICES = [

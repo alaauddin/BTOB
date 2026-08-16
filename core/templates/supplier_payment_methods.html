@@ -156,7 +156,13 @@
                         <div class="methods-list">
                             {% for method in payment_methods %}
                             <div class="method-item">
-                                <img src="{{ method.payment_method.logo.url }}" alt="{{ method.payment_method.name }}" class="method-logo">
+                                {% if method.payment_method.logo %}
+                                    <img src="{{ method.payment_method.logo.url }}" alt="{{ method.payment_method.name }}" class="method-logo">
+                                {% else %}
+                                    <div class="method-logo d-flex align-items-center justify-content-center bg-light border rounded">
+                                        <i class="fas fa-wallet text-success fs-4"></i>
+                                    </div>
+                                {% endif %}
                                 <div class="method-details">
                                     <div class="method-name">{{ method.payment_method.name }}</div>
                                     <div class="method-info">

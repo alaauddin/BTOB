@@ -418,13 +418,13 @@ def merchant_order_quick_view(request, order_id):
             'details_url': f"/merchant-order/{order.id}/",
             'payment': {
                 'method_name': order.selected_payment_method.payment_method.name if order.selected_payment_method else None,
-                'method_logo': order.selected_payment_method.payment_method.logo.url if order.selected_payment_method else None,
+                'method_logo': order.selected_payment_method.logo_url if order.selected_payment_method else None,
                 'has_transaction': hasattr(order, 'payment_transaction'),
                 'transaction': {
                     'id': order.payment_transaction.id,
                     'status': order.payment_transaction.status,
                     'status_display': order.payment_transaction.get_status_display(),
-                    'receipt_url': order.payment_transaction.receipt.url,
+                    'receipt_url': order.payment_transaction.receipt.url if (hasattr(order, 'payment_transaction') and order.payment_transaction.receipt) else None,
                 } if hasattr(order, 'payment_transaction') else None
             }
         }
