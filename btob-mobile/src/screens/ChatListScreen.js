@@ -88,34 +88,45 @@ export default function ChatListScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#FFF' },
+    container: { flex: 1, backgroundColor: THEME.colors.slate[50] },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    header: { padding: 20, paddingTop: 60, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-    title: { fontSize: 24, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[900], textAlign: 'auto' },
-    list: { padding: 10 },
-    threadItem: { 
-        flexDirection: 'row-reverse', 
-        alignItems: 'center', 
-        padding: 15, 
-        backgroundColor: '#FFF',
-        borderRadius: 20,
-        marginBottom: 10,
-        borderWidth: 1,
-        borderColor: '#F1F5F9'
+    header: {
+        padding: THEME.spacing.lg,
+        paddingTop: THEME.spacing.xl,
+        borderBottomWidth: 1,
+        borderBottomColor: THEME.colors.slate[100],
+        backgroundColor: THEME.colors.white,
     },
-    avatar: { 
-        width: 50, 
-        height: 50, 
-        borderRadius: 25, 
-        backgroundColor: BRAND.colors.primary + '20', 
-        justifyContent: 'center', 
+    title: { fontSize: 24, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[900], textAlign: 'auto' },
+    list: { padding: THEME.spacing.sm },
+    threadItem: {
+        flexDirection: 'row-reverse',
         alignItems: 'center',
-        overflow: 'hidden'
+        padding: THEME.spacing.sm,
+        backgroundColor: THEME.colors.white,
+        borderRadius: THEME.radius.md,
+        marginBottom: THEME.spacing.xs,
+        // Modern shadow
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 1.5,
+    },
+    avatar: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: BRAND.colors.primary + '20',
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: THEME.colors.slate[200],
     },
     avatarImg: { width: '100%', height: '100%' },
     avatarText: { fontSize: 20, fontFamily: BRAND.typography.extraBold, color: BRAND.colors.primary },
-
-    threadInfo: { flex: 1, marginRight: 15, alignItems: 'flex-end' },
+    threadInfo: { flex: 1, marginRight: THEME.spacing.sm, alignItems: 'flex-end' },
     threadHeader: { flexDirection: 'row-reverse', justifyContent: 'space-between', width: '100%' },
     supplierName: { fontSize: 16, fontFamily: BRAND.typography.extraBold, color: THEME.colors.slate[800] },
     time: { fontSize: 12, color: THEME.colors.slate[400] },
