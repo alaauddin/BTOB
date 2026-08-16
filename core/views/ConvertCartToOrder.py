@@ -107,7 +107,7 @@ def checkout_select_address_or_custom_address(request, store_id=None):
                 try:
                     from core.views.hasadpay_views import create_hasadpay_checkout_session
                     checkout_url = create_hasadpay_checkout_session(request, created_order, supplier)
-                    cart.cart_items.all().delete()
+                    # Note: Cart items are preserved until HasadPay transaction is confirmed (paid)
                     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                         return JsonResponse({
                             'success': True,
@@ -243,7 +243,7 @@ def existing_address(request, store_id=None):
         try:
             from core.views.hasadpay_views import create_hasadpay_checkout_session
             checkout_url = create_hasadpay_checkout_session(request, order, supplier)
-            cart.cart_items.all().delete()
+            # Note: Cart items are preserved until HasadPay transaction is confirmed (paid)
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': True,

@@ -280,6 +280,10 @@ def hasadpay_return_callback(request, order_id):
                     tx.service = gateway_status.service or tx.service
                     tx.service_name = gateway_status.service_name or tx.service_name
 
+                    # Clear user's cart items for this supplier now that payment is confirmed
+                    from core.models import CartItem
+                    CartItem.objects.filter(cart__user=order.user, cart__supplier=supplier).delete()
+
                     # Record payment reference idempotently
                     ref_number = f"HP-{gateway_status.id or tx.transaction_uuid}"
                     if not OrderPaymentReference.objects.filter(order=order, reference_number=ref_number).exists():
@@ -295,6 +299,14 @@ def hasadpay_return_callback(request, order_id):
                         confirmed_status = OrderStatus.objects.filter(slug='confirmed').first()
                         if confirmed_status and order.pipeline_status != confirmed_status:
                             order.update_status(confirmed_status, user=order.user)
+
+                    # Send automated WhatsApp confirmation to merchant
+                    try:
+                        if supplier and supplier.phone:
+                            merchant_msg = f"🔔 *تم سداد طلب جديد إلكترونياً عبر حصاد باي!*\n\nالمتجر: {supplier.name}\nرقم الطلب: #{order.id}\nالعميل: {order.user.get_full_name() or order.user.username}\nالمبلغ: {order.total_amount} {supplier.currency}\nوسيلة الدفع: {tx.service_name or 'حصاد باي'}\nرقم المرجع: {ref_number}"
+                            send_whatsapp_message(supplier.phone, merchant_msg)
+                    except Exception as we:
+                        logger.error(f"WhatsApp notification failed on return for order #{order.id}: {we}")
 
                 elif gateway_status.is_failed:
                     tx.status = 'failed'
@@ -415,6 +427,10 @@ def hasadpay_webhook_view(request, store_id=None):
                 tx.raw_webhook_payload = raw_json
                 tx.save()
 
+            # Clear user's cart items for this supplier now that payment is confirmed
+            from core.models import CartItem
+            CartItem.objects.filter(cart__user=order.user, cart__supplier=supplier).delete()
+
             # Record payment reference idempotently
             ref_num = f"HP-WH-{event.id or order.id}"
             if not OrderPaymentReference.objects.filter(order=order, reference_number=ref_num).exists():
@@ -430,6 +446,14 @@ def hasadpay_webhook_view(request, store_id=None):
                 confirmed_status = OrderStatus.objects.filter(slug='confirmed').first()
                 if confirmed_status and order.pipeline_status != confirmed_status:
                     order.update_status(confirmed_status, user=order.user)
+
+            # Send WhatsApp notification to merchant
+            try:
+                if supplier and supplier.phone:
+                    merchant_msg = f"🔔 *تم سداد طلب جديد إلكترونياً (Webhook)!*\n\nالمتجر: {supplier.name}\nرقم الطلب: #{order.id}\nالعميل: {order.user.get_full_name() or order.user.username}\nالمبلغ: {order.total_amount} {supplier.currency}\nوسيلة الدفع: {getattr(event, 'payment_brand', 'حصاد باي')}\nرقم المرجع: {ref_num}"
+                    send_whatsapp_message(supplier.phone, merchant_msg)
+            except Exception as we:
+                logger.error(f"WhatsApp webhook notification failed for order #{order.id}: {we}")
 
             logger.info(f"HasadPay Webhook: Order #{order.id} marked as PAID successfully via {event.payment_brand}.")
 
