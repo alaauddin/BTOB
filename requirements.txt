@@ -61,3 +61,6 @@ markdown
 daphne==4.0.0
 channels==4.0.0
 channels-redis==4.2.0
+
+# Payment Gateways
+git+https://github.com/alauddin-faya/hasadpay-sdk.git
