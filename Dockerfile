@@ -10,12 +10,13 @@ FROM python:3.12-slim AS base
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-# System dependencies for psycopg2 and Pillow
+# System dependencies for psycopg2, Pillow, and git (for VCS pip packages)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
     libjpeg62-turbo-dev \
     zlib1g-dev \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # --------------- Build Stage ---------------
