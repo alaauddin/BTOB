@@ -15,7 +15,7 @@
 
         <!-- Body -->
         <div class="p-6 overflow-y-auto flex-grow">
-            <form id="domainForm" onsubmit="submitForm(event, 'domainForm', 'domain')">
+            <form id="domainForm" action="{% url 'dashboard_settings_update' %}" method="POST" onsubmit="submitForm(event, 'domainForm', 'domain')">
                 {% csrf_token %}
                 <input type="hidden" name="supplier_id" value="{{ supplier.id }}">
                 <input type="hidden" name="form_type" value="domain">

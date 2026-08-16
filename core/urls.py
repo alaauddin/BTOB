@@ -156,6 +156,7 @@ urlpatterns = [
     path('dashboard/orders/', merchant_orders, name='dashboard_orders'),
     path('dashboard/orders/<int:order_id>/', merchant_order_detail, name='dashboard_order_detail'),
     path('dashboard/settings/', update_merchant_settings, name='dashboard_settings'),
+    path('dashboard/settings/update/', update_merchant_settings, name='dashboard_settings_update'),
     path('dashboard/marketing/', merchant_marketing, name='dashboard_marketing'),
     path('dashboard/ads/new/', add_ads, name='dashboard_ads_create'),
     path('dashboard/ads/<int:ad_id>/', edit_ads, name='dashboard_ads_edit'),

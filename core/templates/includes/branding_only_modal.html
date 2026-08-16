@@ -15,7 +15,7 @@
 
         <!-- Body -->
         <div class="p-6 overflow-y-auto custom-scrollbar flex-grow">
-            <form id="brandingForm" onsubmit="submitForm(event, 'brandingForm', 'branding')">
+            <form id="brandingForm" action="{% url 'dashboard_settings_update' %}" method="POST" enctype="multipart/form-data" onsubmit="submitForm(event, 'brandingForm', 'branding')">
                 {% csrf_token %}
                 <input type="hidden" name="supplier_id" value="{{ supplier.id }}">
                 <input type="hidden" name="form_type" value="branding">

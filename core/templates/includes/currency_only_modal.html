@@ -15,7 +15,7 @@
 
         <!-- Body -->
         <div class="p-6 overflow-y-auto custom-scrollbar flex-grow bg-slate-50/30">
-            <form id="currencyForm" onsubmit="submitForm(event, 'currencyForm', 'currency')">
+            <form id="currencyForm" action="{% url 'dashboard_settings_update' %}" method="POST" onsubmit="submitForm(event, 'currencyForm', 'currency')">
                 {% csrf_token %}
                 <input type="hidden" name="supplier_id" value="{{ supplier.id }}">
                 <input type="hidden" name="form_type" value="currency">

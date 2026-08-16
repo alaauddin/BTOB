@@ -38,3 +38,20 @@ else:
     urlpatterns += [
         re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     ]
+
+
+def custom_500_handler(request):
+    import logging
+    logger = logging.getLogger("django.request")
+    try:
+        from django.shortcuts import render
+        return render(request, '500.html', status=500)
+    except Exception as e:
+        logger.error(f"Error rendering 500 template: {e}", exc_info=True)
+        from django.http import HttpResponseServerError
+        return HttpResponseServerError(
+            "<!DOCTYPE html><html dir='rtl' lang='ar'><head><meta charset='utf-8'><title>خطأ 500</title></head><body style='font-family:sans-serif;text-align:center;padding:50px;'><h2>حدث خطأ في الخادم</h2><p>يرجى تحديث الصفحة والمحاولة مرة أخرى.</p></body></html>",
+            content_type="text/html"
+        )
+
+handler500 = custom_500_handler
