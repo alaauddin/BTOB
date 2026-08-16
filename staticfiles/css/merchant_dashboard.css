@@ -975,3 +975,125 @@
         transform: translateY(0) scale(1);
     }
 }
+/* --- Refactored Styles from my_merchant.html --- */
+
+/* Ensure SweetAlert is always above all modals */
+.swal2-container {
+    z-index: 100000 !important;
+}
+
+/* Premium Tooltip Style */
+.onboarding-tooltip {
+    background: rgba(237, 125, 49, 0.98);
+    box-shadow: 0 10px 30px -5px rgba(237, 125, 49, 0.5);
+    border: 2px solid white;
+    color: white;
+    font-weight: 800;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+.onboarding-tooltip-blue {
+    background: rgba(44, 90, 122, 0.98);
+    box-shadow: 0 10px 30px -5px rgba(44, 90, 122, 0.4);
+    border: 2px solid white;
+    color: white;
+    font-weight: 800;
+}
+
+@keyframes breathe {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+.animate-breathe {
+    animation: breathe 2s infinite ease-in-out;
+}
+
+/* Reliable Caret Pointers */
+.caret-down-orange::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 85%; /* Slightly adjusted for better alignment with w-max */
+    transform: translateX(-50%);
+    border-width: 8px;
+    border-style: solid;
+    border-color: rgba(237, 125, 49, 0.98) transparent transparent transparent;
+}
+.caret-down-blue::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 8px;
+    border-style: solid;
+    border-color: rgba(44, 90, 122, 0.98) transparent transparent transparent;
+}
+/* Modal Focus Enhancements */
+#dashboard-main {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s ease;
+}
+
+body.modal-active #dashboard-main {
+    filter: brightness(0.6);
+    pointer-events: none;
+}
+
+.modal-backdrop {
+    background-color: rgba(15, 23, 42, 0.6); /* Slightly darker instead of blur */
+}
+
+.modal-content-animate {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Step Markers Styling */
+.step-marker {
+    width: 28px;
+    height: 28px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: absolute;
+    top: 50%;
+    transform: translate(50%, -50%);
+    z-index: 30;
+    color: #94a3b8;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 640px) {
+    .step-marker {
+        display: none !important; /* Hide step markers on mobile to avoid overcrowding */
+    }
+}
+
+.step-marker.active {
+    border-color: #3b82f6;
+    background: #3b82f6;
+    color: white;
+    box-shadow: 0 8px 12px -3px rgba(59, 130, 246, 0.4);
+    transform: translate(50%, -50%) scale(1.15);
+}
+.step-marker i {
+    font-size: 14px;
+}
+.step-label {
+    position: absolute;
+    top: -25px;
+    right: 50%;
+    transform: translateX(50%);
+    font-size: 8px;
+    font-weight: 800;
+    color: #64748b;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.step-marker.active .step-label {
+    opacity: 1;
+    color: #3b82f6;
+}

@@ -284,219 +284,256 @@ function handlePostAuth(data) {
 }
 
 // --- Cart Logic ---
-function waitForJQuery(callback) {
-    if (typeof $ !== 'undefined') {
-        callback();
-    } else {
-        setTimeout(function () {
-            waitForJQuery(callback);
-        }, 100);
+window.performAddToCart = function (productId, supplierId, selectedOptions = []) {
+    if (typeof performAddToCart === 'function' && window.performAddToCart !== performAddToCart) {
+        return performAddToCart(productId, supplierId, selectedOptions);
     }
-}
 
-waitForJQuery(function () {
-    window.performAddToCart = function (productId, supplierId, selectedOptions = []) {
-        const csrftoken = getCookie('csrftoken');
+    const csrftoken = getCookie('csrftoken');
 
-        // --- Optimistic Update ---
-        const totalItemsEl = $('#total-items');
-        const totalItemsMobileEl = $('#total-items-mobile');
-        const mobileCartCountEl = $('#mobile-cart-count');
-        const itemQtyEl = $('#total-qty-items-' + productId);
-        const quantityLabelEl = $("#quantity-" + productId);
+    // --- Optimistic Update ---
+    const totalItemsEl = document.getElementById('total-items');
+    const totalItemsMobileEl = document.getElementById('total-items-mobile');
+    const mobileCartCountEl = document.getElementById('mobile-cart-count');
+    const itemQtyEl = document.getElementById('total-qty-items-' + productId);
+    const quantityLabelEl = document.getElementById('quantity-' + productId);
 
-        const prevTotal = parseInt(totalItemsEl.first().text()) || 0;
-        const prevItemQty = parseInt(itemQtyEl.first().text()) || 0;
+    const prevTotal = totalItemsEl ? (parseInt(totalItemsEl.textContent) || 0) : 0;
+    const prevItemQty = itemQtyEl ? (parseInt(itemQtyEl.textContent) || 0) : 0;
 
-        // Update UI immediately
-        totalItemsEl.text(prevTotal + 1).removeClass('hidden');
-        totalItemsMobileEl.text(prevTotal + 1);
-        mobileCartCountEl.text(prevTotal + 1);
-        itemQtyEl.text(prevItemQty + 1);
-        quantityLabelEl.html(prevItemQty + 1);
+    // Update UI immediately
+    if (totalItemsEl) {
+        totalItemsEl.textContent = prevTotal + 1;
+        totalItemsEl.classList.remove('hidden');
+    }
+    if (totalItemsMobileEl) totalItemsMobileEl.textContent = prevTotal + 1;
+    if (mobileCartCountEl) mobileCartCountEl.textContent = prevTotal + 1;
+    if (itemQtyEl) itemQtyEl.textContent = prevItemQty + 1;
+    if (quantityLabelEl) quantityLabelEl.textContent = prevItemQty + 1;
 
-        $('#ib-' + productId).show();
-        $('#qty-ctrl-' + productId).removeClass('d-none');
-        $('#add-btn-' + productId).addClass('d-none');
-        $('#mobileCartBar').removeClass('d-none');
+    const ibEl = document.getElementById('ib-' + productId);
+    if (ibEl) ibEl.style.display = 'block';
+    const qtyCtrlEl = document.getElementById('qty-ctrl-' + productId);
+    if (qtyCtrlEl) qtyCtrlEl.classList.remove('d-none');
+    const addBtnEl = document.getElementById('add-btn-' + productId);
+    if (addBtnEl) addBtnEl.classList.add('d-none');
+    const mobileCartBar = document.getElementById('mobileCartBar');
+    if (mobileCartBar) mobileCartBar.classList.remove('d-none');
 
-        animateCartElement('total-items');
-        animateCartElement('mobile-cart-count');
-        // ---------------------------
+    animateCartElement('total-items');
+    animateCartElement('mobile-cart-count');
+    // ---------------------------
 
-        const url = window.siteConfig.addToCartUrl.replace('/0/', '/' + productId + '/').replace('STORE_ID', supplierId);
+    const url = window.siteConfig && window.siteConfig.addToCartUrl 
+        ? window.siteConfig.addToCartUrl.replace('/0/', '/' + productId + '/').replace('STORE_ID', supplierId)
+        : `/add_to_cart/${productId}/${supplierId}/`;
 
-        return $.ajax({
-            url: url,
-            type: "POST",
-            headers: { "X-CSRFToken": csrftoken },
-            data: {
-                selected_options: selectedOptions
-            },
-            success: function (response) {
-                // Sync with server state
-                const navBadge = $('#total-items');
-                navBadge.text(response.cart_items_count);
-                if (response.cart_items_count > 0) {
-                    navBadge.removeClass('hidden');
-                } else {
-                    navBadge.addClass('hidden');
-                }
-                $('#total-items-mobile').text(response.cart_items_count);
-                $('#total-qty-items-' + productId).text(response.cart_item_count);
-                $("#quantity-" + productId).html(response.cart_item_count);
-                $('#mobile-cart-count').text(response.cart_items_count);
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ selected_options: selectedOptions, quantity: 1 })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+    })
+    .then(response => {
+        // Sync with server state
+        if (totalItemsEl) {
+            totalItemsEl.textContent = response.cart_items_count;
+            if (response.cart_items_count > 0) totalItemsEl.classList.remove('hidden');
+            else totalItemsEl.classList.add('hidden');
+        }
+        if (totalItemsMobileEl) totalItemsMobileEl.textContent = response.cart_items_count;
+        if (itemQtyEl) itemQtyEl.textContent = response.cart_item_count;
+        if (quantityLabelEl) quantityLabelEl.textContent = response.cart_item_count;
+        if (mobileCartCountEl) mobileCartCountEl.textContent = response.cart_items_count;
 
-                if (response.cart_total !== undefined) {
-                    const estimatedFee = parseFloat(window.siteConfig.estimatedFee || 0);
-                    $('#mobile-cart-total').text(Math.floor(response.cart_total + estimatedFee));
-                }
+        if (response.cart_total !== undefined) {
+            const estimatedFee = parseFloat(window.siteConfig.estimatedFee || 0);
+            const mobileTotalEl = document.getElementById('mobile-cart-total');
+            if (mobileTotalEl) mobileTotalEl.textContent = Math.floor(response.cart_total + estimatedFee);
+        }
 
-                if (response.cart_items_count > 0) {
-                    $('#mobileCartBar').removeClass('d-none');
-                } else {
-                    $('#mobileCartBar').addClass('d-none');
-                }
+        if (mobileCartBar) {
+            if (response.cart_items_count > 0) mobileCartBar.classList.remove('d-none');
+            else mobileCartBar.classList.add('d-none');
+        }
 
-                showNotification('تمت إضافة المنتج إلى السلة بنجاح', 'success');
+        if (typeof updateLocalCartState === 'function') {
+            updateLocalCartState(productId, selectedOptions, response.cart_item_count, response.cart_items_count, response.cart_total);
+        }
 
-                // Meta Pixel: AddToCart event
-                if (typeof fbq !== 'undefined') {
-                    fbq('track', 'AddToCart', {
-                        content_ids: [String(productId)],
-                        content_type: 'product',
-                        variation_ids: selectedOptions
-                    });
-                }
-            },
-            error: function (xhr) {
-                // --- Rollback ---
-                totalItemsEl.text(prevTotal);
-                totalItemsMobileEl.text(prevTotal);
-                mobileCartCountEl.text(prevTotal);
-                itemQtyEl.text(prevItemQty);
-                quantityLabelEl.html(prevItemQty);
+        showNotification('تمت إضافة المنتج إلى السلة بنجاح', 'success');
 
-                if (prevItemQty === 0) {
-                    $('#ib-' + productId).hide();
-                    $('#qty-ctrl-' + productId).addClass('d-none');
-                    $('#add-btn-' + productId).removeClass('d-none');
-                }
-                if (prevTotal === 0) {
-                    $('#mobileCartBar').addClass('d-none');
-                }
-                // -----------------
-
-                const message = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'حدث خطأ أثناء إضافة المنتج إلى السلة';
-                showNotification(message, 'error');
-            }
-        });
-    };
-
-    window.addToCart = function (productId, supplierId, selectedOptions = []) {
-        if (!window.siteConfig.isAuthenticated) {
-            openLoginModal(function () {
-                return window.performAddToCart(productId, supplierId, selectedOptions);
+        // Meta Pixel: AddToCart event
+        if (typeof fbq !== 'undefined') {
+            fbq('track', 'AddToCart', {
+                content_ids: [String(productId)],
+                content_type: 'product',
+                variation_ids: selectedOptions
             });
-        } else {
-            window.performAddToCart(productId, supplierId, selectedOptions);
         }
-    };
-
-    window.subToCart = function (productId, supplierId, selectedOptions = []) {
-        const csrftoken = getCookie('csrftoken');
-
-        // --- Optimistic Update ---
-        const totalItemsEl = $('#total-items');
-        const totalItemsMobileEl = $('#total-items-mobile');
-        const mobileCartCountEl = $('#mobile-cart-count');
-        const itemQtyEl = $('#total-qty-items-' + productId);
-        const quantityLabelEl = $("#quantity-" + productId);
-
-        const prevTotal = parseInt(totalItemsEl.first().text()) || 0;
-        const prevItemQty = parseInt(itemQtyEl.first().text()) || 0;
-
-        if (prevItemQty <= 0) return;
-
-        // Update UI immediately
-        const newTotal = Math.max(0, prevTotal - 1);
-        const newItemQty = prevItemQty - 1;
-
-        totalItemsEl.text(newTotal);
-        totalItemsMobileEl.text(newTotal);
-        mobileCartCountEl.text(newTotal);
-        itemQtyEl.text(newItemQty);
-        quantityLabelEl.html(newItemQty);
-
-        if (newItemQty === 0) {
-            $('#ib-' + productId).hide();
-            $('#qty-ctrl-' + productId).addClass('d-none');
-            $('#add-btn-' + productId).removeClass('d-none');
+        return response;
+    })
+    .catch(err => {
+        // --- Rollback ---
+        if (totalItemsEl) {
+            totalItemsEl.textContent = prevTotal;
+            if (prevTotal === 0) totalItemsEl.classList.add('hidden');
         }
+        if (totalItemsMobileEl) totalItemsMobileEl.textContent = prevTotal;
+        if (mobileCartCountEl) mobileCartCountEl.textContent = prevTotal;
+        if (itemQtyEl) itemQtyEl.textContent = prevItemQty;
+        if (quantityLabelEl) quantityLabelEl.textContent = prevItemQty;
 
-        if (newTotal === 0) {
-            $('#mobileCartBar').addClass('d-none');
+        if (prevItemQty === 0) {
+            if (ibEl) ibEl.style.display = 'none';
+            if (qtyCtrlEl) qtyCtrlEl.classList.add('d-none');
+            if (addBtnEl) addBtnEl.classList.remove('d-none');
         }
+        if (prevTotal === 0 && mobileCartBar) {
+            mobileCartBar.classList.add('d-none');
+        }
+        // -----------------
 
-        animateCartElement('total-items');
-        animateCartElement('mobile-cart-count');
-        // ---------------------------
+        const message = (err && err.message) ? err.message : 'حدث خطأ أثناء إضافة المنتج إلى السلة';
+        showNotification(message, 'error');
+    });
+};
 
-        const url = window.siteConfig.subToCartUrl.replace('/0/', '/' + productId + '/').replace('STORE_ID', supplierId);
-
-        $.ajax({
-            url: url,
-            type: "POST",
-            headers: { "X-CSRFToken": csrftoken },
-            data: {
-                selected_options: selectedOptions
-            },
-            success: function (response) {
-                // Sync with server state
-                const navBadge2 = $('#total-items');
-                navBadge2.text(response.cart_items_count);
-                if (response.cart_items_count > 0) {
-                    navBadge2.removeClass('hidden');
-                } else {
-                    navBadge2.addClass('hidden');
-                }
-                $('#total-items-mobile').text(response.cart_items_count);
-                $('#total-qty-items-' + productId).text(response.cart_item_count);
-                $("#quantity-" + productId).html(response.cart_item_count);
-                $('#mobile-cart-count').text(response.cart_items_count);
-
-                if (response.cart_total !== undefined) {
-                    const estimatedFee = parseFloat(window.siteConfig.estimatedFee || 0);
-                    $('#mobile-cart-total').text(Math.floor(response.cart_total + estimatedFee));
-                }
-
-                if (response.cart_items_count === 0) {
-                    $('#mobileCartBar').addClass('d-none');
-                } else {
-                    $('#mobileCartBar').removeClass('d-none');
-                }
-
-                showNotification('تم تحديث الكمية في السلة', 'success');
-            },
-            error: function (xhr) {
-                // --- Rollback ---
-                totalItemsEl.text(prevTotal);
-                totalItemsMobileEl.text(prevTotal);
-                mobileCartCountEl.text(prevTotal);
-                itemQtyEl.text(prevItemQty);
-                quantityLabelEl.html(prevItemQty);
-
-                $('#ib-' + productId).show();
-                $('#qty-ctrl-' + productId).removeClass('d-none');
-                $('#add-btn-' + productId).addClass('d-none');
-                $('#mobileCartBar').removeClass('d-none');
-                // -----------------
-                const message = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'حدث خطأ أثناء تحديث السلة';
-                showNotification(message, 'error');
-            }
+window.addToCart = function (productId, supplierId, selectedOptions = []) {
+    if (!window.siteConfig.isAuthenticated) {
+        openLoginModal(function () {
+            return window.performAddToCart(productId, supplierId, selectedOptions);
         });
-    };
-});
+    } else {
+        return window.performAddToCart(productId, supplierId, selectedOptions);
+    }
+};
+
+window.subToCart = function (productId, supplierId, selectedOptions = []) {
+    const csrftoken = getCookie('csrftoken');
+
+    // --- Optimistic Update ---
+    const totalItemsEl = document.getElementById('total-items');
+    const totalItemsMobileEl = document.getElementById('total-items-mobile');
+    const mobileCartCountEl = document.getElementById('mobile-cart-count');
+    const itemQtyEl = document.getElementById('total-qty-items-' + productId);
+    const quantityLabelEl = document.getElementById('quantity-' + productId);
+
+    const prevTotal = totalItemsEl ? (parseInt(totalItemsEl.textContent) || 0) : 0;
+    const prevItemQty = itemQtyEl ? (parseInt(itemQtyEl.textContent) || 0) : 0;
+
+    if (prevItemQty <= 0) return;
+
+    // Update UI immediately
+    const newTotal = Math.max(0, prevTotal - 1);
+    const newItemQty = prevItemQty - 1;
+
+    if (totalItemsEl) {
+        totalItemsEl.textContent = newTotal;
+        if (newTotal === 0) totalItemsEl.classList.add('hidden');
+    }
+    if (totalItemsMobileEl) totalItemsMobileEl.textContent = newTotal;
+    if (mobileCartCountEl) mobileCartCountEl.textContent = newTotal;
+    if (itemQtyEl) itemQtyEl.textContent = newItemQty;
+    if (quantityLabelEl) quantityLabelEl.textContent = newItemQty;
+
+    const ibEl = document.getElementById('ib-' + productId);
+    const qtyCtrlEl = document.getElementById('qty-ctrl-' + productId);
+    const addBtnEl = document.getElementById('add-btn-' + productId);
+    const mobileCartBar = document.getElementById('mobileCartBar');
+
+    if (newItemQty === 0) {
+        if (ibEl) ibEl.style.display = 'none';
+        if (qtyCtrlEl) qtyCtrlEl.classList.add('d-none');
+        if (addBtnEl) addBtnEl.classList.remove('d-none');
+    }
+
+    if (newTotal === 0 && mobileCartBar) {
+        mobileCartBar.classList.add('d-none');
+    }
+
+    animateCartElement('total-items');
+    animateCartElement('mobile-cart-count');
+    // ---------------------------
+
+    const url = window.siteConfig && window.siteConfig.subToCartUrl
+        ? window.siteConfig.subToCartUrl.replace('/0/', '/' + productId + '/').replace('STORE_ID', supplierId)
+        : `/sub_to_cart/${productId}/${supplierId}/`;
+
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ selected_options: selectedOptions })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+    })
+    .then(response => {
+        // Sync with server state
+        if (totalItemsEl) {
+            totalItemsEl.textContent = response.cart_items_count;
+            if (response.cart_items_count > 0) totalItemsEl.classList.remove('hidden');
+            else totalItemsEl.classList.add('hidden');
+        }
+        if (totalItemsMobileEl) totalItemsMobileEl.textContent = response.cart_items_count;
+        if (itemQtyEl) itemQtyEl.textContent = response.cart_item_count;
+        if (quantityLabelEl) quantityLabelEl.textContent = response.cart_item_count;
+        if (mobileCartCountEl) mobileCartCountEl.textContent = response.cart_items_count;
+
+        if (response.cart_total !== undefined) {
+            const estimatedFee = parseFloat(window.siteConfig.estimatedFee || 0);
+            const mobileTotalEl = document.getElementById('mobile-cart-total');
+            if (mobileTotalEl) mobileTotalEl.textContent = Math.floor(response.cart_total + estimatedFee);
+        }
+
+        if (mobileCartBar) {
+            if (response.cart_items_count === 0) mobileCartBar.classList.add('d-none');
+            else mobileCartBar.classList.remove('d-none');
+        }
+
+        if (typeof updateLocalCartState === 'function') {
+            updateLocalCartState(productId, selectedOptions, response.cart_item_count, response.cart_items_count, response.cart_total);
+        }
+
+        showNotification('تم تحديث الكمية في السلة', 'success');
+        return response;
+    })
+    .catch(err => {
+        // --- Rollback ---
+        if (totalItemsEl) {
+            totalItemsEl.textContent = prevTotal;
+            if (prevTotal > 0) totalItemsEl.classList.remove('hidden');
+        }
+        if (totalItemsMobileEl) totalItemsMobileEl.textContent = prevTotal;
+        if (mobileCartCountEl) mobileCartCountEl.textContent = prevTotal;
+        if (itemQtyEl) itemQtyEl.textContent = prevItemQty;
+        if (quantityLabelEl) quantityLabelEl.textContent = prevItemQty;
+
+        if (ibEl) ibEl.style.display = 'block';
+        if (qtyCtrlEl) qtyCtrlEl.classList.remove('d-none');
+        if (addBtnEl) addBtnEl.classList.add('d-none');
+        if (mobileCartBar) mobileCartBar.classList.remove('d-none');
+        // -----------------
+        const message = (err && err.message) ? err.message : 'حدث خطأ أثناء تحديث السلة';
+        showNotification(message, 'error');
+    });
+};
 
 window.performToggleWishlist = function (productId) {
     const btn = document.querySelector(`[data-product-id="${productId}"] .wishlist-btn-float`) ||
@@ -791,13 +828,13 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     window.handlePasswordResetRequest = function (isForgotBoth = false) {
-        const usernameEl = document.getElementById('reset_username');
-        const username = isForgotBoth ? '' : usernameEl.value;
+        const phoneEl = document.getElementById('reset_phone');
+        const phone = isForgotBoth ? '' : phoneEl.value;
         const submitBtn = document.getElementById('reset-submit-btn');
         const statusContainer = document.getElementById('reset-status-container');
 
-        if (!isForgotBoth && !username) {
-            showNotification('يرجى إدخال اسم المستخدم ورقم الهاتف', 'error');
+        if (!isForgotBoth && !phone) {
+            showNotification('يرجى إدخال رقم الهاتف', 'error');
             return;
         }
 
@@ -812,7 +849,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCookie('csrftoken')
             },
-            body: JSON.stringify({ username: username })
+            body: JSON.stringify({ phone: phone })
         })
             .then(response => response.json())
             .then(data => {
@@ -821,7 +858,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.is_forgot_both) {
                         if (statusContainer) {
                             statusContainer.className = 'rounded-xl p-4 text-right bg-blue-50 text-blue-700 text-[11px] border border-blue-100 space-y-3';
-                            const message = encodeURIComponent(`مرحباً، لقد نسيت اسم المستخدم وكلمة المرور الخاصة بي. أحتاج للمساعدة في استعادة بيانات حسابي.`);
+                            const message = encodeURIComponent(`مرحباً، لقد نسيت رقم الهاتف وكلمة المرور الخاصة بي. أحتاج للمساعدة في استعادة بيانات حسابي.`);
                             const whatsappUrl = `https://wa.me/${data.support_phone}?text=${message}`;
                             statusContainer.innerHTML = `
                             <p class="font-bold mb-2">استعادة بيانات الحساب</p>
@@ -840,7 +877,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     } else {
                         if (statusContainer) {
                             statusContainer.className = 'rounded-xl p-4 text-right bg-green-50 text-green-700 text-[11px] border border-green-100 space-y-3';
-                            const message = encodeURIComponent(`مرحباً، لقد قمت بطلب استعادة كلمة المرور لحسابي (${data.username}).`);
+                            const message = encodeURIComponent(`مرحباً، لقد قمت بطلب استعادة كلمة المرور لحسابي (${data.phone}).`);
                             const whatsappUrl = `https://wa.me/${data.support_phone}?text=${message}`;
                             statusContainer.innerHTML = `
                         <p class="font-bold mb-2">تم تحديث كلمة المرور!</p>
@@ -850,7 +887,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <i class="fab fa-whatsapp text-lg"></i>
                                 متابعة الطلب في واتساب
                             </a>
-                            <button type="button" onclick="togglePasswordReset(false); document.getElementById('merchant_username').value='${data.username}';" class="w-full py-2.5 bg-gray-800 text-white rounded-xl font-bold text-[10px] hover:bg-gray-900 transition-all">
+                            <button type="button" onclick="togglePasswordReset(false); document.getElementById('merchant_username').value='${data.phone}';" class="w-full py-2.5 bg-gray-800 text-white rounded-xl font-bold text-[10px] hover:bg-gray-900 transition-all">
                                 الذهاب لصفحة تسجيل الدخول
                             </button>
                         </div>

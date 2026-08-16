@@ -4,15 +4,6 @@
  */
 
 :root {
-    /* Base Palette generated from Supplier Color */
-    /* Note: CSS variables derived from Django templates need to be handled either inline or via JS if they are dynamic.
-       Since this is a static CSS file, we provide fallback values. The actual dynamic values should be set inline in the template. */
-    --primary-base: #F58231;
-    --primary-bg-soft: #F582310D;
-    /* 5% opacity */
-    --primary-bg-medium: #F582311A;
-    /* 10% opacity */
-
     /* Surface Colors */
     --surface-glass: rgba(255, 255, 255, 0.92);
     --surface-1: #ffffff;

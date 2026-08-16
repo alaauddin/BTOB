@@ -80,7 +80,13 @@
 
 /* Ensure SweetAlert2 is always on top of custom modals */
 .swal2-container {
-    z-index: 2000000 !important;
+    z-index: 10000000 !important;
+}
+
+/* Force custom modals to yield when an alert is shown */
+body.swal2-shown #wholesale-smart-popup,
+body.swal2-shown #checklist-modal {
+    z-index: 8000 !important;
 }
 
 /* Modern Premium Navbar - Inspired by Stripe, Apple, Notion */

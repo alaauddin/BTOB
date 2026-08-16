@@ -1,0 +1,277 @@
+/* 
+   Merchant Academy Pro UI - 'Rawaj Essence' 
+   Standard: Professional SaaS UX/UI inspired by Official Brand Logo
+*/
+
+:root {
+    /* Brand Core Palette (Extracted from logo.jpeg) */
+    --acad-orange: #f58231;        /* Primary Brand Orange */
+    --acad-blue: #2b5876;          /* Primary Brand Blue/Teal */
+    --acad-gold: #c5a059;          /* Secondary Brand Gold Swoosh */
+    --acad-midnight: #132c3d;      /* Deep Contrast Navy from logo edges */
+    
+    /* UI Support Palette */
+    --acad-slate-body: #475569;
+    --acad-bg: #f8fafc;
+    --acad-card-bg: #ffffff;
+    --acad-border-subtle: rgba(43, 88, 118, 0.1); /* Indigo tinted */
+    
+    /* Brand Gradients (Fidelity Overhaul) */
+    --acad-gradient-orange: linear-gradient(135deg, #f58231 0%, #d48231 100%);
+    --acad-gradient-blue: linear-gradient(135deg, #2b5876 0%, #132c3d 100%);
+    
+    /* Professional Layered Shadows */
+    --acad-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --acad-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --acad-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+}
+
+/* Global Layout Refinement */
+.acad-body {
+    background-color: var(--acad-bg) !important;
+    font-family: 'Tajawal', sans-serif;
+    color: var(--acad-midnight);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Structural Brand Hero */
+.acad-bg-midnight {
+    background: var(--acad-gradient-blue) !important;
+    color: #ffffff !important;
+}
+
+/* Pro Course Card */
+.acad-card {
+    background: var(--acad-card-bg);
+    border: 1px solid var(--acad-border-subtle);
+    border-radius: 1.5rem;
+    padding: 2.5rem 2rem;
+    box-shadow: var(--acad-shadow-md);
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+}
+
+.acad-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--acad-shadow-lg);
+    border-color: rgba(245, 130, 49, 0.4);
+}
+
+.acad-card-icon {
+    font-size: 3.5rem;
+    color: var(--acad-blue); /* Theming icons with brand blue */
+    margin-bottom: 2rem;
+    transition: transform 0.5s ease;
+}
+
+.acad-card:hover .acad-card-icon {
+    transform: scale(1.1);
+}
+
+.acad-card-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+    color: var(--acad-midnight);
+}
+
+.acad-card-desc {
+    font-size: 0.875rem;
+    color: var(--acad-slate-body);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+/* Metadata Pills (Brand Consistency) */
+.acad-meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.acad-meta-pill {
+    background: #ffffff;
+    border: 1px solid var(--acad-border-subtle);
+    padding: 0.45rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--acad-blue);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: var(--acad-shadow-sm);
+}
+
+/* Brand Action Button (Vibrant Orange) */
+.acad-btn-course {
+    background: var(--acad-gradient-orange);
+    color: #ffffff;
+    font-weight: 900; /* Max prominence */
+    font-size: 0.95rem;
+    padding: 1rem 2rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    border: none;
+    width: 100%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 15px -3px rgba(245, 130, 49, 0.3);
+    cursor: pointer;
+}
+
+.acad-btn-course:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(245, 130, 49, 0.5);
+    filter: saturate(1.1);
+}
+
+.acad-btn-course:active {
+    transform: scale(0.97);
+}
+
+/* Radiant Success Button */
+.acad-btn-success {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+    font-weight: 800;
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+}
+
+/* Support Button (WhatsApp Integration) */
+.acad-btn-support {
+    background: #25d366; /* WhatsApp Green */
+    color: #ffffff;
+    font-weight: 800;
+    padding: 1.1rem 3rem;
+    border-radius: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 10px 20px -5px rgba(37, 211, 102, 0.3);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.acad-btn-support:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px -10px rgba(37, 211, 102, 0.5);
+}
+
+/* Progress Feedback (Brand Swoosh Flow) */
+.acad-progress-track {
+    width: 100%;
+    height: 7px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.acad-progress-fill {
+    height: 100%;
+    background: var(--acad-gradient-orange);
+    border-radius: 999px;
+    position: relative;
+}
+
+/* Roadmap Chapters (Hfidelity Header) */
+.acad-chapter-step {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem 0;
+    margin-bottom: 3rem;
+    border-bottom: 2px solid var(--acad-border-subtle);
+}
+
+.acad-step-num {
+    width: 4rem;
+    height: 4rem;
+    background: #ffffff;
+    border: 2px solid var(--acad-blue); /* Highlighting with brand blue */
+    border-radius: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 950;
+    font-size: 1.6rem;
+    color: var(--acad-blue);
+    box-shadow: var(--acad-shadow-lg);
+    flex-shrink: 0;
+}
+
+/* Animations */
+.acad-stagger {
+    opacity: 0;
+    animation: acadReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes acadReveal {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile Responsiveness (High Density 2-Column Standard) */
+@media (max-width: 768px) {
+    .acad-title { font-size: 1.4rem; font-weight: 900; }
+    .acad-subtitle { font-size: 0.75rem; margin-bottom: 2rem; }
+    
+    .acad-card {
+        padding: 1.25rem 1rem;
+        border-radius: 1rem;
+        gap: 0.5rem;
+    }
+    
+    .acad-card-icon { 
+        font-size: 2rem; 
+        margin-bottom: 1rem; 
+    }
+    
+    .acad-card-title { 
+        font-size: 0.85rem; 
+        margin-bottom: 0.5rem;
+        min-height: 2.4rem; /* Ensure alignment */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .acad-card-desc { 
+        font-size: 0.7rem; 
+        margin-bottom: 1rem;
+        line-height: 1.4;
+        display: none; /* Hide description on mobile for 2-col density */
+    }
+    
+    .acad-meta-row {
+        gap: 0.25rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .acad-meta-pill {
+        padding: 0.25rem 0.6rem;
+        font-size: 0.65rem;
+    }
+    
+    .acad-progress-track { margin-bottom: 1rem; height: 4px; }
+    
+    .acad-btn-course {
+        padding: 0.65rem 1rem;
+        font-size: 0.7rem;
+        border-radius: 0.75rem;
+    }
+    
+    .acad-chapter-step { padding: 1.25rem 0; margin-bottom: 1.5rem; }
+    .acad-step-num { width: 3rem; height: 3rem; font-size: 1.2rem; border-radius: 0.75rem; }
+}
