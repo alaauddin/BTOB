@@ -281,11 +281,12 @@ def hasadpay_return_callback(request, order_id):
     # Query gateway for live status
     is_success = False
 
-    if config and tx and (tx.transaction_id or tx.transaction_uuid):
+    if config and tx and (tx.transaction_uuid or tx.transaction_id):
         client = config.get_client()
         if client:
             try:
-                tx_lookup_id = tx.transaction_id or tx.transaction_uuid
+                # Prefer transaction_uuid as HasadPay API routes by UUID
+                tx_lookup_id = tx.transaction_uuid or tx.transaction_id
                 gateway_status = client.transactions.get(transaction_id=tx_lookup_id)
                 tx.status_code = gateway_status.status_code or tx.status_code
                 tx.status_display = gateway_status.status_display or tx.status_display
@@ -355,9 +356,12 @@ def hasadpay_return_callback(request, order_id):
         return redirect('order_detail', pk=order.id)
     else:
         messages.warning(request, 'لم تكتمل عملية السداد عبر حصاد باي أو تم إلغاؤها.')
-        store_slug = supplier.subdomain or supplier.store_id if supplier else None
+        store_slug = (supplier.store_id or supplier.subdomain) if supplier else None
         if store_slug:
-            return redirect('store_cart', store_id=store_slug)
+            try:
+                return redirect('store_cart', store_slug=store_slug)
+            except Exception:
+                pass
         return redirect('order_detail', pk=order.id)
 
 

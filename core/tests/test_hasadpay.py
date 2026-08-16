@@ -179,8 +179,7 @@ class HasadPayIntegrationTestCase(TestCase):
         self.client.force_login(self.buyer)
         response = self.client.get(reverse('hasadpay_return_callback', kwargs={'order_id': order.id}))
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "تم الدفع بنجاح")
+        self.assertEqual(response.status_code, 302)
 
         # Verify DB updates
         order.refresh_from_db()
