@@ -349,3 +349,7 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# HasadPay Payment Gateway
+HASADPAY_BASE_URL = os.getenv('HASADPAY_BASE_URL', 'https://merchent-local.fintechsys.net')
+

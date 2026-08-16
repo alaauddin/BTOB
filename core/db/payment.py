@@ -96,9 +96,9 @@ class SupplierHasadPayConfig(models.Model):
         """Initializes and returns a HasadPayClient configured for this supplier."""
         try:
             from hasadpay import HasadPayClient, Environment
-            base_url = self.custom_base_url
-            if not base_url:
-                base_url = Environment.SANDBOX if self.environment == 'sandbox' else Environment.PRODUCTION
+            from django.conf import settings
+            default_base_url = getattr(settings, 'HASADPAY_BASE_URL', 'https://merchent-local.fintechsys.net')
+            base_url = default_base_url
 
             return HasadPayClient(
                 api_key=self.api_key or "",

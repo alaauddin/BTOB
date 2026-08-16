@@ -119,9 +119,10 @@ def test_hasadpay_connection(request):
 
     try:
         from hasadpay import HasadPayClient, Environment, HasadPayAuthError, HasadPayAPIError
+        from django.conf import settings
 
-        target_env = Environment.SANDBOX if environment == 'sandbox' else Environment.PRODUCTION
-        base_url = custom_base_url or target_env
+        default_base_url = getattr(settings, 'HASADPAY_BASE_URL', 'https://merchent-local.fintechsys.net')
+        base_url = custom_base_url or default_base_url
 
         client = HasadPayClient(
             api_key=api_key,
@@ -211,7 +212,9 @@ def create_hasadpay_checkout_session(request, order, supplier):
 
         checkout_url = tx_response.checkout_url
         if not checkout_url and tx_response.uuid:
-            base = config.custom_base_url or ("https://api.hasadpay.com" if config.environment == 'production' else "https://sandbox.hasadpay.com")
+            from django.conf import settings
+            default_base_url = getattr(settings, 'HASADPAY_BASE_URL', 'https://merchent-local.fintechsys.net')
+            base = config.custom_base_url or default_base_url
             checkout_url = f"{base}/checkout/?id={tx_response.uuid}"
 
         # Record or update transaction in local database

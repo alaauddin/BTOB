@@ -194,6 +194,13 @@
                                 {{ form.display_name }}
                             </div>
 
+                            <!-- Custom Base URL -->
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small text-dark">{{ form.custom_base_url.label }}</label>
+                                {{ form.custom_base_url }}
+                                <div class="form-text small text-muted">اتركه فارغاً للاستخدام الافتراضي (<code>https://api.hasadpay.com</code> أو <code>https://sandbox-api.hasadpay.com</code>)، أو أدخل رابط سيرفر HasadPay المخصص إن كنت تشغله محلياً أو على نطاق خاص.</div>
+                            </div>
+
                             <!-- Auto confirm -->
                             <div class="col-12">
                                 <div class="form-check form-switch">
@@ -245,6 +252,7 @@ async function testConnection() {
     const entityId = document.querySelector('input[name="entity_id"]').value.trim();
     const webhookSecret = document.querySelector('input[name="webhook_secret"]').value.trim();
     const environment = document.querySelector('select[name="environment"]').value;
+    const customBaseUrl = (document.querySelector('input[name="custom_base_url"]') ? document.querySelector('input[name="custom_base_url"]').value.trim() : '');
 
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري فحص الاتصال...';
@@ -255,6 +263,7 @@ async function testConnection() {
     formData.append('entity_id', entityId);
     formData.append('webhook_secret', webhookSecret);
     formData.append('environment', environment);
+    formData.append('custom_base_url', customBaseUrl);
 
     try {
         const response = await fetch("{% url 'hasadpay_test_connection' %}", {

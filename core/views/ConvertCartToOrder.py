@@ -111,8 +111,15 @@ def checkout_select_address_or_custom_address(request, store_id):
                         })
                     return redirect(checkout_url)
                 except Exception as e:
-                    logger.error(f"HasadPay checkout creation failed: {str(e)}")
-                    # Continue to standard flow if gateway fails
+                    logger.error(f"HasadPay checkout creation failed: {str(e)}", exc_info=True)
+                    created_order.delete()
+                    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                        return JsonResponse({
+                            'success': False,
+                            'message': f'تعذر إنشاء جلسة الدفع الإلكتروني عبر حصاد باي: {str(e)}'
+                        }, status=400)
+                    messages.error(request, f'تعذر إنشاء جلسة الدفع الإلكتروني عبر حصاد باي: {str(e)}')
+                    return redirect('store_cart', store_id=supplier.store_id)
             
             result = complete_order_and_notify(request, created_order, cart, address, supplier, payment_method_id=spm_id)
             
@@ -233,7 +240,15 @@ def existing_address(request, store_id):
                 })
             return redirect(checkout_url)
         except Exception as e:
-            logger.error(f"HasadPay checkout creation failed: {str(e)}")
+            logger.error(f"HasadPay checkout creation failed: {str(e)}", exc_info=True)
+            order.delete()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': f'تعذر إنشاء جلسة الدفع الإلكتروني عبر حصاد باي: {str(e)}'
+                }, status=400)
+            messages.error(request, f'تعذر إنشاء جلسة الدفع الإلكتروني عبر حصاد باي: {str(e)}')
+            return redirect('store_cart', store_id=supplier.store_id)
 
     result = complete_order_and_notify(request, order, cart, shipping_address, supplier, payment_method_id=spm_id)
     
