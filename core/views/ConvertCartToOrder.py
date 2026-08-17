@@ -270,7 +270,13 @@ def existing_address(request, store_id=None):
         return JsonResponse(result)
         
     messages.success(request, result['message'])
-    return redirect(result['wa_url'])
+    store_slug = (supplier.store_id or supplier.subdomain) if supplier else None
+    if store_slug:
+        try:
+            return redirect('store_order_track', store_slug=store_slug, pk=order.id)
+        except Exception:
+            pass
+    return redirect('order_detail', pk=order.id)
 
   
   

@@ -347,12 +347,12 @@ def hasadpay_return_callback(request, order_id):
 
     if is_success:
         messages.success(request, f'🎉 تم سداد طلبك رقم #{order.id} بنجاح عبر حصاد باي!')
-        if supplier and supplier.phone:
-            items_lines = [f"- {item.product.name} ({item.quantity})" for item in order.order_items.all()]
-            items_list = "\n".join(items_lines)
-            wa_message = f"مرحباً متجر {supplier.name}، لقد قمت بسداد طلبي رقم #{order.id} بنجاح عبر حصاد باي بقيمة {order.total_amount} {supplier.currency}.\n\nأصناف الطلب:\n{items_list}"
-            wa_url = f"https://wa.me/{supplier.phone}?text={quote(wa_message)}"
-            return redirect(wa_url)
+        store_slug = (supplier.store_id or supplier.subdomain) if supplier else None
+        if store_slug:
+            try:
+                return redirect('store_order_track', store_slug=store_slug, pk=order.id)
+            except Exception:
+                pass
         return redirect('order_detail', pk=order.id)
     else:
         messages.warning(request, 'لم تكتمل عملية السداد عبر حصاد باي أو تم إلغاؤها.')
